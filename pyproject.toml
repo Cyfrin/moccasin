@@ -1,0 +1,30 @@
+[project]
+name = "gaboon"
+version = "0.1"
+description = "Pythonic smart contract development framework for Vyper."
+dependencies = ["pytest>=8.2.2", "docopt-ng>=0.9.0", "gaboon>=0.1"]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[project.scripts]
+"gab" = "gaboon:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = ["pytest>=8.2.2", "ruff>=0.5.2", "gaboon>=0.1"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["gaboon"]
+
+[tool.pytest.ini_options]
+markers = [
+    "subprocess: marks tests that use a subprocess and are slow to run (deselect with '-m \"not subprocess\"')",
+]
+addopts = "-m \"not subprocess\""
