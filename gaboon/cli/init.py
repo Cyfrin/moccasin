@@ -1,14 +1,15 @@
 from pathlib import Path
-from typing import Any, List
-from gaboon.utils.cli_constants import (
+from gaboon.utils._cli_constants import (
     PROJECT_FOLDERS,
     GITIGNORE,
     GITATTRIBUTES,
     PROJECT_FILES,
+    COUNTER_CONTRACT_PATH,
+    COUNTER_VYPER_CONTRACT_SRC,
 )
-from docopt import docopt
+from docopt import ParsedOptions, docopt
 
-__doc__ = """Usage: gaboon init [<path>] [options]
+__doc__ = """Usage: gab init [<path>] [options]
 
 Arguments:
     <path>                Path to initialize (default is the current path)
@@ -17,11 +18,19 @@ Options:
   --force -f            Allow initialization inside a directory that is not
                         empty, or a subdirectory of an existing project
   --help -h             Display this message
+
+This will create a basic directory structure at the path you specific, which looks like:
+.
+├── src/ 
+├── script/
+├── tests/
+├── gaboon.toml
+└── README.md
 """
 
 
 def main() -> int:
-    args = docopt(__doc__)
+    args: ParsedOptions = docopt(__doc__)
     path: str = new_project(args["<path>"] or ".", args["--force"])
     print(f"Project initialized at {path}")
     return 0
@@ -59,5 +68,9 @@ def _create_files(project_path: Path) -> None:
     if not gitattributes.exists():
         with gitattributes.open("w") as fp:
             fp.write(GITATTRIBUTES)
+    counter_vyper_file = project_path.joinpath(COUNTER_CONTRACT_PATH)
+    if not counter_vyper_file.exists():
+        with counter_vyper_file.open("w") as fp:
+            fp.write(COUNTER_VYPER_CONTRACT_SRC)
     for file in PROJECT_FILES:
         Path(project_path).joinpath(file).touch()

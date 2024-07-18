@@ -5,8 +5,9 @@ from gaboon.utils.levenshtein import levenshtein_norm
 import tomllib
 import importlib
 
-__doc__ = """
-Usage: 
+__doc__ = """Usage: gab <command> [<args...>] [options <args>]
+
+Commands:
     init        Create a new project with starting folders.
     compile     Compile the contract source files.
     run         Run a python script with config context.

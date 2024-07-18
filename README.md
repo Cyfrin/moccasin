@@ -16,6 +16,7 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 - [ ] Deploy vyper projects (`gab run <script>`)
 - [ ] Import/generate keystores (`gab wallet import`)
 - [ ] Install packages `gab install <github_repo>`
+- [ ] Manage networks `gab networks <add|remove|list>`
 
 Should be fast to install and test. 
 
@@ -23,6 +24,7 @@ Should be fast to install and test.
 
 | Command | Gaboon | Brownie | Hardhat | Foundry |
 | ------- | ------ | ------- | ------- | ------- |
+|         |        |         |         |         |
 
 
 # Acknowledgements 

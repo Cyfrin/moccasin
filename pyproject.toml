@@ -2,7 +2,11 @@
 name = "gaboon"
 version = "0.1"
 description = "Pythonic smart contract development framework for Vyper."
-dependencies = ["pytest>=8.2.2", "docopt-ng>=0.9.0", "gaboon>=0.1"]
+dependencies = [
+    "pytest>=8.2.2",
+    "docopt-ng>=0.9.0",
+    "titanoboa>=0.1.9",
+]
 readme = "README.md"
 requires-python = ">= 3.8"
 

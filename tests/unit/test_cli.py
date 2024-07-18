@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 from gaboon.cli.init import new_project
-from gaboon.utils.cli_constants import (
+from gaboon.utils._cli_constants import (
     PROJECT_FOLDERS,
     GITIGNORE,
     GITATTRIBUTES,

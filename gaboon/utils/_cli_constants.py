@@ -1,11 +1,11 @@
-PROJECT_FOLDERS = ["contracts", "tests", "scripts"]
+SRC_FOLDER = "src"
+PROJECT_FOLDERS = [SRC_FOLDER, "tests", "script"]
 PROJECT_FILES = ["README.md", "gaboon.toml"]
 
 GITATTRIBUTES = """
 *.sol linguist-language=Solidity
 *.vy linguist-language=Python
 """
-
 
 GITIGNORE = """
 # Byte-compiled / optimized / DLL files
@@ -173,4 +173,20 @@ cython_debug/
 
 # Ruff / Rye
 .ruff_cache
+"""
+
+COUNTER_CONTRACT_PATH = f"{SRC_FOLDER}/Counter.vy"
+COUNTER_VYPER_CONTRACT_SRC = """
+# SPDX-License-Identifier: MIT
+# @version 0.4.0
+
+number: public(uint256)
+
+@external
+def set_number(new_number: uint256):
+    self.number = new_number
+
+@external
+def increment():
+    self.number += 1
 """

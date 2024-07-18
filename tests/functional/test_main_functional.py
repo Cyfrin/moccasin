@@ -19,7 +19,7 @@ def test_help():
     assert result.stdout in doc, "Help output does not contain expected text"
 
 
-def test_init_works_correctly():
+def test_init():
     with tempfile.TemporaryDirectory() as temp_dir:
         subprocess.run(
             ["gab", "init", Path(temp_dir)],
