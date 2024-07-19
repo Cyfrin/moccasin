@@ -1,9 +1,14 @@
 from pathlib import Path
+
 from gaboon.utils._cli_constants import (
-    PROJECT_FOLDERS,
-    GITIGNORE,
     GITATTRIBUTES,
+    GITIGNORE,
     PROJECT_FILES,
+    PROJECT_FOLDERS,
+)
+
+COUNTER_PROJECT_FILE_PATH = Path(__file__).parent.joinpath(
+    "test_projects/gaboon_project/src/Counter.vy"
 )
 
 

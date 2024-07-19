@@ -1,8 +1,10 @@
 from pathlib import Path
-from docopt import docopt
-from docopt import ParsedOptions
+
+from boa import load_partial
+from boa.contracts.vyper.vyper_contract import VyperDeployer
+from docopt import ParsedOptions, docopt
+
 from gaboon.project.project import Project, find_project_home
-from boa import VyperDeployer, load_partial
 
 __doc__ = """Usage: gab (compile | build) [<contract_name> ...] [options]
 
@@ -35,4 +37,4 @@ def main() -> int:
 
 def compile(contract_path: Path) -> VyperDeployer:
     print("Compiling contracts...")
-    return load_partial(contract_path, "titanoboa", "boa", 18, 1)
+    return load_partial(contract_path)

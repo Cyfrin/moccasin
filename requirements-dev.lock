@@ -137,7 +137,7 @@ six==1.16.0
 sortedcontainers==2.4.0
     # via hypothesis
     # via trie
-titanoboa @ git+https://github.com/vyperlang/titanoboa@573d796a7fef70c73ad427e3bf1ddf90acd8e0ee
+titanoboa @ git+https://github.com/vyperlang/titanoboa@e7efc7f3ef73b7f552a806b30dfe15ed638eb994
     # via gaboon
 toolz==0.12.1
     # via cytoolz
@@ -150,7 +150,7 @@ typing-extensions==4.12.2
     # via titanoboa
 urllib3==2.2.2
     # via requests
-vyper @ git+https://github.com/vyperlang/vyper.git@5067b86906f4a3815c4d7a2d3b64f2694ae3a520
+vyper==0.4.0
     # via gaboon
     # via titanoboa
 wheel==0.43.0

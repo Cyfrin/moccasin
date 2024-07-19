@@ -3,28 +3,12 @@ import sys
 from pathlib import Path
 
 import tomllib
+from typing import Any, List
 from docopt import docopt
 
 from gaboon.utils.levenshtein import levenshtein_norm
 
-from gaboon.utils.levenshtein import levenshtein_norm
-
-__doc__ = """Usage: gab <command> [<args...>] [options <args>]
-
-Commands:
-    init        Create a new project with starting folders.
-    compile     Compile the contract source files.
-    run         Run a python script with config context.
-    wallet      Manage your wallets.
-    test        Run tests.
-    install     Install a package from GitHub.
-
-Options:
-    -h --help   Show this screen.
-    --version   Show version.
-
-Type `gab <command> --help` for more information on a specific command.
-"""
+import argparse
 
 GAB_VERSION_STRING = "Gaboon v{}"
 
@@ -35,25 +19,60 @@ def main(argv: list) -> int:
             gaboon_data = tomllib.load(f)
             print(GAB_VERSION_STRING.format(gaboon_data["project"]["version"]))
             return 0
-    if len(argv) < 1 or argv[0].startswith("-"):
-        docopt(__doc__, ["gab", "-h"])
 
-    cmd = argv[0]
-    # We look at the names of all the files in this folder, each file is a command
-    cmd_list = [i.stem for i in Path(__file__).parent.glob("[!_]*.py")]
-    if cmd not in cmd_list:
-        distances = sorted(
-            [(i, levenshtein_norm(cmd, i)) for i in cmd_list], key=lambda k: k[1]
-        )
-        if distances[0][1] <= 0.2:
-            sys.exit(f"Invalid command. Did you mean 'gab {distances[0][0]}'?")
-        sys.exit("Invalid command. Try 'gab --help' for available commands.")
-    # We then call the `main` function of each command, and pass the args
+    parser = argparse.ArgumentParser(
+        prog="Gaboon",
+        description="Pythonic Smart Contract Development Framework",
+        formatter_class=argparse.RawTextHelpFormatter,
+        add_help=True,
+    )
 
-    try:
-        importlib.import_module(f"gaboon.cli.{cmd}").main()
-    except Exception as e:
-        sys.exit(f"Error running command '{cmd}': {e}")
+    parser = argparse.ArgumentParser(
+        prog="Gaboon",
+        description="Pythonic Smart Contract Development Framework",
+        formatter_class=argparse.RawTextHelpFormatter,
+        add_help=True,
+    )
+    sub_parsers = parser.add_subparsers(dest="command")
+
+    # Init command
+    init_sub_parser = sub_parsers.add_parser("init", help="Initialize a new project.")
+    init_sub_parser.add_argument(
+        "path",
+        help="Path of the new project, defaults to current directory.",
+        type=Path,
+        default=Path("."),
+    )
+    init_sub_parser.add_argument(
+        "-f",
+        "--force",
+        required=False,
+        help="Overwrite existing project.",
+        action="store_true",
+    )
+    init_sub_parser.set_defaults(func=init)
+
+    # Compile command
+    compile_sub_parser = sub_parsers.add_parser("compile", help="Compiles the project.")
+    compile_sub_parser.set_defaults(func=compile)
+
+    if len(argv) < 1 or argv[0].startswith("-h") or argv[0].startswith("--help"):
+        parser.print_help()
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+def compile(args: List[Any]):
+    from gaboon.cli.compile import compile
+
+    compile(args.path)
+
+
+def init(args: List[Any]):
+    from gaboon.cli.init import new_project
+
+    new_project(args.path, args.force)
 
 
 if __name__ == "__main__":
