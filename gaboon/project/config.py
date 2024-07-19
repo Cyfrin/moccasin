@@ -1,5 +1,5 @@
-from pathlib import Path
 import tomllib
+from pathlib import Path
 from typing import Optional
 
 DEFAULT_VYPER_VERSION = "0.4.0"
@@ -28,4 +28,5 @@ class GaboonConfig:
     def _load_config_data(self, config_data):
         for _, settings in config_data.get("profile", {}).items():
             for key, value in settings.items():
+                setattr(self, key, value)
                 setattr(self, key, value)

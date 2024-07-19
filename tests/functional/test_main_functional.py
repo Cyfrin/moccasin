@@ -1,9 +1,11 @@
+import subprocess
 import tempfile
 from pathlib import Path
-import subprocess
-from tests.base_test import assert_files_and_folders_exist
+
 import pytest
+
 from gaboon.cli.__main__ import __doc__ as doc
+from tests.base_test import assert_files_and_folders_exist
 
 # This will skip all the tests in here.
 pytestmark = pytest.mark.subprocess
@@ -27,4 +29,5 @@ def test_init():
             capture_output=True,
             text=True,
         )
+        assert_files_and_folders_exist(Path(temp_dir))
         assert_files_and_folders_exist(Path(temp_dir))

@@ -5,7 +5,8 @@ description = "Pythonic smart contract development framework for Vyper."
 dependencies = [
     "pytest>=8.2.2",
     "docopt-ng>=0.9.0",
-    "titanoboa>=0.1.9",
+    "vyper>=0.4.0",
+    "titanoboa @ git+https://github.com/vyperlang/titanoboa@vyper-0.4.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

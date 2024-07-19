@@ -1,9 +1,13 @@
+import importlib
 import sys
 from pathlib import Path
-from docopt import docopt
-from gaboon.utils.levenshtein import levenshtein_norm
+
 import tomllib
-import importlib
+from docopt import docopt
+
+from gaboon.utils.levenshtein import levenshtein_norm
+
+from gaboon.utils.levenshtein import levenshtein_norm
 
 __doc__ = """Usage: gab <command> [<args...>] [options <args>]
 
@@ -42,8 +46,8 @@ def main(argv: list) -> int:
             [(i, levenshtein_norm(cmd, i)) for i in cmd_list], key=lambda k: k[1]
         )
         if distances[0][1] <= 0.2:
-            sys.exit(f"Invalid command. Did you mean 'brownie {distances[0][0]}'?")
-        sys.exit("Invalid command. Try 'brownie --help' for available commands.")
+            sys.exit(f"Invalid command. Did you mean 'gab {distances[0][0]}'?")
+        sys.exit("Invalid command. Try 'gab --help' for available commands.")
     # We then call the `main` function of each command, and pass the args
 
     try:
