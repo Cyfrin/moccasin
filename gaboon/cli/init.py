@@ -1,13 +1,17 @@
 from pathlib import Path
+import tomli_w
+from typing import Any, List
 from gaboon.utils._cli_constants import (
     PROJECT_FOLDERS,
     GITIGNORE,
     GITATTRIBUTES,
-    PROJECT_FILES,
+    README_PATH,
+    README_MD_SRC,
+    GABOON_CONFIG_PATH,
     COUNTER_CONTRACT_PATH,
     COUNTER_VYPER_CONTRACT_SRC,
 )
-from docopt import ParsedOptions, docopt
+from gaboon.project.gaboon_config import GABOON_DEFAULT_CONFIG
 
 __doc__ = """Usage: gab init [<path>] [options]
 
@@ -29,9 +33,8 @@ This will create a basic directory structure at the path you specific, which loo
 """
 
 
-def main() -> int:
-    args: ParsedOptions = docopt(__doc__)
-    path: str = new_project(args["<path>"] or ".", args["--force"])
+def main(args: List[Any]) -> int:
+    path: str = new_project(args.path or ".", args.force or False)
     print(f"Project initialized at {path}")
     return 0
 
@@ -47,7 +50,9 @@ def new_project(project_path_str: str = ".", force: bool = False) -> str:
     """
     project_path = Path(project_path_str).resolve()
     if not force and project_path.exists() and list(project_path.glob("*")):
-        raise FileExistsError(f"Directory is not empty: {project_path}")
+        raise FileExistsError(
+            f"Directory is not empty: {project_path}.\nIf you're sure the folder is ok to potentially overwrite, try creating a new project by running with `gab init --force`"
+        )
     project_path.mkdir(exist_ok=True)
     _create_folders(project_path)
     _create_files(project_path)
@@ -72,5 +77,9 @@ def _create_files(project_path: Path) -> None:
     if not counter_vyper_file.exists():
         with counter_vyper_file.open("w") as fp:
             fp.write(COUNTER_VYPER_CONTRACT_SRC)
-    for file in PROJECT_FILES:
-        Path(project_path).joinpath(file).touch()
+    toml_file = project_path.joinpath(GABOON_CONFIG_PATH)
+    with open(toml_file, "wb") as f:
+        tomli_w.dump(GABOON_DEFAULT_CONFIG, f)
+    readme_file = project_path.joinpath(README_PATH)
+    with open(readme_file, "w") as f:
+        f.write(README_MD_SRC)

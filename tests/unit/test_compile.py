@@ -7,5 +7,5 @@ from tests.base_test import COUNTER_PROJECT_FILE_PATH
 
 
 def test_compile():
-    result: VyperDeployer = compile(COUNTER_PROJECT_FILE_PATH)
-    breakpoint()
+    result: VyperDeployer = compile(COUNTER_PROJECT_FILE_PATH, write_data=False)
+    isinstance(result, VyperDeployer)

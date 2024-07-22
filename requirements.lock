@@ -34,8 +34,6 @@ coverage==7.6.0
     # via pytest-cov
 cytoolz==0.12.3
     # via eth-utils
-docopt-ng==0.9.0
-    # via gaboon
 eth-abi==5.1.0
     # via eth-account
     # via titanoboa
@@ -137,6 +135,8 @@ sortedcontainers==2.4.0
     # via hypothesis
     # via trie
 titanoboa @ git+https://github.com/vyperlang/titanoboa@e7efc7f3ef73b7f552a806b30dfe15ed638eb994
+    # via gaboon
+tomli-w==1.0.0
     # via gaboon
 toolz==0.12.1
     # via cytoolz

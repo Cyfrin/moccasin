@@ -1,6 +1,8 @@
 SRC_FOLDER = "src"
+README_PATH = "README.md"
+GABOON_CONFIG_PATH = "gaboon.toml"
 PROJECT_FOLDERS = [SRC_FOLDER, "tests", "script"]
-PROJECT_FILES = ["README.md", "gaboon.toml"]
+
 
 GITATTRIBUTES = """
 *.sol linguist-language=Solidity
@@ -189,4 +191,19 @@ def set_number(new_number: uint256):
 @external
 def increment():
     self.number += 1
+"""
+
+README_MD_SRC = """
+# Gaboon Project
+
+🐍 Welcome to your Gaboon project!
+
+## Quickstart
+
+```bash
+gab init
+gab compile
+```
+
+_For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/Cyfrin/gaboon)_
 """

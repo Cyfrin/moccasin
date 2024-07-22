@@ -13,6 +13,7 @@ Issues, feedback, and sharing that you're using Titanoboa and Vyper on social me
   - [Requirements](#requirements)
   - [Installing for local development](#installing-for-local-development)
   - [Running Tests](#running-tests)
+- [Code Style Guide](#code-style-guide)
 - [Thank you!](#thank-you)
 
 # Setup
@@ -72,8 +73,16 @@ Run the following:
 ```bash
 rye test
 ```
-
 This is equivalent to running `pytest` in the root directory of the project.
+
+# Code Style Guide
+
+Be sure to read the [style guide](./STYLE_GUIDE.md) before contributing to this project. Additionally, we will run the `.github/workflows` before merging your PR to ensure that your code is up to standard. Be sure to run the scripts in there before submitting a PR, namely:
+
+```bash
+rye run mypy .
+```
+
 
 # Thank you!
 

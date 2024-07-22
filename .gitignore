@@ -9,6 +9,7 @@ wheels/
 # venv
 .venv
 
-# Patrick
+# Gaboon
 .pytest_cache
 .ruff_cache
+out/

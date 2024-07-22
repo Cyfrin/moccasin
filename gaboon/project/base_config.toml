@@ -1,7 +1,0 @@
-[profile.default]
-src = 'src'
-test = 'tests'
-script = 'script'
-out = 'out'
-libs = ['lib']
-remappings = []

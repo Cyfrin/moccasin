@@ -4,9 +4,9 @@ version = "0.1"
 description = "Pythonic smart contract development framework for Vyper."
 dependencies = [
     "pytest>=8.2.2",
-    "docopt-ng>=0.9.0",
     "vyper>=0.4.0",
     "titanoboa @ git+https://github.com/vyperlang/titanoboa@vyper-0.4.0",
+    "tomli-w>=1.0.0",
 ]
 readme = "README.md"
 requires-python = ">=3.11"
@@ -20,7 +20,12 @@ build-backend = "hatchling.build"
 
 [tool.rye]
 managed = true
-dev-dependencies = ["pytest>=8.2.2", "ruff>=0.5.2", "gaboon>=0.1"]
+dev-dependencies = [
+    "pytest>=8.2.2",
+    "ruff>=0.5.2",
+    "gaboon>=0.1",
+    "mypy>=1.11.0",
+]
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -32,4 +37,14 @@ packages = ["gaboon"]
 markers = [
     "subprocess: marks tests that use a subprocess and are slow to run (deselect with '-m \"not subprocess\"')",
 ]
-addopts = "-m \"not subprocess\""
+# addopts = "-m \"not subprocess\""
+
+[tool.rye.scripts]
+typecheck = "mypy ."
+
+[tool.mypy]
+strict = true
+exclude = [
+    'tests/',            # Excludes all files in the tests directory
+    '(^|/)test_.*\.py$', # Excludes files that start with test_
+]

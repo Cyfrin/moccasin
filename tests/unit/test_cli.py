@@ -5,7 +5,6 @@ from gaboon.utils._cli_constants import (
     PROJECT_FOLDERS,
     GITIGNORE,
     GITATTRIBUTES,
-    PROJECT_FILES,
 )
 from tests.base_test import assert_files_and_folders_exist
 
@@ -17,8 +16,6 @@ def test_cli_init():
         assert_files_and_folders_exist(temp_dir)
         for folder in PROJECT_FOLDERS:
             assert temp_dir.joinpath(folder).exists()
-        for file in PROJECT_FILES:
-            assert temp_dir.joinpath(file).exists()
         # assert the temp_dir dir has the .gitignore and .gitattributes
         assert temp_dir.joinpath(Path(".gitignore")).exists()
         assert temp_dir.joinpath(Path(".gitattributes")).exists()

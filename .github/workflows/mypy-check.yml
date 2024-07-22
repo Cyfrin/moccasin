@@ -1,0 +1,30 @@
+name: Mypy Type Check
+
+on:
+  pull_request:
+    branches:
+      - main  
+
+jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'  
+      
+      - name: Install Rye
+        run: |
+          curl -sSf https://rye-up.com/get | bash
+          echo "$HOME/.rye/shims" >> $GITHUB_PATH
+      
+      - name: Install dependencies
+        run: |
+          rye sync
+      
+      - name: Run mypy
+        run: |
+          rye run mypy .  

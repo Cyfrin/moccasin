@@ -34,8 +34,6 @@ coverage==7.6.0
     # via pytest-cov
 cytoolz==0.12.3
     # via eth-utils
-docopt-ng==0.9.0
-    # via gaboon
 eth-abi==5.1.0
     # via eth-account
     # via titanoboa
@@ -92,6 +90,9 @@ markdown-it-py==3.0.0
     # via rich
 mdurl==0.1.2
     # via markdown-it-py
+mypy==1.11.0
+mypy-extensions==1.0.0
+    # via mypy
 packaging==23.2
     # via pytest
     # via vyper
@@ -139,12 +140,15 @@ sortedcontainers==2.4.0
     # via trie
 titanoboa @ git+https://github.com/vyperlang/titanoboa@e7efc7f3ef73b7f552a806b30dfe15ed638eb994
     # via gaboon
+tomli-w==1.0.0
+    # via gaboon
 toolz==0.12.1
     # via cytoolz
 trie==3.0.1
     # via py-evm
 typing-extensions==4.12.2
     # via eth-typing
+    # via mypy
     # via pydantic
     # via pydantic-core
     # via titanoboa
