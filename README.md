@@ -44,3 +44,7 @@ The Gaboon viper (Bitis gabonica), also called the Gaboon adder, is a viper spec
 - [brownie](https://github.com/eth-brownie/brownie)
 - [vyper](https://github.com/vyperlang/vyper)
 - [boa](https://github.com/vyperlang/titanoboa)
+
+# Gaboon Viper
+
+> The Gaboon viper (Bitis gabonica), also called the Gaboon adder, is a viper species found in the rainforests and savannas of sub-Saharan Africa. Like all other vipers, it is venomous. It is the largest member of the genus Bitis, and has the longest fangs of any venomous snake – up to 2 inches (5 cm) in length – and the highest venom yield of any snake. No subspecies are recognized.

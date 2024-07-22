@@ -1,49 +1,39 @@
 from pathlib import Path
-from docopt import docopt
-from docopt import ParsedOptions
 from gaboon.project.project import Project, find_project_home
 from boa import load_partial
 from boa.contracts.vyper.vyper_contract import VyperDeployer
 from vyper.compiler.phases import CompilerData
 import json
 
+from typing import Any, List, Optional
+import json
+from vyper.compiler.phases import CompilerData
 
-__doc__ = """Usage: gab (compile | build) [<contract_name> ...] [options]
+from boa import load_partial
+from boa.contracts.vyper.vyper_contract import VyperDeployer
 
-You can use `gab compile` or `gab build` interchangeably.
-
-Arguments:
-    [<contract_name> ...]    Optional list of contract names to compile.
-
-Options:
-  --all -a --force -f   Recompile all contracts
-  --help -h             Display this message
-
-Compiles the contracts in the contracts folder, and saves the compliation data to the build folder.
-"""
+from gaboon.project.project import Project, find_project_home
 
 
-def main() -> int:
-    args: ParsedOptions = docopt(__doc__)
+def main(_: List[Any]) -> int:
+    compile_project()
+
+
+def compile_project() -> int:
     project_path = find_project_home()
     my_project: Project = Project(project_path)
-    contracts_location = my_project.config.src
-    contracts_to_compile = args["<contract_name>"]
-    if len(contracts_to_compile) == 0:
-        for contract in Path(contracts_location).rglob("*"):
-            if contract.suffix == ".vy":
-                compile(contract)
-
+    contracts_location = Path(my_project.config.src)
+    # recursively find all contracts in the contracts directory
+    contracts_to_compile = list(contracts_location.rglob("*.vy"))
+    for contract_path in contracts_to_compile:
+        compile(contract_path)
     return 0
 
 
-def compile(contract_path: Path) -> VyperDeployer:
+def compile(contract_path: Path, compiler_args: Optional[dict]) -> VyperDeployer:
     print("Compiling contracts...")
-    compiler_args = {}
-    deployer = load_partial(str(contract_path), compiler_args)
-
     # Getting the compiler Data
-
+    deployer = load_partial(str(contract_path), compiler_args)
     compiler_data: CompilerData = deployer.compiler_data
     bytecode = compiler_data.bytecode
     abi = generate_abi(compiler_data)
@@ -71,7 +61,6 @@ def compile(contract_path: Path) -> VyperDeployer:
 
 
 def generate_abi(compiler_data) -> list:
-
     abi = []
     for func_name, func_type in compiler_data.function_signatures.items():
         entry = {
