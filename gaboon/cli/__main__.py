@@ -1,6 +1,8 @@
 import importlib
 import sys
 from pathlib import Path
+from gaboon.logging import logger, set_log_level
+
 
 import tomllib
 from typing import Any, List
@@ -11,24 +13,25 @@ GAB_VERSION_STRING = "Gaboon v{}"
 
 
 def main(argv: list) -> int:
-    if "--version" in argv or "-v" in argv:
-        with open("pyproject.toml", "rb") as f:
-            gaboon_data = tomllib.load(f)
-            print(GAB_VERSION_STRING.format(gaboon_data["project"]["version"]))
-            return 0
+    if "--version" in argv or "version" in argv:
+        return get_version()
 
+    # Main parser
     parser = argparse.ArgumentParser(
         prog="Gaboon",
         description="Pythonic Smart Contract Development Framework",
         formatter_class=argparse.RawTextHelpFormatter,
         add_help=True,
     )
-
-    parser = argparse.ArgumentParser(
-        prog="Gaboon",
-        description="Pythonic Smart Contract Development Framework",
-        formatter_class=argparse.RawTextHelpFormatter,
-        add_help=True,
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase output verbosity (can be used multiple times)",
+    )
+    parser.add_argument(
+        "-q", "--quiet", action="store_true", help="Suppress all output except errors"
     )
     sub_parsers = parser.add_subparsers(dest="command")
 
@@ -55,16 +58,17 @@ def main(argv: list) -> int:
     if len(argv) < 1 or argv[0].startswith("-h") or argv[0].startswith("--help"):
         parser.print_help()
         return 0
-
     args = parser.parse_args()
+
+    set_log_level(quiet=args.quiet, verbose=args.verbose)
 
     try:
         project_root: Path = Project.find_project_root()
 
     except FileNotFoundError:
         if args.command != "init":
-            print(
-                "Error: Not in a Gaboon project (or any of the parent directories).\nTry to create a gaboon.toml file with `gab init` "
+            logger.error(
+                "Not in a Gaboon project (or any of the parent directories).\nTry to create a gaboon.toml file with `gab init` "
             )
             return 1
         project_root = Path.cwd()
@@ -77,6 +81,15 @@ def main(argv: list) -> int:
     else:
         parser.print_help()
     return 0
+
+
+def get_version() -> int:
+    with open(
+        Path(__file__).resolve().parent.parent.parent.joinpath("pyproject.toml"), "rb"
+    ) as f:
+        gaboon_data = tomllib.load(f)
+        logger.info(GAB_VERSION_STRING.format(gaboon_data["project"]["version"]))
+        return 0
 
 
 if __name__ == "__main__":

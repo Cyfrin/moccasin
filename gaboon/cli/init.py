@@ -1,4 +1,5 @@
 from pathlib import Path
+from gaboon.logging import logger
 import tomli_w
 from typing import Any, List
 from gaboon.utils._cli_constants import (
@@ -35,7 +36,7 @@ This will create a basic directory structure at the path you specific, which loo
 
 def main(args: List[Any]) -> int:
     path: str = new_project(args.path or ".", args.force or False)
-    print(f"Project initialized at {path}")
+    logger.info(f"Project initialized at {path}")
     return 0
 
 

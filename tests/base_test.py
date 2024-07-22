@@ -1,14 +1,12 @@
 from pathlib import Path
-
 from gaboon.utils._cli_constants import (
     GITATTRIBUTES,
     GITIGNORE,
     PROJECT_FOLDERS,
 )
 
-COUNTER_PROJECT_FILE_PATH = Path(__file__).parent.joinpath(
-    "test_projects/gaboon_project/src/Counter.vy"
-)
+COUNTER_PROJECT_PATH = Path(__file__).parent.joinpath("test_projects/gaboon_project")
+COUNTER_PROJECT_FILE_PATH = COUNTER_PROJECT_PATH.joinpath("src/Counter.vy")
 
 
 def assert_files_and_folders_exist(temp_dir: Path):
