@@ -1,4 +1,10 @@
 from pathlib import Path
+from gaboon.project.project import Project, find_project_home
+from boa import load_partial
+from boa.contracts.vyper.vyper_contract import VyperDeployer
+from vyper.compiler.phases import CompilerData
+import json
+
 from typing import Any, List, Optional
 import json
 from vyper.compiler.phases import CompilerData
@@ -26,9 +32,8 @@ def compile_project() -> int:
 
 def compile(contract_path: Path, compiler_args: Optional[dict]) -> VyperDeployer:
     print("Compiling contracts...")
-    deployer = load_partial(str(contract_path), compiler_args)
-
     # Getting the compiler Data
+    deployer = load_partial(str(contract_path), compiler_args)
     compiler_data: CompilerData = deployer.compiler_data
     bytecode = compiler_data.bytecode
     abi = generate_abi(compiler_data)
@@ -50,3 +55,25 @@ def compile(contract_path: Path, compiler_args: Optional[dict]) -> VyperDeployer
         json.dump(build_data, f, indent=4)
 
     print(f"Compilation data saved to {build_file}")
+
+
+# Generating the ABI based on the Compiler Data.
+
+
+def generate_abi(compiler_data) -> list:
+    abi = []
+    for func_name, func_type in compiler_data.function_signatures.items():
+        entry = {
+            "name": func_name,
+            "inputs": [
+                {"name": inp.name, "type": str(inp.typ)} for inp in func_type.arguments
+            ],
+            "outputs": (
+                [{"name": "", "type": str(func_type.return_type)}]
+                if func_type.return_type
+                else []
+            ),
+            "type": "function",
+        }
+        abi.append(entry)
+    return abi

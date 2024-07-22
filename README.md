@@ -20,6 +20,11 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 
 Should be fast to install and test. 
 
+## Background
+
+The Gaboon viper (Bitis gabonica), also called the Gaboon adder, is a viper species found in the rainforests and savannas of sub-Saharan Africa.[1][3][2] Like all other vipers, it is venomous. It is the largest member of the genus Bitis,[4][5] and has the longest fangs of any venomous snake – up to 2 inches (5 cm) in length – and the highest venom yield of any snake.[5][6] No subspecies are recognized.[3][7]
+
+
 ## Later
 
 - [ ] `gab install (<github_repo> | <pypi_project>)` 
