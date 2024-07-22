@@ -4,10 +4,6 @@ from pathlib import Path
 
 import tomllib
 from typing import Any, List
-from docopt import docopt
-
-from gaboon.utils.levenshtein import levenshtein_norm
-
 import argparse
 
 GAB_VERSION_STRING = "Gaboon v{}"
@@ -41,6 +37,7 @@ def main(argv: list) -> int:
         "path",
         help="Path of the new project, defaults to current directory.",
         type=Path,
+        nargs="?",
         default=Path("."),
     )
     init_sub_parser.add_argument(
@@ -50,29 +47,16 @@ def main(argv: list) -> int:
         help="Overwrite existing project.",
         action="store_true",
     )
-    init_sub_parser.set_defaults(func=init)
 
     # Compile command
-    compile_sub_parser = sub_parsers.add_parser("compile", help="Compiles the project.")
-    compile_sub_parser.set_defaults(func=compile)
+    sub_parsers.add_parser("compile", help="Compiles the project.")
 
     if len(argv) < 1 or argv[0].startswith("-h") or argv[0].startswith("--help"):
         parser.print_help()
 
     args = parser.parse_args()
-    args.func(args)
-
-
-def compile(args: List[Any]):
-    from gaboon.cli.compile import compile
-
-    compile(args.path)
-
-
-def init(args: List[Any]):
-    from gaboon.cli.init import new_project
-
-    new_project(args.path, args.force)
+    cmd = args.command
+    importlib.import_module(f"gaboon.cli.{cmd}").main(args)
 
 
 if __name__ == "__main__":

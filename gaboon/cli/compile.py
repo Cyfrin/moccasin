@@ -1,40 +1,52 @@
 from pathlib import Path
+from typing import Any, List, Optional
+import json
+from vyper.compiler.phases import CompilerData
 
 from boa import load_partial
 from boa.contracts.vyper.vyper_contract import VyperDeployer
-from docopt import ParsedOptions, docopt
 
 from gaboon.project.project import Project, find_project_home
 
-__doc__ = """Usage: gab (compile | build) [<contract_name> ...] [options]
 
-You can use `gab compile` or `gab build` interchangeably.
-
-Arguments:
-    [<contract_name> ...]    Optional list of contract names to compile.
-
-Options:
-  --all -a --force -f   Recompile all contracts
-  --help -h             Display this message
-
-Compiles the contracts in the contracts folder, and saves the compliation data to the build folder.
-"""
+def main(_: List[Any]) -> int:
+    compile_project()
 
 
-def main() -> int:
-    args: ParsedOptions = docopt(__doc__)
+def compile_project() -> int:
     project_path = find_project_home()
     my_project: Project = Project(project_path)
-    contracts_location = my_project.config.src
-    contracts_to_compile = args["<contract_name>"]
-    if len(contracts_to_compile) == 0:
-        for contract in Path(contracts_location).rglob("*"):
-            if contract.suffix == ".vy":
-                with open(contract, "rb") as f:
-                    compile(f.read())
+    contracts_location = Path(my_project.config.src)
+    # recursively find all contracts in the contracts directory
+    contracts_to_compile = list(contracts_location.rglob("*.vy"))
+    for contract_path in contracts_to_compile:
+        compile(contract_path)
     return 0
 
 
-def compile(contract_path: Path) -> VyperDeployer:
+def compile(contract_path: Path, compiler_args: Optional[dict]) -> VyperDeployer:
     print("Compiling contracts...")
-    return load_partial(contract_path)
+    deployer = load_partial(str(contract_path), compiler_args)
+
+    # Getting the compiler Data
+    compiler_data: CompilerData = deployer.compiler_data
+    bytecode = compiler_data.bytecode
+    abi = generate_abi(compiler_data)
+
+    # Create the build folder
+    build_folder = Path("build")
+    build_folder.mkdir(exist_ok=True)
+
+    # Save Compilation Data
+    contract_name = contract_path.stem
+    build_data = {
+        "contract_name": contract_name,
+        "bytecode": bytecode.hex(),  # Convert to HexString
+        "abi": abi,
+    }
+
+    build_file = build_folder / f"{contract_name}.json"
+    with open(build_file, "w") as f:
+        json.dump(build_data, f, indent=4)
+
+    print(f"Compilation data saved to {build_file}")
