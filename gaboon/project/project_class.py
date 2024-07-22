@@ -37,8 +37,8 @@ class Project:
     # Static Methods
     # ========================================================================
     @staticmethod
-    def find_project_root(start_path: Path = Path.cwd()) -> Path:
-        current_path = start_path.resolve()
+    def find_project_root(start_path: Path | str = Path.cwd()) -> Path:
+        current_path = Path(start_path).resolve()
         while True:
             if (current_path / "gaboon.toml").exists():
                 return current_path

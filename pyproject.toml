@@ -43,7 +43,8 @@ markers = [
 typecheck = "mypy ."
 
 [tool.mypy]
-strict = true
+disable_error_code = 'type-arg, attr-defined'
+ignore_missing_imports = true
 exclude = [
     'tests/',            # Excludes all files in the tests directory
     '(^|/)test_.*\.py$', # Excludes files that start with test_

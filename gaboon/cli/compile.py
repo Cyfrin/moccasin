@@ -10,7 +10,7 @@ from boa import load_partial
 from boa.contracts.vyper.vyper_contract import VyperDeployer
 
 
-def main(args: List[Any]) -> int:
+def main(args: List[Any]):
     my_project: Project = Project(args.project_root)
     compile_project(args.project_root, my_project.out, write_data=True)
 
@@ -55,7 +55,7 @@ def compile(
         build_folder = Path(project_path).joinpath(Project(project_path).out)
 
     # Save Compilation Data
-    contract_name = contract_path.stem
+    contract_name = Path(contract_path).stem
     build_data = {
         "contract_name": contract_name,
         "bytecode": bytecode.hex(),
