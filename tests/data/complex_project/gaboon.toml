@@ -1,0 +1,6 @@
+[networks.zksync]
+url = "http://hi"
+
+[networks.zksync.extra_data]
+uniswap = "asfasfsaf"
+compound = "asdfsf"
