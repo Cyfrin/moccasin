@@ -41,6 +41,7 @@ def new_project(project_path_str: str = ".", force: bool = False) -> str:
     project_path.mkdir(exist_ok=True)
     _create_folders(project_path)
     _create_files(project_path)
+    # REVIEW: probably better type safety to return a Path
     return str(project_path)
 
 
@@ -59,6 +60,8 @@ def _create_files(project_path: Path) -> None:
         with gitattributes.open("w") as fp:
             fp.write(GITATTRIBUTES)
     counter_vyper_file = project_path.joinpath(COUNTER_CONTRACT_PATH)
+    # REVIEW: if any of these files exist, maybe we should bail out actually?
+    # REVIEW: might be helpful to have a helper function, _write_file(path, contents), or even do it as a dict
     if not counter_vyper_file.exists():
         with counter_vyper_file.open("w") as fp:
             fp.write(COUNTER_VYPER_CONTRACT_SRC)

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+# REVIEW: maybe split out the file templates into a separate file.
+
 
 CONFIG_NAME = 'gaboon.toml'
 
@@ -11,6 +13,7 @@ GITATTRIBUTES = """
 *.vy linguist-language=Python
 """
 
+# REVIEW: probably don't need everything in here, it can be a more stripped down gitignore. is this a template gitignore for python or something?
 GITIGNORE = """
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -246,10 +249,13 @@ gab compile
 _For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/vyperlang/gaboon)_
 """
 
+# REVIEW: use ~/.titanoboa -- can add a function to migrate from foundry, or treat foundry keystore readonly
 DEFAULT_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
 
+# REVIEW: maybe just make GAB_DEFAULT_CONFIG a toml string
 GAB_DEFAULT_CONFIG = {
     "networks": {
+        # REVIEW: delete -- pyevm should be builtin
         "pyevm": {"url": ""},
         "sepolia": {"url": "https://ethereum-sepolia-rpc.publicnode.com", "chain_id": 11155111}
     }

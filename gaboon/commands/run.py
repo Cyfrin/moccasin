@@ -18,25 +18,32 @@ def run_script(script_name_or_path: Path | str):
     script_path: Path = get_script_path(script_name_or_path)
 
     # Set up the environment (add necessary paths to sys.path, etc.)
+    # REVIEW: this semantics is a bit weird -- it means if you run `gab run` from some nested directory, the root directory will be in the syspath
     sys.path.insert(0, str(config_root)) if config_root not in sys.path else None
+    # REVIEW: also kind of weird
     sys.path.insert(0, str(config_root / "src")) if (
         config_root / "src"
     ) not in sys.path else None
 
     # We give the user's script the module name "deploy_script"
+    # REVIEW: i wonder if there can be conflicts with another module which is actually named "deploy_script"
     spec = importlib.util.spec_from_file_location("deploy_script", script_path)
     if spec is None:
         logger.error(f"Cannot find module spec for '{script_path}'")
+        # REVIEW: just raise an exception
         sys.exit(1)
 
     module = importlib.util.module_from_spec(spec)
     if spec.loader is None:
         logger.error(f"Cannot find loader for '{script_path}'")
+        # REVIEW: just raise an exception
         sys.exit(1)
 
+    # REVIEW: i think it's weird to inject boa into the user's namespace unless the user has asked for it (by having the line `import boa`).
     module.__dict__["boa"] = boa
     spec.loader.exec_module(module)
 
+    # REVIEW: i think this can always be added as a feature later
     if hasattr(module, "main") and callable(module.main):
         result = module.main()
         return result
