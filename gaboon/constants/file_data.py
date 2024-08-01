@@ -220,7 +220,7 @@ def counter_contract():
 
 TEST_COUNTER_DEFAULT = """def test_increment(counter_contract):
     counter_contract.increment()
-    assert counter_contract.number() == 1"""
+    assert counter_contract.number() == 2"""
 
 README_MD_SRC = """# Gaboon Project
 
