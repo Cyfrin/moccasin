@@ -28,6 +28,8 @@ You must have the following installed to proceed with contributing to this proje
   - You'll know you did it right if you can run `python --version` and you see a response like `Python x.x.x`
 - [rye](https://rye.astral.sh)
   - You'll know you did it right if you can run `rye --version` and you see a response like `rye 0.36.0 \n commit: 0.36.0 (12c024c7c 2024-07-07)...`
+- [anvil](https://book.getfoundry.sh/reference/anvil/)
+  - You'll know you did it right if you can run `anvil --version` and you see a response like `anvil 0.2.0 (b1f4684 2024-05-24T00:20:06.635557000Z)`
 - Linux and/or MacOS
   - This project is not tested on Windows, so it is recommended to use a Linux or MacOS machine, or use a tool like [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) for windows users.
 

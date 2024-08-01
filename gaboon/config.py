@@ -1,9 +1,9 @@
-from dataclasses import dataclass, astuple
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 from boa.network import NetworkEnv, EthereumRPC
 import boa
-from gaboon.constants import CONFIG_NAME
+from gaboon.constants.vars import CONFIG_NAME
 import tomllib
 
 
@@ -11,106 +11,106 @@ import tomllib
 class Network:
     name: str
     url: str | None
-    extra_data: dict[str, Any] | None
+    extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: NetworkEnv | None = None
 
     def _create_env(self) -> NetworkEnv:
-        self._network_env = NetworkEnv(EthereumRPC(self.url, nickmane=self.name))
+        self._network_env = NetworkEnv(EthereumRPC(self.url), nickname=self.name)
+        self._network_env
         return self._network_env
 
-    # REVIEW: probably unnecessary eq implementation here, YAGNI
-    def __eq__(self, other: Union[str, "Network"]) -> bool:
-        if isinstance(other, str):
-            return self.name == other
-        if isinstance(other, self.__class__):
-            return astuple(self) == astuple(other)
-        return False
+    def get_or_create_env(self) -> NetworkEnv:
+        if self._network_env:
+            boa.set_env(self._network_env)
+            return self._network_env
+        new_env: NetworkEnv = self._create_env()
+        boa.set_env(new_env)
+        return new_env
 
-    # REVIEW: why so many aliases for `name`?
     @property
     def alias(self) -> str:
         return self.name
-    
-    @property 
-    def identifier(self) -> str: 
+
+    @property
+    def identifier(self) -> str:
         return self.name
-    
-    
+
 
 class _Networks:
     _networks: dict[str, Network]
 
     def __init__(self, toml_data: dict):
         self._networks = {}
-        # REVIEW: should the caller scope into `["networks"]` instead of
-        # doing it here?
+        self.custom_networks_counter = 0
         for key, value in toml_data["networks"].items():
-            # REVIEW: weird semantics of `.extra_data`, Network ctor accepts
-            # `None` for extra_data, but here it is always passed `{}` at minimum
-            network = Network(name=key, url=value.get("url", None), extra_data=value.get("extra_data", {}))
+            network = Network(
+                name=key,
+                url=value.get("url", None),
+                extra_data=value.get("extra_data", {}),
+            )
             setattr(self, key, network)
             self._networks[key] = network
-    
-    def __getattr__(self, name: str) -> Network:
-        # REVIEW: this is never reachable, because the attr is already set
-        # in the ctor.
-        if name in self._networks:
-            return self._networks[name]
-        raise AttributeError(f"Network '{name}' not found")
 
-    # REVIEW: use case for this? i think YAGNI
-    def __iter__(self):
-        return iter(self._networks.values())
-
-    # REVIEW: use case for this? i think YAGNI
     def __len__(self):
         return len(self._networks)
 
     def get_active_network(self) -> Network:
         if boa.env.nickname in self._networks:
             return self._networks[boa.env.nickname]
-        # REVIEW: style- else is not necessary because the first half
-        # of the branch fast-paths out.
-        else:
-            new_network = Network(name=boa.env.nickname)
-            self._networks[new_network.name] = new_network
-            return new_network
+        new_network = Network(name=boa.env.nickname)
+        self._networks[new_network.name] = new_network
+        return new_network
 
     def get_network_by_name(self, alias: str) -> Network:
         return self._networks[alias]
-    
+
+    # TODO
     # REVIEW: i think it might be better to delegate to `boa.set_env`
     # so the usage would be like:
     # ```
     # boa.set_env_from_network(gaboon.networks.zksync)
     # ```
     # otherwise it is too confusing where gaboon ends and boa starts.
-    def set_active_network(self, name: str):
-        # REVIEW: i think the check-if-member-exists-yet should
-        # be hidden as a Network method, like Network.get_or_create_env()
-        if self._networks[name]._network_env:
-            boa.set_env(self._networks[name]._network_env)
+    def set_active_network(self, name_or_url: str | Network):
+        if isinstance(name_or_url, Network):
+            env_to_set: NetworkEnv = name_or_url.get_or_create_env()
+            self._networks[name_or_url.name] = env_to_set
         else:
-            boa.set_env(self._networks[name]._create_env())
+            if name_or_url.startswith("http"):
+                new_network = self._create_custom_network()
+                env_to_set: NetworkEnv = new_network.get_or_create_env()
+            else:
+                if name_or_url in self._networks:
+                    env_to_set: NetworkEnv = self._networks[
+                        name_or_url
+                    ].get_or_create_env()
+                else:
+                    raise ValueError(
+                        f"Network {name_or_url} not found. Please pass a valid URL/RPC or valid network name."
+                    )
+
+    def _create_custom_network(self, url: str) -> Network:
+        new_network = Network(name=f"custom_{self.custom_networks_counter}", url=url)
+        self._networks[new_network.name] = new_network
+        self.custom_networks_counter += 1
+        return new_network
 
 
 class Config:
-    # REVIEW: rename to _project_root, otherwise it could be confused with
-    # the operating system root.
-    _root_path: Path
+    _project_root: Path
     networks: _Networks
     extra_data: dict[str, str] | None
 
     def __init__(self, root_path: Path):
-        self._root_path = root_path
+        self._project_root = root_path
         config_path: Path = root_path.joinpath(CONFIG_NAME)
         if config_path.exists():
             self._load_config(config_path)
-    
+
     def _load_config(self, config_path: Path):
         toml_data: dict = self.read_gaboon_config(config_path)
         self.networks = _Networks(toml_data)
-    
+
     def read_gaboon_config(self, config_path: Path) -> dict:
         if not str(config_path).endswith("/gaboon.toml"):
             config_path = config_path.joinpath("gaboon.toml")
@@ -118,42 +118,32 @@ class Config:
             raise FileNotFoundError(f"Config file not found: {config_path}")
         with open(config_path, "rb") as f:
             return tomllib.load(f)
-        
 
     def get_active_network(self):
         return self.networks.get_active_network()
-    
-    # REVIEW: make this a `@property`, `def root_path(self):...`
+
     def get_root(self) -> Path:
-        return self._root_path
-    
-    @staticmethod 
+        return self._project_root
+
+    def set_active_network(
+        self,
+    ):
+        self.networks.set_active_network(self)
+
+    @property
+    def project_root(self) -> Path:
+        return self._project_root
+
+    @staticmethod
     def load_config_from_path(config_path: Path | None = None) -> "Config":
         if config_path is None:
             config_path = Config.find_project_root()
         return Config(config_path)
-        
 
     @staticmethod
     def find_project_root(start_path: Path | str = Path.cwd()) -> Path:
         current_path = Path(start_path).resolve()
         while True:
-            if (current_path / CONFIG_NAME).exists():
-                return current_path
-
-            # REVIEW: not sure what the use case is for this, since a project root which does not contain gaboon.toml will probably break as soon as we try to do anything which needs the config.
-
-            # Check for src directory with .vy files in current directory
-            src_path = current_path / "src"
-            if src_path.is_dir() and any(src_path.glob("*.vy")):
-                return current_path
-
-            # REVIEW: this case is handled in the iteration, so handling this case is not necessary
-            # Check for gaboon.toml in parent directory
-            if (current_path.parent / CONFIG_NAME).exists():
-                return current_path.parent
-
-            # REVIEW: i think this should actually be the first case handled, as `gaboon.toml` in the OS root is probably a bug.
             # Move up to the parent directory
             parent_path = current_path.parent
             if parent_path == current_path:
@@ -161,11 +151,20 @@ class Config:
                 raise FileNotFoundError(
                     "Could not find gaboon.toml or src directory with Vyper contracts in any parent directory"
                 )
+
+            if (current_path / CONFIG_NAME).exists():
+                return current_path
+
+            # Check for src directory with .vy files in current directory
+            src_path = current_path / "src"
+            if src_path.is_dir() and any(src_path.glob("*.vy")):
+                return current_path
+
             current_path = parent_path
 
 
-
 _config: Config = None
+
 
 def get_config() -> Config:
     global _config
@@ -173,7 +172,6 @@ def get_config() -> Config:
 
 
 def initialize_global_config():
-    # REVIEW: nice!
     global _config
     assert _config is None
     _config = Config.load_config_from_path()

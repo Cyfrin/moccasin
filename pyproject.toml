@@ -6,7 +6,6 @@ authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },
 ]
 dependencies = [
-    "tomli-w>=1.0.0",
     "eth-account>=0.13.1",
     "titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@add-nicknames",
 ]

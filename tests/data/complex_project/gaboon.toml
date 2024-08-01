@@ -4,3 +4,6 @@ url = "http://hi"
 [networks.zksync.extra_data]
 uniswap = "asfasfsaf"
 compound = "asdfsf"
+
+[networks.anvil]
+url = "http://127.0.0.1:8545"

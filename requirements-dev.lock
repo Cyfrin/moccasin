@@ -139,8 +139,6 @@ sortedcontainers==2.4.0
     # via trie
 titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@58fda666eae4365066e5dab4dd7027b6ca9b6d72
     # via gaboon
-tomli-w==1.0.0
-    # via gaboon
 toolz==0.12.1
     # via cytoolz
 trie==3.0.1

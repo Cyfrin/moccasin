@@ -4,46 +4,80 @@ from pathlib import Path
 from gaboon.logging import logger
 from gaboon.config import get_config, initialize_global_config
 import importlib.util
+from gaboon._add_sys_path import _add_to_sys_path
+from gaboon.constants.vars import CONTRACTS_FOLDER
 import boa
+from gaboon.gaboon_account import GaboonAccount
 
+BOA_VM = "pyevm"
 
 
 def main(args: List[Any]) -> int:
     initialize_global_config()
-    run_script(args.script_name_or_path)
+    run_script(
+        args.script_name_or_path,
+        network=args.network,
+        account=args.account,
+        private_key=args.private_key,
+        password=args.password,
+        password_file_path=args.password_file_path,
+    )
     return 0
 
-def run_script(script_name_or_path: Path | str):
+
+def run_script(
+    script_name_or_path: Path | str,
+    network: str = None,
+    account: str = None,
+    private_key: str = None,
+    password: str = None,
+    password_file_path: Path = None,
+):
     config_root = get_config().get_root()
     script_path: Path = get_script_path(script_name_or_path)
 
     # Set up the environment (add necessary paths to sys.path, etc.)
     # REVIEW: this semantics is a bit weird -- it means if you run `gab run` from some nested directory, the root directory will be in the syspath
-    sys.path.insert(0, str(config_root)) if config_root not in sys.path else None
-    # REVIEW: also kind of weird
-    sys.path.insert(0, str(config_root / "src")) if (
-        config_root / "src"
-    ) not in sys.path else None
+    # TODO - what is better?
+    _add_to_sys_path(config_root)
+    _add_to_sys_path(config_root / CONTRACTS_FOLDER)
 
-    # We give the user's script the module name "deploy_script"
-    # REVIEW: i wonder if there can be conflicts with another module which is actually named "deploy_script"
-    spec = importlib.util.spec_from_file_location("deploy_script", script_path)
+    # We give the user's script the module name "deploy_script_gaboon"
+    spec = importlib.util.spec_from_file_location("deploy_script_gaboon", script_path)
     if spec is None:
-        logger.error(f"Cannot find module spec for '{script_path}'")
-        # REVIEW: just raise an exception
-        sys.exit(1)
+        raise Exception(f"Cannot find script '{script_path}'")
 
     module = importlib.util.module_from_spec(spec)
     if spec.loader is None:
-        logger.error(f"Cannot find loader for '{script_path}'")
-        # REVIEW: just raise an exception
-        sys.exit(1)
+        raise Exception(f"Cannot find a loader for '{script_path}'")
 
     # REVIEW: i think it's weird to inject boa into the user's namespace unless the user has asked for it (by having the line `import boa`).
-    module.__dict__["boa"] = boa
+    # TODO - do we even need this?
+    # module.__dict__["boa"] = boa
     spec.loader.exec_module(module)
 
-    # REVIEW: i think this can always be added as a feature later
+    if network:
+        get_config().networks.set_active_network(network)
+    if account:
+        # This will also attempt to unlock the account
+        account = GaboonAccount(
+            keystore_path_or_account_name=account,
+            password=password,
+            password_file_path=password_file_path,
+        )
+    if private_key:
+        account = GaboonAccount(
+            private_key=private_key,
+            password=password,
+            password_file_path=password_file_path,
+        )
+    if account:
+        boa.env.add_account(account, force_eoa=True)
+        if boa.env.eoa is None:
+            logger.warning(
+                "No default EOA account found. Please add an account to the environment before attempting a transaction."
+            )
+
     if hasattr(module, "main") and callable(module.main):
         result = module.main()
         return result
@@ -51,6 +85,7 @@ def run_script(script_name_or_path: Path | str):
         logger.info("No main() function found. Executing script as is...")
     sys.path.pop(0)
     sys.path.pop(0)
+
 
 def get_script_path(script_name_or_path: Path | str) -> Path:
     script_path = Path(script_name_or_path)

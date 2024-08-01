@@ -1,5 +1,5 @@
 import pytest
-from ..script.deploy import deploy
+from script.deploy import deploy
 
 
 @pytest.fixture
