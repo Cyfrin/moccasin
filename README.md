@@ -54,9 +54,12 @@ The Gaboon viper (Bitis gabonica), also called the Gaboon adder, is a viper spec
 
 # Speed Comparisons
 
-| Command | Gaboon | Brownie | Hardhat | Foundry |
-| ------- | ------ | ------- | ------- | ------- |
-|         |        |         |         |         |
+*The following comparisions were done taking the `real` result from running the bash `time` command followed by the appropriote command*
+
+| Command | Gaboon   | Brownie  | Hardhat  | Foundry  | Ape      |
+| ------- | -------- | -------- | -------- | -------- | -------- |
+| help    | 0m0.129s | 0m1.863s | 0m1.335s | 0m0.032s | 0m3.407s |
+| init    | 0m0.136s | 0m1.169s | xx       | 0m0.922s | 0m4.937s |
 
 
 # Acknowledgements 
