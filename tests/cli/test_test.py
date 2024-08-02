@@ -49,5 +49,5 @@ def test_test_complex_project_passes_pytest_flags(cleanup_out_folder, gab_path):
         os.chdir(current_dir)
     assert "2 passed" not in result.stdout
     assert "1 passed" in result.stdout
-    assert "1 deselected" in result.stdout
+    assert "2 deselected" in result.stdout
     assert result.returncode == 0

@@ -1,6 +1,5 @@
 from src import Counter
 from boa.contracts.vyper.vyper_contract import VyperContract
-
 # from boa import project
 # project.accounts
 # project.get_active_account()

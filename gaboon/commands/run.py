@@ -5,7 +5,7 @@ from gaboon.logging import logger
 from gaboon.config import get_config, initialize_global_config
 import importlib.util
 from gaboon._add_sys_path import _add_to_sys_path
-from gaboon.constants.vars import CONTRACTS_FOLDER
+from gaboon.constants.vars import CONTRACTS_FOLDER, DEFAULT_ANVIL_PRIVATE_KEY
 import boa
 from gaboon.gaboon_account import GaboonAccount
 
@@ -21,6 +21,8 @@ def main(args: List[Any]) -> int:
         private_key=args.private_key,
         password=args.password,
         password_file_path=args.password_file_path,
+        fork=args.fork,
+        url=args.url,
     )
     return 0
 
@@ -32,6 +34,8 @@ def run_script(
     private_key: str = None,
     password: str = None,
     password_file_path: Path = None,
+    fork: bool = False,
+    url: str = None,
 ):
     config_root = get_config().get_root()
     script_path: Path = get_script_path(script_name_or_path)
@@ -51,13 +55,15 @@ def run_script(
     if spec.loader is None:
         raise Exception(f"Cannot find a loader for '{script_path}'")
 
-    # REVIEW: i think it's weird to inject boa into the user's namespace unless the user has asked for it (by having the line `import boa`).
-    # TODO - do we even need this?
-    # module.__dict__["boa"] = boa
+    # TODO: Is this correct putting it up here? Should it be lower?
     spec.loader.exec_module(module)
 
-    if network:
-        get_config().networks.set_active_network(network)
+    config = get_config()
+    if network and not url:
+        config.networks.set_active_network(network, is_fork=fork)
+    if url:
+        config.networks.set_active_network(url, is_fork=fork)
+
     if account:
         # This will also attempt to unlock the account
         account = GaboonAccount(
@@ -71,6 +77,8 @@ def run_script(
             password=password,
             password_file_path=password_file_path,
         )
+    if fork and account:
+        raise ValueError("Cannot use --fork and --account at the same time")
     if account:
         boa.env.add_account(account, force_eoa=True)
         if boa.env.eoa is None:

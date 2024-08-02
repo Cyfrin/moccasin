@@ -20,7 +20,7 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 - [x] Test vyper projects (`gab test`)
 - [x] Import/generate keystores (`gab wallet import`)
 - [ ] Install packages `gab install <pypi_project>`
-- [ ] `gab install (<github_repo> | <pypi_project>)` 
+- [ ] `gab install (<github_repo> | <pypi_project>)`
 
 Should be fast to install and test. 
 

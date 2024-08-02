@@ -7,6 +7,8 @@ from gaboon.constants.vars import BUILD_FOLDER
 import gaboon.constants.vars as vars
 from gaboon.commands.wallet import save_to_keystores
 import tempfile
+from tests.utils.anvil import ANVIL_URL
+
 
 COMPLEX_PROJECT_PATH = Path(__file__).parent.parent.joinpath("data/complex_project/")
 ANVIL1_PRIVATE_KEY = (
@@ -40,3 +42,9 @@ def anvil_keystore(monkeypatch):
         )
         monkeypatch.setattr(vars, "DEFAULT_KEYSTORES_PATH", Path(temp_dir))
         yield
+
+
+@pytest.fixture
+def anvil_fork(monkeypatch):
+    monkeypatch.setenv("FAKE_CHAIN_RPC_URL", ANVIL_URL)
+    yield

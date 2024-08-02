@@ -2,28 +2,36 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 from boa.network import NetworkEnv, EthereumRPC
+from boa import Env
 import boa
-from gaboon.constants.vars import CONFIG_NAME
+from gaboon.constants.vars import CONFIG_NAME, DOT_ENV_FILE
 import tomllib
+from dotenv import load_dotenv
+import os
 
 
 @dataclass
 class Network:
     name: str
-    url: str | None
+    url: str | None = None
+    is_fork: bool = False
     extra_data: dict[str, Any] = field(default_factory=dict)
-    _network_env: NetworkEnv | None = None
+    _network_env: NetworkEnv | Env | None = None
 
-    def _create_env(self) -> NetworkEnv:
-        self._network_env = NetworkEnv(EthereumRPC(self.url), nickname=self.name)
-        self._network_env
+    def _create_env(self) -> NetworkEnv | Env:
+        if self.is_fork:
+            self._network_env = Env()
+            self._network_env.fork(self.url)
+            self._network_env.set_nickname(self.name)
+        else:
+            self._network_env = NetworkEnv(EthereumRPC(self.url), nickname=self.name)
         return self._network_env
 
-    def get_or_create_env(self) -> NetworkEnv:
+    def get_or_create_env(self) -> NetworkEnv | Env:
         if self._network_env:
             boa.set_env(self._network_env)
             return self._network_env
-        new_env: NetworkEnv = self._create_env()
+        new_env: NetworkEnv | Env = self._create_env()
         boa.set_env(new_env)
         return new_env
 
@@ -45,6 +53,7 @@ class _Networks:
         for key, value in toml_data["networks"].items():
             network = Network(
                 name=key,
+                is_fork=value.get("fork", False),
                 url=value.get("url", None),
                 extra_data=value.get("extra_data", {}),
             )
@@ -71,17 +80,17 @@ class _Networks:
     # boa.set_env_from_network(gaboon.networks.zksync)
     # ```
     # otherwise it is too confusing where gaboon ends and boa starts.
-    def set_active_network(self, name_or_url: str | Network):
+    def set_active_network(self, name_or_url: str | Network, is_fork: bool = False):
         if isinstance(name_or_url, Network):
             env_to_set: NetworkEnv = name_or_url.get_or_create_env()
             self._networks[name_or_url.name] = env_to_set
         else:
             if name_or_url.startswith("http"):
-                new_network = self._create_custom_network()
-                env_to_set: NetworkEnv = new_network.get_or_create_env()
+                new_network = self._create_custom_network(name_or_url, is_fork=is_fork)
+                env_to_set: NetworkEnv | Env = new_network.get_or_create_env()
             else:
                 if name_or_url in self._networks:
-                    env_to_set: NetworkEnv = self._networks[
+                    env_to_set: NetworkEnv | Env = self._networks[
                         name_or_url
                     ].get_or_create_env()
                 else:
@@ -89,8 +98,10 @@ class _Networks:
                         f"Network {name_or_url} not found. Please pass a valid URL/RPC or valid network name."
                     )
 
-    def _create_custom_network(self, url: str) -> Network:
-        new_network = Network(name=f"custom_{self.custom_networks_counter}", url=url)
+    def _create_custom_network(self, url: str, is_fork: bool = False) -> Network:
+        new_network = Network(
+            name=f"custom_{self.custom_networks_counter}", url=url, is_fork=is_fork
+        )
         self._networks[new_network.name] = new_network
         self.custom_networks_counter += 1
         return new_network
@@ -109,7 +120,12 @@ class Config:
 
     def _load_config(self, config_path: Path):
         toml_data: dict = self.read_gaboon_config(config_path)
+        self._load_env_file()
+        toml_data = self.expand_env_vars(toml_data)
         self.networks = _Networks(toml_data)
+
+    def _load_env_file(self):
+        load_dotenv(dotenv_path=self.project_root.joinpath(DOT_ENV_FILE))
 
     def read_gaboon_config(self, config_path: Path) -> dict:
         if not str(config_path).endswith("/gaboon.toml"):
@@ -118,6 +134,16 @@ class Config:
             raise FileNotFoundError(f"Config file not found: {config_path}")
         with open(config_path, "rb") as f:
             return tomllib.load(f)
+
+    def expand_env_vars(self, value):
+        if isinstance(value, str):
+            return os.path.expandvars(value)
+        elif isinstance(value, dict):
+            return {k: self.expand_env_vars(v) for k, v in value.items()}
+        elif isinstance(value, list):
+            return [self.expand_env_vars(item) for item in value]
+        else:
+            return value
 
     def get_active_network(self):
         return self.networks.get_active_network()

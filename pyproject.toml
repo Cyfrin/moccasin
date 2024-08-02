@@ -8,6 +8,7 @@ authors = [
 dependencies = [
     "eth-account>=0.13.1",
     "titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@add-nicknames",
+    "python-dotenv>=1.0.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.11"
@@ -21,7 +22,14 @@ build-backend = "hatchling.build"
 
 [tool.rye]
 managed = true
-dev-dependencies = ["gaboon>=0.1", "pytest>=8.3.2", "mypy>=1.11.0"]
+dev-dependencies = [
+    "gaboon>=0.1",
+    "pytest>=8.3.2",
+    "mypy>=1.11.0",
+    "snekmate>=0.1.0",
+    "vyper>=0.4.0",
+    "web3>=7.0.0b9",
+]
 
 [tool.hatch.metadata]
 allow-direct-references = true

@@ -12,6 +12,7 @@ GAB_CLI_VERSION_STRING = "Gaboon CLI v{}"
 ALIAS_TO_COMMAND = {
     "build": "compile",
     "c": "compile",
+    "script": "run",
 }
 
 PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet"]
@@ -92,6 +93,7 @@ Use this command to prepare your contracts for deployment or testing.""",
         description="Runs pytest with boa context.",
         parents=[parent_parser],
     )
+    add_network_args_to_parser(test_parser)
     test_parser.add_argument(
         "pytest_args", nargs="*", help="Arguments to be passed to pytest."
     )
@@ -102,6 +104,7 @@ Use this command to prepare your contracts for deployment or testing.""",
         "run",
         help="Runs a script with the project's context.",
         description="Runs a script with the project's context.",
+        aliases=["script"],
         parents=[parent_parser],
     )
     run_parser.add_argument(
@@ -110,12 +113,7 @@ Use this command to prepare your contracts for deployment or testing.""",
         type=str,
         default="./script/deploy.py",
     )
-
-    network_or_rpc_group = run_parser.add_mutually_exclusive_group()
-    network_or_rpc_group.add_argument(
-        "--network", help=f"Alias of the network (from the {CONFIG_NAME})."
-    )
-    network_or_rpc_group.add_argument("--rpc", help="RPC URL to run the script on.")
+    add_network_args_to_parser(run_parser)
 
     key_or_account_group = run_parser.add_mutually_exclusive_group()
     key_or_account_group.add_argument(
@@ -179,12 +177,6 @@ Use this command to prepare your contracts for deployment or testing.""",
         "import", aliases=["i"], help="Import a private key into an encrypted keystore"
     )
     import_parser.add_argument("name", help="Name of account to import")
-
-    # # Private Key
-    # private_key_parser = wallet_subparsers.add_parser(
-    #     "private-key", aliases=["pk"], help="Derives private key from mnemonic"
-    # )
-    # private_key_parser.add_argument("mnemonic", help="Mnemonic phrase")
 
     # Inspect Json
     inspect_parser = wallet_subparsers.add_parser(
@@ -286,6 +278,20 @@ def find_project_root(start_path: Path | str = Path.cwd()) -> Path:
                 f"Could not find {CONFIG_NAME} or src directory with Vyper contracts in any parent directory"
             )
         current_path = parent_path
+
+
+def add_network_args_to_parser(parser: argparse.ArgumentParser):
+    parser.add_argument(
+        "--fork", action="store_true", help="If you want to fork the RPC."
+    )
+    network_or_rpc_group = parser.add_mutually_exclusive_group()
+    network_or_rpc_group.add_argument(
+        "--network", help=f"Alias of the network (from the {CONFIG_NAME})."
+    )
+    network_or_rpc_group.add_argument(
+        "--url", "--rpc", help="RPC URL to run the script on."
+    )
+    return network_or_rpc_group
 
 
 def get_version() -> int:

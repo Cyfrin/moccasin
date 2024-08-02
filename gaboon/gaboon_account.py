@@ -7,8 +7,6 @@ from eth_keys.datatypes import (
     PrivateKey,
 )
 from hexbytes import HexBytes
-import getpass
-from gaboon.logging import logger
 from gaboon.constants.vars import DEFAULT_KEYSTORES_PATH
 from eth_utils import to_bytes
 from gaboon.commands.wallet import decrypt_key

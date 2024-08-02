@@ -3,6 +3,8 @@ import time
 import signal
 import atexit
 
+ANVIL_URL = "http://127.0.0.1:8545"
+
 
 class AnvilProcess:
     def __init__(self, anvil_path="anvil", args=None):

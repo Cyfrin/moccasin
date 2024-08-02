@@ -2,7 +2,7 @@
 # use `rye lock` or `rye sync` to update this lockfile
 #
 # last locked with the following flags:
-#   pre: false
+#   pre: true
 #   features: []
 #   all-features: false
 #   with-sources: false
@@ -118,6 +118,8 @@ pytest==8.3.2
     # via titanoboa
 pytest-cov==5.0.0
     # via titanoboa
+python-dotenv==1.0.1
+    # via gaboon
 regex==2024.7.24
     # via parsimonious
 requests==2.32.3
@@ -134,7 +136,7 @@ six==1.16.0
 sortedcontainers==2.4.0
     # via hypothesis
     # via trie
-titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@58fda666eae4365066e5dab4dd7027b6ca9b6d72
+titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@06a81213c9030ebf56d9d84c56bab39ed21d00cf
     # via gaboon
 toolz==0.12.1
     # via cytoolz
