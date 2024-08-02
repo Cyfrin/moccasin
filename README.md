@@ -21,6 +21,8 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 - [x] Import/generate keystores (`gab wallet import`)
 - [ ] Install packages `gab install <pypi_project>`
 - [ ] `gab install (<github_repo> | <pypi_project>)`
+- [ ] Track deployments
+  - [ ] Be able to do like `from gaboon import deployments\n deployments[0]`
 
 Should be fast to install and test. 
 
