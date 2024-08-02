@@ -244,6 +244,7 @@ Use this command to prepare your contracts for deployment or testing.""",
     if args.command:
         command_to_run = ALIAS_TO_COMMAND.get(args.command, args.command)
         logger.info(f"Running {command_to_run} command...")
+        # TODO - fix this so we can do forking tests
         if command_to_run == "test":
             args = pytest_args
         importlib.import_module(f"gaboon.commands.{command_to_run}").main(args)
