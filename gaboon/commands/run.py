@@ -2,7 +2,7 @@ from typing import List, Any
 import sys
 from pathlib import Path
 from gaboon.logging import logger
-from gaboon import get_config, initialize_global_config
+from gaboon.config import get_config, initialize_global_config
 import importlib.util
 from gaboon._sys_path_and_config_setup import (
     _add_to_sys_path,

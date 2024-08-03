@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import Any, List
-from gaboon import initialize_global_config, get_config
+from gaboon.config import initialize_global_config, get_config
 from gaboon._sys_path_and_config_setup import (
     _add_to_sys_path,
     _setup_network_and_account_from_args,

@@ -187,3 +187,18 @@ class Config:
                 return current_path
 
             current_path = parent_path
+
+
+# TODO - move this into __init__.py of gaboon folder so we can do better shit
+_config: Config = None
+
+
+def get_config() -> Config:
+    global _config
+    return _config
+
+
+def initialize_global_config():
+    global _config
+    assert _config is None
+    _config = Config.load_config_from_path()
