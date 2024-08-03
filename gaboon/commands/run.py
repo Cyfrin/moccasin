@@ -4,15 +4,19 @@ from pathlib import Path
 from gaboon.logging import logger
 from gaboon.config import get_config, initialize_global_config
 import importlib.util
-from gaboon._add_sys_path import _add_to_sys_path
+from gaboon._sys_path_and_config_setup import (
+    _add_to_sys_path,
+    _setup_network_and_account_from_args,
+)
 from gaboon.constants.vars import CONTRACTS_FOLDER, DEFAULT_ANVIL_PRIVATE_KEY
 import boa
 from gaboon.gaboon_account import GaboonAccount
+from argparse import Namespace
 
 BOA_VM = "pyevm"
 
 
-def main(args: List[Any]) -> int:
+def main(args: Namespace) -> int:
     initialize_global_config()
     run_script(
         args.script_name_or_path,
@@ -37,7 +41,8 @@ def run_script(
     fork: bool = False,
     url: str = None,
 ):
-    config_root = get_config().get_root()
+    config = get_config()
+    config_root = config.get_root()
     script_path: Path = get_script_path(script_name_or_path)
 
     # Set up the environment (add necessary paths to sys.path, etc.)
@@ -58,33 +63,15 @@ def run_script(
     # TODO: Is this correct putting it up here? Should it be lower?
     spec.loader.exec_module(module)
 
-    config = get_config()
-    if network and not url:
-        config.networks.set_active_network(network, is_fork=fork)
-    if url:
-        config.networks.set_active_network(url, is_fork=fork)
-
-    if account:
-        # This will also attempt to unlock the account
-        account = GaboonAccount(
-            keystore_path_or_account_name=account,
-            password=password,
-            password_file_path=password_file_path,
-        )
-    if private_key:
-        account = GaboonAccount(
-            private_key=private_key,
-            password=password,
-            password_file_path=password_file_path,
-        )
-    if fork and account:
-        raise ValueError("Cannot use --fork and --account at the same time")
-    if account:
-        boa.env.add_account(account, force_eoa=True)
-        if boa.env.eoa is None:
-            logger.warning(
-                "No default EOA account found. Please add an account to the environment before attempting a transaction."
-            )
+    _setup_network_and_account_from_args(
+        network=network,
+        url=url,
+        fork=fork,
+        account=account,
+        private_key=private_key,
+        password=password,
+        password_file_path=password_file_path,
+    )
 
     if hasattr(module, "main") and callable(module.main):
         result = module.main()

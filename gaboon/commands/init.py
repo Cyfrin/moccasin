@@ -20,9 +20,10 @@ from gaboon.constants.file_data import (
     TEST_COUNTER_DEFAULT,
     GAB_DEFAULT_CONFIG,
 )
+from argparse import Namespace
 
 
-def main(args: List[Any]) -> int:
+def main(args: Namespace) -> int:
     path: Path = new_project(args.path or ".", args.force or False)
     logger.info(f"Project initialized at {str(path)}")
     return 0

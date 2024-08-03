@@ -2,6 +2,7 @@ import importlib
 from pathlib import Path
 import tomllib
 import argparse
+from typing import List
 from gaboon.logging import logger, set_log_level
 import sys
 from gaboon.constants.vars import CONFIG_NAME
@@ -93,9 +94,71 @@ Use this command to prepare your contracts for deployment or testing.""",
         description="Runs pytest with boa context.",
         parents=[parent_parser],
     )
-    add_network_args_to_parser(test_parser)
     test_parser.add_argument(
-        "pytest_args", nargs="*", help="Arguments to be passed to pytest."
+        "file_or_dir",
+        help="Name of the test or folder to run tests on, or the path to your script.",
+        type=str,
+        nargs="?",
+    )
+    add_network_args_to_parser(test_parser)
+
+    test_parser.add_argument(
+        "-k",
+        nargs="?",
+        help="""Only run tests which match the given substring expression. An expression is a Python evaluable expression where all names are
+                        substring-matched against test names and their parent classes. Example: -k 'test_method or test_other' matches all test functions and
+                        classes whose name contains 'test_method' or 'test_other', while -k 'not test_method' matches those that don't contain 'test_method' in
+                        their names. -k 'not test_method and not test_other' will eliminate the matches. Additionally keywords are matched to classes and
+                        functions containing extra names in their 'extra_keyword_matches' set, as well as functions which have names assigned directly to them.
+                        The matching is case-insensitive.""",
+    )
+    test_parser.add_argument(
+        "-m",
+        nargs="?",
+        help="""Only run tests matching given mark expression. For example: -m 'mark1 and not mark2'.""",
+    )
+    test_parser.add_argument(
+        "-x",
+        "--exitfirst",
+        action="store_true",
+        help="""Exit instantly on first error or failed test.""",
+    )
+    test_parser.add_argument(
+        "-s",
+        action="store_true",
+        help="""Shortcut for --capture=no""",
+    )
+    test_parser.add_argument(
+        "--capture ",
+        nargs="?",
+        help="""Per-test capturing method: one of fd|sys|no|tee-sys""",
+    )
+    test_parser.add_argument(
+        "--lf",
+        "--last-failed",
+        action="store_true",
+        help="""Rerun only the tests that failed at the last run (or all if none failed).""",
+    )
+    test_parser.add_argument(
+        "--cache-clear",
+        action="store_true",
+        help="""Remove all cache contents at start of test run.""",
+    )
+    test_parser.add_argument(
+        "--disable-warnings",
+        "--disable-pytest-warnings",
+        action="store_true",
+        help="""Disable warnings summary.""",
+    )
+    test_parser.add_argument(
+        "--full-trace",
+        action="store_true",
+        help="Don't cut any tracebacks (default is to cut)",
+    )
+    test_parser.add_argument(
+        "--pdb",
+        action="store_true",
+        help="Start the debugger for each test that fails.",
     )
 
     # Run command
@@ -226,13 +289,6 @@ Use this command to prepare your contracts for deployment or testing.""",
         main_parser.print_help()
         return 0
 
-    # Test fix
-    # Since we want to be able to pass any flags into pytest, we need to separate the flags before parsing
-    pytest_args = []
-    if len(argv) > 1 and argv[0] == "test" and argv[1] != "--help" and argv[1] != "-h":
-        pytest_args = argv[1:]
-        argv = argv[:1]
-
     if argv[0] in PRINT_HELP_ON_NO_SUB_COMMAND and len(argv) < 2:
         parser_to_print = sub_parsers._name_parser_map[argv[0]]
         parser_to_print.print_help()
@@ -244,9 +300,6 @@ Use this command to prepare your contracts for deployment or testing.""",
     if args.command:
         command_to_run = ALIAS_TO_COMMAND.get(args.command, args.command)
         logger.info(f"Running {command_to_run} command...")
-        # TODO - fix this so we can do forking tests
-        if command_to_run == "test":
-            args = pytest_args
         importlib.import_module(f"gaboon.commands.{command_to_run}").main(args)
     else:
         main_parser.print_help()

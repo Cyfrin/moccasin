@@ -11,9 +11,10 @@ from hexbytes import HexBytes
 from eth_account.types import (
     PrivateKeyType,
 )
+from argparse import Namespace
 
 
-def main(args: List[Any]) -> int:
+def main(args: Namespace) -> int:
     if args.wallet_command == "list":
         list_accounts()
         return 0
