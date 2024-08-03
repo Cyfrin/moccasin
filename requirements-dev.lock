@@ -169,6 +169,8 @@ titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@06a81213c9030ebf56d9d
     # via gaboon
 toolz==0.12.1
     # via cytoolz
+tqdm==4.66.4
+    # via gaboon
 trie==3.0.1
     # via py-evm
 types-requests==2.32.0.20240712

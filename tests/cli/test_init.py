@@ -1,7 +1,7 @@
 import subprocess
 import tempfile
 from pathlib import Path
-from gaboon.__main__ import find_project_root
+from gaboon.config import Config
 from gaboon.constants.vars import PROJECT_FOLDERS
 from gaboon.constants.file_data import GITIGNORE, GITATTRIBUTES
 
@@ -29,7 +29,7 @@ def test_find_project_root_from_new_project(gab_path):
             capture_output=True,
             text=True,
         )
-        project_root: Path = find_project_root(Path(temp_dir))
+        project_root: Path = Config.find_project_root(Path(temp_dir))
         assert project_root.resolve() == Path(temp_dir).resolve()
         assert result.returncode == 0
 

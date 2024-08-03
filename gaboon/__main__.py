@@ -282,6 +282,21 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
     delete_parser.add_argument("keystore_file_name", help="Name of keystore file")
 
+    # Install command
+    # ========================================================================
+    install_parser = sub_parsers.add_parser(
+        "install",
+        help="Installs the project's dependencies.",
+        description="Installs the project's dependencies.",
+        parents=[parent_parser],
+    )
+    install_parser.add_argument(
+        "github_repo",
+        help="GitHub repository to install the dependencies from.",
+        type=str,
+        nargs="?",
+    )
+
     ######################
     ### PARSING STARTS ###
     ######################
@@ -309,31 +324,6 @@ Use this command to prepare your contracts for deployment or testing.""",
 ######################
 ## Helper Functions ##
 ######################
-def find_project_root(start_path: Path | str = Path.cwd()) -> Path:
-    current_path = Path(start_path).resolve()
-    while True:
-        if (current_path / CONFIG_NAME).exists():
-            return current_path
-
-        # Check for src directory with .vy files in current directory
-        src_path = current_path / "src"
-        if src_path.is_dir() and any(src_path.glob("*.vy")):
-            return current_path
-
-        # Check for titanoboa.toml in parent directory
-        if (current_path.parent / CONFIG_NAME).exists():
-            return current_path.parent
-
-        # Move up to the parent directory
-        parent_path = current_path.parent
-        if parent_path == current_path:
-            # We've reached the root directory without finding titanoboa
-            raise FileNotFoundError(
-                f"Could not find {CONFIG_NAME} or src directory with Vyper contracts in any parent directory"
-            )
-        current_path = parent_path
-
-
 def add_network_args_to_parser(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--fork", action="store_true", help="If you want to fork the RPC."

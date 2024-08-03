@@ -24,6 +24,8 @@ DEFAULT_ANVIL_PRIVATE_KEY = (
 )
 DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 
+REQUEST_HEADERS = {"User-Agent": "Gaboon"}
+
 
 # DEFAULT_NETWORKS_BY_NAME: dict[str:dict] = {
 #     "mainnet": {

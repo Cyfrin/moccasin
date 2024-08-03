@@ -176,6 +176,7 @@ cython_debug/
 .env*
 out/
 build/
+lib/
 .password.unsafe
 .password
 .password*
