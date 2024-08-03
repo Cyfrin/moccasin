@@ -3,7 +3,7 @@ from vyper.compiler.phases import CompilerData
 import json
 from gaboon.logging import logger
 from gaboon.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER
-from gaboon.config import get_config, initialize_global_config
+from gaboon import get_config, initialize_global_config
 
 
 from typing import Any, List

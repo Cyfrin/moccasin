@@ -1,6 +1,6 @@
 from pathlib import Path
 import sys
-from gaboon.config import get_config
+from gaboon import get_config
 from gaboon.gaboon_account import GaboonAccount
 import boa
 from gaboon.logging import logger
