@@ -122,6 +122,3 @@ def test_run_fork_should_not_send_transactions(gab_path, anvil_fork):
     assert "tx broadcasted" not in result.stdout
     assert starting_block == ending_block
     assert result.returncode == 0
-
-
-# TODO - test decimals work
