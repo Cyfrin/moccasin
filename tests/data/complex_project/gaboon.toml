@@ -20,4 +20,4 @@ fork = true
 usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 
 [dependencies]
-"smartcontractkit/chainlink-brownie-contracts" = "0.6.2" # or latest
+"pcaversaccio/snekmate" = "0.1.0"

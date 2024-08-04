@@ -3,7 +3,7 @@ from argparse import Namespace
 import os
 import subprocess
 import re
-from gaboon.config import Config
+from gaboon.config import Config, get_config, initialize_global_config
 from gaboon.constants.vars import REQUEST_HEADERS
 from base64 import b64encode
 import requests
@@ -11,25 +11,55 @@ from tqdm import tqdm
 import shutil
 import zipfile
 from io import BytesIO
+from gaboon.logging import logger
 
 INSTALL_PATH = "lib"
+
 
 def main(args: Namespace) -> int:
     # TODO: Need to add a conditional, where if no github org is provided, do the following:
     # 1. Check the toml for a list of packages
     # 2. Loop through each list and check if the package is downloaded already
     # 3. If not, download the package from the package registry
-    _install_from_github(args.github_repo)
+    if args.github_repo is None:
+        _install_dependencies()
+    else:
+        _install_from_github(args.github_repo)
     return 0
 
 
+def _install_dependencies():
+    config = get_config()
+    if config is None:
+        initialize_global_config()
+        config = get_config()
+    dependencies = config.get_dependencies()
+    for package_name in dependencies:
+        package_id = f"{package_name}@{dependencies[package_name]}"
+        _install_from_github(package_id)
+
+
 def _install_from_github(package_id: str) -> str:
+    version = None
     try:
         path, version = package_id.split("@", 1)
+    except ValueError:
+        logger.info("Version not provided. Will attempt to install latest version.")
+        path = package_id
+    try:
         org, repo = path.split("/")
     except ValueError:
         raise ValueError(
             "Invalid package ID. Must be given as [ORG]/[REPO]@[VERSION]"
+            "\ne.g. 'OpenZeppelin/openzeppelin-contracts@v2.5.0'"
+        ) from None
+    if not version:
+        url = f"https://api.github.com/repos/{org}/{repo}/releases/latest"
+        version = (requests.get(url)).json()["tag_name"].lstrip("v")
+        logger.debug(f"Latest version of {package_id} is {version}.")
+    if not version:
+        raise ValueError(
+            "Invalid package ID, could not find latest version. Must be given as [ORG]/[REPO]@[VERSION]"
             "\ne.g. 'OpenZeppelin/openzeppelin-contracts@v2.5.0'"
         ) from None
 
@@ -40,7 +70,8 @@ def _install_from_github(package_id: str) -> str:
     install_path.mkdir(exist_ok=True)
     install_path = install_path.joinpath(f"{repo}@{version}")
     if install_path.exists():
-        raise FileExistsError("Package is aleady installed")
+        logger.info(f"{org}/{repo}@{version} already installed")
+        return f"{org}/{repo}@{version}"
 
     headers = REQUEST_HEADERS.copy()
     headers.update(_maybe_retrieve_github_auth())
@@ -49,7 +80,6 @@ def _install_from_github(package_id: str) -> str:
         download_url = f"https://api.github.com/repos/{org}/{repo}/zipball/{version}"
     else:
         download_url = _get_download_url_from_tag(org, repo, version, headers)
-
     existing = list(install_path.parent.iterdir())
 
     # Some versions contain special characters and github api seems to display url without
@@ -64,50 +94,23 @@ def _install_from_github(package_id: str) -> str:
 
     installed = next(i for i in install_path.parent.iterdir() if i not in existing)
     shutil.move(installed, install_path)
+    logger.info(f"Installed {package_id}")
 
-    # This is where you automatically add the dependency to the gaboon.toml, it should be updated
-    # try:
-    #     if not install_path.joinpath("brownie-config.yaml").exists():
-    #         brownie_config: dict = {"project_structure": {}}
-
-    #         contract_paths = set(
-    #             i.relative_to(install_path).parts[0]
-    #             for i in install_path.glob("**/*.sol")
-    #         )
-    #         contract_paths.update(
-    #             i.relative_to(install_path).parts[0]
-    #             for i in install_path.glob("**/*.vy")
-    #         )
-    #         if not contract_paths:
-    #             raise ValueError(f"{package_id} does not contain any .sol or .vy files")
-    #         if install_path.joinpath("contracts").is_dir():
-    #             brownie_config["project_structure"]["contracts"] = "contracts"
-    #         elif len(contract_paths) == 1:
-    #             brownie_config["project_structure"]["contracts"] = contract_paths.pop()
-    #         else:
-    #             raise Exception(
-    #                 f"{package_id} has no `contracts/` subdirectory, and "
-    #                 "multiple directories containing source files"
-    #             )
-
-    #         with install_path.joinpath("brownie-config.yaml").open("w") as fp:
-    #             yaml.dump(brownie_config, fp)
-
-    #         Path.touch(install_path / ".env")
-
-    #     project = load(install_path)
-    #     project.close()
-    # except InvalidPackage:
-    #     shutil.rmtree(install_path)
-    #     raise
-    # except Exception as e:
-    #     notify(
-    #         "WARNING",
-    #         f"Unable to compile {package_id} due to a {type(e).__name__} - you may still be able to"
-    #         " import sources from the package, but will be unable to load the package directly.\n",
-    #     )
+    _add_package_to_config(org, repo, version)
 
     return f"{org}/{repo}@{version}"
+
+
+def _add_package_to_config(org: str, repo: str, version: str) -> None:
+    config = get_config()
+    if config is None:
+        initialize_global_config()
+        config = get_config()
+    dependencies = config.get_dependencies()
+    if f"{org}/{repo}" not in dependencies:
+        logger.debug(f"Adding {org}/{repo}@{version} to dependencies")
+        dependencies[f"{org}/{repo}"] = version
+        config.write_dependencies(dependencies)
 
 
 def _maybe_retrieve_github_auth() -> dict[str, str]:

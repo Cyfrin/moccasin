@@ -10,6 +10,7 @@ dependencies = [
     "titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@add-nicknames",
     "python-dotenv>=1.0.1",
     "tqdm>=4.66.4",
+    "tomli-w>=1.0.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.11"
