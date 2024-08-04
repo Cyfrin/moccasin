@@ -16,13 +16,10 @@ A fast, pythonic, Vyper smart contract testing and development framework.
   - [x] Deploy locally (boa VM)
   - [x] Deploy to a testnet
   - [x] Deploy to a mainnet
-  - [ ] Deploy to a forked network
+  - [x] Deploy to a forked network
 - [x] Test vyper projects (`gab test`)
 - [x] Import/generate keystores (`gab wallet import`)
-- [ ] Install packages `gab install <pypi_project>`
-- [ ] `gab install (<github_repo> | <pypi_project>)`
-- [ ] Track deployments
-  - [ ] Be able to do like `from gaboon import deployments\n deployments[0]`
+- [x] `gab install (<github_repo>)`
 
 Should be fast to install and test. 
 
@@ -53,6 +50,8 @@ The Gaboon viper (Bitis gabonica), also called the Gaboon adder, is a viper spec
 - [ ] solidity support
 - [ ] medusa fuzzer
 - [ ] mojo support
+- [ ] Track deployments
+  - [ ] Be able to do like `from gaboon import deployments\n deployments[0]`
 
 # Speed Comparisons
 
