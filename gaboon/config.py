@@ -226,7 +226,8 @@ def get_config() -> Config:
     return _config
 
 
-def initialize_global_config():
+def initialize_global_config(config_path: Path | None = None) -> Config:
     global _config
     assert _config is None
-    _config = Config.load_config_from_path()
+    _config = Config.load_config_from_path(config_path)
+    return _config

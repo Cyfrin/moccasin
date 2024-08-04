@@ -2,7 +2,6 @@ import importlib
 from pathlib import Path
 import tomllib
 import argparse
-from typing import List
 from gaboon.logging import logger, set_log_level
 import sys
 from gaboon.constants.vars import CONFIG_NAME
@@ -304,7 +303,10 @@ Use this command to prepare your contracts for deployment or testing.""",
         main_parser.print_help()
         return 0
 
-    if argv[0] in PRINT_HELP_ON_NO_SUB_COMMAND and len(argv) < 2:
+    if (
+        ALIAS_TO_COMMAND.get(argv[0], argv[0]) in PRINT_HELP_ON_NO_SUB_COMMAND
+        and len(argv) < 2
+    ):
         parser_to_print = sub_parsers._name_parser_map[argv[0]]
         parser_to_print.print_help()
         return 0

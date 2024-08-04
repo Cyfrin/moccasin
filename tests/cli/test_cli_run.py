@@ -2,7 +2,7 @@ from pathlib import Path
 import subprocess
 import os
 from tests.utils.anvil import AnvilProcess, ANVIL_URL
-from tests.cli.conftest import (
+from tests.conftest import (
     COMPLEX_PROJECT_PATH,
     ANVIL1_PRIVATE_KEY,
     ANVIL1_KEYSTORE_NAME,

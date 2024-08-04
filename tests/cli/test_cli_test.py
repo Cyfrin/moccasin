@@ -1,6 +1,6 @@
 import subprocess
 import os
-from tests.cli.conftest import COMPLEX_PROJECT_PATH
+from tests.conftest import COMPLEX_PROJECT_PATH
 from pathlib import Path
 
 EXPECTED_HELP_TEXT = "Runs pytest"

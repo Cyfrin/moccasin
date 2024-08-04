@@ -30,7 +30,7 @@ compile ✅
 wallet ✅
 run ✅ 
 test ✅
-install ❌
+install ✅
 ```
 
 ## Background

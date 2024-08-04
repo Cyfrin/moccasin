@@ -1,10 +1,14 @@
 # Much of this was inspired by https://github.com/eth-brownie/brownie/tree/master
 from argparse import Namespace
 import os
-import subprocess
+import tomli_w
 import re
 from gaboon.config import Config, get_config, initialize_global_config
-from gaboon.constants.vars import REQUEST_HEADERS
+from gaboon.constants.vars import (
+    REQUEST_HEADERS,
+    PACKAGE_VERSION_FILE,
+    DEPENDENCIES_FOLDER,
+)
 from base64 import b64encode
 import requests
 from tqdm import tqdm
@@ -12,15 +16,11 @@ import shutil
 import zipfile
 from io import BytesIO
 from gaboon.logging import logger
-
-INSTALL_PATH = "lib"
+from urllib.parse import quote
+import tomllib
 
 
 def main(args: Namespace) -> int:
-    # TODO: Need to add a conditional, where if no github org is provided, do the following:
-    # 1. Check the toml for a list of packages
-    # 2. Loop through each list and check if the package is downloaded already
-    # 3. If not, download the package from the package registry
     if args.github_repo is None:
         _install_dependencies()
     else:
@@ -64,14 +64,23 @@ def _install_from_github(package_id: str) -> str:
         ) from None
 
     project_root = Config.find_project_root()
-    base_install_path = project_root.joinpath(INSTALL_PATH)
+    base_install_path = project_root.joinpath(DEPENDENCIES_FOLDER)
     base_install_path.mkdir(exist_ok=True)
-    install_path = base_install_path.joinpath(f"{org}")
-    install_path.mkdir(exist_ok=True)
-    install_path = install_path.joinpath(f"{repo}@{version}")
+    org_install_path = base_install_path.joinpath(f"{org}")
+    org_install_path.mkdir(exist_ok=True)
+    install_path = org_install_path.joinpath(f"{repo}")
+    versions_install_path = base_install_path.joinpath(PACKAGE_VERSION_FILE)
+
+    # TODO: Allow for multiple versions of the same package to be installed
     if install_path.exists():
-        logger.info(f"{org}/{repo}@{version} already installed")
-        return f"{org}/{repo}@{version}"
+        with open(versions_install_path, "rb") as f:
+            versions = tomllib.load(f)
+            installed_version = versions.get(f"{org}/{repo}", None)
+        if installed_version == version:
+            logger.info(f"{org}/{repo}@{version} already installed")
+            return f"{org}/{repo}@{version}"
+        else:
+            logger.info(f"Updating {org}/{repo} from {installed_version} to {version}")
 
     headers = REQUEST_HEADERS.copy()
     headers.update(_maybe_retrieve_github_auth())
@@ -94,6 +103,18 @@ def _install_from_github(package_id: str) -> str:
 
     installed = next(i for i in install_path.parent.iterdir() if i not in existing)
     shutil.move(installed, install_path)
+
+    # Update versions file
+    if versions_install_path.exists():
+        with open(versions_install_path, "rb") as f:
+            versions_data = tomllib.load(f)
+            versions_data[f"{org}/{repo}"] = version
+            tomli_w.dump(versions_data, f)
+    else:
+        with open(versions_install_path, "w", encoding="utf-8") as f:
+            toml_string = tomli_w.dumps({f"{org}/{repo}": version})
+            f.write(toml_string)
+
     logger.info(f"Installed {package_id}")
 
     _add_package_to_config(org, repo, version)

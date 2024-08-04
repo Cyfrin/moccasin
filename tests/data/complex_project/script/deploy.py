@@ -1,15 +1,5 @@
 from src import Counter
-from boa.contracts.vyper.vyper_contract import VyperContract
-# from boa import project
-# project.accounts
-# project.get_active_account()
-# project.get_active_network()
-# project.networks
-# boa.set_env(project.networks[0].rpc)
-
-# from gaboon import magic_config
-# import gaboon
-
+from gaboon.boa_tools import VyperContract
 
 def deploy() -> VyperContract:
     # gaboon.get_running_config()  # could return a config object, which is essentially a dict with plumbing

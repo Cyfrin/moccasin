@@ -10,21 +10,26 @@ BUILD_FOLDER = "out"
 CONTRACTS_FOLDER = "src"
 TESTS_FOLDER = "tests"
 SCRIPT_FOLDER = "script"
+DEPENDENCIES_FOLDER = "lib"
 
 # Complex Vars
 PROJECT_FOLDERS = [CONTRACTS_FOLDER, TESTS_FOLDER, SCRIPT_FOLDER]
-
 DEFAULT_KEYSTORES_PATH = Path.home().joinpath(".gaboon/keystores")
 # TODO - add a --foundry flag for wallet commands to use foundry keystores
 FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
+# TODO: Make this configurable
 DOT_ENV_FILE = ".env"
 
+# Testing Vars
 DEFAULT_ANVIL_PRIVATE_KEY = (
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 )
 DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 
+
+# Installation Variables
 REQUEST_HEADERS = {"User-Agent": "Gaboon"}
+PACKAGE_VERSION_FILE = "versions.toml"
 
 
 # DEFAULT_NETWORKS_BY_NAME: dict[str:dict] = {

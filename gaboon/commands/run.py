@@ -1,4 +1,3 @@
-from typing import List, Any
 import sys
 from pathlib import Path
 from gaboon.logging import logger
@@ -8,9 +7,7 @@ from gaboon._sys_path_and_config_setup import (
     _add_to_sys_path,
     _setup_network_and_account_from_args,
 )
-from gaboon.constants.vars import CONTRACTS_FOLDER, DEFAULT_ANVIL_PRIVATE_KEY
-import boa
-from gaboon.gaboon_account import GaboonAccount
+from gaboon.constants.vars import CONTRACTS_FOLDER
 from argparse import Namespace
 
 BOA_VM = "pyevm"
@@ -90,7 +87,7 @@ def get_script_path(script_name_or_path: Path | str) -> Path:
         script_path = script_path.with_suffix(".py")
 
     if not script_path.is_absolute():
-        if root not in script_path.parts:
+        if "script" not in script_path.parts:
             script_path = root / "script" / script_path
         else:
             script_path = root / script_path

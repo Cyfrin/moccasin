@@ -5,15 +5,12 @@ from gaboon.logging import logger
 from gaboon.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER
 from gaboon.config import get_config, initialize_global_config
 
-
-from typing import Any, List
-
 from boa import load_partial
 from boa.contracts.vyper.vyper_contract import VyperDeployer
 from argparse import Namespace
 
 
-def main(args: Namespace) -> int:
+def main(_: Namespace) -> int:
     initialize_global_config()
     project_path: Path = get_config().get_root()
     compile_project(project_path, project_path.joinpath(BUILD_FOLDER), write_data=True)

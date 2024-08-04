@@ -43,15 +43,15 @@ def main(args: Namespace) -> int:
         return 1
 
 
-def inspect(keystore_file_name: str, keystores_path: Path = DEFAULT_KEYSTORES_PATH):
+def inspect(
+    keystore_file_name: str, keystores_path: Path = DEFAULT_KEYSTORES_PATH
+) -> dict:
     keystore_path = keystores_path.joinpath(keystore_file_name)
-
     if not keystore_path.exists():
         logger.error(
             f"Account with name {keystore_file_name} does not exist in keystores"
         )
         return
-
     try:
         with keystore_path.open("r") as fp:
             keystore = json.load(fp)
@@ -61,6 +61,7 @@ def inspect(keystore_file_name: str, keystores_path: Path = DEFAULT_KEYSTORES_PA
         logger.error(
             f"Failed to read account {keystore_file_name} from keystores: {str(e)}"
         )
+    return keystore
 
 
 def list_accounts(
