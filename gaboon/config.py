@@ -11,6 +11,7 @@ import os
 import tomli_w
 import shutil
 import tempfile
+from boa_zksync import ZksyncEnv
 
 
 @dataclass
@@ -18,16 +19,22 @@ class Network:
     name: str
     url: str | None = None
     is_fork: bool = False
+    is_zksync: bool = False
     extra_data: dict[str, Any] = field(default_factory=dict)
-    _network_env: NetworkEnv | Env | None = None
+    _network_env: NetworkEnv | Env | ZksyncEnv | None = None
 
-    def _create_env(self) -> NetworkEnv | Env:
+    def _create_env(self) -> NetworkEnv | ZksyncEnv | Env:
         if self.is_fork:
             self._network_env = Env()
             self._network_env.fork(self.url)
             self._network_env.set_nickname(self.name)
         else:
-            self._network_env = NetworkEnv(EthereumRPC(self.url), nickname=self.name)
+            if self.is_zksync:
+                self._network_env = ZksyncEnv(self.url, nickname=self.name)
+            else:
+                self._network_env = NetworkEnv(
+                    EthereumRPC(self.url), nickname=self.name
+                )
         return self._network_env
 
     def get_or_create_env(self) -> NetworkEnv | Env:
@@ -58,6 +65,7 @@ class _Networks:
                 name=key,
                 is_fork=value.get("fork", False),
                 url=value.get("url", None),
+                is_zksync=value.get("zksync", False),
                 extra_data=value.get("extra_data", {}),
             )
             setattr(self, key, network)

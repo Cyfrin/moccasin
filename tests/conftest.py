@@ -8,9 +8,10 @@ import gaboon.constants.vars as vars
 from gaboon.commands.wallet import save_to_keystores
 import tempfile
 from tests.utils.anvil import ANVIL_URL
-from gaboon.config import Config, initialize_global_config
+from gaboon.config import Config, initialize_global_config, get_config
 
 COMPLEX_PROJECT_PATH = Path(__file__).parent.joinpath("data/complex_project/")
+INSTALL_PROJECT_PATH = Path(__file__).parent.joinpath("data/installation_project/")
 ANVIL1_PRIVATE_KEY = (
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 )
@@ -39,7 +40,10 @@ ANVIL_KEYSTORE_SAVED = {
 
 @pytest.fixture
 def complex_project_config() -> Config:
-    return initialize_global_config(COMPLEX_PROJECT_PATH)
+    config = get_config()
+    if config is None:
+        return initialize_global_config(COMPLEX_PROJECT_PATH)
+    return config
 
 
 @pytest.fixture
@@ -58,7 +62,7 @@ def cleanup_out_folder():
 @pytest.fixture
 def cleanup_dependencies_folder():
     yield
-    created_folder_path = COMPLEX_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
+    created_folder_path = INSTALL_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)
 

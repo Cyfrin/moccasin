@@ -136,7 +136,10 @@ six==1.16.0
 sortedcontainers==2.4.0
     # via hypothesis
     # via trie
-titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@06a81213c9030ebf56d9d84c56bab39ed21d00cf
+titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@723626e4b567cc520092c97e1fcc37e10c92ff18
+    # via gaboon
+    # via titanoboa-zksync
+titanoboa-zksync @ git+https://github.com/PatrickAlphaC/titanoboa-zksync/@edd7b03773ae57498f577b23055b95771713d6cf
     # via gaboon
 tomli-w==1.0.0
     # via gaboon
