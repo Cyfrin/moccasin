@@ -41,7 +41,7 @@ def _pip_install(package_id: str, verbose: bool = False) -> str:
     base_install_path.mkdir(exist_ok=True)
 
     # TODO: Allow for multiple versions of the same package to be installed
-    cmd = ["pip", "install", package_id, "-t", str(base_install_path)]
+    cmd = ["uv", "pip", "install", package_id, "--target", str(base_install_path)]
 
     # TODO: report which version of the package has been installed
     # TODO: `--upgrade` and `--force` options.
@@ -52,6 +52,8 @@ def _pip_install(package_id: str, verbose: bool = False) -> str:
     _freeze_dependencies(str(base_install_path))
 
 def _freeze_dependencies(base_install_path: Path):
+    # TODO: switch to uv for this command once they support `--path` option
+    # (tracked at https://github.com/astral-sh/uv/issues/5952)
     cmd = ["pip", "freeze", "--path", str(base_install_path)]
     poutput = subprocess.run(cmd, capture_output=True, check=True, text=True)
     logger.info("Installed packages:")
