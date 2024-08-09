@@ -1,7 +1,7 @@
-from lib.pcaversaccio.snekmate.src.snekmate.auth import ownable as ow
-initializes: ow
+from lib.snekmate.auth import ownable as ow
+from lib.snekmate.tokens import erc20
 
-from lib.pcaversaccio.snekmate.src.snekmate.tokens import erc20
+initializes: ow
 initializes: erc20[ownable := ow]
 
 exports: erc20.__interface__
