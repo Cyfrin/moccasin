@@ -197,7 +197,7 @@ def _stream_download(
     progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
     content = bytes()
 
-    for data in response.iter_content(1024, decode_unicode=True):
+    for data in response.iter_content(None, decode_unicode=True):
         progress_bar.update(len(data))
         content += data
     progress_bar.close()
