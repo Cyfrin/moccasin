@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 from boa.network import NetworkEnv, EthereumRPC
 from boa import Env
 import boa
@@ -121,7 +121,7 @@ class _Networks:
 class Config:
     _project_root: Path
     networks: _Networks
-    dependencies: dict[str, str]
+    dependencies: list[str]
 
     def __init__(self, root_path: Path):
         self._project_root = root_path
@@ -134,7 +134,7 @@ class Config:
         self._load_env_file()
         toml_data = self.expand_env_vars(toml_data)
         self.networks = _Networks(toml_data)
-        self.dependencies = toml_data.get("dependencies", {})
+        self.dependencies = toml_data.get("dependencies", [])
 
     def _load_env_file(self):
         load_dotenv(dotenv_path=self.project_root.joinpath(DOT_ENV_FILE))
@@ -163,27 +163,28 @@ class Config:
     def get_dependencies(self) -> dict:
         return self.dependencies
 
-    def write_dependencies(self, new_dependencies_dict: dict):
-        self.dependencies = new_dependencies_dict
-        toml_data = self.read_gaboon_config(self._project_root.joinpath(CONFIG_NAME))
-        toml_data["dependencies"] = new_dependencies_dict
+    def write_dependencies(self, new_dependencies: list):
+        target_path = self._project_root / CONFIG_NAME
+        toml_data = self.read_gaboon_config(target_path)
+        toml_data["dependencies"] = new_dependencies
+
         # Create a temporary file in the same directory as the target file
-        target_file = self._project_root.joinpath(CONFIG_NAME)
         temp_file = tempfile.NamedTemporaryFile(
             mode="w",
             delete=False,
-            dir=target_file.parent,
-            encoding="utf-8",
+            dir=target_path.parent,
             prefix=".tmp_",
             suffix=".toml",
         )
         try:
             temp_file.write(tomli_w.dumps(toml_data))
             temp_file.close()
-            shutil.move(temp_file.name, target_file)
+            shutil.move(temp_file.name, target_path)
         except Exception as e:
             os.unlink(temp_file.name)
             raise e
+
+        self.dependencies = new_dependencies
 
     def get_root(self) -> Path:
         return self._project_root
@@ -229,9 +230,11 @@ class Config:
 _config: Config = None
 
 
-def get_config() -> Config:
+def get_config() -> Optional[Config]:
     global _config
-    return _config
+    if _config is not None:
+        return _config
+    return initialize_global_config()
 
 
 def initialize_global_config(config_path: Path | None = None) -> Config:

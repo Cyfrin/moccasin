@@ -296,11 +296,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         parents=[parent_parser],
     )
     install_parser.add_argument(
-        "github_repo",
-        help="GitHub repository to install the dependencies from.",
+        "package_name",
+        help="Package name, given as a pip-compatible string",
         type=str,
         nargs="?",
     )
+    install_parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output")
 
     ######################
     ### PARSING STARTS ###
