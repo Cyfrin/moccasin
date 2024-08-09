@@ -303,6 +303,23 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
     install_parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output")
 
+    # Purge command
+    # ========================================================================
+    purge_parser = sub_parsers.add_parser(
+        "purge",
+        help="Purge a given dependency",
+        description="Purge the given dependency.",
+        parents=[parent_parser],
+    )
+    purge_parser.add_argument(
+        "packages",
+        help="Package name, given as a pip-compatible string",
+        type=str,
+        nargs="+",
+    )
+    purge_parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output")
+
+
     ######################
     ### PARSING STARTS ###
     ######################
