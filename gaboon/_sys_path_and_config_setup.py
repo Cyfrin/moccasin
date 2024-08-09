@@ -4,14 +4,19 @@ from gaboon.config import get_config
 from gaboon.gaboon_account import GaboonAccount
 import boa
 from gaboon.logging import logger
+import contextmanager
 
 
-def _add_to_sys_path(project_path: Path) -> None:
-    project_path_string = str(project_path)
-    if project_path_string in sys.path:
-        return
-    sys.path.insert(0, project_path_string)
-
+@contextlib.contextmanager
+def _patch_sys_path(paths: list[str | Path]) -> None:
+    paths = [str(p) for p in paths]
+    anchor = sys.path
+    try:
+        # add these with highest precedence -- conflicts should prefer user modules/code
+        sys.path = paths + sys.path
+        yield
+    finally:
+        sys.path = anchor
 
 def _setup_network_and_account_from_args(
     network: str = None,
