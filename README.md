@@ -20,6 +20,7 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 - [x] Test vyper projects (`gab test`)
 - [x] Import/generate keystores (`gab wallet import`)
 - [x] `gab install (<github_repo>)`
+- [ ] Patrick to add like `EVMToZKSync` API.
 
 Should be fast to install and test. 
 
