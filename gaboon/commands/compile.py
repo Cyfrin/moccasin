@@ -21,7 +21,7 @@ def compile_project(
     project_path: Path | None = None,
     build_folder: Path | None = None,
     write_data: bool = False,
-) -> int:
+):
     if project_path is None:
         project_path = get_config().get_root()
     contracts_location = project_path.joinpath(CONTRACTS_FOLDER)
@@ -30,12 +30,11 @@ def compile_project(
         build_folder = project_path.joinpath(BUILD_FOLDER)
     logger.info(f"Compiling {len(contracts_to_compile)} contracts to {build_folder}...")
     for contract_path in contracts_to_compile:
-        compile(contract_path, build_folder, write_data=write_data)
+        compile_(contract_path, build_folder, write_data=write_data)
     logger.info("Done compiling project!")
-    return 0
 
 
-def compile(
+def compile_(
     contract_path: Path,
     build_folder: Path,
     compiler_args: dict | None = None,
