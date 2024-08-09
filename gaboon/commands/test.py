@@ -9,7 +9,7 @@ import pytest
 import sys
 from argparse import Namespace
 
-PYTEST_ARGS: List[str] = [
+PYTEST_ARGS: list[str] = [
     "file_or_dir",
     "k",
     "m",
@@ -36,6 +36,8 @@ def main(args: Namespace) -> int:
             if value is not None:
                 if arg == "file_or_dir":
                     pytest_args.append(str(value))
+                elif arg == "coverage":
+                    pytest_args.append("--cov=")
                 else:
                     option_prefix = "-" if len(arg) == 1 else "--"
                     option = f"{option_prefix}{arg}"
