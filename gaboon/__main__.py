@@ -112,6 +112,10 @@ Use this command to prepare your contracts for deployment or testing.""",
                         The matching is case-insensitive.""",
     )
     test_parser.add_argument(
+        "--coverage",
+        help="Run tests with coverage",
+    )
+    test_parser.add_argument(
         "-m",
         nargs="?",
         help="""Only run tests matching given mark expression. For example: -m 'mark1 and not mark2'.""",
