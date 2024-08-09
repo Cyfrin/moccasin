@@ -19,8 +19,10 @@ PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet"]
 
 
 def main(argv: list) -> int:
+    # REVIEW: probably just keep the `--version` one
     if "--version" in argv or "version" in argv:
         print(get_version())
+        return 0
 
     parent_parser = create_parent_parser()
 
