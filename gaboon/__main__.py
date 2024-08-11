@@ -296,10 +296,10 @@ Use this command to prepare your contracts for deployment or testing.""",
         parents=[parent_parser],
     )
     install_parser.add_argument(
-        "package_name",
-        help="Package name, given as a pip-compatible string",
+        "requirements",
+        help="Requirements, given as a pip-compatible strings",
         type=str,
-        nargs="?",
+        nargs="*",
     )
     install_parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output")
 

@@ -3,13 +3,14 @@ import os
 import tomli_w
 import subprocess
 import re
-from gaboon._dependency_helpers import freeze_dependencies, get_base_install_path
+from gaboon._dependency_helpers import get_base_install_path
 from gaboon.config import Config, get_config, initialize_global_config
 from gaboon.constants.vars import (
     REQUEST_HEADERS,
     PACKAGE_VERSION_FILE,
     DEPENDENCIES_FOLDER,
 )
+from packaging.requirements import Requirement
 from pathlib import Path
 from base64 import b64encode
 import requests
@@ -35,8 +36,15 @@ def _purge(packages: list[str], verbose: bool = False) -> str:
     capture_output = not verbose
     subprocess.run(cmd, capture_output=capture_output, check=True)
 
+    config = get_config()
+    dependencies = config.get_dependencies()
+
+    to_delete = set()
     for package in packages:
+        for dep in dependencies:
+            if Requirement(dep).name == Requirement(package).name:
+                to_delete.add(dep)
         logger.info(f"Removed {package}")
 
-    # freeze dependencies
-    freeze_dependencies()
+    dependencies = [dep for dep in dependencies if dep not in to_delete]
+    config.write_dependencies(dependencies)

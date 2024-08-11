@@ -189,9 +189,7 @@ class Config:
     def get_root(self) -> Path:
         return self._project_root
 
-    def set_active_network(
-        self,
-    ):
+    def set_active_network(self):
         self.networks.set_active_network(self)
 
     @property
