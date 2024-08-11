@@ -1,9 +1,10 @@
 [project]
 name = "gaboon"
 version = "0.1.0"
-description = "Pythonic smart contract development framework, based on Titanoboa"
+description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },
+    { name = "charles-cooper" email = "3867501+charles-cooper@users.noreply.github.com" },
 ]
 dependencies = [
     "titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@add-nicknames",
