@@ -1,9 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
-from boa.network import NetworkEnv, EthereumRPC
-from boa import Env
-import boa
+from typing import Any, Optional, TYPE_CHECKING, Union
 from gaboon.constants.vars import CONFIG_NAME, DOT_ENV_FILE
 import tomllib
 from dotenv import load_dotenv
@@ -11,8 +8,14 @@ import os
 import tomli_w
 import shutil
 import tempfile
-from boa_zksync import ZksyncEnv
 
+if TYPE_CHECKING:
+    from boa.environment import Env
+    from boa.network import NetworkEnv, EthereumRPC
+    from boa_zksync import ZksyncEnv
+
+
+_AnyEnv = Union["NetworkEnv", "Env", "ZksyncEnv"]
 
 @dataclass
 class Network:
@@ -21,9 +24,14 @@ class Network:
     is_fork: bool = False
     is_zksync: bool = False
     extra_data: dict[str, Any] = field(default_factory=dict)
-    _network_env: NetworkEnv | Env | ZksyncEnv | None = None
+    _network_env: _AnyEnv | None = None
 
-    def _create_env(self) -> NetworkEnv | ZksyncEnv | Env:
+    def _create_env(self) -> _AnyEnv:
+        # perf: save time on imports in the (common) case where
+        # we just import config for its utils but don't actually need
+        # to switch networks
+        from boa.network import NetworkEnv, EthereumRPC
+        from boa_zksync import ZksyncEnv
         if self.is_fork:
             self._network_env = Env()
             self._network_env.fork(self.url)
@@ -37,11 +45,12 @@ class Network:
                 )
         return self._network_env
 
-    def get_or_create_env(self) -> NetworkEnv | Env:
+    def get_or_create_env(self) -> _AnyEnv:
+        import boa
         if self._network_env:
             boa.set_env(self._network_env)
             return self._network_env
-        new_env: NetworkEnv | Env = self._create_env()
+        new_env: _AnyEnv = self._create_env()
         boa.set_env(new_env)
         return new_env
 
@@ -92,18 +101,17 @@ class _Networks:
     # ```
     # otherwise it is too confusing where gaboon ends and boa starts.
     def set_active_network(self, name_or_url: str | Network, is_fork: bool = False):
+        env_to_set: _AnyEnv
         if isinstance(name_or_url, Network):
-            env_to_set: NetworkEnv = name_or_url.get_or_create_env()
+            env_to_set = name_or_url.get_or_create_env()
             self._networks[name_or_url.name] = env_to_set
         else:
             if name_or_url.startswith("http"):
                 new_network = self._create_custom_network(name_or_url, is_fork=is_fork)
-                env_to_set: NetworkEnv | Env = new_network.get_or_create_env()
+                env_to_set = new_network.get_or_create_env()
             else:
                 if name_or_url in self._networks:
-                    env_to_set: NetworkEnv | Env = self._networks[
-                        name_or_url
-                    ].get_or_create_env()
+                    env_to_set = self._networks[name_or_url].get_or_create_env()
                 else:
                     raise ValueError(
                         f"Network {name_or_url} not found. Please pass a valid URL/RPC or valid network name."

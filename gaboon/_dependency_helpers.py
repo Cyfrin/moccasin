@@ -1,6 +1,3 @@
-from pathlib import Path
-import subprocess
-from gaboon.logging import logger
 from gaboon.config import Config, get_config
 from gaboon.constants.vars import DEPENDENCIES_FOLDER
 

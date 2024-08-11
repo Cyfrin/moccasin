@@ -1,26 +1,10 @@
 from argparse import Namespace
-import os
-import tomli_w
 import subprocess
-import re
 from gaboon._dependency_helpers import get_base_install_path
 from gaboon.config import Config, get_config, initialize_global_config
-from gaboon.constants.vars import (
-    REQUEST_HEADERS,
-    PACKAGE_VERSION_FILE,
-    DEPENDENCIES_FOLDER,
-)
+from gaboon.constants.vars import DEPENDENCIES_FOLDER
 from packaging.requirements import Requirement
-from pathlib import Path
-from base64 import b64encode
-import requests
-from tqdm import tqdm
-import shutil
-import zipfile
-from io import BytesIO
 from gaboon.logging import logger
-from urllib.parse import quote
-import tomllib
 
 
 def main(args: Namespace):
