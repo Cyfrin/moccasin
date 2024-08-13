@@ -301,7 +301,6 @@ Use this command to prepare your contracts for deployment or testing.""",
         type=str,
         nargs="*",
     )
-    install_parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output")
 
     # Purge command
     # ========================================================================
@@ -317,7 +316,6 @@ Use this command to prepare your contracts for deployment or testing.""",
         type=str,
         nargs="+",
     )
-    purge_parser.add_argument("-v", "--verbose", action="store_true", help="Turn on verbose output")
 
 
     ######################

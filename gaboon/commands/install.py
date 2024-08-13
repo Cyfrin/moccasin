@@ -15,18 +15,17 @@ def main(args: Namespace):
     if len(requirements) == 0:
         requirements = get_config().get_dependencies()
 
-    _pip_install(requirements, args.verbose)
+    _pip_install(requirements, args.quiet)
 
 
-def _pip_install(package_ids: list[str], verbose: bool = False) -> str:
+def _pip_install(package_ids: list[str], quiet: bool = False) -> str:
     path = get_base_install_path()
 
     # TODO: Allow for multiple versions of the same package to be installed
     cmd = ["uv", "pip", "install", *package_ids, "--target", str(path)]
 
-    # TODO: report which version of the package has been installed
     # TODO: `--upgrade` and `--force` options.
-    capture_output = not verbose
+    capture_output = quiet
     subprocess.run(cmd, capture_output=capture_output, check=True)
 
     config = get_config()

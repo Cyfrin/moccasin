@@ -8,16 +8,16 @@ from gaboon.logging import logger
 
 
 def main(args: Namespace):
-    _purge(args.packages, args.verbose)
+    _purge(args.packages, args.quiet)
 
-def _purge(packages: list[str], verbose: bool = False) -> str:
+def _purge(packages: list[str], quiet: bool = False) -> str:
     path = get_base_install_path()
     # TODO: Allow for multiple versions of the same package to be installed
     cmd = ["uv", "pip", "uninstall", *packages, "--target", str(path)]
 
     # TODO: report which version of the package has been installed
     # TODO: `--upgrade` and `--force` options.
-    capture_output = not verbose
+    capture_output = quiet
     subprocess.run(cmd, capture_output=capture_output, check=True)
 
     config = get_config()
