@@ -20,7 +20,15 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 - [x] Test vyper projects (`gab test`)
 - [x] Import/generate keystores (`gab wallet import`)
 - [x] `gab install (<github_repo>)`
-- [ ] Patrick to add like `EVMToZKSync` API.
+- [ ] Patrick to add like `EVMToZKSync` API
+- [ ] Re-write Curve or https://github.com/Zharta/protocol-v1 
+  - [ ] Make a minimal Fuzzing project
+- [ ] `gab install x` now does `pip install x -t lib/`
+- [x] Coverage
+- [ ] ZKSync Titanoboa project
+- [ ] console
+- [ ] boa in `gaboon.toml` for fast mode
+- [ ] Note in the docs `pypy` speedup
 
 Should be fast to install and test. 
 
