@@ -35,7 +35,7 @@ class Network:
         if self.is_fork:
             self._network_env = Env()
             self._network_env.fork(self.url)
-            self._network_env.set_nickname(self.name)
+            self._network_env.nickname = self.name
         else:
             if self.is_zksync:
                 self._network_env = ZksyncEnv(self.url, nickname=self.name)
