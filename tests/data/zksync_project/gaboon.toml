@@ -1,0 +1,7 @@
+[networks.pyevm]
+url = ""
+
+[networks.zksync-sepolia]
+url = "https://sepolia.era.zksync.dev"
+chain_id = 300
+zksync = true

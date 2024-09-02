@@ -1,0 +1,24 @@
+[networks.zksync]
+url = "http://hi"
+
+[networks.zksync.extra_data]
+uniswap = "asfasfsaf"
+compound = "asdfsf"
+
+[networks.anvil]
+url = "http://127.0.0.1:8545"
+
+[networks.fake_chain]
+url = "${FAKE_CHAIN_RPC_URL}"
+fork = true
+
+[networks.mainnet]
+url = "${MAINNET_RPC_URL}"
+fork = true
+
+[networks.mainnet.extra_data]
+usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+
+dependencies = [
+    "snekmate==0.1.0",
+]

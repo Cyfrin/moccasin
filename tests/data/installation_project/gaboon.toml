@@ -1,0 +1,10 @@
+dependencies = [
+    "snekmate==0.1.0",
+]
+
+[networks.pyevm]
+url = ""
+
+[networks.sepolia]
+url = "https://ethereum-sepolia-rpc.publicnode.com"
+chain_id = 11155111
