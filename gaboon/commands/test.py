@@ -72,22 +72,3 @@ def _run_project_tests(pytest_args: List[str], network: str = None, fork: bool =
         return_code: int = pytest.main(["--assert=plain"] + pytest_args)
         if return_code:
             sys.exit(return_code)
-
-
-def get_test_path(script_name_or_path: Path | str) -> Path:
-    script_path = Path(script_name_or_path)
-    root = get_config().get_root()
-
-    if script_path.suffix != ".py":
-        script_path = script_path.with_suffix(".py")
-
-    if not script_path.is_absolute():
-        if "script" not in script_path.parts:
-            script_path = root / "script" / script_path
-        else:
-            script_path = root / script_path
-
-    if not script_path.exists():
-        logger.error(f"{script_path} not found")
-
-    return script_path
