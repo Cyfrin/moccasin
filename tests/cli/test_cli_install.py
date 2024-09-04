@@ -4,9 +4,10 @@ import subprocess
 from tests.conftest import (
     INSTALL_PROJECT_PATH,
 )
-from gaboon.constants.vars import PACKAGE_VERSION_FILE, DEPENDENCIES_FOLDER
+from gaboon.constants.vars import DEPENDENCIES_FOLDER
 
-package_to_install = "pcaversaccio/snekmate"
+package_name = "snekmate"
+package_to_install = f"pcaversaccio/{package_name}"
 
 
 def test_run_help(gab_path):
@@ -36,16 +37,10 @@ def test_install_snekmate(cleanup_dependencies_folder, gab_path):
         )
     finally:
         os.chdir(current_dir)
-    assert "Version not provided" in result.stderr
-    assert f"Installed {package_to_install}" in result.stderr
+    assert f"Installed {package_name}" in result.stderr
     assert (
         Path(INSTALL_PROJECT_PATH)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{package_to_install}")
-        .exists()
-    )
-    assert (
-        Path(INSTALL_PROJECT_PATH)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{PACKAGE_VERSION_FILE}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{package_name}")
         .exists()
     )
 
@@ -68,14 +63,9 @@ def test_double_install_snekmate(cleanup_dependencies_folder, gab_path):
         )
     finally:
         os.chdir(current_dir)
-    assert "already installed" in result.stderr
+    assert "Audited 1 package" in result.stderr
     assert (
         Path(INSTALL_PROJECT_PATH)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{package_to_install}")
-        .exists()
-    )
-    assert (
-        Path(INSTALL_PROJECT_PATH)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{PACKAGE_VERSION_FILE}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{package_name}")
         .exists()
     )

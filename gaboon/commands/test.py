@@ -1,13 +1,14 @@
 from pathlib import Path
-from typing import Any, List
+from typing import List
 from gaboon.config import initialize_global_config, get_config
 from gaboon._sys_path_and_config_setup import (
-    _add_to_sys_path,
+    _patch_sys_path,
     _setup_network_and_account_from_args,
 )
 import pytest
 import sys
 from argparse import Namespace
+from gaboon.logging import logger
 
 PYTEST_ARGS: list[str] = [
     "file_or_dir",
@@ -53,20 +54,21 @@ def main(args: Namespace) -> int:
     return _run_project_tests(pytest_args, network=args.network, fork=args.fork)
 
 
-def _run_project_tests(
-    pytest_args: List[str], network: str = None, fork: bool = False
-) -> int:
-    project_path: Path | None = get_config().get_root()
-    _add_to_sys_path(project_path)
-    _setup_network_and_account_from_args(
-        network=network,
-        url=None,
-        fork=fork,
-        account=None,
-        private_key=None,
-        password=None,
-        password_file_path=None,
-    )
-    return_code: int = pytest.main(["--assert=plain"] + pytest_args)
-    if return_code:
-        sys.exit(return_code)
+def _run_project_tests(pytest_args: List[str], network: str = None, fork: bool = False):
+    config = get_config()
+    config_root = config.get_root()
+    test_path = "test"
+
+    with _patch_sys_path([config_root, config_root / test_path]):
+        _setup_network_and_account_from_args(
+            network=network,
+            url=None,
+            fork=fork,
+            account=None,
+            private_key=None,
+            password=None,
+            password_file_path=None,
+        )
+        return_code: int = pytest.main(["--assert=plain"] + pytest_args)
+        if return_code:
+            sys.exit(return_code)

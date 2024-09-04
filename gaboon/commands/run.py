@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from gaboon.logging import logger
 from gaboon.config import get_config, initialize_global_config
@@ -55,7 +54,9 @@ def run_script(
         )
 
         # We give the user's script the module name "deploy_script_gaboon"
-        spec = importlib.util.spec_from_file_location("deploy_script_gaboon", script_path)
+        spec = importlib.util.spec_from_file_location(
+            "deploy_script_gaboon", script_path
+        )
         if spec is None:
             raise Exception(f"Cannot find script '{script_path}'")
 
@@ -66,15 +67,14 @@ def run_script(
         spec.loader.exec_module(module)
 
         # neat functionality:
-        #if hasattr(module, "main") and callable(module.main):
-        #    result = module.main()
-        #    return result
+        if hasattr(module, "main") and callable(module.main):
+            result = module.main()
+            return result
 
 
 def get_script_path(script_name_or_path: Path | str) -> Path:
     script_path = Path(script_name_or_path)
     root = get_config().get_root()
-
     if script_path.suffix != ".py":
         script_path = script_path.with_suffix(".py")
 

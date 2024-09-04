@@ -1,6 +1,5 @@
 from pathlib import Path
 from gaboon.logging import logger
-from typing import Any, List
 from gaboon.constants.vars import (
     CONFIG_NAME,
     PROJECT_FOLDERS,

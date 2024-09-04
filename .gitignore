@@ -8,3 +8,9 @@ wheels/
 
 # venv
 .venv
+
+# Ruff/Rye/MyPy
+
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/

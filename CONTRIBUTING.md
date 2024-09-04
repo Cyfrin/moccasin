@@ -70,6 +70,8 @@ git push <your_forked_github>
 
 ## Running Tests
 
+First, you'll need to make sure you have the `anvil1` keystore in your `~/.gaboon/keystores` folder. You can [find it here](./tests/data/keystores/anvil1). Please move it there. 
+
 Run the following:
 
 ```bash
@@ -79,12 +81,24 @@ This is equivalent to running `pytest` in the root directory of the project.
 
 # Code Style Guide
 
-Be sure to read the [style guide](./STYLE_GUIDE.md) before contributing to this project. Additionally, we will run the `.github/workflows` before merging your PR to ensure that your code is up to standard. Be sure to run the scripts in there before submitting a PR, namely:
+We will run the `.github/workflows` before merging your PR to ensure that your code is up to standard. Be sure to run the scripts in there before submitting a PR.
+
+For type checking:
 
 ```bash
-rye run mypy .
+rye run typecheck
 ```
+
+For code formatting: 
+
+```bash
+rye run format
+```
+
+## Where do you get the `typecheck` and `format` command?
+
+You can see in `pyproject.toml` under the `tool.rye.scripts` section a list of scripts one can run with `rye run X`.
 
 # Thank you!
 
-Thank you for wanting to participate in titanoboa!
+Thank you for wanting to participate in titanoboa and gaboon!

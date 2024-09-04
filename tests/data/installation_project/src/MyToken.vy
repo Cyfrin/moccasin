@@ -6,6 +6,7 @@ initializes: erc20[ownable := ow]
 
 exports: erc20.__interface__
 
+
 @deploy
 @payable
 def __init__():

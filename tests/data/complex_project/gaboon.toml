@@ -19,6 +19,4 @@ fork = true
 [networks.mainnet.extra_data]
 usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
 
-dependencies = [
-    "snekmate==0.1.0",
-]
+dependencies = ["snekmate==0.1.0"]

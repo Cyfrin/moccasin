@@ -1,12 +1,8 @@
 from argparse import Namespace
 import subprocess
 from packaging.requirements import Requirement
-from gaboon.config import Config, get_config, initialize_global_config
+from gaboon.config import get_config
 from gaboon._dependency_helpers import get_base_install_path
-from gaboon.constants.vars import (
-    REQUEST_HEADERS,
-    DEPENDENCIES_FOLDER,
-)
 from gaboon.logging import logger
 
 
@@ -14,12 +10,18 @@ def main(args: Namespace):
     requirements = args.requirements
     if len(requirements) == 0:
         requirements = get_config().get_dependencies()
-
     _pip_install(requirements, args.quiet)
 
 
-def _pip_install(package_ids: list[str], quiet: bool = False) -> str:
+def _pip_install(package_ids: list[str], quiet: bool = False):
     path = get_base_install_path()
+    for i in range(len(package_ids)):
+        if "/" in package_ids[i]:
+            package_ids[i] = (
+                package_ids[i].split("/")[-1]
+                + " @ git+https://github.com/"
+                + package_ids[i]
+            )
 
     # TODO: Allow for multiple versions of the same package to be installed
     cmd = ["uv", "pip", "install", *package_ids, "--target", str(path)]

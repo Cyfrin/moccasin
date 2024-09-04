@@ -1,8 +1,7 @@
 from argparse import Namespace
 import subprocess
 from gaboon._dependency_helpers import get_base_install_path
-from gaboon.config import Config, get_config, initialize_global_config
-from gaboon.constants.vars import DEPENDENCIES_FOLDER
+from gaboon.config import get_config
 from packaging.requirements import Requirement
 from gaboon.logging import logger
 
@@ -10,7 +9,8 @@ from gaboon.logging import logger
 def main(args: Namespace):
     _purge(args.packages, args.quiet)
 
-def _purge(packages: list[str], quiet: bool = False) -> str:
+
+def _purge(packages: list[str], quiet: bool = False):
     path = get_base_install_path()
     # TODO: Allow for multiple versions of the same package to be installed
     cmd = ["uv", "pip", "uninstall", *packages, "--target", str(path)]

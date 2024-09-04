@@ -317,7 +317,6 @@ Use this command to prepare your contracts for deployment or testing.""",
         nargs="+",
     )
 
-
     ######################
     ### PARSING STARTS ###
     ######################
@@ -362,7 +361,7 @@ def add_network_args_to_parser(parser: argparse.ArgumentParser):
     return network_or_rpc_group
 
 
-def get_version() -> int:
+def get_version() -> str:
     with open(
         Path(__file__).resolve().parent.parent.joinpath("pyproject.toml"), "rb"
     ) as f:

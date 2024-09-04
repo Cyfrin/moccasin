@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional, TYPE_CHECKING, Union
+from typing import Any, TYPE_CHECKING, Union, cast
 from gaboon.constants.vars import CONFIG_NAME, DOT_ENV_FILE
 import tomllib
 from dotenv import load_dotenv
@@ -8,14 +8,16 @@ import os
 import tomli_w
 import shutil
 import tempfile
+import boa
+from boa.environment import Env
 
 if TYPE_CHECKING:
-    from boa.environment import Env
-    from boa.network import NetworkEnv, EthereumRPC
+    from boa.network import NetworkEnv
     from boa_zksync import ZksyncEnv
 
 
 _AnyEnv = Union["NetworkEnv", "Env", "ZksyncEnv"]
+
 
 @dataclass
 class Network:
@@ -32,9 +34,11 @@ class Network:
         # to switch networks
         from boa.network import NetworkEnv, EthereumRPC
         from boa_zksync import ZksyncEnv
+
         if self.is_fork:
             self._network_env = Env()
-            self._network_env.fork(self.url)
+            self._network_env = cast(_AnyEnv, self._network_env)
+            boa.fork(self.url)
             self._network_env.nickname = self.name
         else:
             if self.is_zksync:
@@ -47,6 +51,7 @@ class Network:
 
     def get_or_create_env(self) -> _AnyEnv:
         import boa
+
         if self._network_env:
             boa.set_env(self._network_env)
             return self._network_env
@@ -168,7 +173,7 @@ class Config:
     def get_active_network(self):
         return self.networks.get_active_network()
 
-    def get_dependencies(self) -> dict:
+    def get_dependencies(self) -> list[str]:
         return self.dependencies
 
     def write_dependencies(self, new_dependencies: list):
@@ -233,10 +238,10 @@ class Config:
             current_path = parent_path
 
 
-_config: Config = None
+_config: Config | None = None
 
 
-def get_config() -> Optional[Config]:
+def get_config() -> Config:
     global _config
     if _config is not None:
         return _config

@@ -2,7 +2,7 @@ import json
 import getpass
 from pathlib import Path
 import shutil
-from typing import Any, List
+from typing import Any
 from gaboon.logging import logger
 from gaboon.constants.vars import DEFAULT_KEYSTORES_PATH
 from eth_account import Account as EthAccountsClass
@@ -12,6 +12,7 @@ from eth_account.types import (
     PrivateKeyType,
 )
 from argparse import Namespace
+from typing import cast
 
 
 def main(args: Namespace) -> int:
@@ -32,7 +33,7 @@ def main(args: Namespace) -> int:
     elif args.wallet_command == "inspect":
         inspect(args.keystore_file_name)
     elif args.wallet_command == "decrypt":
-        return decrypt_key(
+        decrypt_key(
             args.keystore_file_name,
             password=args.password,
             password_file_path=args.password_file_path,
@@ -41,6 +42,7 @@ def main(args: Namespace) -> int:
     else:
         logger.error(f"Unknown accounts command: {args.wallet_command}")
         return 1
+    return 0
 
 
 def inspect(
@@ -51,7 +53,7 @@ def inspect(
         logger.error(
             f"Account with name {keystore_file_name} does not exist in keystores"
         )
-        return
+        return {}
     try:
         with keystore_path.open("r") as fp:
             keystore = json.load(fp)
@@ -81,7 +83,10 @@ def list_accounts(
 
 
 def generate_account(
-    name: str, save: bool = False, password: str = None, password_file: str = None
+    name: str,
+    save: bool = False,
+    password: str | None = None,
+    password_file: str | None = None,
 ) -> int:
     logger.info("Generating new account...")
     new_account: LocalAccount = EthAccountsClass.create()
@@ -105,9 +110,9 @@ def generate_account(
             return 1
     else:
         logger.info(f"Account generated: {new_account.address}")
-        logger.info(f"(Unsafe) Private key: {new_account.key}")
+        logger.info(f"(Unsafe) Private key: {new_account.key!r}")
         logger.info(
-            f"To save, add the --save flag next time with:\ngab wallet generate {name} --save --password <password>"
+            f"To save, add the --save flag next time with:\ngab wallet generate {name!r} --save --password <password>"
         )
     return 0
 
@@ -119,20 +124,22 @@ def save_to_keystores(
     password_file: Path | None = None,
     keystores_path: Path = DEFAULT_KEYSTORES_PATH,
 ):
-    if not isinstance(account_or_key, LocalAccount):
-        account_or_key = EthAccountsClass.from_key(account_or_key)
+    if isinstance(account_or_key, LocalAccount):
+        account = account_or_key
+    else:
+        account = EthAccountsClass.from_key(account_or_key)
     new_keystore_path = keystores_path.joinpath(name)
     if new_keystore_path.exists():
         logger.error(f"Account with name {name} already exists")
         return 1
     new_keystore_path.parent.mkdir(parents=True, exist_ok=True)
     if password:
-        encrypted: dict[str, Any] = account_or_key.encrypt(password)
+        encrypted: dict[str, Any] = account.encrypt(password)
     elif password_file:
         password_file = Path(password_file).expanduser().resolve()
         with password_file.open("r") as fp:
             password = fp.read()
-        encrypted: dict[str, Any] = account_or_key.encrypt(password)
+        encrypted = account.encrypt(password)
     else:
         logger.error("No password provided to save account")
         return 1
@@ -175,6 +182,7 @@ def import_private_key(
         password=password,
         keystores_path=keystores_path,
     )
+    return 0
 
 
 def delete_keystore(
@@ -223,13 +231,13 @@ def decrypt_key(
                     logger.error("Password cannot be empty. Please try again.")
                     continue
                 try:
-                    key: HexBytes = EthAccountsClass.decrypt(keystore_json, password)
+                    key = EthAccountsClass.decrypt(keystore_json, password)
                     break
                 except Exception:
                     logger.error(f"Passwords do not match. {retries} left.")
         elif password:
             try:
-                key: HexBytes = EthAccountsClass.decrypt(keystore_json, password)
+                key = EthAccountsClass.decrypt(keystore_json, password)
             except Exception:
                 logger.error("Passwords do not match.")
                 return None
@@ -237,10 +245,11 @@ def decrypt_key(
             with password_file_path.open("r") as fp:
                 password = fp.read()
             try:
-                key: HexBytes = EthAccountsClass.decrypt(keystore_json, password)
+                key = EthAccountsClass.decrypt(keystore_json, password)
             except Exception:
                 logger.error("Passwords do not match.")
                 return None
+    key = cast(HexBytes, key)
     if print_key:
         logger.info(f"Private key: {key.to_0x_hex()}")
     else:
