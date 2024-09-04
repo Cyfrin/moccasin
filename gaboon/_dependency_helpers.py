@@ -1,5 +1,6 @@
-from gaboon.config import Config, get_config
+from gaboon.config import Config
 from gaboon.constants.vars import DEPENDENCIES_FOLDER
+
 
 # TODO: maybe move this to be a Config staticmethod
 def get_base_install_path():

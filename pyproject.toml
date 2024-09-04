@@ -10,8 +10,7 @@ dependencies = [
     "titanoboa>=0.2.1",
     "python-dotenv>=1.0.1",
     "tomli-w>=1.0.0",
-    "titanoboa-zksync @ git+https://github.com/PatrickAlphaC/titanoboa-zksync/",
-    "uv>=0.1.39",  # contains https://github.com/astral-sh/uv/pull/3257
+    "titanoboa-zksync>=v0.2.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.11"
@@ -32,6 +31,7 @@ dev-dependencies = [
     "snekmate>=0.1.0",
     "vyper>=0.4.0",
     "web3>=7.0.0b9",
+    "ruff>=0.6.3",
 ]
 
 [tool.hatch.metadata]
@@ -41,7 +41,8 @@ allow-direct-references = true
 packages = ["gaboon"]
 
 [tool.rye.scripts]
-typecheck = "mypy ."
+typecheck = "mypy . --implicit-optional"
+format = "ruff check . --fix"
 
 [tool.mypy]
 disable_error_code = 'type-arg, attr-defined'

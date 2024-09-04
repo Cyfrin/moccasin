@@ -1,5 +1,5 @@
 dependencies = [
-    "snekmate==0.1.0",
+    "snekmate @ git+https://github.com/pcaversaccio/snekmate",
 ]
 
 [networks.pyevm]

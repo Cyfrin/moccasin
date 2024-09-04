@@ -29,6 +29,7 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 - [ ] console
 - [ ] boa in `gaboon.toml` for fast mode
 - [ ] Note in the docs `pypy` speedup
+- [ ] Install different versions of pacakges from github
 
 Should be fast to install and test. 
 

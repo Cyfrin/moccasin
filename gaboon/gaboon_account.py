@@ -10,13 +10,14 @@ from hexbytes import HexBytes
 from gaboon.constants.vars import DEFAULT_KEYSTORES_PATH
 from eth_utils import to_bytes
 from gaboon.commands.wallet import decrypt_key
+from typing import cast
 
 
 class GaboonAccount:
     def __init__(
         self,
-        private_key: str | bytes = None,
-        keystore_path_or_account_name: Path | str = None,
+        private_key: str | bytes | None = None,
+        keystore_path_or_account_name: Path | str | None = None,
         password: str = None,
         password_file_path: Path = None,
     ):
@@ -24,13 +25,14 @@ class GaboonAccount:
         self._local_account: LocalAccount | None = None
         if private_key:
             private_key = to_bytes(hexstr=private_key)
+        private_key = cast(bytes, private_key)
         if keystore_path_or_account_name:
             self.keystore_path: Path = (
                 keystore_path_or_account_name
                 if isinstance(keystore_path_or_account_name, Path)
                 else DEFAULT_KEYSTORES_PATH.joinpath(keystore_path_or_account_name)
             )
-            private_key: HexBytes = self.unlock(
+            private_key = self.unlock(
                 password=password, password_file_path=password_file_path
             )
         if not private_key:
@@ -79,4 +81,4 @@ class GaboonAccount:
                 password_file_path=password_file_path,
                 keystores_path=self.keystore_path.parent,
             )
-        return self._private_key
+        return cast(HexBytes, self._private_key)

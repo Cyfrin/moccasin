@@ -46,7 +46,6 @@ eth-abi==5.1.0
     # via titanoboa
     # via web3
 eth-account==0.13.1
-    # via gaboon
     # via titanoboa
     # via web3
 eth-bloom==3.0.1
@@ -117,6 +116,7 @@ mypy-extensions==1.0.0
     # via mypy
 packaging==23.2
     # via pytest
+    # via vvm
     # via vyper
 parsimonious==0.10.0
     # via eth-abi
@@ -151,6 +151,7 @@ regex==2024.7.24
     # via parsimonious
 requests==2.32.3
     # via titanoboa
+    # via vvm
     # via web3
 rich==13.7.1
     # via titanoboa
@@ -159,23 +160,22 @@ rlp==4.0.1
     # via eth-rlp
     # via py-evm
     # via trie
+ruff==0.6.3
 six==1.16.0
     # via asttokens
 snekmate==0.1.0
 sortedcontainers==2.4.0
     # via hypothesis
     # via trie
-titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa@723626e4b567cc520092c97e1fcc37e10c92ff18
+titanoboa==0.2.1
     # via gaboon
     # via titanoboa-zksync
-titanoboa-zksync @ git+https://github.com/PatrickAlphaC/titanoboa-zksync/@edd7b03773ae57498f577b23055b95771713d6cf
+titanoboa-zksync==0.2.2
     # via gaboon
 tomli-w==1.0.0
     # via gaboon
 toolz==0.12.1
     # via cytoolz
-tqdm==4.66.4
-    # via gaboon
 trie==3.0.1
     # via py-evm
 types-requests==2.32.0.20240712
@@ -190,6 +190,8 @@ typing-extensions==4.12.2
 urllib3==2.2.2
     # via requests
     # via types-requests
+vvm==0.2.1
+    # via titanoboa
 vyper==0.4.0
     # via titanoboa
 web3==7.0.0b9

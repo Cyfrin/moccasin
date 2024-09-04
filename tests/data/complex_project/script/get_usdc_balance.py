@@ -1,5 +1,5 @@
 from gaboon import config
-from boa.contracts.vyper.vyper_contract import VyperDeployer, VyperContract
+from boa.contracts.vyper.vyper_contract import VyperDeployer
 from src import MyToken
 
 

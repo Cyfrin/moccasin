@@ -8,7 +8,7 @@ import gaboon.constants.vars as vars
 from gaboon.commands.wallet import save_to_keystores
 import tempfile
 from tests.utils.anvil import ANVIL_URL
-from gaboon.config import Config, initialize_global_config, get_config
+from gaboon.config import Config, initialize_global_config
 
 COMPLEX_PROJECT_PATH = Path(__file__).parent.joinpath("data/complex_project/")
 INSTALL_PROJECT_PATH = Path(__file__).parent.joinpath("data/installation_project/")
@@ -38,12 +38,9 @@ ANVIL_KEYSTORE_SAVED = {
 }
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def complex_project_config() -> Config:
-    config = get_config()
-    if config is None:
-        return initialize_global_config(COMPLEX_PROJECT_PATH)
-    return config
+    return initialize_global_config(COMPLEX_PROJECT_PATH)
 
 
 @pytest.fixture
