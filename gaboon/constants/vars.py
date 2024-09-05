@@ -14,11 +14,13 @@ DEPENDENCIES_FOLDER = "lib"
 
 # Complex Vars
 PROJECT_FOLDERS = [CONTRACTS_FOLDER, TESTS_FOLDER, SCRIPT_FOLDER]
-DEFAULT_KEYSTORES_PATH = Path.home().joinpath(".gaboon/keystores")
+DEFAULT_GABOON_FOLDER = Path.home().joinpath(".gaboon/")
+DEFAULT_KEYSTORES_PATH = DEFAULT_GABOON_FOLDER.joinpath("keystores/")
 # TODO - add a --foundry flag for wallet commands to use foundry keystores
 FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
 # TODO: Make this configurable
 DOT_ENV_FILE = ".env"
+CONSOLE_HISTORY_FILE = "gaboon_history"
 
 # Testing Vars
 DEFAULT_ANVIL_PRIVATE_KEY = (

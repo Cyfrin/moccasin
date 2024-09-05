@@ -287,6 +287,16 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
     delete_parser.add_argument("keystore_file_name", help="Name of keystore file")
 
+    # Console command
+    # ========================================================================
+    console_parser = sub_parsers.add_parser(
+        "console",
+        help="BETA, USE AT YOUR OWN RISK: Interact with the network in a python shell.",
+        description="BETA, USE AT YOUR OWN RISK: Interact with the network in a python shell.\n",
+        parents=[parent_parser],
+    )
+    add_network_args_to_parser(console_parser)
+
     # Install command
     # ========================================================================
     install_parser = sub_parsers.add_parser(
