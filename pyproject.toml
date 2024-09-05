@@ -18,6 +18,12 @@ requires-python = ">= 3.11"
 [project.scripts]
 "gab" = "gaboon:main"
 
+[project.optional-dependencies]
+docs = [
+    "sphinx>=8.0.2",
+    "shibuya>=2024.8.30",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

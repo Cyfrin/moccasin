@@ -19,7 +19,11 @@ PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet"]
 
 
 def main(argv: list) -> int:
-    # REVIEW: probably just keep the `--version` one
+    """Run the Gaboon CLI with the given arguments.
+    
+    Args:
+        argv (list): List of arguments to run the CLI with.
+    """
     if "--version" in argv or "version" in argv:
         print(get_version())
         return 0
