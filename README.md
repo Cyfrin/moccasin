@@ -26,10 +26,7 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 - [x] Coverage
 - [x] ZKSync Titanoboa project
 - [ ] Verify on ZKSync and Ethereum (have Etherscan and ZKSync built in)
-- [ ] console
-- [ ] boa in `gaboon.toml` for fast mode
-- [ ] Note in the docs `pypy` speedup
-- [ ] Install different versions of pacakges from github
+- [x] console
 
 Should be fast to install and test. 
 
@@ -62,6 +59,8 @@ The Gaboon viper (Bitis gabonica), also called the Gaboon adder, is a viper spec
 - [ ] mojo support
 - [ ] Track deployments
   - [ ] Be able to do like `from gaboon import deployments\n deployments[0]`
+- [ ] boa in `gaboon.toml` for fast mode
+- [ ] Note in the docs `pypy` speedup
 
 # Speed Comparisons
 
