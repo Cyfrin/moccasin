@@ -2,7 +2,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 from gaboon.config import Config
-from gaboon.constants.vars import PROJECT_FOLDERS
+from gaboon.constants.vars import DEFAULT_PROJECT_FOLDERS
 from gaboon.constants.file_data import GITIGNORE, GITATTRIBUTES
 
 EXPECTED_HELP_TEXT = "Pythonic Smart Contract Development Framework"
@@ -35,7 +35,7 @@ def test_find_project_root_from_new_project(gab_path):
 
 
 def _assert_files_and_folders_exist(temp_dir: Path):
-    for folder in PROJECT_FOLDERS:
+    for folder in DEFAULT_PROJECT_FOLDERS:
         assert temp_dir.joinpath(folder).exists()
     assert temp_dir.joinpath("README.md").exists()
     assert temp_dir.joinpath("gaboon.toml").exists()

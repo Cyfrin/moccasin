@@ -13,8 +13,9 @@ from argparse import Namespace
 
 def main(_: Namespace) -> int:
     initialize_global_config()
-    project_path: Path = get_config().get_root()
-    compile_project(project_path, project_path.joinpath(BUILD_FOLDER), write_data=True)
+    config = get_config()
+    project_path: Path = config.get_root()
+    compile_project(project_path, project_path.joinpath(config.out_folder), write_data=True)
     return 0
 
 

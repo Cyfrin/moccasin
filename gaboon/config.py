@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, Union, cast
-from gaboon.constants.vars import CONFIG_NAME, DOT_ENV_FILE
+from gaboon.constants.vars import CONFIG_NAME, DOT_ENV_FILE, CONTRACTS_FOLDER,BUILD_FOLDER,TESTS_FOLDER,SCRIPT_FOLDER,DEPENDENCIES_FOLDER
 import tomllib
 from dotenv import load_dotenv
 import os
@@ -139,6 +139,7 @@ class Config:
     _project_root: Path
     networks: _Networks
     dependencies: list[str]
+    layout: dict[str, str]
     extra_data: dict[str, Any]
 
     def __init__(self, root_path: Path):
@@ -153,6 +154,7 @@ class Config:
         toml_data = self.expand_env_vars(toml_data)
         self.networks = _Networks(toml_data)
         self.dependencies = toml_data.get("dependencies", [])
+        self.layout = toml_data.get("layout", {})
         self.extra_data = toml_data.get("extra_data", {})
 
     def _load_env_file(self):
@@ -215,6 +217,30 @@ class Config:
     def project_root(self) -> Path:
         return self._project_root
 
+    @property
+    def build_folder(self) -> str:
+        return self.layout.get("out", BUILD_FOLDER)
+    
+    @property
+    def out_folder(self) -> str:
+        return self.build_folder
+
+    @property
+    def contracts_folder(self) -> str:
+        return self.layout.get("src", CONTRACTS_FOLDER)
+
+    @property
+    def test_folder(self) -> str:
+        return self.layout.get("tests", TESTS_FOLDER)
+    
+    @property
+    def script_folder(self) -> str:
+        return self.layout.get("script", SCRIPT_FOLDER)
+    
+    @property
+    def lib_folder(self) -> str:
+        return self.layout.get("lib", DEPENDENCIES_FOLDER)
+    
     @staticmethod
     def load_config_from_path(config_path: Path | None = None) -> "Config":
         if config_path is None:

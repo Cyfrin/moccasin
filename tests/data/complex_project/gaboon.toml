@@ -1,3 +1,7 @@
+[layout]
+src = "contracts"
+out = "build"
+
 [networks.zksync]
 url = "http://hi"
 

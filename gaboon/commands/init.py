@@ -2,7 +2,7 @@ from pathlib import Path
 from gaboon.logging import logger
 from gaboon.constants.vars import (
     CONFIG_NAME,
-    PROJECT_FOLDERS,
+    DEFAULT_PROJECT_FOLDERS,
     README_PATH,
     COUNTER_CONTRACT,
     CONTRACTS_FOLDER,
@@ -49,7 +49,7 @@ def new_project(project_path_str: str = ".", force: bool = False) -> Path:
 
 
 def _create_folders(project_path: Path) -> None:
-    for folder in PROJECT_FOLDERS:
+    for folder in DEFAULT_PROJECT_FOLDERS:
         Path(project_path).joinpath(folder).mkdir(exist_ok=True)
 
 

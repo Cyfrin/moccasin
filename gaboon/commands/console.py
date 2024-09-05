@@ -3,14 +3,13 @@ from pathlib import Path
 from gaboon.logging import logger
 import code
 import readline
-from gaboon.config import get_config, initialize_global_config, Config
+from gaboon.config import get_config, initialize_global_config
 from gaboon._sys_path_and_config_setup import (
     _patch_sys_path,
     _setup_network_and_account_from_args,
 )
 from gaboon.constants.vars import CONTRACTS_FOLDER, DEFAULT_GABOON_FOLDER, CONSOLE_HISTORY_FILE
 import atexit
-import os
 
 def main(args: Namespace) -> int:
     initialize_global_config()
