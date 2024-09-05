@@ -25,7 +25,7 @@ def test_run_help(gab_path):
     assert "Gaboon CLI install" in result.stdout
 
 
-def test_install_snekmate(cleanup_dependencies_folder, gab_path):
+def test_install_snekmate(complex_cleanup_dependencies_folder, gab_path):
     current_dir = Path.cwd()
     try:
         os.chdir(INSTALL_PROJECT_PATH)
@@ -45,7 +45,7 @@ def test_install_snekmate(cleanup_dependencies_folder, gab_path):
     )
 
 
-def test_double_install_snekmate(cleanup_dependencies_folder, gab_path):
+def test_double_install_snekmate(complex_cleanup_dependencies_folder, gab_path):
     current_dir = Path.cwd()
     try:
         os.chdir(INSTALL_PROJECT_PATH)

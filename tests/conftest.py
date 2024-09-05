@@ -37,33 +37,7 @@ ANVIL_KEYSTORE_SAVED = {
     "version": 3,
 }
 
-
-@pytest.fixture(scope="module")
-def complex_project_config() -> Config:
-    return initialize_global_config(COMPLEX_PROJECT_PATH)
-
-
-@pytest.fixture
-def gab_path():
-    return os.path.join(os.path.dirname(sys.executable), "gab")
-
-
-@pytest.fixture
-def cleanup_out_folder():
-    yield
-    created_folder_path = COMPLEX_PROJECT_PATH.joinpath(BUILD_FOLDER)
-    if os.path.exists(created_folder_path):
-        shutil.rmtree(created_folder_path)
-
-
-@pytest.fixture
-def cleanup_dependencies_folder():
-    yield
-    created_folder_path = INSTALL_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
-    if os.path.exists(created_folder_path):
-        shutil.rmtree(created_folder_path)
-
-
+## BASIC FIXTURES
 @pytest.fixture
 def anvil_keystore(monkeypatch):
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -76,8 +50,36 @@ def anvil_keystore(monkeypatch):
         monkeypatch.setattr(vars, "DEFAULT_KEYSTORES_PATH", Path(temp_dir))
         yield Path(temp_dir)
 
-
 @pytest.fixture
 def anvil_fork(monkeypatch):
     monkeypatch.setenv("FAKE_CHAIN_RPC_URL", ANVIL_URL)
     yield
+
+@pytest.fixture(scope="session")
+def gab_path():
+    return os.path.join(os.path.dirname(sys.executable), "gab")
+
+
+## COMPLEX PROJECT FIXTURES
+
+@pytest.fixture(scope="session")
+def complex_project_config() -> Config:
+    return initialize_global_config(COMPLEX_PROJECT_PATH)
+
+@pytest.fixture(scope="session")
+def complex_out_folder(complex_project_config) -> Config:
+    return complex_project_config.out_folder
+
+@pytest.fixture
+def complex_cleanup_out_folder(complex_out_folder):
+    yield
+    created_folder_path = COMPLEX_PROJECT_PATH.joinpath(complex_out_folder)
+    if os.path.exists(created_folder_path):
+        shutil.rmtree(created_folder_path)
+
+@pytest.fixture
+def complex_cleanup_dependencies_folder():
+    yield
+    created_folder_path = INSTALL_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
+    if os.path.exists(created_folder_path):
+        shutil.rmtree(created_folder_path)

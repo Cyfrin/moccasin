@@ -32,7 +32,7 @@ def test_build_help(gab_path):
     assert result.returncode == 0
 
 
-def test_compile_alias_build_project(cleanup_out_folder, gab_path):
+def test_compile_alias_build_project(complex_cleanup_out_folder, gab_path):
     current_dir = Path.cwd()
     try:
         os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))

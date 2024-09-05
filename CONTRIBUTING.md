@@ -75,9 +75,9 @@ First, you'll need to make sure you have the `anvil1` keystore in your `~/.gaboo
 Run the following:
 
 ```bash
-rye test
+rye run test
 ```
-This is equivalent to running `pytest` in the root directory of the project.
+This is equivalent to running `pytest` in the root directory of the project (see the `pyproject.toml` under `[tool.rye.scripts]` for what this `test` command does).
 
 # Code Style Guide
 

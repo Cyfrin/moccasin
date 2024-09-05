@@ -6,7 +6,6 @@ from gaboon._sys_path_and_config_setup import (
     _patch_sys_path,
     _setup_network_and_account_from_args,
 )
-from gaboon.constants.vars import CONTRACTS_FOLDER
 from argparse import Namespace
 
 BOA_VM = "pyevm"
@@ -42,7 +41,7 @@ def run_script(
     script_path: Path = get_script_path(script_name_or_path)
 
     # Set up the environment (add necessary paths to sys.path, etc.)
-    with _patch_sys_path([config_root, config_root / CONTRACTS_FOLDER]):
+    with _patch_sys_path([config_root, config_root / config.contracts_folder]):
         _setup_network_and_account_from_args(
             network=network,
             url=url,

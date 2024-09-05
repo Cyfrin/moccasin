@@ -25,7 +25,6 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 - [x] `gab install x` now does `pip install x -t lib/`
 - [x] Coverage
 - [x] ZKSync Titanoboa project
-- [ ] Verify on ZKSync and Ethereum (have Etherscan and ZKSync built in)
 - [x] console
 
 Should be fast to install and test. 

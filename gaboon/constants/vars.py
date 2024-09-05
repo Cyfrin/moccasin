@@ -5,7 +5,7 @@ CONFIG_NAME = "gaboon.toml"
 README_PATH = "README.md"
 COUNTER_CONTRACT = "Counter.vy"
 
-# Folder Names
+# Default Folder Names
 BUILD_FOLDER = "out"
 CONTRACTS_FOLDER = "src"
 TESTS_FOLDER = "tests"
@@ -13,7 +13,7 @@ SCRIPT_FOLDER = "script"
 DEPENDENCIES_FOLDER = "lib"
 
 # Complex Vars
-PROJECT_FOLDERS = [CONTRACTS_FOLDER, TESTS_FOLDER, SCRIPT_FOLDER]
+DEFAULT_PROJECT_FOLDERS = [CONTRACTS_FOLDER, TESTS_FOLDER, SCRIPT_FOLDER]
 DEFAULT_GABOON_FOLDER = Path.home().joinpath(".gaboon/")
 DEFAULT_KEYSTORES_PATH = DEFAULT_GABOON_FOLDER.joinpath("keystores/")
 # TODO - add a --foundry flag for wallet commands to use foundry keystores
