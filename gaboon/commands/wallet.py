@@ -14,33 +14,41 @@ from eth_account.types import (
 from argparse import Namespace
 from typing import cast
 
+ALIAS_TO_COMMAND = {
+    "add": "import", 
+    "i": "import",
+}
+
 
 def main(args: Namespace) -> int:
-    if args.wallet_command == "list":
+    wallet_command = ALIAS_TO_COMMAND.get(args.wallet_command, args.wallet_command)
+    if wallet_command == "list":
         list_accounts()
         return 0
-    elif args.wallet_command == "generate":
+    elif wallet_command == "generate":
         return generate_account(
             args.name,
             args.save,
             password=args.password,
             password_file=args.password_file,
         )
-    elif args.wallet_command == "import":
+    elif wallet_command == "import":
         return import_private_key(args.name)
-    elif args.wallet_command == "delete":
+    elif wallet_command == "delete":
         return delete_keystore(args.keystore_file_name)
-    elif args.wallet_command == "inspect":
+    elif wallet_command == "inspect":
         inspect(args.keystore_file_name)
-    elif args.wallet_command == "decrypt":
-        decrypt_key(
+    elif wallet_command == "decrypt":
+        key = decrypt_key(
             args.keystore_file_name,
             password=args.password,
             password_file_path=args.password_file_path,
             print_key=args.print_key,
         )
+        if key:
+            logger.info("Rerun the command and use the '-p' flag to print it.")
     else:
-        logger.error(f"Unknown accounts command: {args.wallet_command}")
+        logger.error(f"Unknown accounts command: {wallet_command}")
         return 1
     return 0
 
@@ -243,7 +251,7 @@ def decrypt_key(
                 return None
         elif password_file_path:
             with password_file_path.open("r") as fp:
-                password = fp.read()
+                password = fp.read().strip()
             try:
                 key = EthAccountsClass.decrypt(keystore_json, password)
             except Exception:
@@ -253,7 +261,7 @@ def decrypt_key(
     if print_key:
         logger.info(f"Private key: {key.to_0x_hex()}")
     else:
-        logger.info(
-            "Private key decrypted successfully. Rerun the command and use the '-p' flag to print it."
+        logger.debug(
+            "Private key decrypted successfully."
         )
     return key

@@ -25,6 +25,8 @@ class Network:
     url: str | None = None
     is_fork: bool = False
     is_zksync: bool = False
+    default_account_name: str | None = None
+    unsafe_password_file: Path | None = None
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
 
@@ -38,11 +40,11 @@ class Network:
         if self.is_fork:
             self._network_env = Env()
             self._network_env = cast(_AnyEnv, self._network_env)
-            boa.fork(self.url)
+            boa.fork(self.url) # This won't work for ZKSync?
             self._network_env.nickname = self.name
         else:
             if self.is_zksync:
-                self._network_env = ZksyncEnv(self.url, nickname=self.name)
+                self._network_env = ZksyncEnv(EthereumRPC(self.url), nickname=self.name)
             else:
                 self._network_env = NetworkEnv(
                     EthereumRPC(self.url), nickname=self.name
@@ -80,6 +82,8 @@ class _Networks:
                 is_fork=value.get("fork", False),
                 url=value.get("url", None),
                 is_zksync=value.get("zksync", False),
+                default_account_name=value.get("default_account_name", None),
+                unsafe_password_file=value.get("unsafe_password_file", None),
                 extra_data=value.get("extra_data", {}),
             )
             setattr(self, key, network)
@@ -135,6 +139,7 @@ class Config:
     _project_root: Path
     networks: _Networks
     dependencies: list[str]
+    extra_data: dict[str, Any]
 
     def __init__(self, root_path: Path):
         self._project_root = root_path
@@ -148,6 +153,7 @@ class Config:
         toml_data = self.expand_env_vars(toml_data)
         self.networks = _Networks(toml_data)
         self.dependencies = toml_data.get("dependencies", [])
+        self.extra_data = toml_data.get("extra_data", {})
 
     def _load_env_file(self):
         load_dotenv(dotenv_path=self.project_root.joinpath(DOT_ENV_FILE))

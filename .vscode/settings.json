@@ -1,9 +1,11 @@
 {
     "[python]": {
-      "editor.formatOnSave": true,
-      "editor.defaultFormatter": "charliermarsh.ruff"
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff"
     },
     "files.exclude": {
-      "**/__pycache__": true
-    }
-  }
+        "**/__pycache__": true
+    },
+    "python.terminal.activateEnvironment": false,
+    "python.terminal.executeInFileDir": true
+}

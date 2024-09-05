@@ -24,21 +24,31 @@ def _setup_network_and_account_from_args(
     network: str = None,
     url: str = None,
     fork: bool = False,
-    account: str = None,
-    private_key: str = None,
-    password: str = None,
-    password_file_path: Path = None,
+    account: str | None = None,
+    private_key: str | None = None,
+    password: str | None = None,
+    password_file_path: Path | None = None,
 ) -> None:
-    gab_account: GaboonAccount | None = None
-    config = get_config()
     if fork and account:
         raise ValueError("Cannot use --fork and --account at the same time")
+    
+    gab_account: GaboonAccount | None = None
+    config = get_config()
+
     if network and not url:
         config.networks.set_active_network(network, is_fork=fork)
     if url:
         config.networks.set_active_network(url, is_fork=fork)
+    
+    if password_file_path is None:
+        password_file_path = config.networks.get_active_network().unsafe_password_file
+    
+    if account is None:
+        account = config.networks.get_active_network().default_account_name
+
     if account:
-        # This will also attempt to unlock the account
+        # This will also attempt to unlock the account with a prompt
+        # If no password or password file is passed
         gab_account = GaboonAccount(
             keystore_path_or_account_name=account,
             password=password,
@@ -53,7 +63,7 @@ def _setup_network_and_account_from_args(
 
     if gab_account:
         boa.env.add_account(gab_account, force_eoa=True)
-        if boa.env.eoa is None:
-            logger.warning(
-                "No default EOA account found. Please add an account to the environment before attempting a transaction."
-            )
+    if boa.env.eoa is None:
+        logger.warning(
+            "No default EOA account found. Please add an account to the environment before attempting a transaction."
+        )

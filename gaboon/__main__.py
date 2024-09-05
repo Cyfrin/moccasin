@@ -242,7 +242,7 @@ Use this command to prepare your contracts for deployment or testing.""",
 
     # Import
     import_parser = wallet_subparsers.add_parser(
-        "import", aliases=["i"], help="Import a private key into an encrypted keystore"
+        "import", aliases=["i", "add"], help="Import a private key into an encrypted keystore"
     )
     import_parser.add_argument("name", help="Name of account to import")
 
