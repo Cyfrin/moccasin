@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import List
 from gaboon.config import initialize_global_config, get_config
 from gaboon._sys_path_and_config_setup import (
@@ -8,7 +7,6 @@ from gaboon._sys_path_and_config_setup import (
 import pytest
 import sys
 from argparse import Namespace
-from gaboon.logging import logger
 
 PYTEST_ARGS: list[str] = [
     "file_or_dir",
