@@ -1,4 +1,4 @@
-from src import Counter
+from contracts import Counter
 from gaboon.boa_tools import VyperContract
 
 

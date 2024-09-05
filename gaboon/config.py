@@ -10,6 +10,7 @@ import shutil
 import tempfile
 import boa
 from boa.environment import Env
+from gaboon.logging import logger
 
 if TYPE_CHECKING:
     from boa.network import NetworkEnv
@@ -155,6 +156,10 @@ class Config:
         self.networks = _Networks(toml_data)
         self.dependencies = toml_data.get("dependencies", [])
         self.layout = toml_data.get("layout", {})
+        if TESTS_FOLDER in self.layout:
+            logger.warning(
+                f"Tests folder is set to {self.layout[TESTS_FOLDER]}. This is not supported and will be ignored."
+            )
         self.extra_data = toml_data.get("extra_data", {})
 
     def _load_env_file(self):
@@ -219,7 +224,7 @@ class Config:
 
     @property
     def build_folder(self) -> str:
-        return self.layout.get("out", BUILD_FOLDER)
+        return self.layout.get(BUILD_FOLDER, BUILD_FOLDER)
     
     @property
     def out_folder(self) -> str:
@@ -227,19 +232,20 @@ class Config:
 
     @property
     def contracts_folder(self) -> str:
-        return self.layout.get("src", CONTRACTS_FOLDER)
+        return self.layout.get(CONTRACTS_FOLDER, CONTRACTS_FOLDER)
 
+    # Tests must be in "tests" folder
     @property
     def test_folder(self) -> str:
-        return self.layout.get("tests", TESTS_FOLDER)
+        return TESTS_FOLDER
     
     @property
     def script_folder(self) -> str:
-        return self.layout.get("script", SCRIPT_FOLDER)
+        return self.layout.get(SCRIPT_FOLDER, SCRIPT_FOLDER)
     
     @property
     def lib_folder(self) -> str:
-        return self.layout.get("lib", DEPENDENCIES_FOLDER)
+        return self.layout.get(DEPENDENCIES_FOLDER, DEPENDENCIES_FOLDER)
     
     @staticmethod
     def load_config_from_path(config_path: Path | None = None) -> "Config":

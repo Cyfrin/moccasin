@@ -19,7 +19,7 @@ def test_test_help(gab_path):
     assert result.returncode == 0
 
 
-def test_test_complex_project_has_no_warnings(cleanup_out_folder, gab_path):
+def test_test_complex_project_has_no_warnings(complex_cleanup_out_folder, gab_path):
     current_dir = Path.cwd()
     try:
         os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
@@ -35,7 +35,7 @@ def test_test_complex_project_has_no_warnings(cleanup_out_folder, gab_path):
     assert result.returncode == 0
 
 
-def test_test_complex_project_passes_pytest_flags(cleanup_out_folder, gab_path):
+def test_test_complex_project_passes_pytest_flags(complex_cleanup_out_folder, gab_path):
     current_dir = Path.cwd()
     try:
         os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))

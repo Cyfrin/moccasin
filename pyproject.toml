@@ -43,6 +43,7 @@ packages = ["gaboon"]
 [tool.rye.scripts]
 typecheck = "mypy . --implicit-optional"
 format = "ruff check . --fix"
+test = "pytest -x -s --ignore=tests/data/"
 
 [tool.mypy]
 disable_error_code = 'type-arg, attr-defined'

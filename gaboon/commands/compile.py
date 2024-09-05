@@ -15,23 +15,27 @@ def main(_: Namespace) -> int:
     initialize_global_config()
     config = get_config()
     project_path: Path = config.get_root()
-    compile_project(project_path, project_path.joinpath(config.out_folder), write_data=True)
+    compile_project(project_path, project_path.joinpath(config.out_folder), project_path.joinpath(config.contracts_folder), write_data=True)
     return 0
 
 
 def compile_project(
     project_path: Path | None = None,
     build_folder: Path | None = None,
+    contracts_folder: Path | None = None,
     write_data: bool = False,
 ):
     if project_path is None:
         project_path = get_config().get_root()
-
-    contracts_location = project_path / CONTRACTS_FOLDER
-    contracts_to_compile = list(contracts_location.rglob("*.vy"))
-
+    
     if not build_folder:
         build_folder = project_path.joinpath(BUILD_FOLDER)
+    
+    if not contracts_folder:
+        contracts_folder = project_path.joinpath(CONTRACTS_FOLDER)
+
+    contracts_location = project_path.joinpath(contracts_folder)
+    contracts_to_compile = list(contracts_location.rglob("*.vy"))
 
     logger.info(f"Compiling {len(contracts_to_compile)} contracts to {build_folder}...")
 
@@ -45,7 +49,6 @@ def compile_(
     contract_path: Path,
     build_folder: Path,
     compiler_args: dict | None = None,
-    project_path: Path | None = None,
     write_data: bool = False,
 ) -> VyperDeployer:
     logger.debug(f"Compiling contract {contract_path}")
