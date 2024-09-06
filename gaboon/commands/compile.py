@@ -6,6 +6,8 @@ from gaboon.logging import logger
 from gaboon.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER, GABOON_GITHUB
 from gaboon.config import get_config, initialize_global_config
 from vyper.exceptions import VersionException
+import traceback
+import sys
 
 from boa import load_partial
 from boa.contracts.vyper.vyper_contract import VyperDeployer
@@ -59,11 +61,14 @@ def compile_(
     # (note: boa.load_partial has compiler_data caching infrastructure
     try:
         deployer: VyperDeployer | VVMDeployer = load_partial(str(contract_path), compiler_args)
-    except VersionException as e:
-        logger.error(f"Unable to compile {contract_path.stem} due to {e.__class__.__name__} error. The error states is:\n{e.args[0]}")
+    except VersionException:
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        formatted_exception = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        logger.info(f"Unable to compile {contract_path.stem}:\n\n{formatted_exception}")
         logger.info(f"Perhaps make an issue on the GitHub repo: {GABOON_GITHUB}")
+        logger.info("If this contract is optional, you can ignore this error.")
         return None
-    
+        
     abi: list
     bytecode: bytes
     if isinstance(deployer, VVMDeployer):

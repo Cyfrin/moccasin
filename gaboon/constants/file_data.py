@@ -239,7 +239,6 @@ _For documentation, please run `gab --help` or visit [the Gaboon documentation](
 GAB_DEFAULT_CONFIG = """[layout]
 src = "src"
 out = "out"
-tests = "tests"
 script = "script"
 lib = "lib"
 

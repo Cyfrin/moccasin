@@ -22,6 +22,9 @@ requires-python = ">= 3.11"
 docs = [
     "sphinx>=8.0.2",
     "shibuya>=2024.8.30",
+    "sphinx-argparse>=0.5.2",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-multiversion>=0.2.4",
 ]
 
 [build-system]
@@ -50,6 +53,7 @@ packages = ["gaboon"]
 typecheck = "mypy . --implicit-optional"
 format = "ruff check . --fix"
 test = "pytest -x -s --ignore=tests/data/"
+docs = "sphinx-build -M html docs/source built_docs"
 
 [tool.mypy]
 disable_error_code = 'type-arg, attr-defined'

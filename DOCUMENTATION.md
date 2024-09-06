@@ -9,5 +9,7 @@ rye sync --features docs
 2. Run the build
 
 ```bash
-rye run sphinx-build -M html docs/source built_docs
+rye run docs
 ```
+
+3. Open `built_docs/html/index.html` in your browser, however you please

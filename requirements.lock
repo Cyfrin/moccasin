@@ -40,6 +40,7 @@ cytoolz==0.12.3
     # via eth-utils
 docutils==0.21.2
     # via sphinx
+    # via sphinx-argparse
 eth-abi==5.1.0
     # via eth-account
     # via titanoboa
@@ -159,6 +160,15 @@ sortedcontainers==2.4.0
 sphinx==8.0.2
     # via gaboon
     # via shibuya
+    # via sphinx-argparse
+    # via sphinx-copybutton
+    # via sphinx-multiversion
+sphinx-argparse==0.5.2
+    # via gaboon
+sphinx-copybutton==0.5.2
+    # via gaboon
+sphinx-multiversion==0.2.4
+    # via gaboon
 sphinxcontrib-applehelp==2.0.0
     # via sphinx
 sphinxcontrib-devhelp==2.0.0
