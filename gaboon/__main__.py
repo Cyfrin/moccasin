@@ -19,7 +19,11 @@ PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet"]
 
 
 def main(argv: list) -> int:
-    # REVIEW: probably just keep the `--version` one
+    """Run the Gaboon CLI with the given arguments.
+
+    Args:
+        argv (list): List of arguments to run the CLI with.
+    """
     if "--version" in argv or "version" in argv:
         print(get_version())
         return 0
@@ -43,7 +47,7 @@ def main(argv: list) -> int:
 This will create a basic directory structure at the path you specific, which looks like:
 .
 ├── README.md
-├── titanoboa.toml
+├── gaboon.toml
 ├── script
 │   └── deploy.py
 ├── src
@@ -242,7 +246,9 @@ Use this command to prepare your contracts for deployment or testing.""",
 
     # Import
     import_parser = wallet_subparsers.add_parser(
-        "import", aliases=["i", "add"], help="Import a private key into an encrypted keystore"
+        "import",
+        aliases=["i", "add"],
+        help="Import a private key into an encrypted keystore",
     )
     import_parser.add_argument("name", help="Name of account to import")
 

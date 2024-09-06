@@ -10,7 +10,14 @@ wheels/
 .venv
 
 # Ruff/Rye/MyPy
-
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
+
+# Gaboon
+built_docs/
+anvil1
+zkrich1
+default
+secrets/
+secret/

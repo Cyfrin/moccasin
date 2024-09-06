@@ -236,10 +236,18 @@ gab compile
 _For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/vyperlang/gaboon)_
 """
 
-GAB_DEFAULT_CONFIG = """[networks.pyevm]
-url = ""
+GAB_DEFAULT_CONFIG = """[layout]
+src = "src"
+out = "out"
+script = "script"
+lib = "lib"
 
 [networks.sepolia]
 url = "https://ethereum-sepolia-rpc.publicnode.com"
 chain_id = 11155111
+
+[networks.zksync-sepolia]
+url = "https://sepolia.era.zksync.dev"
+chain_id = 300
+is_zksync = true
 """

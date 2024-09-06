@@ -3,7 +3,7 @@ import pytest
 import os
 import sys
 import shutil
-from gaboon.constants.vars import BUILD_FOLDER, DEPENDENCIES_FOLDER
+from gaboon.constants.vars import DEPENDENCIES_FOLDER
 import gaboon.constants.vars as vars
 from gaboon.commands.wallet import save_to_keystores
 import tempfile
