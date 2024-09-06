@@ -3,11 +3,13 @@ from vyper.compiler.phases import CompilerData
 import vyper.compiler.output
 import json
 from gaboon.logging import logger
-from gaboon.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER
+from gaboon.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER, GABOON_GITHUB
 from gaboon.config import get_config, initialize_global_config
+from vyper.exceptions import VersionException
 
 from boa import load_partial
 from boa.contracts.vyper.vyper_contract import VyperDeployer
+from boa.contracts.vvm.vvm_contract import VVMDeployer
 from argparse import Namespace
 
 
@@ -50,16 +52,27 @@ def compile_(
     build_folder: Path,
     compiler_args: dict | None = None,
     write_data: bool = False,
-) -> VyperDeployer:
+) -> VyperDeployer | None:
     logger.debug(f"Compiling contract {contract_path}")
 
     # Getting the compiler Data
     # (note: boa.load_partial has compiler_data caching infrastructure
-    deployer: VyperDeployer = load_partial(str(contract_path), compiler_args)
-    compiler_data: CompilerData = deployer.compiler_data
-    bytecode = compiler_data.bytecode
-
-    abi = vyper.compiler.output.build_abi_output(compiler_data)
+    try:
+        deployer: VyperDeployer | VVMDeployer = load_partial(str(contract_path), compiler_args)
+    except VersionException as e:
+        logger.error(f"Unable to compile {contract_path.stem} due to {e.__class__.__name__} error. The error states is:\n{e.args[0]}")
+        logger.info(f"Perhaps make an issue on the GitHub repo: {GABOON_GITHUB}")
+        return None
+    
+    abi: list
+    bytecode: bytes
+    if isinstance(deployer, VVMDeployer):
+        abi = deployer.abi
+        bytecode = deployer.bytecode
+    else:
+        compiler_data: CompilerData = deployer.compiler_data
+        bytecode = compiler_data.bytecode
+        abi = vyper.compiler.output.build_abi_output(compiler_data)
 
     # Save Compilation Data
     contract_name = Path(contract_path).stem
