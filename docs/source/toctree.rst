@@ -15,10 +15,21 @@ Gaboon
     quickstart.rst
 
 .. toctree::
+    :caption: Project Overview
+    :maxdepth: 2
+
+    gaboon.toml.rst <gaboon_toml.rst>
+    layout.rst 
+    networks.rst
+    dependencies.rst
+
+.. toctree::
     :caption: CLI API Reference
     :maxdepth: 2
 
     cli.rst
+    common-errors.rst
+
 
 .. toctree::
     :caption: Gaboon By Example (Tutorials)

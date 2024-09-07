@@ -2,6 +2,7 @@ import importlib
 from pathlib import Path
 import tomllib
 import argparse
+from typing import Tuple
 from gaboon.logging import logger, set_log_level
 import sys
 from gaboon.constants.vars import CONFIG_NAME
@@ -28,8 +29,39 @@ def main(argv: list) -> int:
         print(get_version())
         return 0
 
-    parent_parser = create_parent_parser()
+    main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
 
+    ######################
+    ### PARSING STARTS ###
+    ######################
+    if len(argv) == 0 or (len(argv) == 1 and (argv[0] == "-h" or argv[0] == "--help")):
+        main_parser.print_help()
+        return 0
+
+    if (
+        ALIAS_TO_COMMAND.get(argv[0], argv[0]) in PRINT_HELP_ON_NO_SUB_COMMAND
+        and len(argv) < 2
+    ):
+        parser_to_print = sub_parsers._name_parser_map[argv[0]]
+        parser_to_print.print_help()
+        return 0
+
+    args = main_parser.parse_args(argv)
+    set_log_level(quiet=args.quiet, debug=args.debug)
+
+    if args.command:
+        command_to_run = ALIAS_TO_COMMAND.get(args.command, args.command)
+        logger.info(f"Running {command_to_run} command...")
+        importlib.import_module(f"gaboon.commands.{command_to_run}").main(args)
+    else:
+        main_parser.print_help()
+    return 0
+
+
+def generate_main_parser_and_sub_parsers() -> (
+    Tuple[argparse.ArgumentParser, argparse.Action]
+):
+    parent_parser = create_parent_parser()
     main_parser = argparse.ArgumentParser(
         prog="Gaboon CLI",
         description="🐍 Pythonic Smart Contract Development Framework",
@@ -332,32 +364,7 @@ Use this command to prepare your contracts for deployment or testing.""",
         type=str,
         nargs="+",
     )
-
-    ######################
-    ### PARSING STARTS ###
-    ######################
-    if len(argv) == 0 or (len(argv) == 1 and (argv[0] == "-h" or argv[0] == "--help")):
-        main_parser.print_help()
-        return 0
-
-    if (
-        ALIAS_TO_COMMAND.get(argv[0], argv[0]) in PRINT_HELP_ON_NO_SUB_COMMAND
-        and len(argv) < 2
-    ):
-        parser_to_print = sub_parsers._name_parser_map[argv[0]]
-        parser_to_print.print_help()
-        return 0
-
-    args = main_parser.parse_args(argv)
-    set_log_level(quiet=args.quiet, debug=args.debug)
-
-    if args.command:
-        command_to_run = ALIAS_TO_COMMAND.get(args.command, args.command)
-        logger.info(f"Running {command_to_run} command...")
-        importlib.import_module(f"gaboon.commands.{command_to_run}").main(args)
-    else:
-        main_parser.print_help()
-    return 0
+    return main_parser, sub_parsers
 
 
 ######################
