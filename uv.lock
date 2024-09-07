@@ -617,7 +617,7 @@ requires-dist = [
     { name = "sphinx-argparse", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
-    { name = "titanoboa", specifier = ">=0.2.1" },
+    { name = "titanoboa", specifier = ">=0.2.2" },
     { name = "titanoboa-zksync", specifier = ">=0.2.2" },
     { name = "tomli-w", specifier = ">=1.0.0" },
 ]
