@@ -21,15 +21,12 @@ All gaboon toml parameters
     is_fork = false
     is_zksync = false
     # This is the name of the account that will be unlocked when running on this network
-    default_account_name = anvil
+    default_account_name = "anvil"
     # If you don't provide a password or private key, gaboon will prompt you to unlock it 
     # If you do, it will unlock it automatically
     # But be careful about storing passwords and private keys! NEVER store them in plain text
-    unsafe_password_file = ~/.gaboon/password
+    unsafe_password_file = "/home/user/.gaboon/password"  # Replace with actual path
 
-    # toml files are essentially nicer formatter JSON so the line below:
-    extra_data = { "my_key" = "{$ETHERSCAN_API_KEY}" }
-    # is the same as:
     [networks.sepolia.extra_data]
     my_key = "{$ETHERSCAN_API_KEY}"
 

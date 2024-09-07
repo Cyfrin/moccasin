@@ -18,7 +18,7 @@ Gaboon
     :caption: Project Overview
     :maxdepth: 2
 
-    gaboon.toml.rst <gaboon_toml.rst>
+    gaboon.toml.rst <gaboon_toml>
     layout.rst 
     networks.rst
     dependencies.rst

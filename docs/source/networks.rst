@@ -10,8 +10,8 @@ Networks in `gaboon` are identified in your `gaboon.toml`. The complete list of 
     chain_id = 11155111
     is_fork = false
     is_zksync = false
-    default_account_name = anvil
-    unsafe_password_file = ~/.gaboon/password
+    default_account_name = "anvil"
+    unsafe_password_file = "~/.gaboon/password"
     extra_data = { "my_key" = "{$ETHERSCAN_API_KEY}" }
 
 Let's walk through what each of these options mean. 
