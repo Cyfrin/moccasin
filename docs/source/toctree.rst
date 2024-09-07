@@ -24,10 +24,17 @@ Gaboon
     dependencies.rst
 
 .. toctree::
-    :caption: CLI API Reference
+    :caption: Wallet
     :maxdepth: 2
 
-    cli.rst
+    wallet.rst
+
+.. toctree::
+    :caption: Reference
+    :maxdepth: 2
+
+    cli_commands.rst
+    all_gaboon_toml_parameters.rst
     common-errors.rst
 
 

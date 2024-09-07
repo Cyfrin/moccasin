@@ -28,7 +28,7 @@ You can learn more about each of the sections of the `gaboon.toml` file in their
 - `Network <network>`_
 - `Dependencies <dependencies>`_
 
-You can also see a full example of a `gaboon.toml` in the :doc:`all_gaboon_toml_parameters`_ documentation.
+You can also see a full example of a `gaboon.toml` in the :doc:`all gaboon toml parameters <all_gaboon_toml_parameters>` documentation.
 
 Extra Data 
 ==========
