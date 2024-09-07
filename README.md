@@ -3,6 +3,10 @@
 
 # Gaboon
 
+A fast, pythonic, Vyper smart contract testing and development framework.
+
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+
 <p align="center">
     <br />
     <a href="https://cyfrin.io/">
@@ -10,16 +14,7 @@
     <br />
 </p>
 
-A fast, pythonic, Vyper smart contract testing and development framework.
-
-[![Rye](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/rye/main/artwork/badge.json)](https://rye.astral.sh)
-
-Should be fast to install and test. 
-
-## Background
-
-> The Gaboon viper (Bitis gabonica), also called the Gaboon adder, is a viper species found in the rainforests and savannas of sub-Saharan Africa. Like all other vipers, it is venomous. It is the largest member of the genus Bitis, and has the longest fangs of any venomous snake – up to 2 inches (5 cm) in length – and the highest venom yield of any snake. No subspecies are recognized.
-
+Fast to install, test, and run python commands on your smart contracts.
 
 # Speed Comparisons
 
@@ -39,3 +34,7 @@ Should be fast to install and test.
 - [brownie](https://github.com/eth-brownie/brownie)
 - [vyper](https://github.com/vyperlang/vyper)
 - [boa](https://github.com/vyperlang/titanoboa)
+
+## Background
+
+> The Gaboon viper (Bitis gabonica), also called the Gaboon adder, is a viper species found in the rainforests and savannas of sub-Saharan Africa. Like all other vipers, it is venomous. It is the largest member of the genus Bitis, and has the longest fangs of any venomous snake – up to 2 inches (5 cm) in length – and the highest venom yield of any snake. No subspecies are recognized.

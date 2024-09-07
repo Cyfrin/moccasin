@@ -7,13 +7,26 @@ authors = [
     { name = "charles-cooper", email = "3867501+charles-cooper@users.noreply.github.com" },
 ]
 dependencies = [
-    "titanoboa>=0.2.1",
+    "titanoboa>=0.2.2",
     "python-dotenv>=1.0.1",
     "tomli-w>=1.0.0",
     "titanoboa-zksync>=v0.2.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.11"
+
+[tool.uv]
+managed = true
+package = true
+dev-dependencies = [
+    "gaboon>=0.1",
+    "pytest>=8.3.2",
+    "mypy>=1.11.0",
+    "snekmate>=0.1.0",
+    "vyper>=0.4.0",
+    "web3>=7.0.0b9",
+    "ruff>=0.6.3",
+]
 
 [project.scripts]
 "gab" = "gaboon:main"
@@ -31,29 +44,11 @@ docs = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.rye]
-managed = true
-dev-dependencies = [
-    "gaboon>=0.1",
-    "pytest>=8.3.2",
-    "mypy>=1.11.0",
-    "snekmate>=0.1.0",
-    "vyper>=0.4.0",
-    "web3>=7.0.0b9",
-    "ruff>=0.6.3",
-]
-
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["gaboon"]
-
-[tool.rye.scripts]
-typecheck = "mypy . --implicit-optional"
-format = "ruff check . --fix"
-test = "pytest -x -s --ignore=tests/data/"
-docs = "sphinx-build -M html docs/source built_docs"
 
 [tool.mypy]
 disable_error_code = 'type-arg, attr-defined'

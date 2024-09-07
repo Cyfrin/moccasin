@@ -3,19 +3,55 @@
 Installing Gaboon
 #################
 
-There are a few things you'll need on your machine before you can install Gaboon. Please install the appropriate tools from the `Prerequisites`_ section. Once you have those, the recommended way to :ref:`install Gaboon is via pipx <installation-with-pipx>`.
+There are a few things you'll need on your machine before you can install Gaboon. Please install the appropriate tools from the `Prerequisites`_ section. Once you have those, the recommended way to :ref:`install Gaboon is via uv <installation-with-uv>`.
 
 Prerequisites
 =============
 
 1. Python 3.11 or later
 
+.. _installation-with-uv:
+
+Installation with uv
+--------------------
+
+For those unfamiliar, `uv <https://docs.astral.sh/uv/>`_ is a fast python package manager, and that helps us install gaboon into it's own isolated virtual environment, so we don't get any weird dependency conflicts with other python packages. It's similar to `pip` and `pipx` if you've used them before. It even comes with some `pip` compatibility, will tools like `uv pip install`.
+
+It's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work as well. 
+
+The easiest way to install `uv` is:
+
+.. code-block:: bash
+
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+
+But you can head over to the `uv installation instructions <https://docs.astral.sh/uv/getting-started/installation/>`_ for more options.
+
+
+Then, to install gaboon with `uv`, run:
+
+.. code-block:: bash
+
+    uv tool install gaboon
+
+Once installed, to verify that Gaboon is installed, you can run:
+
+.. code-block:: bash
+
+    gab --version
+
+And see an output like:
+
+.. code-block:: bash
+
+    Gaboon CLI v0.1.0
+
 .. _installation-with-pipx:
 
 Installation with pipx
 ----------------------
 
-The recommended way to install Gaboon is via `pipx <https://github.com/pipxproject/pipx>`_. Pipx is a tool to help you install and run end-user applications written in Python. It's roughly similar to macOS's ``brew``, JavaScript's ``npx``, and Linux's ``apt``.
+Pipx is a tool to help you install and run end-user applications written in Python. It's roughly similar to macOS's ``brew``, JavaScript's ``npx``, and Linux's ``apt``.
 
 ``pipx`` installs Gaboon into a virtual environment and makes it available directly from the commandline. Once installed, you will never have to activate a virtual environment prior to using Gaboon.
 
@@ -63,27 +99,17 @@ To install with `pip`:
 
     pip install gaboon
 
-Installation with uv
---------------------
-
-You can install with `uv <https://docs.astral.sh/uv/>`_, and if you do so, it's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work. 
-
-To install with `uv`:
-
-.. code-block:: bash
-
-    uv pip install gaboon
-
 From source 
 -----------
 
-To install from source, you'll need the `rye tool installed <https://rye.astral.sh/guide/installation/>`_. Once installed, you can run:
+To install from source, you'll need the `uv tool installed <https://docs.astral.sh/uv/>`_. Once installed, you can run:
 
 .. code-block:: bash
 
     git clone https://github.com/vyperlang/gaboon
     cd gaboon
-    rye sync
+    uv sync
     source .venv/bin/activate
+    uv pip install -e .
 
-And you will have `gab` in your virtual environment created from the `rye` tool. It's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work. 
+And you will have `gab` in your virtual environment created from the `uv` tool. It's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work. 
