@@ -7,7 +7,7 @@ authors = [
     { name = "charles-cooper", email = "3867501+charles-cooper@users.noreply.github.com" },
 ]
 dependencies = [
-    "titanoboa>=0.2.1",
+    "titanoboa>=0.2.2",
     "python-dotenv>=1.0.1",
     "tomli-w>=1.0.0",
     "titanoboa-zksync>=v0.2.2",
