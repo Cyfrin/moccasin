@@ -7,6 +7,10 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 import gaboon
+import os
+import sys
+
+sys.path.insert(0, os.path.abspath("."))
 
 project = "gaboon"
 copyright = "2024, Patrick Collins, Charles Cooper"
@@ -21,6 +25,7 @@ extensions = [
     "sphinxarg.ext",
     "sphinx_copybutton",
     "sphinx_multiversion",
+    "sphinxarg.ext",
 ]
 
 master_doc = "toctree"
