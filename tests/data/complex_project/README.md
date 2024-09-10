@@ -10,4 +10,4 @@ boa init
 boa compile
 ```
 
-_For documentation, please run `boa --help` or visit [the Titanoboa documentation](https://github.com/vyperlang/titanoboa)_
+_For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/cyfrin/gaboon)_

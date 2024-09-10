@@ -66,8 +66,8 @@ def run_script(
         spec.loader.exec_module(module)
 
         # neat functionality:
-        if hasattr(module, "main") and callable(module.main):
-            result = module.main()
+        if hasattr(module, "gaboon_main") and callable(module.gaboon_main):
+            result = module.gaboon_main()
             return result
 
 

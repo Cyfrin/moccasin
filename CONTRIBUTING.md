@@ -43,7 +43,7 @@ Follow the steps to clone the repo for you to make changes to this project.
 1. Clone the repo
 
 ```bash
-git clone https://github.com/vyperlang/gaboon
+git clone https://github.com/cyfrin/gaboon
 cd gaboon
 ```
 

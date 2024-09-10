@@ -32,7 +32,7 @@ DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 REQUEST_HEADERS = {"User-Agent": "Gaboon"}
 PACKAGE_VERSION_FILE = "versions.toml"
 
-GABOON_GITHUB = "https://github.com/vyperlang/gaboon"
+GABOON_GITHUB = "https://github.com/cyfrin/gaboon"
 
 
 # DEFAULT_NETWORKS_BY_NAME: dict[str:dict] = {

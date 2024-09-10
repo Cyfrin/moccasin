@@ -10,5 +10,5 @@ def get_decimals():
     print(decimals)
 
 
-def main():
+def gaboon_main():
     get_decimals()

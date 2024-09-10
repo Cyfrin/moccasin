@@ -207,7 +207,7 @@ def deploy() -> VyperContract:
     print("Ending count: ", counter.number())
     return counter
 
-def main() -> VyperContract:
+def gaboon_main() -> VyperContract:
     return deploy()
 """
 
@@ -233,7 +233,7 @@ gab init
 gab compile
 ```
 
-_For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/vyperlang/gaboon)_
+_For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/cyfrin/gaboon)_
 """
 
 GAB_DEFAULT_CONFIG = """[layout]

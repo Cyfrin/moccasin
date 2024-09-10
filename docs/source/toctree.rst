@@ -18,7 +18,7 @@ Gaboon
     :caption: Project Overview
     :maxdepth: 2
 
-    gaboon.toml.rst <gaboon_toml>
+    gaboon.toml <gaboon_toml.rst>
     layout.rst 
     networks.rst
     dependencies.rst
@@ -28,6 +28,12 @@ Gaboon
     :maxdepth: 2
 
     wallet.rst
+
+.. toctree::
+    :caption: Scripting
+    :maxdepth: 2
+
+    script.rst
 
 .. toctree::
     :caption: Reference

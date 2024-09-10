@@ -48,7 +48,7 @@ html_static_path = ["_static"]
 # For the "Edit this page ->" link
 html_context = {
     "source_type": "github",
-    "source_user": "vyperlang",
+    "source_user": "cyfrin",
     "source_repo": "gaboon",
 }
 

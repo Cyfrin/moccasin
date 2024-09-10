@@ -64,7 +64,7 @@ For example:
 
 .. note::
 
-Snekmate is both a `pypi <https://pypi.org/project/snekmate/>`_ and a GitHub package.
+    Snekmate is both a `pypi <https://pypi.org/project/snekmate/>`_ and a GitHub package.
 
 This will create an entry in your `gaboon.toml` file that looks like this:
 

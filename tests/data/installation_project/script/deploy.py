@@ -12,5 +12,5 @@ def deploy() -> VyperContract:
     return counter
 
 
-def main() -> VyperContract:
+def gaboon_main() -> VyperContract:
     return deploy()

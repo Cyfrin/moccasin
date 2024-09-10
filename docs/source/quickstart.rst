@@ -72,7 +72,7 @@ Now, unlike other frameworks, with `gaboon`, we never need to compile! Gaboon us
         print("Ending count: ", counter.number())
         return counter
 
-    def main():
+    def gaboon_main():
         return deploy()
 
 We can see a python script that will:

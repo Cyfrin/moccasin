@@ -25,8 +25,11 @@ The easiest way to install `uv` is:
 
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
-But you can head over to the `uv installation instructions <https://docs.astral.sh/uv/getting-started/installation/>`_ for more options.
+But you can head over to the `uv installation instructions <https://docs.astral.sh/uv/getting-started/installation/>`_ for more options. If you don't have at least Python 3.11 installed, you'll need to install that first.
 
+.. code-block:: bash
+
+    uv python install 3.11
 
 Then, to install gaboon with `uv`, run:
 
@@ -106,7 +109,7 @@ To install from source, you'll need the `uv tool installed <https://docs.astral.
 
 .. code-block:: bash
 
-    git clone https://github.com/vyperlang/gaboon
+    git clone https://github.com/cyfrin/gaboon
     cd gaboon
     uv sync
     source .venv/bin/activate

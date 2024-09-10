@@ -16,6 +16,7 @@ test:
 
 # Build documentation
 docs:
+    uv sync --extra docs
     uv run sphinx-build -M html docs/source built_docs
 
 build-requirements:

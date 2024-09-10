@@ -24,6 +24,10 @@ Fast to install, test, and run python commands on your smart contracts.
 uv tool install gaboon-cli
 ```
 
+# Documentation
+
+The documentation roughly attempts to follow [Diátaxis](https://diataxis.fr/).
+
 # Speed Comparisons
 
 *The following comparisions were done taking the `user` result from running the bash `time` command followed by the appropriote command on an M3 MacOS*
