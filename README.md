@@ -16,6 +16,14 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 
 Fast to install, test, and run python commands on your smart contracts.
 
+# Quickstart
+
+*For users who understand these tools*
+
+```bash
+uv tool install gaboon-cli
+```
+
 # Speed Comparisons
 
 *The following comparisions were done taking the `user` result from running the bash `time` command followed by the appropriote command on an M3 MacOS*
