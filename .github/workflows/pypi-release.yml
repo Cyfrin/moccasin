@@ -3,6 +3,7 @@ name: pypi-release
 on:
   release:
     types: [released]
+  workflow_dispatch:
 
 jobs:
   build-and-publish:
