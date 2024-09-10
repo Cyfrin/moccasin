@@ -1,5 +1,5 @@
 [project]
-name = "gaboon"
+name = "gaboon-cli"
 version = "0.1.0"
 description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
