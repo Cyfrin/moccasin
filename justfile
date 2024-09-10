@@ -10,6 +10,10 @@ typecheck:
 format:
     uv run ruff check . --fix
 
+# Run formatter - no fix
+format-check:
+    uv run ruff check .
+
 # Run tests, fail on first test failure
 test:
     uv run pytest -x -s --ignore=tests/data/
