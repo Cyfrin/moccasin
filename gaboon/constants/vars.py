@@ -5,12 +5,16 @@ CONFIG_NAME = "gaboon.toml"
 README_PATH = "README.md"
 COUNTER_CONTRACT = "Counter.vy"
 
-# Default Folder Names
+# Default Project Values
 BUILD_FOLDER = "out"
 CONTRACTS_FOLDER = "src"
-TESTS_FOLDER = "tests"
 SCRIPT_FOLDER = "script"
 DEPENDENCIES_FOLDER = "lib"
+INSTALLER = "installer"
+DEFAULT_INSTALLER = "uv"
+
+# Tests folder is always tests
+TESTS_FOLDER = "tests"
 
 # Complex Vars
 DEFAULT_PROJECT_FOLDERS = [CONTRACTS_FOLDER, TESTS_FOLDER, SCRIPT_FOLDER]

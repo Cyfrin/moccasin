@@ -1,9 +1,5 @@
-dependencies = [
-    "snekmate @ git+https://github.com/pcaversaccio/snekmate",
-]
-
-[networks.pyevm]
-url = ""
+[project]
+dependencies = ["snekmate", "gaboon-cli"]
 
 [networks.sepolia]
 url = "https://ethereum-sepolia-rpc.publicnode.com"

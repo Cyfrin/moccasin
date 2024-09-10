@@ -29,7 +29,7 @@ If you wanted to adjust your contracts location, for example, have your smart co
 
 .. code-block:: toml
 
-    [layout]
+    [project]
     src = "contracts"
 
 

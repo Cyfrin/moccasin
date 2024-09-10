@@ -236,11 +236,12 @@ gab compile
 _For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/cyfrin/gaboon)_
 """
 
-GAB_DEFAULT_CONFIG = """[layout]
+GAB_DEFAULT_CONFIG = """[project]
 src = "src"
 out = "out"
 script = "script"
 lib = "lib"
+installer = "uv"
 
 [networks.sepolia]
 url = "https://ethereum-sepolia-rpc.publicnode.com"

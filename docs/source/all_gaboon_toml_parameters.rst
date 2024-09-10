@@ -8,7 +8,7 @@ All gaboon toml parameters
     dependencies = ["snekmate==0.1.0", "snekmate @ git+https://github.com/pcaversaccio/snekmate"]
 
     # Changes the names and locations of specific directories in your project
-    [layout]
+    [project]
     src = "contracts"
     out = "build"
     script = "scripts"

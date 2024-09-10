@@ -19,7 +19,7 @@ Gaboon
     :maxdepth: 2
 
     gaboon.toml <gaboon_toml.rst>
-    layout.rst 
+    project.rst 
     networks.rst
     dependencies.rst
 

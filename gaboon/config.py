@@ -1,7 +1,17 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, Union, cast
-from gaboon.constants.vars import CONFIG_NAME, DOT_ENV_FILE, CONTRACTS_FOLDER,BUILD_FOLDER,TESTS_FOLDER,SCRIPT_FOLDER,DEPENDENCIES_FOLDER
+from gaboon.constants.vars import (
+    CONFIG_NAME,
+    DOT_ENV_FILE,
+    CONTRACTS_FOLDER,
+    BUILD_FOLDER,
+    TESTS_FOLDER,
+    SCRIPT_FOLDER,
+    DEPENDENCIES_FOLDER,
+    INSTALLER,
+    DEFAULT_INSTALLER,
+)
 import tomllib
 from dotenv import load_dotenv
 import os
@@ -41,7 +51,7 @@ class Network:
         if self.is_fork:
             self._network_env = Env()
             self._network_env = cast(_AnyEnv, self._network_env)
-            boa.fork(self.url) # This won't work for ZKSync?
+            boa.fork(self.url)  # This won't work for ZKSync?
             self._network_env.nickname = self.name
         else:
             if self.is_zksync:
@@ -140,7 +150,7 @@ class Config:
     _project_root: Path
     networks: _Networks
     dependencies: list[str]
-    layout: dict[str, str]
+    project: dict[str, str]
     extra_data: dict[str, Any]
 
     def __init__(self, root_path: Path):
@@ -154,20 +164,22 @@ class Config:
         self._load_env_file()
         toml_data = self.expand_env_vars(toml_data)
         self.networks = _Networks(toml_data)
-        self.dependencies = toml_data.get("dependencies", [])
-        self.layout = toml_data.get("layout", {})
-        if TESTS_FOLDER in self.layout:
+        self.dependencies = toml_data.get("project", {}).get("dependencies", [])
+        self.project = toml_data.get("project", {})
+        if TESTS_FOLDER in self.project:
             logger.warning(
-                f"Tests folder is set to {self.layout[TESTS_FOLDER]}. This is not supported and will be ignored."
+                f"Tests folder is set to {self.project[TESTS_FOLDER]}. This is not supported and will be ignored."
             )
         self.extra_data = toml_data.get("extra_data", {})
 
     def _load_env_file(self):
         load_dotenv(dotenv_path=self.project_root.joinpath(DOT_ENV_FILE))
 
-    def read_gaboon_config(self, config_path: Path) -> dict:
-        if not str(config_path).endswith("/gaboon.toml"):
-            config_path = config_path.joinpath("gaboon.toml")
+    def read_gaboon_config(self, config_path: Path = None) -> dict:
+        if not config_path:
+            config_path = self._project_root
+        if not str(config_path).endswith(f"/{CONFIG_NAME}"):
+            config_path = config_path.joinpath(CONFIG_NAME)
         if not config_path.exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
         with open(config_path, "rb") as f:
@@ -192,7 +204,7 @@ class Config:
     def write_dependencies(self, new_dependencies: list):
         target_path = self._project_root / CONFIG_NAME
         toml_data = self.read_gaboon_config(target_path)
-        toml_data["dependencies"] = new_dependencies
+        toml_data["project"]["dependencies"] = new_dependencies
 
         # Create a temporary file in the same directory as the target file
         temp_file = tempfile.NamedTemporaryFile(
@@ -212,6 +224,14 @@ class Config:
 
         self.dependencies = new_dependencies
 
+    def get_base_dependencies_install_path(self) -> Path:
+        project_root = self._project_root
+        base_install_path = project_root / self.project.get(
+            DEPENDENCIES_FOLDER, DEPENDENCIES_FOLDER
+        )
+        base_install_path.mkdir(exist_ok=True)
+        return base_install_path
+
     def get_root(self) -> Path:
         return self._project_root
 
@@ -219,34 +239,38 @@ class Config:
         self.networks.set_active_network(self)
 
     @property
+    def installer(self) -> str:
+        return self.project.get(INSTALLER, DEFAULT_INSTALLER)
+
+    @property
     def project_root(self) -> Path:
         return self._project_root
 
     @property
     def build_folder(self) -> str:
-        return self.layout.get(BUILD_FOLDER, BUILD_FOLDER)
-    
+        return self.project.get(BUILD_FOLDER, BUILD_FOLDER)
+
     @property
     def out_folder(self) -> str:
         return self.build_folder
 
     @property
     def contracts_folder(self) -> str:
-        return self.layout.get(CONTRACTS_FOLDER, CONTRACTS_FOLDER)
+        return self.project.get(CONTRACTS_FOLDER, CONTRACTS_FOLDER)
 
     # Tests must be in "tests" folder
     @property
     def test_folder(self) -> str:
         return TESTS_FOLDER
-    
+
     @property
     def script_folder(self) -> str:
-        return self.layout.get(SCRIPT_FOLDER, SCRIPT_FOLDER)
-    
+        return self.project.get(SCRIPT_FOLDER, SCRIPT_FOLDER)
+
     @property
     def lib_folder(self) -> str:
-        return self.layout.get(DEPENDENCIES_FOLDER, DEPENDENCIES_FOLDER)
-    
+        return self.project.get(DEPENDENCIES_FOLDER, DEPENDENCIES_FOLDER)
+
     @staticmethod
     def load_config_from_path(config_path: Path | None = None) -> "Config":
         if config_path is None:

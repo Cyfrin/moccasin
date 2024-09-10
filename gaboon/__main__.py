@@ -14,6 +14,7 @@ ALIAS_TO_COMMAND = {
     "build": "compile",
     "c": "compile",
     "script": "run",
+    "config": "config_",
 }
 
 PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet"]
@@ -340,12 +341,27 @@ Use this command to prepare your contracts for deployment or testing.""",
     install_parser = sub_parsers.add_parser(
         "install",
         help="Installs the project's dependencies.",
-        description="Installs the project's dependencies.",
+        description="""Installs the project's dependencies. The first argument is the requirements, given as a pip-compatible strings and/or gaboon github formatted dependencies. 
+- Pip-compatible strings download dependencies as regular python packages from PyPI.
+- Gaboon github formatted dependencies download dependencies from the Gaboon github repository.
+
+Gaboon github formatted dependencies are formatted as:
+
+GITHUB_ORG/GITHUB_REPO@[@VERSION]
+
+Where:
+- GITHUB_ORG is the github organization or user that owns the repository.
+- GITHUB_REPO is the name of the repository.
+- VERSION is the optional version of the repository to download. If not provided, the latest version is downloaded.
+
+Examples:
+- pcaversaccio/snekmate@0.1.0 # Gaboon GitHub formatted dependency
+- snekmate==0.1.0 # Pip-compatible string""",
         parents=[parent_parser],
     )
     install_parser.add_argument(
         "requirements",
-        help="Requirements, given as a pip-compatible strings",
+        help="Requirements, given as a pip-compatible strings and/or gaboon github formatted dependencies.",
         type=str,
         nargs="*",
     )
@@ -360,10 +376,20 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
     purge_parser.add_argument(
         "packages",
-        help="Package name, given as a pip-compatible string",
+        help="Package name, given as a pip-compatible string and/or gaboon github formatted dependency.",
         type=str,
         nargs="+",
     )
+
+    # Config command
+    # ========================================================================
+    sub_parsers.add_parser(
+        "config",
+        help="View the Gaboon configuration.",
+        description="View the Gaboon configuration.",
+        parents=[parent_parser],
+    )
+
     return main_parser, sub_parsers
 
 
