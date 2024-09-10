@@ -21,6 +21,7 @@ from gaboon.constants.vars import (
 import tomllib
 import tomli_w
 from enum import Enum
+from urllib.parse import quote
 
 
 class DependencyType(Enum):
@@ -283,10 +284,10 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
                 package_path, _ = (
                     package.split("@", 1) if "@" in package else (package, None)
                 )
-                package_org, package_repo = package_path.split("/")
+                package_org, package_repo = str(package_path).split("/")
 
                 dep_path, _ = dep.split("@", 1) if "@" in dep else (dep, None)
-                dep_org, dep_repo = dep_path.split("/")
+                dep_org, dep_repo = str(dep_path).split("/")
                 if dep_org == package_org and dep_repo == package_repo:
                     to_delete.add(dep)
             if package not in to_delete:
