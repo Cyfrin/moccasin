@@ -14,6 +14,10 @@ format:
 test:
     uv run pytest -x -s --ignore=tests/data/
 
+# Run tests, fail on first test failure
+test-pdb:
+    uv run pytest -x -s --ignore=tests/data/ --pdb
+
 # Build documentation
 docs:
     uv sync --extra docs

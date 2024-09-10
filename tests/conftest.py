@@ -37,6 +37,15 @@ ANVIL_KEYSTORE_SAVED = {
     "version": 3,
 }
 
+INSTALLATION_STARTING_TOML = """[project]
+dependencies = ["snekmate", "gaboon-cli"]
+
+[networks.sepolia]
+url = "https://ethereum-sepolia-rpc.publicnode.com"
+chain_id = 11155111
+"""
+
+
 ## BASIC FIXTURES
 @pytest.fixture
 def anvil_keystore(monkeypatch):
@@ -50,10 +59,12 @@ def anvil_keystore(monkeypatch):
         monkeypatch.setattr(vars, "DEFAULT_KEYSTORES_PATH", Path(temp_dir))
         yield Path(temp_dir)
 
+
 @pytest.fixture
 def anvil_fork(monkeypatch):
     monkeypatch.setenv("FAKE_CHAIN_RPC_URL", ANVIL_URL)
     yield
+
 
 @pytest.fixture(scope="session")
 def gab_path():
@@ -61,14 +72,15 @@ def gab_path():
 
 
 ## COMPLEX PROJECT FIXTURES
-
 @pytest.fixture(scope="session")
 def complex_project_config() -> Config:
     return initialize_global_config(COMPLEX_PROJECT_PATH)
 
+
 @pytest.fixture(scope="session")
 def complex_out_folder(complex_project_config) -> Config:
     return complex_project_config.out_folder
+
 
 @pytest.fixture
 def complex_cleanup_out_folder(complex_out_folder):
@@ -77,9 +89,26 @@ def complex_cleanup_out_folder(complex_out_folder):
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)
 
+
 @pytest.fixture
 def complex_cleanup_dependencies_folder():
     yield
+    created_folder_path = COMPLEX_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
+    if os.path.exists(created_folder_path):
+        shutil.rmtree(created_folder_path)
+
+
+## INSTALLATION PROJECT FIXTURES
+@pytest.fixture(scope="session")
+def installation_project_config() -> Config:
+    return initialize_global_config(INSTALL_PROJECT_PATH)
+
+
+@pytest.fixture
+def installation_cleanup_dependencies():
+    yield
     created_folder_path = INSTALL_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
+    with open(INSTALL_PROJECT_PATH.joinpath("gaboon.toml"), "w") as f:
+        f.write(INSTALLATION_STARTING_TOML)
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)

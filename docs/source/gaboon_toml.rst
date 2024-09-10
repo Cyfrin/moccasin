@@ -2,7 +2,7 @@ gaboon.toml
 ##############
 
 The `gaboon.toml` file created is our configuration file. In this file we can have:
-- project layout settings 
+- project and layout settings 
 - network settings 
 - dependencies 
 - extra data
@@ -11,7 +11,7 @@ A `gaboon.toml` file can look like this:
 
 .. code-block:: toml
 
-    [layout]
+    [project]
     src = "contracts"
 
     [networks.sepolia]
@@ -24,7 +24,7 @@ A `gaboon.toml` file can look like this:
 
 You can learn more about each of the sections of the `gaboon.toml` file in their respective documentation.
 
-- `Layout <layout>`_
+- `Project <project>`_
 - `Network <network>`_
 - `Dependencies <dependencies>`_
 
