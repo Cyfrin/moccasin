@@ -2,9 +2,13 @@ gaboon.toml
 ##############
 
 The `gaboon.toml` file created is our configuration file. In this file we can have:
+
 - project and layout settings 
+
 - network settings 
-- dependencies 
+
+- dependencies settings
+
 - extra data
 
 A `gaboon.toml` file can look like this:
