@@ -59,8 +59,8 @@ def classify_dependency(dependency: str) -> DependencyType:
 
     if re.match(github_pattern, dependency):
         return DependencyType.GITHUB
-    else:
-        return DependencyType.PIP
+
+    return DependencyType.PIP
 
 
 # Much of this code thanks to brownie
