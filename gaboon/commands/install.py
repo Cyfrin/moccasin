@@ -14,7 +14,6 @@ import sys
 import traceback
 from tqdm import tqdm
 import zipfile
-from io import BytesIO
 from gaboon.constants.vars import (
     REQUEST_HEADERS,
     PACKAGE_VERSION_FILE,
@@ -80,7 +79,7 @@ def _github_installs(
             org, repo = path.split("/")
         except ValueError:
             raise ValueError(
-                "Invalid package ID. Must be given as ORG/REPO@[VERSION]"
+                "Invalid package ID. Must be given as ORG/REPO[@VERSION]"
                 "\ne.g. 'pcaversaccio/snekmate@v2.5.0'"
             ) from None
 
@@ -162,12 +161,6 @@ def _get_latest_version(org: str, repo: str, headers: dict) -> str:
             return data[0]["name"].lstrip("v")
 
     raise ValueError(f"Unable to determine latest version for {org}/{repo}")
-
-
-import requests
-from tqdm import tqdm
-import zipfile
-import os
 
 
 def _stream_download(
@@ -306,7 +299,8 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
         if dep not in new_deps:
             new_deps.append(dep)
 
-    config.write_dependencies(new_deps)
+    if len(new_deps) > 0:
+        config.write_dependencies(new_deps)
 
 
 @dataclass

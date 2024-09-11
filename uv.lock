@@ -1,5 +1,9 @@
 version = 1
 requires-python = ">=3.11, <3.13"
+resolution-markers = [
+    "python_full_version < '3.12'",
+    "python_full_version >= '3.12'",
+]
 
 [[package]]
 name = "aiohappyeyeballs"
@@ -584,6 +588,7 @@ dependencies = [
     { name = "titanoboa" },
     { name = "titanoboa-zksync" },
     { name = "tomli-w" },
+    { name = "tomlkit" },
     { name = "tqdm" },
 ]
 
@@ -617,6 +622,7 @@ requires-dist = [
     { name = "titanoboa", specifier = ">=0.2.2" },
     { name = "titanoboa-zksync", specifier = ">=0.2.2" },
     { name = "tomli-w", specifier = ">=1.0.0" },
+    { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
 ]
 
@@ -1405,6 +1411,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/49/05/6bf21838623186b91aedbda06248ad18f03487dc56fbc20e4db384abde6c/tomli_w-1.0.0.tar.gz", hash = "sha256:f463434305e0336248cac9c2dc8076b707d8a12d019dd349f5c1e382dd1ae1b9", size = 6531 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/bb/01/1da9c66ecb20f31ed5aa5316a957e0b1a5e786a0d9689616ece4ceaf1321/tomli_w-1.0.0-py3-none-any.whl", hash = "sha256:9f2a07e8be30a0729e533ec968016807069991ae2fd921a78d42f429ae5f4463", size = 5984 },
+]
+
+[[package]]
+name = "tomlkit"
+version = "0.13.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/b1/09/a439bec5888f00a54b8b9f05fa94d7f901d6735ef4e55dcec9bc37b5d8fa/tomlkit-0.13.2.tar.gz", hash = "sha256:fff5fe59a87295b278abd31bec92c15d9bc4a06885ab12bcea52c71119392e79", size = 192885 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f9/b6/a447b5e4ec71e13871be01ba81f5dfc9d0af7e473da256ff46bc0e24026f/tomlkit-0.13.2-py3-none-any.whl", hash = "sha256:7a974427f6e119197f670fbbbeae7bef749a6c14e793db934baefc1b5f03efde", size = 37955 },
 ]
 
 [[package]]
