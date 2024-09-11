@@ -201,7 +201,7 @@ def _maybe_retrieve_github_auth() -> dict[str, str]:
     Otherwise returns an empty dict if no auth token is present.
     """
     token = os.getenv("GITHUB_TOKEN")
-    if token:
+    if token is not None:
         auth = b64encode(token.encode()).decode()
         return {"Authorization": f"Basic {auth}"}
     return {}
