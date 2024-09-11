@@ -229,7 +229,10 @@ class Config:
         base_install_path = project_root / self.project.get(
             DEPENDENCIES_FOLDER, DEPENDENCIES_FOLDER
         )
-        base_install_path.mkdir(exist_ok=True)
+        base_install_path.mkdir(
+            exist_ok=True,
+            parents=True,
+        )
         return base_install_path
 
     def get_root(self) -> Path:
