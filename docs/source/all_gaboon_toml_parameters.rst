@@ -3,16 +3,16 @@ All gaboon toml parameters
 
 .. code-block:: toml
 
-    # You can have python dependencies and also straight github dependencies
-    # These are going to be dependencies for your vyper contracts
-    dependencies = ["snekmate==0.1.0", "snekmate @ git+https://github.com/pcaversaccio/snekmate"]
-
     # Changes the names and locations of specific directories in your project
     [project]
     src = "contracts"
     out = "build"
     script = "scripts"
     lib = "dependencies"
+    # You can have pip-style dependencies and also github-style dependencies
+    # These are going to be dependencies for your vyper contracts
+    dependencies = ["snekmate==0.1.0", "pcaversaccio/snekmate@0.1.0"]
+    installer = "uv"
 
     # Add network settings to easily interact with networks
     [networks.sepolia]

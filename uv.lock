@@ -580,15 +580,6 @@ wheels = [
 ]
 
 [[package]]
-name = "gaboon"
-version = "0.1.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f9/19/baaa061a22b7a8c9e1b688824cdfd3d4b228aaf86fa85633f6e0b080f63c/gaboon-0.1.tar.gz", hash = "sha256:5aa31127912157d50e499e7580648b129771fda4c4408fdff444522c63fa3f4c", size = 3470 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5a/55/499b9afee7a6d08d416365c2b318e1aa1add7062c41bdd63dad654b10bea/gaboon-0.1-py3-none-any.whl", hash = "sha256:79e86b1bddf9ecb9c556d743f0ebb405a8a6f3192532736ff760d3985271e990", size = 4117 },
-]
-
-[[package]]
 name = "gaboon-cli"
 version = "0.1.0"
 source = { editable = "." }
@@ -611,7 +602,6 @@ docs = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "gaboon" },
     { name = "mypy" },
     { name = "pytest" },
     { name = "ruff" },
@@ -636,7 +626,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "gaboon", specifier = ">=0.1" },
+    { name = "gaboon-cli", editable = "." },
     { name = "mypy", specifier = ">=1.11.0" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "ruff", specifier = ">=0.6.3" },

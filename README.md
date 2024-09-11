@@ -7,12 +7,12 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
-<p align="center">
+<!-- <p align="center">
     <br />
     <a href="https://cyfrin.io/">
         <img src="./img/gaboon-logo.png" width="250" alt=""/></a>
     <br />
-</p>
+</p> -->
 
 Fast to install, test, and run python commands on your smart contracts.
 

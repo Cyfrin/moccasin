@@ -1,6 +1,6 @@
 .. image:: _static/docs-logo.png
     :width: 140px
-    :alt: Vyper logo
+    :alt: Gaboon logo
     :align: center
 
 
