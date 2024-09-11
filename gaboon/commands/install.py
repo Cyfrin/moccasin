@@ -1,4 +1,5 @@
 from argparse import Namespace
+from dataclasses import dataclass
 from pathlib import Path
 import shutil
 import subprocess
@@ -266,7 +267,6 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
         dep for dep in dependencies if classify_dependency(dep) == dependency_type
     ]
 
-    # Write to dependencies file
     to_delete = set()
     updated_packages = set()
 
@@ -285,19 +285,14 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
                 logger.info(f"Updated package: {package}")
     else:  # GIT dependencies
         for package in new_package_ids:
-            package_path, _ = (
-                package.split("@", 1) if "@" in package else (package, None)
-            )
-            package_org, package_repo = str(package_path).split("/")
-
+            package_dep = GitHubDependency.from_string(package)
             for dep in typed_dependencies:
-                dep_path, _ = dep.split("@", 1) if "@" in dep else (dep, None)
-                dep_org, dep_repo = str(dep_path).split("/")
-                if dep_org == package_org and dep_repo == package_repo:
+                dep_gh = GitHubDependency.from_string(dep)
+                if dep_gh.org == package_dep.org and dep_gh.repo == package_dep.repo:
                     to_delete.add(dep)
-                    updated_packages.add(f"{package_org}/{package_repo}")
+                    updated_packages.add(f"{package_dep.org}/{package_dep.repo}")
 
-            if f"{package_org}/{package_repo}" not in updated_packages:
+            if f"{package_dep.org}/{package_dep.repo}" not in updated_packages:
                 logger.info(f"Installed {package}")
             else:
                 logger.info(f"Updated {package}")
@@ -312,3 +307,23 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
             new_deps.append(dep)
 
     config.write_dependencies(new_deps)
+
+
+@dataclass
+class GitHubDependency:
+    org: str
+    repo: str
+    version: str | None = None
+
+    @classmethod
+    def from_string(cls, dep_string: str) -> "GitHubDependency":
+        path, version = (
+            dep_string.split("@", 1) if "@" in dep_string else (dep_string, None)
+        )
+        org, repo = str(path).split("/")
+        return cls(org, repo, version)
+
+    def __str__(self) -> str:
+        if self.version:
+            return f"{self.org}/{self.repo}@{self.version}"
+        return f"{self.org}/{self.repo}"
