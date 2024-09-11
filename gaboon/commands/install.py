@@ -168,16 +168,7 @@ def _stream_download(
 ) -> None:
     response = requests.get(download_url, stream=True, headers=headers)
 
-    if response.status_code == 404:
-        raise ConnectionError(
-            f"404 error when attempting to download from {download_url} - "
-            "are you sure this is a valid mix? https://github.com/brownie-mix"
-        )
-    if response.status_code != 200:
-        raise ConnectionError(
-            f"Received status code {response.status_code} when attempting "
-            f"to download from {download_url}"
-        )
+    response.raise_for_status()
 
     total_size = int(response.headers.get("content-length", 0))
     progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
