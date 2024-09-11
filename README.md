@@ -18,6 +18,8 @@ Fast to install, test, and run python commands on your smart contracts.
 
 # Quickstart
 
+Head over to [the gaboon installation documentation](https://cyfrin.github.io/gaboon/installing-gaboon.html) to for other install methodologies and getting stated.
+
 
 ```bash
 uv tool install gaboon-cli
