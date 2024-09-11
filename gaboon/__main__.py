@@ -414,8 +414,8 @@ def get_version() -> str:
     with open(
         Path(__file__).resolve().parent.parent.joinpath("pyproject.toml"), "rb"
     ) as f:
-        boa_cli_data = tomllib.load(f)
-        return GAB_CLI_VERSION_STRING.format(boa_cli_data["project"]["version"])
+        gaboon_cli_data = tomllib.load(f)
+        return GAB_CLI_VERSION_STRING.format(gaboon_cli_data["project"]["version"])
 
 
 def validate_generate_args(args):

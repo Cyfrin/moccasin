@@ -15,7 +15,6 @@ sys.path.insert(0, os.path.abspath("."))
 project = "gaboon"
 copyright = "2024, Patrick Collins, Charles Cooper"
 author = "Patrick Collins, Charles Cooper"
-release = "0.1.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -56,4 +55,4 @@ html_context = {
 smv_remote_whitelist = r"^origin$"
 smv_branch_whitelist = r"^master$"  # master is gross
 smv_tag_whitelist = r"^v\d+\.\d+.\d+$"
-version = gaboon.version()  # TODO
+version = gaboon.version()
