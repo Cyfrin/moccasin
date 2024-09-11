@@ -18,7 +18,6 @@ Fast to install, test, and run python commands on your smart contracts.
 
 # Quickstart
 
-*For users who understand these tools*
 
 ```bash
 uv tool install gaboon-cli
