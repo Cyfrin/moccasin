@@ -211,18 +211,7 @@ def _get_download_url_from_tag(org: str, repo: str, version: str, headers: dict)
     response = requests.get(
         f"https://api.github.com/repos/{org}/{repo}/tags?per_page=100", headers=headers
     )
-    if response.status_code != 200:
-        msg = "Status {} when getting package versions from Github: '{}'".format(
-            response.status_code, response.json()["message"]
-        )
-        if response.status_code in (403, 404):
-            msg += (
-                "\n\nMissing or forbidden.\n"
-                "If this issue persists, generate a Github API token and store"
-                " it as the environment variable `GITHUB_TOKEN`:\n"
-                "https://github.blog/2013-05-16-personal-api-tokens/"
-            )
-        raise ConnectionError(msg)
+    response.raise_for_status()
 
     data = response.json()
     if not data:
