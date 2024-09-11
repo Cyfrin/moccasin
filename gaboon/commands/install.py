@@ -163,24 +163,36 @@ def _get_latest_version(org: str, repo: str, headers: dict) -> str:
     raise ValueError(f"Unable to determine latest version for {org}/{repo}")
 
 
+import requests
+from tqdm import tqdm
+import zipfile
+import os
+
+
 def _stream_download(
     download_url: str, target_path: str, headers: dict[str, str] = REQUEST_HEADERS
 ) -> None:
-    response = requests.get(download_url, stream=True, headers=headers)
+    with requests.get(download_url, stream=True, headers=headers) as response:
+        response.raise_for_status()
+        total_size = int(response.headers.get("content-length", 0))
 
-    response.raise_for_status()
+        temp_file = os.path.join(target_path, "temp_download.zip")
 
-    total_size = int(response.headers.get("content-length", 0))
-    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
-    content = bytes()
+        with open(temp_file, "wb") as f, tqdm(
+            desc="Downloading",
+            total=total_size,
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as progress_bar:
+            for data in response.iter_content(chunk_size=8192):
+                size = f.write(data)
+                progress_bar.update(size)
 
-    for data in response.iter_content(1024, decode_unicode=True):
-        progress_bar.update(len(data))
-        content += data
-    progress_bar.close()
+        with zipfile.ZipFile(temp_file, "r") as zip_ref:
+            zip_ref.extractall(target_path)
 
-    with zipfile.ZipFile(BytesIO(content)) as zf:
-        zf.extractall(target_path)
+        os.remove(temp_file)
 
 
 def _maybe_retrieve_github_auth() -> dict[str, str]:
