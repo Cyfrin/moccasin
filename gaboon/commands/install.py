@@ -216,14 +216,19 @@ def _get_download_url_from_tag(org: str, repo: str, version: str, headers: dict)
     data = response.json()
     if not data:
         raise ValueError("Github repository has no tags set")
-    org, repo = data[0]["zipball_url"].split("/")[3:5]
-    tags = [i["name"].lstrip("v") for i in data]
-    if version not in tags:
-        raise ValueError(
-            "Invalid version for this package. Available versions are:\n"
-            + ", ".join(tags)
-        ) from None
-    return next(i["zipball_url"] for i in data if i["name"].lstrip("v") == version)
+
+    available_versions = []
+    for tag in data:
+        tag_version = tag["name"].lstrip("v")
+        available_versions.append(tag_version)
+        if tag_version == version:
+            return tag["zipball_url"]
+
+    # If we've gone through all tags without finding a match, raise an error
+    raise ValueError(
+        f"Invalid version '{version}' for this package. Available versions are:\n"
+        + ", ".join(available_versions)
+    )
 
 
 def _pip_installs(
