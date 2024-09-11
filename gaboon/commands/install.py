@@ -179,7 +179,7 @@ def _stream_download(
             unit_scale=True,
             unit_divisor=1024,
         ) as progress_bar:
-            for data in response.iter_content(chunk_size=8192):
+            for data in response.iter_content(chunk_size=None):
                 size = f.write(data)
                 progress_bar.update(size)
 

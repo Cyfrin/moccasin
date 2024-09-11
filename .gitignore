@@ -21,3 +21,4 @@ zkrich1
 default
 secrets/
 secret/
+.DS_Store
