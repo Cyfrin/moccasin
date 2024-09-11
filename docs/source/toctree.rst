@@ -24,16 +24,13 @@ Gaboon
     dependencies.rst
 
 .. toctree::
-    :caption: Wallet
+    :caption: Major Commands
     :maxdepth: 2
 
-    wallet.rst
-
-.. toctree::
-    :caption: Scripting
-    :maxdepth: 2
-
-    script.rst
+    wallet <wallet.rst>
+    run <script.rst>
+    test <testing.rst>
+    console <console.rst>
 
 .. toctree::
     :caption: Reference
@@ -42,10 +39,3 @@ Gaboon
     cli_commands.rst
     all_gaboon_toml_parameters.rst
     common-errors.rst
-
-
-.. toctree::
-    :caption: Gaboon By Example (Tutorials)
-    :maxdepth: 2
-
-    basic-tutorial.rst
