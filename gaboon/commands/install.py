@@ -268,31 +268,47 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
 
     # Write to dependencies file
     to_delete = set()
+    updated_packages = set()
+
     if dependency_type == DependencyType.PIP:
         for package in new_package_ids:
+            package_req = Requirement(package)
             for dep in typed_dependencies:
-                if Requirement(dep).name == Requirement(package).name:
+                dep_req = Requirement(dep)
+                if dep_req.name == package_req.name:
                     to_delete.add(dep)
-            if package not in to_delete:
-                logger.info(f"Installed {package}")
-    else:
-        for package in new_package_ids:
-            for dep in typed_dependencies:
-                package_path, _ = (
-                    package.split("@", 1) if "@" in package else (package, None)
-                )
-                package_org, package_repo = str(package_path).split("/")
+                    updated_packages.add(package_req.name)
 
+            if package_req.name not in updated_packages:
+                logger.info(f"Installed new package: {package}")
+            else:
+                logger.info(f"Updated package: {package}")
+    else:  # GIT dependencies
+        for package in new_package_ids:
+            package_path, _ = (
+                package.split("@", 1) if "@" in package else (package, None)
+            )
+            package_org, package_repo = str(package_path).split("/")
+
+            for dep in typed_dependencies:
                 dep_path, _ = dep.split("@", 1) if "@" in dep else (dep, None)
                 dep_org, dep_repo = str(dep_path).split("/")
                 if dep_org == package_org and dep_repo == package_repo:
                     to_delete.add(dep)
-            if package not in to_delete:
-                logger.info(f"Installed {package}")
+                    updated_packages.add(f"{package_org}/{package_repo}")
 
+            if f"{package_org}/{package_repo}" not in updated_packages:
+                logger.info(f"Installed {package}")
+            else:
+                logger.info(f"Updated {package}")
+
+    # Remove old versions of updated packages
     dependencies = [dep for dep in dependencies if dep not in to_delete]
-    # TODO: keep original order of dependencies
-    # e.g. if gaboon.toml has snekmate==0.1.0 and user installs
-    # snekmate==0.2.0, we should keep the original order in the toml file.
-    dependencies.extend(new_package_ids)
-    config.write_dependencies(dependencies)
+
+    # Add new packages while preserving order
+    new_deps = []
+    for dep in dependencies + new_package_ids:
+        if dep not in new_deps:
+            new_deps.append(dep)
+
+    config.write_dependencies(new_deps)
