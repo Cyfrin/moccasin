@@ -14,10 +14,7 @@ import sys
 import traceback
 from tqdm import tqdm
 import zipfile
-from gaboon.constants.vars import (
-    REQUEST_HEADERS,
-    PACKAGE_VERSION_FILE,
-)
+from gaboon.constants.vars import REQUEST_HEADERS, PACKAGE_VERSION_FILE
 import tomllib
 import tomli_w
 from enum import Enum
@@ -166,27 +163,30 @@ def _get_latest_version(org: str, repo: str, headers: dict) -> str:
 def _stream_download(
     download_url: str, target_path: str, headers: dict[str, str] = REQUEST_HEADERS
 ) -> None:
-    with requests.get(download_url, stream=True, headers=headers) as response:
-        response.raise_for_status()
-        total_size = int(response.headers.get("content-length", 0))
+    response = requests.get(download_url, stream=True, headers=headers)
+    response.raise_for_status()
+    total_size = int(response.headers.get("content-length", 0))
 
-        temp_file = os.path.join(target_path, "temp_download.zip")
+    temp_file = os.path.join(target_path, "temp_download.zip")
 
-        with open(temp_file, "wb") as f, tqdm(
+    with (
+        open(temp_file, "wb") as f,
+        tqdm(
             desc="Downloading",
             total=total_size,
             unit="iB",
             unit_scale=True,
             unit_divisor=1024,
-        ) as progress_bar:
-            for data in response.iter_content(chunk_size=None):
-                size = f.write(data)
-                progress_bar.update(size)
+        ) as progress_bar,
+    ):
+        for data in response.iter_content(chunk_size=None):
+            size = f.write(data)
+            progress_bar.update(size)
 
-        with zipfile.ZipFile(temp_file, "r") as zip_ref:
-            zip_ref.extractall(target_path)
+    with zipfile.ZipFile(temp_file, "r") as zip_ref:
+        zip_ref.extractall(target_path)
 
-        os.remove(temp_file)
+    os.remove(temp_file)
 
 
 def _maybe_retrieve_github_auth() -> dict[str, str]:
@@ -283,7 +283,7 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
                 dep_gh = GitHubDependency.from_string(dep)
                 if dep_gh.org == package_dep.org and dep_gh.repo == package_dep.repo:
                     to_delete.add(dep)
-                    updated_packages.add(f"{package_dep.org}/{package_dep.repo}")
+                    updated_packages.add(package_dep.format_no_version())
 
             if f"{package_dep.org}/{package_dep.repo}" not in updated_packages:
                 logger.info(f"Installed {package}")
@@ -319,7 +319,10 @@ class GitHubDependency:
         org, repo = str(path).split("/")
         return cls(org, repo, version)
 
+    def format_no_version(self) -> str:
+        return f"{self.org}/{self.repo}"
+
     def __str__(self) -> str:
         if self.version:
             return f"{self.org}/{self.repo}@{self.version}"
-        return f"{self.org}/{self.repo}"
+        return self.format_no_version()

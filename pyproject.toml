@@ -65,3 +65,6 @@ exclude = [
 
 [tool.pytest.ini_options]
 addopts = "--ignore=tests/data/"
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
