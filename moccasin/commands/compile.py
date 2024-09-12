@@ -2,9 +2,9 @@ from pathlib import Path
 from vyper.compiler.phases import CompilerData
 import vyper.compiler.output
 import json
-from gaboon.logging import logger
-from gaboon.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER, GABOON_GITHUB
-from gaboon.config import get_config, initialize_global_config
+from moccasin.logging import logger
+from moccasin.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER, MOCCASIN_GITHUB
+from moccasin.config import get_config, initialize_global_config
 from vyper.exceptions import VersionException
 import traceback
 import sys
@@ -19,7 +19,12 @@ def main(_: Namespace) -> int:
     initialize_global_config()
     config = get_config()
     project_path: Path = config.get_root()
-    compile_project(project_path, project_path.joinpath(config.out_folder), project_path.joinpath(config.contracts_folder), write_data=True)
+    compile_project(
+        project_path,
+        project_path.joinpath(config.out_folder),
+        project_path.joinpath(config.contracts_folder),
+        write_data=True,
+    )
     return 0
 
 
@@ -31,10 +36,10 @@ def compile_project(
 ):
     if project_path is None:
         project_path = get_config().get_root()
-    
+
     if not build_folder:
         build_folder = project_path.joinpath(BUILD_FOLDER)
-    
+
     if not contracts_folder:
         contracts_folder = project_path.joinpath(CONTRACTS_FOLDER)
 
@@ -60,15 +65,19 @@ def compile_(
     # Getting the compiler Data
     # (note: boa.load_partial has compiler_data caching infrastructure
     try:
-        deployer: VyperDeployer | VVMDeployer = load_partial(str(contract_path), compiler_args)
+        deployer: VyperDeployer | VVMDeployer = load_partial(
+            str(contract_path), compiler_args
+        )
     except VersionException:
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        formatted_exception = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        formatted_exception = "".join(
+            traceback.format_exception(exc_type, exc_value, exc_traceback)
+        )
         logger.info(f"Unable to compile {contract_path.stem}:\n\n{formatted_exception}")
-        logger.info(f"Perhaps make an issue on the GitHub repo: {GABOON_GITHUB}")
+        logger.info(f"Perhaps make an issue on the GitHub repo: {MOCCASIN_GITHUB}")
         logger.info("If this contract is optional, you can ignore this error.")
         return None
-        
+
     abi: list
     bytecode: bytes
     if isinstance(deployer, VVMDeployer):

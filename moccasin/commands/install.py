@@ -4,8 +4,8 @@ from pathlib import Path
 import shutil
 import subprocess
 from packaging.requirements import Requirement
-from gaboon.config import get_config
-from gaboon.logging import logger
+from moccasin.config import get_config
+from moccasin.logging import logger
 import os
 from base64 import b64encode
 import re
@@ -14,7 +14,7 @@ import sys
 import traceback
 from tqdm import tqdm
 import zipfile
-from gaboon.constants.vars import REQUEST_HEADERS, PACKAGE_VERSION_FILE
+from moccasin.constants.vars import REQUEST_HEADERS, PACKAGE_VERSION_FILE
 import tomllib
 import tomli_w
 from enum import Enum
@@ -246,7 +246,7 @@ def _pip_installs(
         )
         logger.error(e)
         logger.info(
-            f'Your installer {installer} is not found in your system PATH.\nPlease install {installer} or update your installer in your gaboon.toml as: \n\n[project]\ninstaller = "your installer here (pip or uv)"'
+            f'Your installer {installer} is not found in your system PATH.\nPlease install {installer} or update your installer in your moccasin.toml as: \n\n[project]\ninstaller = "your installer here (pip or uv)"'
         )
         sys.exit(1)
 

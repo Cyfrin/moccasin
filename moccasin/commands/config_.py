@@ -1,11 +1,11 @@
 from argparse import Namespace
-from gaboon.config import get_config, Config
-from gaboon.logging import logger
+from moccasin.config import get_config, Config
+from moccasin.logging import logger
 
 
 def main(args: Namespace):
     config: Config = get_config()
-    configuration_file = config.read_gaboon_config()
+    configuration_file = config.read_moccasin_config()
     logger.info(toml_like_pretty_print(configuration_file))
     return 0
 

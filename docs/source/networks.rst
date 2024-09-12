@@ -1,7 +1,7 @@
 Networks 
 ========
 
-Networks in `gaboon` are identified in your `gaboon.toml`. The complete list of options you can set for your network can be identified in the example here:
+Networks in `moccasin` are identified in your `moccasin.toml`. The complete list of options you can set for your network can be identified in the example here:
 
 .. code-block:: toml
 
@@ -11,7 +11,7 @@ Networks in `gaboon` are identified in your `gaboon.toml`. The complete list of 
     is_fork = false
     is_zksync = false
     default_account_name = "anvil"
-    unsafe_password_file = "~/.gaboon/password"
+    unsafe_password_file = "~/.moccasin/password"
     extra_data = { "my_key" = "{$ETHERSCAN_API_KEY}" }
 
 Let's walk through what each of these options mean. 
@@ -26,12 +26,12 @@ Let's walk through what each of these options mean.
 
 You'll notice there is no `private-key`. We highly discourage having private keys in plain text. 
 
-When working with a network from the command line, for example to :doc:`run a script <script>` you can pass the `--network` flag via the command line, and it will load the data from the network in your `gaboon.toml`.
+When working with a network from the command line, for example to :doc:`run a script <script>` you can pass the `--network` flag via the command line, and it will load the data from the network in your `moccasin.toml`.
 
 For example, if you wanted to run a script on the `sepolia` network, you would run:
 
 .. code-block:: bash
 
-    gaboon run my_script --network sepolia
+    moccasin run my_script --network sepolia
 
-Since in our example we passed both a `default_account_name` and a `unsafe_password_file`, `gaboon` will automatically unlock the account for you. If you don't pass a `default_account_name` or a `unsafe_password_file`, `gaboon` will error saying it cannot find your account.
+Since in our example we passed both a `default_account_name` and a `unsafe_password_file`, `moccasin` will automatically unlock the account for you. If you don't pass a `default_account_name` or a `unsafe_password_file`, `moccasin` will error saying it cannot find your account.

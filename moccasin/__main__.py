@@ -3,12 +3,12 @@ from pathlib import Path
 import tomllib
 import argparse
 from typing import Tuple
-from gaboon.logging import logger, set_log_level
+from moccasin.logging import logger, set_log_level
 import sys
-from gaboon.constants.vars import CONFIG_NAME
+from moccasin.constants.vars import CONFIG_NAME
 
 
-GAB_CLI_VERSION_STRING = "Gaboon CLI v{}"
+GAB_CLI_VERSION_STRING = "Moccasin CLI v{}"
 
 ALIAS_TO_COMMAND = {
     "build": "compile",
@@ -21,7 +21,7 @@ PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet"]
 
 
 def main(argv: list) -> int:
-    """Run the Gaboon CLI with the given arguments.
+    """Run the Moccasin CLI with the given arguments.
 
     Args:
         argv (list): List of arguments to run the CLI with.
@@ -53,7 +53,7 @@ def main(argv: list) -> int:
     if args.command:
         command_to_run = ALIAS_TO_COMMAND.get(args.command, args.command)
         logger.info(f"Running {command_to_run} command...")
-        importlib.import_module(f"gaboon.commands.{command_to_run}").main(args)
+        importlib.import_module(f"moccasin.commands.{command_to_run}").main(args)
     else:
         main_parser.print_help()
     return 0
@@ -64,7 +64,7 @@ def generate_main_parser_and_sub_parsers() -> (
 ):
     parent_parser = create_parent_parser()
     main_parser = argparse.ArgumentParser(
-        prog="Gaboon CLI",
+        prog="Moccasin CLI",
         description="🐍 Pythonic Smart Contract Development Framework",
         formatter_class=argparse.RawTextHelpFormatter,
         parents=[parent_parser],
@@ -80,7 +80,7 @@ def generate_main_parser_and_sub_parsers() -> (
 This will create a basic directory structure at the path you specific, which looks like:
 .
 ├── README.md
-├── gaboon.toml
+├── moccasin.toml
 ├── script
 │   └── deploy.py
 ├── src
@@ -150,10 +150,7 @@ Use this command to prepare your contracts for deployment or testing.""",
                         functions containing extra names in their 'extra_keyword_matches' set, as well as functions which have names assigned directly to them.
                         The matching is case-insensitive.""",
     )
-    test_parser.add_argument(
-        "--coverage",
-        help="Run tests with coverage",
-    )
+    test_parser.add_argument("--coverage", help="Run tests with coverage")
     test_parser.add_argument(
         "-m",
         nargs="?",
@@ -166,9 +163,7 @@ Use this command to prepare your contracts for deployment or testing.""",
         help="""Exit instantly on first error or failed test.""",
     )
     test_parser.add_argument(
-        "-s",
-        action="store_true",
-        help="""Shortcut for --capture=no""",
+        "-s", action="store_true", help="""Shortcut for --capture=no"""
     )
     test_parser.add_argument(
         "--capture ",
@@ -271,8 +266,7 @@ Use this command to prepare your contracts for deployment or testing.""",
     password_group = generate_parser.add_mutually_exclusive_group()
     password_group.add_argument("--password", help="Password for the keystore")
     password_group.add_argument(
-        "--password-file",
-        help="File containing the password for the keystore",
+        "--password-file", help="File containing the password for the keystore"
     )
     # Add custom validation
     generate_parser.set_defaults(func=validate_generate_args)
@@ -293,9 +287,7 @@ Use this command to prepare your contracts for deployment or testing.""",
 
     # Decrypt Keystore
     decrypt_keystore_parser = wallet_subparsers.add_parser(
-        "decrypt",
-        aliases=["dk"],
-        help="Decrypt a keystore file to get the private key",
+        "decrypt", aliases=["dk"], help="Decrypt a keystore file to get the private key"
     )
     decrypt_keystore_parser.add_argument(
         "keystore_file_name", help="Name of the keystore file to decrypt"
@@ -320,9 +312,7 @@ Use this command to prepare your contracts for deployment or testing.""",
 
     # Delete
     delete_parser = wallet_subparsers.add_parser(
-        "delete",
-        aliases=["d"],
-        help="Delete a keystore file",
+        "delete", aliases=["d"], help="Delete a keystore file"
     )
     delete_parser.add_argument("keystore_file_name", help="Name of keystore file")
 
@@ -341,11 +331,11 @@ Use this command to prepare your contracts for deployment or testing.""",
     install_parser = sub_parsers.add_parser(
         "install",
         help="Installs the project's dependencies.",
-        description="""Installs the project's dependencies. The first argument is the requirements, given as a pip-compatible strings and/or gaboon github formatted dependencies. 
+        description="""Installs the project's dependencies. The first argument is the requirements, given as a pip-compatible strings and/or moccasin github formatted dependencies. 
 - Pip-compatible strings download dependencies as regular python packages from PyPI.
-- Gaboon github formatted dependencies download dependencies from the Gaboon github repository.
+- Moccasin github formatted dependencies download dependencies from the Moccasin github repository.
 
-Gaboon github formatted dependencies are formatted as:
+Moccasin github formatted dependencies are formatted as:
 
 GITHUB_ORG/GITHUB_REPO@[@VERSION]
 
@@ -355,13 +345,13 @@ Where:
 - VERSION is the optional version of the repository to download. If not provided, the latest version is downloaded.
 
 Examples:
-- pcaversaccio/snekmate@0.1.0 # Gaboon GitHub formatted dependency
+- pcaversaccio/snekmate@0.1.0 # Moccasin GitHub formatted dependency
 - snekmate==0.1.0 # Pip-compatible string""",
         parents=[parent_parser],
     )
     install_parser.add_argument(
         "requirements",
-        help="Requirements, given as a pip-compatible strings and/or gaboon github formatted dependencies.",
+        help="Requirements, given as a pip-compatible strings and/or moccasin github formatted dependencies.",
         type=str,
         nargs="*",
     )
@@ -376,7 +366,7 @@ Examples:
     )
     purge_parser.add_argument(
         "packages",
-        help="Package name, given as a pip-compatible string and/or gaboon github formatted dependency.",
+        help="Package name, given as a pip-compatible string and/or moccasin github formatted dependency.",
         type=str,
         nargs="+",
     )
@@ -385,8 +375,8 @@ Examples:
     # ========================================================================
     sub_parsers.add_parser(
         "config",
-        help="View the Gaboon configuration.",
-        description="View the Gaboon configuration.",
+        help="View the Moccasin configuration.",
+        description="View the Moccasin configuration.",
         parents=[parent_parser],
     )
 
@@ -414,8 +404,8 @@ def get_version() -> str:
     with open(
         Path(__file__).resolve().parent.parent.joinpath("pyproject.toml"), "rb"
     ) as f:
-        gaboon_cli_data = tomllib.load(f)
-        return GAB_CLI_VERSION_STRING.format(gaboon_cli_data["project"]["version"])
+        moccasin_cli_data = tomllib.load(f)
+        return GAB_CLI_VERSION_STRING.format(moccasin_cli_data["project"]["version"])
 
 
 def validate_generate_args(args):

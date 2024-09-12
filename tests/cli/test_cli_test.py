@@ -6,12 +6,9 @@ from pathlib import Path
 EXPECTED_HELP_TEXT = "Runs pytest"
 
 
-def test_test_help(gab_path):
+def test_test_help(mox_path):
     result = subprocess.run(
-        [gab_path, "test", "-h"],
-        check=True,
-        capture_output=True,
-        text=True,
+        [mox_path, "test", "-h"], check=True, capture_output=True, text=True
     )
     assert (
         EXPECTED_HELP_TEXT in result.stdout
@@ -19,15 +16,12 @@ def test_test_help(gab_path):
     assert result.returncode == 0
 
 
-def test_test_complex_project_has_no_warnings(complex_cleanup_out_folder, gab_path):
+def test_test_complex_project_has_no_warnings(complex_cleanup_out_folder, mox_path):
     current_dir = Path.cwd()
     try:
         os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
         result = subprocess.run(
-            [gab_path, "test"],
-            check=True,
-            capture_output=True,
-            text=True,
+            [mox_path, "test"], check=True, capture_output=True, text=True
         )
     finally:
         os.chdir(current_dir)
@@ -35,12 +29,12 @@ def test_test_complex_project_has_no_warnings(complex_cleanup_out_folder, gab_pa
     assert result.returncode == 0
 
 
-def test_test_complex_project_passes_pytest_flags(complex_cleanup_out_folder, gab_path):
+def test_test_complex_project_passes_pytest_flags(complex_cleanup_out_folder, mox_path):
     current_dir = Path.cwd()
     try:
         os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
         result = subprocess.run(
-            [gab_path, "test", "-k", "test_increment_two"],
+            [mox_path, "test", "-k", "test_increment_two"],
             check=True,
             capture_output=True,
             text=True,

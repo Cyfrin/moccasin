@@ -1,9 +1,9 @@
 from pathlib import Path
 import sys
-from gaboon.config import get_config
-from gaboon.gaboon_account import GaboonAccount
+from moccasin.config import get_config
+from moccasin.moccasin_account import MoccasinAccount
 import boa
-from gaboon.logging import logger
+from moccasin.logging import logger
 import contextlib
 from typing import Iterator, List
 
@@ -31,38 +31,38 @@ def _setup_network_and_account_from_args(
 ) -> None:
     if fork and account:
         raise ValueError("Cannot use --fork and --account at the same time")
-    
-    gab_account: GaboonAccount | None = None
+
+    mox_account: MoccasinAccount | None = None
     config = get_config()
 
     if network and not url:
         config.networks.set_active_network(network, is_fork=fork)
     if url:
         config.networks.set_active_network(url, is_fork=fork)
-    
+
     if password_file_path is None:
         password_file_path = config.networks.get_active_network().unsafe_password_file
-    
+
     if account is None:
         account = config.networks.get_active_network().default_account_name
 
     if account:
         # This will also attempt to unlock the account with a prompt
         # If no password or password file is passed
-        gab_account = GaboonAccount(
+        mox_account = MoccasinAccount(
             keystore_path_or_account_name=account,
             password=password,
             password_file_path=password_file_path,
         )
     if private_key:
-        gab_account = GaboonAccount(
+        mox_account = MoccasinAccount(
             private_key=private_key,
             password=password,
             password_file_path=password_file_path,
         )
 
-    if gab_account:
-        boa.env.add_account(gab_account, force_eoa=True)
+    if mox_account:
+        boa.env.add_account(mox_account, force_eoa=True)
     if boa.env.eoa is None:
         logger.warning(
             "No default EOA account found. Please add an account to the environment before attempting a transaction."

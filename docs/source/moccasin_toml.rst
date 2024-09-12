@@ -1,7 +1,7 @@
-gaboon.toml
+moccasin.toml
 ##############
 
-The `gaboon.toml` file created is our configuration file. In this file we can have:
+The `moccasin.toml` file created is our configuration file. In this file we can have:
 
 - project and layout settings 
 
@@ -11,7 +11,7 @@ The `gaboon.toml` file created is our configuration file. In this file we can ha
 
 - extra data
 
-A `gaboon.toml` file can look like this:
+A `moccasin.toml` file can look like this:
 
 .. code-block:: toml
 
@@ -26,13 +26,13 @@ A `gaboon.toml` file can look like this:
     my_key = "{$ETHERSCAN_API_KEY}"
 
 
-You can learn more about each of the sections of the `gaboon.toml` file in their respective documentation.
+You can learn more about each of the sections of the `moccasin.toml` file in their respective documentation.
 
 - `Project <project>`_
 - `Network <network>`_
 - `Dependencies <dependencies>`_
 
-You can also see a full example of a `gaboon.toml` in the :doc:`all gaboon toml parameters <all_gaboon_toml_parameters>` documentation.
+You can also see a full example of a `moccasin.toml` in the :doc:`all moccasin toml parameters <all_moccasin_toml_parameters>` documentation.
 
 Extra Data 
 ==========
@@ -41,5 +41,5 @@ Extra data is a dictionary of data where you can put whatever you'd like. You ca
 
 .. code-block:: python
 
-    from gaboon import config
+    from moccasin import config
     print(config.get_config().extra_data["my_key"])

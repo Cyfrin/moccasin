@@ -1,5 +1,5 @@
 from src import Counter
-from gaboon.boa_tools import VyperContract
+from moccasin.boa_tools import VyperContract
 
 # from boa.contracts.vyper.vyper_contract import VyperContract
 
@@ -12,5 +12,5 @@ def deploy() -> VyperContract:
     return counter
 
 
-def gaboon_main() -> VyperContract:
+def moccasin_main() -> VyperContract:
     return deploy()

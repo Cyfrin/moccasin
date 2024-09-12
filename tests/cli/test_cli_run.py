@@ -11,44 +11,38 @@ from tests.conftest import (
 from web3 import Web3
 
 
-def test_run_help(gab_path):
+def test_run_help(mox_path):
     current_dir = Path.cwd()
     try:
         os.chdir(COMPLEX_PROJECT_PATH)
         result = subprocess.run(
-            [gab_path, "run", "-h"],
-            check=True,
-            capture_output=True,
-            text=True,
+            [mox_path, "run", "-h"], check=True, capture_output=True, text=True
         )
     finally:
         os.chdir(current_dir)
-    assert "Gaboon CLI run" in result.stdout
+    assert "Moccasin CLI run" in result.stdout
 
 
-def test_run_default(gab_path):
+def test_run_default(mox_path):
     current_dir = Path.cwd()
     try:
         os.chdir(COMPLEX_PROJECT_PATH)
         result = subprocess.run(
-            [gab_path, "run", "deploy"],
-            check=True,
-            capture_output=True,
-            text=True,
+            [mox_path, "run", "deploy"], check=True, capture_output=True, text=True
         )
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
 
 
-def test_run_with_network(gab_path):
+def test_run_with_network(mox_path):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
         with AnvilProcess():
             result = subprocess.run(
                 [
-                    gab_path,
+                    mox_path,
                     "run",
                     "deploy",
                     "--network",
@@ -67,14 +61,14 @@ def test_run_with_network(gab_path):
     assert result.returncode == 0
 
 
-def test_run_with_keystore_account(gab_path, anvil_keystore):
+def test_run_with_keystore_account(mox_path, anvil_keystore):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
         with AnvilProcess():
             result = subprocess.run(
                 [
-                    gab_path,
+                    mox_path,
                     "run",
                     "deploy",
                     "--network",
@@ -95,7 +89,7 @@ def test_run_with_keystore_account(gab_path, anvil_keystore):
     assert result.returncode == 0
 
 
-def test_run_fork_should_not_send_transactions(gab_path, anvil_fork):
+def test_run_fork_should_not_send_transactions(mox_path, anvil_fork):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
@@ -103,14 +97,7 @@ def test_run_fork_should_not_send_transactions(gab_path, anvil_fork):
             w3 = Web3(Web3.HTTPProvider(ANVIL_URL))
             starting_block = w3.eth.get_block("latest").number
             result = subprocess.run(
-                [
-                    gab_path,
-                    "run",
-                    "deploy",
-                    "--fork",
-                    "--network",
-                    "fake_chain",
-                ],
+                [mox_path, "run", "deploy", "--fork", "--network", "fake_chain"],
                 check=True,
                 capture_output=True,
                 text=True,

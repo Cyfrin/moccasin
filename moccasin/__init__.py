@@ -1,5 +1,5 @@
 import sys
-from gaboon import __main__
+from moccasin import __main__
 
 
 def main():

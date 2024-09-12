@@ -5,9 +5,9 @@ By default, you don't want to ever expose your private key in your scripts. You 
 
 .. code-block:: bash
 
-    $ gab wallet
+    $ mox wallet
 
-    usage: Gaboon CLI wallet [-h] [-d] [-q] {list,ls,generate,g,new,import,i,add,inspect,decrypt,dk,delete,d} ...
+    usage: Moccasin CLI wallet [-h] [-d] [-q] {list,ls,generate,g,new,import,i,add,inspect,decrypt,dk,delete,d} ...
 
     Wallet management utilities.
 
@@ -32,7 +32,7 @@ You can encrypt a private key using the `wallet import ACCOUNT_NAME` command. Th
 
 .. code-block:: bash
 
-    $ gab wallet import my_account
+    $ mox wallet import my_account
 
     Running wallet command...
     Importing private key...
@@ -42,17 +42,17 @@ Once you have an account, you can view it with the `wallet list` command.
 
 .. code-block:: bash
 
-    $ gab wallet list
+    $ mox wallet list
 
     Running wallet command...
     Found 1 accounts:
     my_account 
 
-This will encrypt your key and store it at `~/.gaboon/keystore/my_account.json`. You can view the contents of the keystore file with the `wallet inspect` command.
+This will encrypt your key and store it at `~/.moccasin/keystore/my_account.json`. You can view the contents of the keystore file with the `wallet inspect` command.
 
 .. code-block:: bash 
 
-    $ gab wallet inspect my_account
+    $ mox wallet inspect my_account
     Running wallet command...
     Keystore JSON for account my_account:
     {
@@ -81,6 +81,6 @@ You can then use these in scripts!
 
 .. code-block:: bash 
 
-    gab run deploy --account my_account 
+    mox run deploy --account my_account 
 
 And it will ask you for the password to decrypt your private key.

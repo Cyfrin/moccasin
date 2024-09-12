@@ -3,12 +3,12 @@ import pytest
 import os
 import sys
 import shutil
-from gaboon.constants.vars import DEPENDENCIES_FOLDER
-import gaboon.constants.vars as vars
-from gaboon.commands.wallet import save_to_keystores
+from moccasin.constants.vars import DEPENDENCIES_FOLDER
+import moccasin.constants.vars as vars
+from moccasin.commands.wallet import save_to_keystores
 import tempfile
 from tests.utils.anvil import ANVIL_URL
-from gaboon.config import Config, initialize_global_config
+from moccasin.config import Config, initialize_global_config
 
 COMPLEX_PROJECT_PATH = Path(__file__).parent.joinpath("data/complex_project/")
 INSTALL_PROJECT_PATH = Path(__file__).parent.joinpath("data/installation_project/")
@@ -69,8 +69,8 @@ def anvil_fork(monkeypatch):
 
 
 @pytest.fixture(scope="session")
-def gab_path():
-    return os.path.join(os.path.dirname(sys.executable), "gab")
+def mox_path():
+    return os.path.join(os.path.dirname(sys.executable), "mox")
 
 
 ## COMPLEX PROJECT FIXTURES
@@ -110,7 +110,7 @@ def installation_project_config() -> Config:
 def installation_cleanup_dependencies():
     yield
     created_folder_path = INSTALL_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
-    with open(INSTALL_PROJECT_PATH.joinpath("gaboon.toml"), "w") as f:
+    with open(INSTALL_PROJECT_PATH.joinpath("moccasin.toml"), "w") as f:
         f.write(INSTALLATION_STARTING_TOML)
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)

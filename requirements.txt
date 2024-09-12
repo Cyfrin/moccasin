@@ -121,7 +121,7 @@ pytest==8.3.2
 pytest-cov==5.0.0
     # via titanoboa
 python-dotenv==1.0.1
-    # via gaboon (pyproject.toml)
+    # via moccasin (pyproject.toml)
 regex==2024.7.24
     # via parsimonious
 requests==2.32.3
@@ -144,12 +144,12 @@ sortedcontainers==2.4.0
     #   trie
 titanoboa==0.2.2
     # via
-    #   gaboon (pyproject.toml)
+    #   moccasin (pyproject.toml)
     #   titanoboa-zksync
 titanoboa-zksync==0.2.2
-    # via gaboon (pyproject.toml)
+    # via moccasin (pyproject.toml)
 tomli-w==1.0.0
-    # via gaboon (pyproject.toml)
+    # via moccasin (pyproject.toml)
 toolz==0.12.1
     # via cytoolz
 trie==3.0.1

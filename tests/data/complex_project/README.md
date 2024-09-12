@@ -10,4 +10,4 @@ boa init
 boa compile
 ```
 
-_For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/cyfrin/gaboon)_
+_For documentation, please run `mox --help` or visit [the Moccasin documentation](https://github.com/cyfrin/moccasin)_

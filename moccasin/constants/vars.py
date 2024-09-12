@@ -1,7 +1,7 @@
 from pathlib import Path
 
 # File Names
-CONFIG_NAME = "gaboon.toml"
+CONFIG_NAME = "moccasin.toml"
 README_PATH = "README.md"
 COUNTER_CONTRACT = "Counter.vy"
 
@@ -18,13 +18,13 @@ TESTS_FOLDER = "tests"
 
 # Complex Vars
 DEFAULT_PROJECT_FOLDERS = [CONTRACTS_FOLDER, TESTS_FOLDER, SCRIPT_FOLDER]
-DEFAULT_GABOON_FOLDER = Path.home().joinpath(".gaboon/")
-DEFAULT_KEYSTORES_PATH = DEFAULT_GABOON_FOLDER.joinpath("keystores/")
+DEFAULT_MOCCASIN_FOLDER = Path.home().joinpath(".moccasin/")
+DEFAULT_KEYSTORES_PATH = DEFAULT_MOCCASIN_FOLDER.joinpath("keystores/")
 # TODO - add a --foundry flag for wallet commands to use foundry keystores
 FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
 # TODO: Make this configurable
 DOT_ENV_FILE = ".env"
-CONSOLE_HISTORY_FILE = "gaboon_history"
+CONSOLE_HISTORY_FILE = "moccasin_history"
 
 # Testing Vars
 DEFAULT_ANVIL_PRIVATE_KEY = (
@@ -33,10 +33,10 @@ DEFAULT_ANVIL_PRIVATE_KEY = (
 DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 
 # Installation Variables
-REQUEST_HEADERS = {"User-Agent": "Gaboon"}
+REQUEST_HEADERS = {"User-Agent": "Moccasin"}
 PACKAGE_VERSION_FILE = "versions.toml"
 
-GABOON_GITHUB = "https://github.com/cyfrin/gaboon"
+MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
 
 
 # DEFAULT_NETWORKS_BY_NAME: dict[str:dict] = {

@@ -1,4 +1,4 @@
-All gaboon toml parameters
+All moccasin toml parameters
 ===========================
 
 .. code-block:: toml
@@ -22,10 +22,10 @@ All gaboon toml parameters
     is_zksync = false
     # This is the name of the account that will be unlocked when running on this network
     default_account_name = "anvil"
-    # If you don't provide a password or private key, gaboon will prompt you to unlock it 
+    # If you don't provide a password or private key, moccasin will prompt you to unlock it 
     # If you do, it will unlock it automatically
     # But be careful about storing passwords and private keys! NEVER store them in plain text
-    unsafe_password_file = "/home/user/.gaboon/password"  # Replace with actual path
+    unsafe_password_file = "/home/user/.moccasin/password"  # Replace with actual path
 
     [networks.sepolia.extra_data]
     my_key = "{$ETHERSCAN_API_KEY}"

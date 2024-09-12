@@ -170,7 +170,7 @@ cython_debug/
 # Ruff / Rye
 .ruff_cache
 
-# Gaboon
+# Moccasin
 .env
 .env.unsafe
 .env*
@@ -197,7 +197,7 @@ def increment():
 """
 
 DEPLOY_SCRIPT_DEFAULT = """from src import Counter
-from gaboon.boa_tools import VyperContract
+from moccasin.boa_tools import VyperContract
 # from boa.contracts.vyper.vyper_contract import VyperContract
 
 def deploy() -> VyperContract:
@@ -207,7 +207,7 @@ def deploy() -> VyperContract:
     print("Ending count: ", counter.number())
     return counter
 
-def gaboon_main() -> VyperContract:
+def moccasin_main() -> VyperContract:
     return deploy()
 """
 
@@ -222,18 +222,18 @@ TEST_COUNTER_DEFAULT = """def test_increment(counter_contract):
     counter_contract.increment()
     assert counter_contract.number() == 2"""
 
-README_MD_SRC = """# Gaboon Project
+README_MD_SRC = """# Moccasin Project
 
-🐍 Welcome to your Gaboon project!
+🐍 Welcome to your Moccasin project!
 
 ## Quickstart
 
 ```bash
-gab init
-gab compile
+mox init
+mox compile
 ```
 
-_For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/cyfrin/gaboon)_
+_For documentation, please run `mox --help` or visit [the Moccasin documentation](https://github.com/cyfrin/moccasin)_
 """
 
 GAB_DEFAULT_CONFIG = """[project]
