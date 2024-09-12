@@ -7,6 +7,8 @@ from moccasin.logging import logger, set_log_level
 import sys
 from moccasin.constants.vars import CONFIG_NAME
 
+from importlib import metadata
+
 
 GAB_CLI_VERSION_STRING = "Moccasin CLI v{}"
 
@@ -401,11 +403,15 @@ def add_network_args_to_parser(parser: argparse.ArgumentParser):
 
 
 def get_version() -> str:
-    with open(
-        Path(__file__).resolve().parent.parent.joinpath("pyproject.toml"), "rb"
-    ) as f:
-        moccasin_cli_data = tomllib.load(f)
-        return GAB_CLI_VERSION_STRING.format(moccasin_cli_data["project"]["version"])
+    version = metadata.version("moccasin")
+    # Attempt to parse from `pyproject.toml` if not found
+    if not version:
+        with open(
+            Path(__file__).resolve().parent.parent.joinpath("pyproject.toml"), "rb"
+        ) as f:
+            moccasin_cli_data = tomllib.load(f)
+        version = moccasin_cli_data["project"]["version"]
+    return GAB_CLI_VERSION_STRING.format(version)
 
 
 def validate_generate_args(args):
