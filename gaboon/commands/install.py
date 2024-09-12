@@ -311,9 +311,11 @@ class GitHubDependency:
 
     @classmethod
     def from_string(cls, dep_string: str) -> "GitHubDependency":
-        path, version = (
-            dep_string.split("@", 1) if "@" in dep_string else (dep_string, None)
-        )
+        if "@" in dep_string:
+            path, version = dep_string.split("@")
+        else:
+            path, version = dep_string, None
+
         org, repo = str(path).split("/")
         return cls(org, repo, version)
 
