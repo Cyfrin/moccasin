@@ -18,7 +18,7 @@ format-check:
 test:
     uv run pytest -x -s --ignore=tests/data/
 
-# Run tests, fail on first test failure
+# Run tests, fail on first test failure, enter debugger on failure
 test-pdb:
     uv run pytest -x -s --ignore=tests/data/ --pdb
 

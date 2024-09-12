@@ -1,4 +1,5 @@
 from argparse import Namespace
+from dataclasses import dataclass
 from pathlib import Path
 import shutil
 import subprocess
@@ -13,11 +14,7 @@ import sys
 import traceback
 from tqdm import tqdm
 import zipfile
-from io import BytesIO
-from gaboon.constants.vars import (
-    REQUEST_HEADERS,
-    PACKAGE_VERSION_FILE,
-)
+from gaboon.constants.vars import REQUEST_HEADERS, PACKAGE_VERSION_FILE
 import tomllib
 import tomli_w
 from enum import Enum
@@ -59,8 +56,8 @@ def classify_dependency(dependency: str) -> DependencyType:
 
     if re.match(github_pattern, dependency):
         return DependencyType.GITHUB
-    else:
-        return DependencyType.PIP
+
+    return DependencyType.PIP
 
 
 # Much of this code thanks to brownie
@@ -79,7 +76,7 @@ def _github_installs(
             org, repo = path.split("/")
         except ValueError:
             raise ValueError(
-                "Invalid package ID. Must be given as ORG/REPO@[VERSION]"
+                "Invalid package ID. Must be given as ORG/REPO[@VERSION]"
                 "\ne.g. 'pcaversaccio/snekmate@v2.5.0'"
             ) from None
 
@@ -167,29 +164,29 @@ def _stream_download(
     download_url: str, target_path: str, headers: dict[str, str] = REQUEST_HEADERS
 ) -> None:
     response = requests.get(download_url, stream=True, headers=headers)
-
-    if response.status_code == 404:
-        raise ConnectionError(
-            f"404 error when attempting to download from {download_url} - "
-            "are you sure this is a valid mix? https://github.com/brownie-mix"
-        )
-    if response.status_code != 200:
-        raise ConnectionError(
-            f"Received status code {response.status_code} when attempting "
-            f"to download from {download_url}"
-        )
-
+    response.raise_for_status()
     total_size = int(response.headers.get("content-length", 0))
-    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
-    content = bytes()
 
-    for data in response.iter_content(1024, decode_unicode=True):
-        progress_bar.update(len(data))
-        content += data
-    progress_bar.close()
+    temp_file = os.path.join(target_path, "temp_download.zip")
 
-    with zipfile.ZipFile(BytesIO(content)) as zf:
-        zf.extractall(target_path)
+    with (
+        open(temp_file, "wb") as f,
+        tqdm(
+            desc="Downloading",
+            total=total_size,
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+        ) as progress_bar,
+    ):
+        for data in response.iter_content(chunk_size=None):
+            size = f.write(data)
+            progress_bar.update(size)
+
+    with zipfile.ZipFile(temp_file, "r") as zip_ref:
+        zip_ref.extractall(target_path)
+
+    os.remove(temp_file)
 
 
 def _maybe_retrieve_github_auth() -> dict[str, str]:
@@ -198,7 +195,7 @@ def _maybe_retrieve_github_auth() -> dict[str, str]:
     Otherwise returns an empty dict if no auth token is present.
     """
     token = os.getenv("GITHUB_TOKEN")
-    if token:
+    if token is not None:
         auth = b64encode(token.encode()).decode()
         return {"Authorization": f"Basic {auth}"}
     return {}
@@ -208,30 +205,24 @@ def _get_download_url_from_tag(org: str, repo: str, version: str, headers: dict)
     response = requests.get(
         f"https://api.github.com/repos/{org}/{repo}/tags?per_page=100", headers=headers
     )
-    if response.status_code != 200:
-        msg = "Status {} when getting package versions from Github: '{}'".format(
-            response.status_code, response.json()["message"]
-        )
-        if response.status_code in (403, 404):
-            msg += (
-                "\n\nMissing or forbidden.\n"
-                "If this issue persists, generate a Github API token and store"
-                " it as the environment variable `GITHUB_TOKEN`:\n"
-                "https://github.blog/2013-05-16-personal-api-tokens/"
-            )
-        raise ConnectionError(msg)
+    response.raise_for_status()
 
     data = response.json()
     if not data:
         raise ValueError("Github repository has no tags set")
-    org, repo = data[0]["zipball_url"].split("/")[3:5]
-    tags = [i["name"].lstrip("v") for i in data]
-    if version not in tags:
-        raise ValueError(
-            "Invalid version for this package. Available versions are:\n"
-            + ", ".join(tags)
-        ) from None
-    return next(i["zipball_url"] for i in data if i["name"].lstrip("v") == version)
+
+    available_versions = []
+    for tag in data:
+        tag_version = tag["name"].lstrip("v")
+        available_versions.append(tag_version)
+        if tag_version == version:
+            return tag["zipball_url"]
+
+    # If we've gone through all tags without finding a match, raise an error
+    raise ValueError(
+        f"Invalid version '{version}' for this package. Available versions are:\n"
+        + ", ".join(available_versions)
+    )
 
 
 def _pip_installs(
@@ -269,33 +260,69 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
         dep for dep in dependencies if classify_dependency(dep) == dependency_type
     ]
 
-    # Write to dependencies file
     to_delete = set()
+    updated_packages = set()
+
     if dependency_type == DependencyType.PIP:
         for package in new_package_ids:
+            package_req = Requirement(package)
             for dep in typed_dependencies:
-                if Requirement(dep).name == Requirement(package).name:
+                dep_req = Requirement(dep)
+                if dep_req.name == package_req.name:
                     to_delete.add(dep)
-            if package not in to_delete:
-                logger.info(f"Installed {package}")
-    else:
+                    updated_packages.add(package_req.name)
+
+            if package_req.name not in updated_packages:
+                logger.info(f"Installed new package: {package}")
+            else:
+                logger.info(f"Updated package: {package}")
+    else:  # GIT dependencies
         for package in new_package_ids:
+            package_dep = GitHubDependency.from_string(package)
             for dep in typed_dependencies:
-                package_path, _ = (
-                    package.split("@", 1) if "@" in package else (package, None)
-                )
-                package_org, package_repo = str(package_path).split("/")
-
-                dep_path, _ = dep.split("@", 1) if "@" in dep else (dep, None)
-                dep_org, dep_repo = str(dep_path).split("/")
-                if dep_org == package_org and dep_repo == package_repo:
+                dep_gh = GitHubDependency.from_string(dep)
+                if dep_gh.org == package_dep.org and dep_gh.repo == package_dep.repo:
                     to_delete.add(dep)
-            if package not in to_delete:
-                logger.info(f"Installed {package}")
+                    updated_packages.add(package_dep.format_no_version())
 
+            if f"{package_dep.org}/{package_dep.repo}" not in updated_packages:
+                logger.info(f"Installed {package}")
+            else:
+                logger.info(f"Updated {package}")
+
+    # Remove old versions of updated packages
     dependencies = [dep for dep in dependencies if dep not in to_delete]
-    # TODO: keep original order of dependencies
-    # e.g. if gaboon.toml has snekmate==0.1.0 and user installs
-    # snekmate==0.2.0, we should keep the original order in the toml file.
-    dependencies.extend(new_package_ids)
-    config.write_dependencies(dependencies)
+
+    # Add new packages while preserving order
+    new_deps = []
+    for dep in dependencies + new_package_ids:
+        if dep not in new_deps:
+            new_deps.append(dep)
+
+    if len(new_deps) > 0:
+        config.write_dependencies(new_deps)
+
+
+@dataclass
+class GitHubDependency:
+    org: str
+    repo: str
+    version: str | None = None
+
+    @classmethod
+    def from_string(cls, dep_string: str) -> "GitHubDependency":
+        if "@" in dep_string:
+            path, version = dep_string.split("@")
+        else:
+            path, version = dep_string, None
+
+        org, repo = str(path).split("/")
+        return cls(org, repo, version)
+
+    def format_no_version(self) -> str:
+        return f"{self.org}/{self.repo}"
+
+    def __str__(self) -> str:
+        if self.version:
+            return f"{self.org}/{self.repo}@{self.version}"
+        return self.format_no_version()

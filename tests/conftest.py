@@ -40,6 +40,8 @@ ANVIL_KEYSTORE_SAVED = {
 INSTALLATION_STARTING_TOML = """[project]
 dependencies = ["snekmate", "gaboon-cli"]
 
+# PRESERVE COMMENTS
+
 [networks.sepolia]
 url = "https://ethereum-sepolia-rpc.publicnode.com"
 chain_id = 11155111

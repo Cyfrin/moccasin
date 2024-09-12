@@ -15,12 +15,12 @@ from gaboon.constants.vars import (
 import tomllib
 from dotenv import load_dotenv
 import os
-import tomli_w
 import shutil
 import tempfile
 import boa
 from boa.environment import Env
 from gaboon.logging import logger
+import tomlkit
 
 if TYPE_CHECKING:
     from boa.network import NetworkEnv
@@ -176,14 +176,25 @@ class Config:
         load_dotenv(dotenv_path=self.project_root.joinpath(DOT_ENV_FILE))
 
     def read_gaboon_config(self, config_path: Path = None) -> dict:
+        config_path = self._validate_config_path(config_path)
+        with open(config_path, "rb") as f:
+            return tomllib.load(f)
+
+    def read_gaboon_config_preserve_comments(
+        self, config_path: Path = None
+    ) -> tomlkit.TOMLDocument:
+        config_path = self._validate_config_path(config_path)
+        with open(config_path, "rb") as f:
+            return tomlkit.load(f)
+
+    def _validate_config_path(self, config_path: Path = None) -> Path:
         if not config_path:
             config_path = self._project_root
         if not str(config_path).endswith(f"/{CONFIG_NAME}"):
             config_path = config_path.joinpath(CONFIG_NAME)
         if not config_path.exists():
             raise FileNotFoundError(f"Config file not found: {config_path}")
-        with open(config_path, "rb") as f:
-            return tomllib.load(f)
+        return config_path
 
     def expand_env_vars(self, value):
         if isinstance(value, str):
@@ -201,10 +212,10 @@ class Config:
     def get_dependencies(self) -> list[str]:
         return self.dependencies
 
-    def write_dependencies(self, new_dependencies: list):
+    def write_dependencies(self, dependencies: list):
         target_path = self._project_root / CONFIG_NAME
-        toml_data = self.read_gaboon_config(target_path)
-        toml_data["project"]["dependencies"] = new_dependencies
+        toml_data = self.read_gaboon_config_preserve_comments(target_path)
+        toml_data["project"]["dependencies"] = dependencies  # type: ignore
 
         # Create a temporary file in the same directory as the target file
         temp_file = tempfile.NamedTemporaryFile(
@@ -215,21 +226,21 @@ class Config:
             suffix=".toml",
         )
         try:
-            temp_file.write(tomli_w.dumps(toml_data))
+            temp_file.write(tomlkit.dumps(toml_data))
             temp_file.close()
             shutil.move(temp_file.name, target_path)
         except Exception as e:
             os.unlink(temp_file.name)
             raise e
 
-        self.dependencies = new_dependencies
+        self.dependencies = dependencies
 
     def get_base_dependencies_install_path(self) -> Path:
         project_root = self._project_root
         base_install_path = project_root / self.project.get(
             DEPENDENCIES_FOLDER, DEPENDENCIES_FOLDER
         )
-        base_install_path.mkdir(exist_ok=True)
+        base_install_path.mkdir(exist_ok=True, parents=True)
         return base_install_path
 
     def get_root(self) -> Path:

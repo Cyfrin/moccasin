@@ -9,9 +9,10 @@ authors = [
 dependencies = [
     "titanoboa>=0.2.2",
     "python-dotenv>=1.0.1",
-    "tomli-w>=1.0.0",
     "titanoboa-zksync>=v0.2.2",
     "tqdm>=4.66.5",
+    "tomlkit>=0.13.2",          # For preserving comments when writing to toml
+    "tomli-w>=1.0.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, < 3.13"
@@ -64,3 +65,6 @@ exclude = [
 
 [tool.pytest.ini_options]
 addopts = "--ignore=tests/data/"
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true

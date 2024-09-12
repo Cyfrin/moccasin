@@ -11,6 +11,7 @@ pip_package_name = "snekmate"
 org_name = "pcaversaccio"
 github_package_name = f"{org_name}/{pip_package_name}"
 version = "0.1.0"
+comment_content = "PRESERVE COMMENTS"
 
 
 def test_run_help(gab_path, installation_cleanup_dependencies):
@@ -105,6 +106,7 @@ def test_write_to_config_after_install(installation_cleanup_dependencies, gab_pa
     assert github_package_name in config.dependencies
     for dep in starting_dependencies:
         assert dep in config.dependencies
+    assert comment_content in config.read_gaboon_config_preserve_comments().as_string()
 
 
 def test_can_install_with_version(installation_cleanup_dependencies, gab_path):
