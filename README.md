@@ -20,9 +20,18 @@ Fast to install, test, and run python commands on your smart contracts.
 
 Head over to [the moccasin installation documentation](https://cyfrin.github.io/moccasin/installing-moccasin.html) to for other install methodologies and getting stated.
 
+## This README Quickstart
+
+To install the moccasin `mox` command, we recommend the [uv](https://docs.astral.sh/uv/) tool.
 
 ```bash
 uv tool install moccasin
+```
+
+Then, see a list of commands with:
+
+```bash
+mox --help
 ```
 
 # Documentation
