@@ -165,7 +165,7 @@ cython_debug/
 # Ruff / Rye
 .ruff_cache
 
-# Gaboon
+# Moccasin
 .env
 .env.unsafe
 .env*

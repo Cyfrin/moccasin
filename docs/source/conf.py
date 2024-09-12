@@ -6,13 +6,13 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import gaboon
+import moccasin
 import os
 import sys
 
 sys.path.insert(0, os.path.abspath("."))
 
-project = "gaboon"
+project = "moccasin"
 copyright = "2024, Patrick Collins, Charles Cooper"
 author = "Patrick Collins, Charles Cooper"
 
@@ -48,11 +48,11 @@ html_static_path = ["_static"]
 html_context = {
     "source_type": "github",
     "source_user": "cyfrin",
-    "source_repo": "gaboon",
+    "source_repo": "moccasin",
 }
 
 # Options for sphinx_multiversion
 smv_remote_whitelist = r"^origin$"
 smv_branch_whitelist = r"^master$"  # master is gross
 smv_tag_whitelist = r"^v\d+\.\d+.\d+$"
-version = gaboon.version()
+version = moccasin.version()

@@ -1,5 +1,5 @@
 from src import Counter
-from gaboon.boa_tools import ZksyncContract
+from moccasin.boa_tools import ZksyncContract
 
 # from boa.contracts.vyper.vyper_contract import VyperContract
 
@@ -12,5 +12,5 @@ def deploy() -> ZksyncContract:
     return counter
 
 
-def gaboon_main() -> ZksyncContract:
+def moccasin_main() -> ZksyncContract:
     return deploy()

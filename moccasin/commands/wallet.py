@@ -3,21 +3,16 @@ import getpass
 from pathlib import Path
 import shutil
 from typing import Any
-from gaboon.logging import logger
-from gaboon.constants.vars import DEFAULT_KEYSTORES_PATH
+from moccasin.logging import logger
+from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
 from eth_account import Account as EthAccountsClass
 from eth_account.signers.local import LocalAccount
 from hexbytes import HexBytes
-from eth_account.types import (
-    PrivateKeyType,
-)
+from eth_account.types import PrivateKeyType
 from argparse import Namespace
 from typing import cast
 
-ALIAS_TO_COMMAND = {
-    "add": "import", 
-    "i": "import",
-}
+ALIAS_TO_COMMAND = {"add": "import", "i": "import"}
 
 
 def main(args: Namespace) -> int:
@@ -74,9 +69,7 @@ def inspect(
     return keystore
 
 
-def list_accounts(
-    keystores_path: Path = DEFAULT_KEYSTORES_PATH,
-) -> list[Any] | None:
+def list_accounts(keystores_path: Path = DEFAULT_KEYSTORES_PATH) -> list[Any] | None:
     if keystores_path.exists():
         account_paths = sorted(keystores_path.glob("*"))
         logger.info(
@@ -120,7 +113,7 @@ def generate_account(
         logger.info(f"Account generated: {new_account.address}")
         logger.info(f"(Unsafe) Private key: {new_account.key!r}")
         logger.info(
-            f"To save, add the --save flag next time with:\ngab wallet generate {name!r} --save --password <password>"
+            f"To save, add the --save flag next time with:\nmox wallet generate {name!r} --save --password <password>"
         )
     return 0
 
@@ -185,18 +178,12 @@ def import_private_key(
 
     new_account: LocalAccount = EthAccountsClass.from_key(private_key)
     save_to_keystores(
-        name,
-        new_account,
-        password=password,
-        keystores_path=keystores_path,
+        name, new_account, password=password, keystores_path=keystores_path
     )
     return 0
 
 
-def delete_keystore(
-    name: str,
-    keystores_path: Path = DEFAULT_KEYSTORES_PATH,
-) -> int:
+def delete_keystore(name: str, keystores_path: Path = DEFAULT_KEYSTORES_PATH) -> int:
     keystore_path = keystores_path.joinpath(name)
 
     if not keystore_path.exists():
@@ -261,7 +248,5 @@ def decrypt_key(
     if print_key:
         logger.info(f"Private key: {key.to_0x_hex()}")
     else:
-        logger.debug(
-            "Private key decrypted successfully."
-        )
+        logger.debug("Private key decrypted successfully.")
     return key

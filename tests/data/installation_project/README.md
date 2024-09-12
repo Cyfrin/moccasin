@@ -1,12 +1,12 @@
-# Gaboon Project
+# Moccasin Project
 
-🐍 Welcome to your Gaboon project!
+🐍 Welcome to your Moccasin project!
 
 ## Quickstart
 
 ```bash
-gab init
-gab compile
+mox init
+mox compile
 ```
 
-_For documentation, please run `gab --help` or visit [the Gaboon documentation](https://github.com/cyfrin/gaboon)_
+_For documentation, please run `mox --help` or visit [the Moccasin documentation](https://github.com/cyfrin/moccasin)_

@@ -1,9 +1,9 @@
 from argparse import Namespace
 import subprocess
-from gaboon._dependency_helpers import get_base_install_path
-from gaboon.config import get_config
+from moccasin._dependency_helpers import get_base_install_path
+from moccasin.config import get_config
 from packaging.requirements import Requirement
-from gaboon.logging import logger
+from moccasin.logging import logger
 
 
 def main(args: Namespace):

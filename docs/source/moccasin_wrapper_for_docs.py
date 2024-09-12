@@ -1,4 +1,4 @@
-from gaboon.__main__ import generate_main_parser_and_sub_parsers
+from moccasin.__main__ import generate_main_parser_and_sub_parsers
 import argparse
 
 

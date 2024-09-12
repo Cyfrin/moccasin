@@ -1,9 +1,9 @@
 .. _install: 
 
-Installing Gaboon
+Installing Moccasin
 #################
 
-There are a few things you'll need on your machine before you can install Gaboon. Please install the appropriate tools from the `Prerequisites`_ section. Once you have those, the recommended way to :ref:`install Gaboon is via uv <installation-with-uv>`.
+There are a few things you'll need on your machine before you can install Moccasin. Please install the appropriate tools from the `Prerequisites`_ section. Once you have those, the recommended way to :ref:`install Moccasin is via uv <installation-with-uv>`.
 
 Prerequisites
 =============
@@ -15,7 +15,7 @@ Prerequisites
 Installation with uv
 --------------------
 
-For those unfamiliar, `uv <https://docs.astral.sh/uv/>`_ is a fast python package manager, and that helps us install gaboon into it's own isolated virtual environment, so we don't get any weird dependency conflicts with other python packages. It's similar to `pip` and `pipx` if you've used them before. It even comes with some `pip` compatibility, will tools like `uv pip install`.
+For those unfamiliar, `uv <https://docs.astral.sh/uv/>`_ is a fast python package manager, and that helps us install moccasin into it's own isolated virtual environment, so we don't get any weird dependency conflicts with other python packages. It's similar to `pip` and `pipx` if you've used them before. It even comes with some `pip` compatibility, will tools like `uv pip install`.
 
 It's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work as well. 
 
@@ -31,23 +31,23 @@ But you can head over to the `uv installation instructions <https://docs.astral.
 
     uv python install 3.11
 
-Then, to install gaboon with `uv`, run:
+Then, to install moccasin with `uv`, run:
 
 .. code-block:: bash
 
-    uv tool install gaboon
+    uv tool install moccasin
 
-Once installed, to verify that Gaboon is installed, you can run:
+Once installed, to verify that Moccasin is installed, you can run:
 
 .. code-block:: bash
 
-    gab --version
+    mox --version
 
 And see an output like:
 
 .. code-block:: bash
 
-    Gaboon CLI v0.1.0
+    Moccasin CLI v0.1.0
 
 .. _installation-with-pipx:
 
@@ -56,7 +56,7 @@ Installation with pipx
 
 Pipx is a tool to help you install and run end-user applications written in Python. It's roughly similar to macOS's ``brew``, JavaScript's ``npx``, and Linux's ``apt``.
 
-``pipx`` installs Gaboon into a virtual environment and makes it available directly from the commandline. Once installed, you will never have to activate a virtual environment prior to using Gaboon.
+``pipx`` installs Moccasin into a virtual environment and makes it available directly from the commandline. Once installed, you will never have to activate a virtual environment prior to using Moccasin.
 
 ``pipx`` does not ship with Python. If you have not used it before you will probably need to install it.
 
@@ -73,23 +73,23 @@ To install ``pipx``:
     
     You may need to restart your terminal after installing `pipx`.
 
-To install gaboon then with `pipx`:
+To install moccasin then with `pipx`:
 
 .. code-block:: bash
 
-    pipx install gaboon
+    pipx install moccasin
 
-Once installed, you can run the following command to verify that Gaboon is installed:
+Once installed, you can run the following command to verify that Moccasin is installed:
 
 .. code-block:: bash
 
-    gab --version
+    mox --version
 
 And see an output like:
 
 .. code-block:: bash
 
-    Gaboon CLI v0.1.0
+    Moccasin CLI v0.1.0
 
 Installation with pip
 ---------------------
@@ -100,7 +100,7 @@ To install with `pip`:
 
 .. code-block:: bash
 
-    pip install gaboon
+    pip install moccasin
 
 From source 
 -----------
@@ -109,10 +109,10 @@ To install from source, you'll need the `uv tool installed <https://docs.astral.
 
 .. code-block:: bash
 
-    git clone https://github.com/cyfrin/gaboon
-    cd gaboon
+    git clone https://github.com/cyfrin/moccasin
+    cd moccasin
     uv sync
     source .venv/bin/activate
     uv pip install -e .
 
-And you will have `gab` in your virtual environment created from the `uv` tool. It's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work. 
+And you will have `mox` in your virtual environment created from the `uv` tool. It's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work. 

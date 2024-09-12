@@ -43,8 +43,8 @@ Follow the steps to clone the repo for you to make changes to this project.
 1. Clone the repo
 
 ```bash
-git clone https://github.com/cyfrin/gaboon
-cd gaboon
+git clone https://github.com/cyfrin/moccasin
+cd moccasin
 ```
 
 2. Sync dependencies
@@ -88,7 +88,7 @@ However, if you run tests and scripts using the `uv` or `just` commands as we wi
 
 ## Running Tests
 
-First, you'll need to make sure you have the `anvil1` keystore in your `~/.gaboon/keystores` folder. You can [find it here](./tests/data/keystores/anvil1). Please move it there. 
+First, you'll need to make sure you have the `anvil1` keystore in your `~/.moccasin/keystores` folder. You can [find it here](./tests/data/keystores/anvil1). Please move it there. 
 
 Run the following:
 
@@ -119,4 +119,4 @@ You can see in `justfile` a list of scripts one can run. To see them all you can
 
 # Thank you!
 
-Thank you for wanting to participate in titanoboa and gaboon!
+Thank you for wanting to participate in titanoboa and moccasin!

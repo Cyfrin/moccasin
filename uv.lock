@@ -580,64 +580,6 @@ wheels = [
 ]
 
 [[package]]
-name = "gaboon-cli"
-version = "0.1.1"
-source = { editable = "." }
-dependencies = [
-    { name = "python-dotenv" },
-    { name = "titanoboa" },
-    { name = "titanoboa-zksync" },
-    { name = "tomli-w" },
-    { name = "tomlkit" },
-    { name = "tqdm" },
-]
-
-[package.optional-dependencies]
-docs = [
-    { name = "shibuya" },
-    { name = "sphinx" },
-    { name = "sphinx-argparse" },
-    { name = "sphinx-copybutton" },
-    { name = "sphinx-multiversion" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "snekmate" },
-    { name = "vyper" },
-    { name = "web3" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "shibuya", marker = "extra == 'docs'", specifier = ">=2024.8.30" },
-    { name = "sphinx", marker = "extra == 'docs'", specifier = ">=8.0.2" },
-    { name = "sphinx-argparse", marker = "extra == 'docs'", specifier = ">=0.5.2" },
-    { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
-    { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
-    { name = "titanoboa", specifier = ">=0.2.2" },
-    { name = "titanoboa-zksync", specifier = ">=0.2.2" },
-    { name = "tomli-w", specifier = ">=1.0.0" },
-    { name = "tomlkit", specifier = ">=0.13.2" },
-    { name = "tqdm", specifier = ">=4.66.5" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "gaboon-cli", editable = "." },
-    { name = "mypy", specifier = ">=1.11.0" },
-    { name = "pytest", specifier = ">=8.3.2" },
-    { name = "ruff", specifier = ">=0.6.3" },
-    { name = "snekmate", specifier = ">=0.1.0" },
-    { name = "vyper", specifier = ">=0.4.0" },
-    { name = "web3", specifier = ">=7.0.0b9" },
-]
-
-[[package]]
 name = "hexbytes"
 version = "1.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -791,6 +733,64 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d6/54/cfe61301667036ec958cb99bd3efefba235e65cdeb9c84d24a8293ba1d90/mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba", size = 8729 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8", size = 9979 },
+]
+
+[[package]]
+name = "moccasin"
+version = "0.2.0"
+source = { editable = "." }
+dependencies = [
+    { name = "python-dotenv" },
+    { name = "titanoboa" },
+    { name = "titanoboa-zksync" },
+    { name = "tomli-w" },
+    { name = "tomlkit" },
+    { name = "tqdm" },
+]
+
+[package.optional-dependencies]
+docs = [
+    { name = "shibuya" },
+    { name = "sphinx" },
+    { name = "sphinx-argparse" },
+    { name = "sphinx-copybutton" },
+    { name = "sphinx-multiversion" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "snekmate" },
+    { name = "vyper" },
+    { name = "web3" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "python-dotenv", specifier = ">=1.0.1" },
+    { name = "shibuya", marker = "extra == 'docs'", specifier = ">=2024.8.30" },
+    { name = "sphinx", marker = "extra == 'docs'", specifier = ">=8.0.2" },
+    { name = "sphinx-argparse", marker = "extra == 'docs'", specifier = ">=0.5.2" },
+    { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
+    { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
+    { name = "titanoboa", specifier = ">=0.2.2" },
+    { name = "titanoboa-zksync", specifier = ">=0.2.2" },
+    { name = "tomli-w", specifier = ">=1.0.0" },
+    { name = "tomlkit", specifier = ">=0.13.2" },
+    { name = "tqdm", specifier = ">=4.66.5" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "moccasin", editable = "." },
+    { name = "mypy", specifier = ">=1.11.0" },
+    { name = "pytest", specifier = ">=8.3.2" },
+    { name = "ruff", specifier = ">=0.6.3" },
+    { name = "snekmate", specifier = ">=0.1.0" },
+    { name = "vyper", specifier = ">=0.4.0" },
+    { name = "web3", specifier = ">=7.0.0b9" },
 ]
 
 [[package]]

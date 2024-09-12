@@ -1,6 +1,6 @@
 [project]
-name = "gaboon-cli"
-version = "0.1.2"
+name = "moccasin"
+version = "0.2.0"
 description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },
@@ -27,14 +27,14 @@ dev-dependencies = [
     "vyper>=0.4.0",
     "web3>=7.0.0b9",
     "ruff>=0.6.3",
-    "gaboon-cli",
+    "moccasin",
 ]
 
 [tool.uv.sources]
-gaboon-cli = { workspace = true }
+moccasin = { workspace = true }
 
 [project.scripts]
-"gab" = "gaboon:main"
+"mox" = "moccasin:main"
 
 [project.optional-dependencies]
 docs = [
@@ -53,7 +53,7 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["gaboon"]
+packages = ["moccasin"]
 
 [tool.mypy]
 disable_error_code = 'type-arg, attr-defined'

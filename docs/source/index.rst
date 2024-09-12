@@ -1,13 +1,13 @@
 .. image:: _static/docs-logo.png
     :width: 140px
-    :alt: Gaboon logo
+    :alt: Moccasin logo
     :align: center
 
 
-Gaboon
+Moccasin
 ######
 
-Gaboon is a fast, pythonic smart contract development framework heavily powered by `titanoboa <https://github.com/vyperlang/titanoboa>`_.
+Moccasin is a fast, pythonic smart contract development framework heavily powered by `titanoboa <https://github.com/vyperlang/titanoboa>`_.
 
 
 .. note::
@@ -17,9 +17,9 @@ Gaboon is a fast, pythonic smart contract development framework heavily powered 
 How to read the documentation
 =============================
 
-The gaboon documentation is written in a way that assumes you are on a MacOS or Linux-like system. If you are using windows, we recommend you watch the first `10 minutes of this WSL tutorial <https://www.youtube.com/watch?v=xqUZ4JqHI_8>`_ and work with WSL. WSL stands for "Windows Subsystem for Linux" and it allows you to run a Linux commands on Windows machine.
+The moccasin documentation is written in a way that assumes you are on a MacOS or Linux-like system. If you are using windows, we recommend you watch the first `10 minutes of this WSL tutorial <https://www.youtube.com/watch?v=xqUZ4JqHI_8>`_ and work with WSL. WSL stands for "Windows Subsystem for Linux" and it allows you to run a Linux commands on Windows machine.
 
-Why Gaboon?
+Why Moccasin?
 ===========
 
 We think web3 needs the following:
@@ -30,7 +30,7 @@ We think web3 needs the following:
     a. Running scripts to interact with contracts needs to be easy in a language that humans can understand.
 3. And finally... it needs to be fast!
 
-Then, we have some fun plans for AI, formal verification, fuzzing, and more in the future of gaboon, so stay tuned!
+Then, we have some fun plans for AI, formal verification, fuzzing, and more in the future of moccasin, so stay tuned!
 
 
-Head over to :doc:`installing gaboon <installing-gaboon>` to get started.
+Head over to :doc:`installing moccasin <installing-moccasin>` to get started.

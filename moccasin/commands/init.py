@@ -1,6 +1,6 @@
 from pathlib import Path
-from gaboon.logging import logger
-from gaboon.constants.vars import (
+from moccasin.logging import logger
+from moccasin.constants.vars import (
     CONFIG_NAME,
     DEFAULT_PROJECT_FOLDERS,
     README_PATH,
@@ -9,7 +9,7 @@ from gaboon.constants.vars import (
     SCRIPT_FOLDER,
     TESTS_FOLDER,
 )
-from gaboon.constants.file_data import (
+from moccasin.constants.file_data import (
     GITIGNORE,
     GITATTRIBUTES,
     README_MD_SRC,
@@ -40,7 +40,7 @@ def new_project(project_path_str: str = ".", force: bool = False) -> Path:
     project_path = Path(project_path_str).resolve()
     if not force and project_path.exists() and list(project_path.glob("*")):
         raise FileExistsError(
-            f"Directory is not empty: {project_path}.\nIf you're sure the folder is ok to potentially overwrite, try creating a new project by running with `gab init --force`"
+            f"Directory is not empty: {project_path}.\nIf you're sure the folder is ok to potentially overwrite, try creating a new project by running with `mox init --force`"
         )
     project_path.mkdir(exist_ok=True)
     _create_folders(project_path)

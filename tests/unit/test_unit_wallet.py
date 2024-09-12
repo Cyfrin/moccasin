@@ -1,10 +1,7 @@
 from pathlib import Path
 from typing import List
-from gaboon.commands.wallet import inspect, list_accounts
-from tests.conftest import (
-    ANVIL1_KEYSTORE_NAME,
-    ANVIL_KEYSTORE_SAVED,
-)
+from moccasin.commands.wallet import inspect, list_accounts
+from tests.conftest import ANVIL1_KEYSTORE_NAME, ANVIL_KEYSTORE_SAVED
 
 
 def test_inspect(anvil_keystore):

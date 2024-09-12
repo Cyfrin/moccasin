@@ -1,4 +1,4 @@
-from gaboon import config
+from moccasin import config
 from boa.contracts.vyper.vyper_contract import VyperDeployer
 from src import MyToken
 
@@ -10,5 +10,5 @@ def get_decimals():
     print(decimals)
 
 
-def gaboon_main():
+def moccasin_main():
     get_decimals()

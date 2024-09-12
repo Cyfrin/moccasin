@@ -1,5 +1,5 @@
 ======
-Gaboon
+Moccasin
 ======
 
 .. toctree::
@@ -11,14 +11,14 @@ Gaboon
     :caption: Getting Started
     :maxdepth: 2
 
-    installing-gaboon.rst
+    installing-moccasin.rst
     quickstart.rst
 
 .. toctree::
     :caption: Project Overview
     :maxdepth: 2
 
-    gaboon.toml <gaboon_toml.rst>
+    moccasin.toml <moccasin_toml.rst>
     project.rst 
     networks.rst
     dependencies.rst
@@ -37,5 +37,5 @@ Gaboon
     :maxdepth: 2
 
     cli_commands.rst
-    all_gaboon_toml_parameters.rst
+    all_moccasin_toml_parameters.rst
     common-errors.rst

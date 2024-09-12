@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, Union, cast
-from gaboon.constants.vars import (
+from moccasin.constants.vars import (
     CONFIG_NAME,
     DOT_ENV_FILE,
     CONTRACTS_FOLDER,
@@ -19,7 +19,7 @@ import shutil
 import tempfile
 import boa
 from boa.environment import Env
-from gaboon.logging import logger
+from moccasin.logging import logger
 import tomlkit
 
 if TYPE_CHECKING:
@@ -117,9 +117,9 @@ class _Networks:
     # REVIEW: i think it might be better to delegate to `boa.set_env`
     # so the usage would be like:
     # ```
-    # boa.set_env_from_network(gaboon.networks.zksync)
+    # boa.set_env_from_network(moccasin.networks.zksync)
     # ```
-    # otherwise it is too confusing where gaboon ends and boa starts.
+    # otherwise it is too confusing where moccasin ends and boa starts.
     def set_active_network(self, name_or_url: str | Network, is_fork: bool = False):
         env_to_set: _AnyEnv
         if isinstance(name_or_url, Network):
@@ -160,7 +160,7 @@ class Config:
             self._load_config(config_path)
 
     def _load_config(self, config_path: Path):
-        toml_data: dict = self.read_gaboon_config(config_path)
+        toml_data: dict = self.read_moccasin_config(config_path)
         self._load_env_file()
         toml_data = self.expand_env_vars(toml_data)
         self.networks = _Networks(toml_data)
@@ -175,12 +175,12 @@ class Config:
     def _load_env_file(self):
         load_dotenv(dotenv_path=self.project_root.joinpath(DOT_ENV_FILE))
 
-    def read_gaboon_config(self, config_path: Path = None) -> dict:
+    def read_moccasin_config(self, config_path: Path = None) -> dict:
         config_path = self._validate_config_path(config_path)
         with open(config_path, "rb") as f:
             return tomllib.load(f)
 
-    def read_gaboon_config_preserve_comments(
+    def read_moccasin_config_preserve_comments(
         self, config_path: Path = None
     ) -> tomlkit.TOMLDocument:
         config_path = self._validate_config_path(config_path)
@@ -214,7 +214,7 @@ class Config:
 
     def write_dependencies(self, dependencies: list):
         target_path = self._project_root / CONFIG_NAME
-        toml_data = self.read_gaboon_config_preserve_comments(target_path)
+        toml_data = self.read_moccasin_config_preserve_comments(target_path)
         toml_data["project"]["dependencies"] = dependencies  # type: ignore
 
         # Create a temporary file in the same directory as the target file
@@ -295,9 +295,9 @@ class Config:
             # Move up to the parent directory
             parent_path = current_path.parent
             if parent_path == current_path:
-                # We've reached the root directory without finding gaboon.toml
+                # We've reached the root directory without finding moccasin.toml
                 raise FileNotFoundError(
-                    "Could not find gaboon.toml or src directory with Vyper contracts in any parent directory"
+                    "Could not find moccasin.toml or src directory with Vyper contracts in any parent directory"
                 )
 
             if (current_path / CONFIG_NAME).exists():

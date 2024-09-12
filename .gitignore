@@ -14,7 +14,7 @@ wheels/
 .pytest_cache/
 .ruff_cache/
 
-# Gaboon
+# Moccasin
 built_docs/
 anvil1
 zkrich1

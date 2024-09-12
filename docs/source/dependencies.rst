@@ -2,7 +2,7 @@ Dependencies
 ############
 
 
-Gaboon allows for working with either:
+Moccasin allows for working with either:
 
 - :ref:`Installing from GitHub repositories <installing_github_dependencies>`
 
@@ -18,18 +18,18 @@ To install a package from GitHub, you can run the following:
 
 .. code-block:: bash
 
-    gab install ORG/REPO[@VERSION]
+    mox install ORG/REPO[@VERSION]
 
 For example:
 
 .. code-block:: bash
 
     # Without a version
-    gab install pcaversaccio/snekmate
+    mox install pcaversaccio/snekmate
     # With a version
-    gab install pcaversaccio/snekmate@0.1.0
+    mox install pcaversaccio/snekmate@0.1.0
 
-This will create an entry in your `gaboon.toml` file that looks like this:
+This will create an entry in your `moccasin.toml` file that looks like this:
 
 .. code-block:: toml
 
@@ -64,14 +64,14 @@ You can then use these packages in your vyper contracts, for example in an minia
 Installing pip/PyPI Dependencies 
 ================================
 
-Gaboon let's you directly install and work with PyPI packages as you would any other python package. PyPi dependencies in gaboon are by default powered by the `uv <https://docs.astral.sh/uv/>`_ tool. In order to use this, you need to have the `uv` tool installed. However, you can change this setting to `pip` in your `gaboon.tom`.
+Moccasin let's you directly install and work with PyPI packages as you would any other python package. PyPi dependencies in moccasin are by default powered by the `uv <https://docs.astral.sh/uv/>`_ tool. In order to use this, you need to have the `uv` tool installed. However, you can change this setting to `pip` in your `moccasin.tom`.
 
 .. code-block:: toml
 
     [project]
     installer = "pip" # change/add this setting
 
-As of today, `gaboon` supports:
+As of today, `moccasin` supports:
 
 - `pip`
 
@@ -81,19 +81,19 @@ You can also directly install and work with PyPI packages as you would any other
 
 .. code-block:: bash
 
-    gab install PACKAGE
+    mox install PACKAGE
 
 For example:
 
 .. code-block:: bash
 
-    gab install snekmate
+    mox install snekmate
 
 .. note::
 
     Snekmate is both a `pypi <https://pypi.org/project/snekmate/>`_ and a GitHub package.
 
-This will create an entry in your `gaboon.toml` file that looks like this:
+This will create an entry in your `moccasin.toml` file that looks like this:
 
 .. code-block:: toml
 

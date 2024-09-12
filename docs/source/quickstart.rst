@@ -10,15 +10,15 @@ To create a new project, you can run the following command:
 
 .. code-block:: bash
 
-    gab init my_project
+    mox init my_project
 
 And this will create a new project in a new `my_project` directory. If you want to create a project in a directory that already has files/folders in it, run:
 
 .. code-block:: bash
 
-    gab init my_project --force
+    mox init my_project --force
 
-Let's check out the files and folders `gaboon` has created:
+Let's check out the files and folders `moccasin` has created:
 
 .. note::
 
@@ -37,7 +37,7 @@ You'll get an output like:
 
     .
     ├── README.md
-    ├── gaboon.toml
+    ├── moccasin.toml
     ├── script
     │   ├── __init__.py
     │   └── deploy.py
@@ -47,10 +47,10 @@ You'll get an output like:
         ├── conftest.py
         └── test_counter.py
 
-This is a minimal project structure that `gaboon` creates. 
+This is a minimal project structure that `moccasin` creates. 
 
 - `README.md` is a markdown file that you can use to describe your project.
-- `gaboon.toml` is a configuration file that `gaboon` uses to manage the project.
+- `moccasin.toml` is a configuration file that `moccasin` uses to manage the project.
 - `script` is a directory that contains scripts that you can use to deploy your project.
 - `src` is a directory that contains your vyper smart contracts.
 - `tests` is a directory that contains your tests.
@@ -59,7 +59,7 @@ This is a minimal project structure that `gaboon` creates.
 Deploying a contract 
 ====================
 
-Now, unlike other frameworks, with `gaboon`, we never need to compile! Gaboon uses `titanoboa` under the hood to compile contracts quickly on the fly. Let's open our `deploy.py` file and look inside.
+Now, unlike other frameworks, with `moccasin`, we never need to compile! Moccasin uses `titanoboa` under the hood to compile contracts quickly on the fly. Let's open our `deploy.py` file and look inside.
 
 .. code-block:: python
 
@@ -72,7 +72,7 @@ Now, unlike other frameworks, with `gaboon`, we never need to compile! Gaboon us
         print("Ending count: ", counter.number())
         return counter
 
-    def gaboon_main():
+    def moccasin_main():
         return deploy()
 
 We can see a python script that will:
@@ -86,7 +86,7 @@ We can run this script to the titanoboa pyevm (a local network that simulates et
 
 .. code-block:: bash
 
-    gab run deploy
+    mox run deploy
 
 And we'll get an output like:
 
@@ -101,11 +101,11 @@ Awesome! This is how easy it is to run scripts with your smart contracts.
 Running tests  
 =============
 
-Under the hood, `gaboon` uses `pytest <https://docs.pytest.org/en/7.1.x/contents.html>`_, and you can use a lot of your favorite pytest command line commands. If you just run:
+Under the hood, `moccasin` uses `pytest <https://docs.pytest.org/en/7.1.x/contents.html>`_, and you can use a lot of your favorite pytest command line commands. If you just run:
 
 .. code-block:: bash
 
-    gab test
+    mox test
 
 You'll get an output like:
 

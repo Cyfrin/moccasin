@@ -1,8 +1,8 @@
 from pathlib import Path
-from gaboon.logging import logger
-from gaboon.config import get_config, initialize_global_config
+from moccasin.logging import logger
+from moccasin.config import get_config, initialize_global_config
 import importlib.util
-from gaboon._sys_path_and_config_setup import (
+from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
     _setup_network_and_account_from_args,
 )
@@ -52,9 +52,9 @@ def run_script(
             password_file_path=password_file_path,
         )
 
-        # We give the user's script the module name "deploy_script_gaboon"
+        # We give the user's script the module name "deploy_script_moccasin"
         spec = importlib.util.spec_from_file_location(
-            "deploy_script_gaboon", script_path
+            "deploy_script_moccasin", script_path
         )
         if spec is None:
             raise Exception(f"Cannot find script '{script_path}'")
@@ -66,8 +66,8 @@ def run_script(
         spec.loader.exec_module(module)
 
         # neat functionality:
-        if hasattr(module, "gaboon_main") and callable(module.gaboon_main):
-            result = module.gaboon_main()
+        if hasattr(module, "moccasin_main") and callable(module.moccasin_main):
+            result = module.moccasin_main()
             return result
 
 

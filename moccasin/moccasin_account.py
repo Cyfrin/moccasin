@@ -1,19 +1,15 @@
 from pathlib import Path
 from eth_account import Account
-from eth_account.signers.local import (
-    LocalAccount,
-)
-from eth_keys.datatypes import (
-    PrivateKey,
-)
+from eth_account.signers.local import LocalAccount
+from eth_keys.datatypes import PrivateKey
 from hexbytes import HexBytes
-from gaboon.constants.vars import DEFAULT_KEYSTORES_PATH
+from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
 from eth_utils import to_bytes
-from gaboon.commands.wallet import decrypt_key
+from moccasin.commands.wallet import decrypt_key
 from typing import cast
 
 
-class GaboonAccount:
+class MoccasinAccount:
     def __init__(
         self,
         private_key: str | bytes | None = None,
