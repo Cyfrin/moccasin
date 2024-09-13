@@ -1,5 +1,6 @@
 from argparse import Namespace
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 import shutil
 import subprocess
@@ -164,29 +165,20 @@ def _stream_download(
     download_url: str, target_path: str, headers: dict[str, str] = REQUEST_HEADERS
 ) -> None:
     response = requests.get(download_url, stream=True, headers=headers)
+
     response.raise_for_status()
+
     total_size = int(response.headers.get("content-length", 0))
+    progress_bar = tqdm(total=total_size, unit="iB", unit_scale=True)
+    content = bytes()
 
-    temp_file = os.path.join(target_path, "temp_download.zip")
+    for data in response.iter_content(None, decode_unicode=True):
+        progress_bar.update(len(data))
+        content += data
+    progress_bar.close()
 
-    with (
-        open(temp_file, "wb") as f,
-        tqdm(
-            desc="Downloading",
-            total=total_size,
-            unit="iB",
-            unit_scale=True,
-            unit_divisor=1024,
-        ) as progress_bar,
-    ):
-        for data in response.iter_content(chunk_size=None):
-            size = f.write(data)
-            progress_bar.update(size)
-
-    with zipfile.ZipFile(temp_file, "r") as zip_ref:
-        zip_ref.extractall(target_path)
-
-    os.remove(temp_file)
+    with zipfile.ZipFile(BytesIO(content)) as zf:
+        zf.extractall(target_path)
 
 
 def _maybe_retrieve_github_auth() -> dict[str, str]:
