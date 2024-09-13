@@ -1,0 +1,1 @@
+These are the "super" integration tests if you will humor me. They run the CLI commands as a subprocess, and may need external services. They are slow to run. 

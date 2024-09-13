@@ -1,5 +1,5 @@
 [project]
-dependencies = ["snekmate", "gaboon-cli"]
+dependencies = ["snekmate", "moccasin"]
 
 # PRESERVE COMMENTS
 

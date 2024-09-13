@@ -1,13 +1,13 @@
 
-# Titanoboa Project
+# Moccasin Project
 
-🐍 Welcome to your Titanoboa project!
+🐍 Welcome to your Moccasin project!
 
 ## Quickstart
 
 ```bash
-boa init
-boa compile
+mox init
+mox compile
 ```
 
 _For documentation, please run `mox --help` or visit [the Moccasin documentation](https://github.com/cyfrin/moccasin)_

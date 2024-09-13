@@ -18,22 +18,28 @@ from moccasin.constants.file_data import (
     DEPLOY_SCRIPT_DEFAULT,
     TEST_COUNTER_DEFAULT,
     GAB_DEFAULT_CONFIG,
+    VSCODE_SETTINGS_DEFAULT,
 )
 from argparse import Namespace
 
 
 def main(args: Namespace) -> int:
-    path: Path = new_project(args.path or ".", args.force or False)
+    path: Path = new_project(
+        args.path or ".", args.force or False, args.vscode or False
+    )
     logger.info(f"Project initialized at {str(path)}")
     return 0
 
 
-def new_project(project_path_str: str = ".", force: bool = False) -> Path:
+def new_project(
+    project_path_str: str = ".", force: bool = False, vscode: bool = False
+) -> Path:
     """Initializes a new project.
 
     Args:
         project_path: Path to initialize the project at. If not exists, it will be created.
         force: If True, it will create folders and files even if the folder is not empty.
+        vscode: If True, it will create a .vscode folder with settings.json
 
     Returns the path to the project as a string.
     """
@@ -43,17 +49,19 @@ def new_project(project_path_str: str = ".", force: bool = False) -> Path:
             f"Directory is not empty: {project_path}.\nIf you're sure the folder is ok to potentially overwrite, try creating a new project by running with `mox init --force`"
         )
     project_path.mkdir(exist_ok=True)
-    _create_folders(project_path)
-    _create_files(project_path)
+    _create_folders(project_path, vscode=vscode)
+    _create_files(project_path, vscode=vscode)
     return project_path
 
 
-def _create_folders(project_path: Path) -> None:
+def _create_folders(project_path: Path, vscode: bool = False) -> None:
     for folder in DEFAULT_PROJECT_FOLDERS:
         Path(project_path).joinpath(folder).mkdir(exist_ok=True)
+    if vscode:
+        Path(project_path).joinpath(".vscode").mkdir(exist_ok=True)
 
 
-def _create_files(project_path: Path) -> None:
+def _create_files(project_path: Path, vscode: bool = False) -> None:
     _write_file(project_path.joinpath(".gitignore"), GITIGNORE)
     _write_file(project_path.joinpath(".gitattributes"), GITATTRIBUTES)
     _write_file(
@@ -70,6 +78,10 @@ def _create_files(project_path: Path) -> None:
         project_path.joinpath(f"{SCRIPT_FOLDER}/deploy.py"), DEPLOY_SCRIPT_DEFAULT
     )
     _write_file(project_path.joinpath(f"{SCRIPT_FOLDER}/__init__.py"), "")
+    if vscode:
+        _write_file(
+            project_path.joinpath(".vscode/settings.json"), VSCODE_SETTINGS_DEFAULT
+        )
 
 
 def _write_file(path: Path, contents: str, overwrite: bool = False) -> None:

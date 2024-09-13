@@ -7,8 +7,6 @@ from moccasin.logging import logger, set_log_level
 import sys
 from moccasin.constants.vars import CONFIG_NAME
 
-from importlib import metadata
-
 
 GAB_CLI_VERSION_STRING = "Moccasin CLI v{}"
 
@@ -17,9 +15,10 @@ ALIAS_TO_COMMAND = {
     "c": "compile",
     "script": "run",
     "config": "config_",
+    "from-explorer": "from_explorer",
 }
 
-PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet"]
+PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "from_explorer"]
 
 
 def main(argv: list) -> int:
@@ -107,6 +106,9 @@ This will create a basic directory structure at the path you specific, which loo
         required=False,
         help="Overwrite existing project.",
         action="store_true",
+    )
+    init_parser.add_argument(
+        "--vscode", help="Add a .vscode/settings.json file.", action="store_true"
     )
 
     # Compile command
@@ -382,6 +384,76 @@ Examples:
         parents=[parent_parser],
     )
 
+    # from-explorer command
+    # ========================================================================
+    explorer_parser = sub_parsers.add_parser(
+        "from-explorer",
+        help="Work with block explorers to get data.",
+        description="Work with block explorers to get data.",
+        parents=[parent_parser],
+    )
+    # Create subparsers under 'from-explorer'
+    explorer_subparsers = explorer_parser.add_subparsers(dest="explorer_command")
+
+    ## Explorer command: get
+    get_parser = explorer_subparsers.add_parser(
+        "get",
+        help="Retrieve the ABI of a contract from a block explorer.",
+        description="""Retreive the ABI of a contract from a block explorer.
+
+This command will attempt to use the environment variable ETHERSCAN_API_KEY as the API key for Etherscan. If this environment variable is not set, you can provide the API key as an argument to the command.
+""",
+        parents=[parent_parser],
+    )
+    get_parser.add_argument(
+        "address", help="The address you want to pull from.", type=str
+    )
+    get_parser.add_argument("--name", help="Optional name for the contract.", type=str)
+    get_parser.add_argument(
+        "--api-key",
+        "--explorer-api-key",
+        help="API key for the block explorer.",
+        type=str,
+    )
+    get_parser.add_argument(
+        "--ignore-config",
+        "-i",
+        help="Don't pull values from the config.",
+        action="store_true",
+    )
+    get_parser.add_argument(
+        "--save-abi-path",
+        help="If added, the returned abi will be saved to the file path selected.",
+        type=str,
+    )
+
+    network_uri_or_chain = get_parser.add_mutually_exclusive_group()
+    network_uri_or_chain.add_argument(
+        "--uri", help="API URI endpoint for explorer.", type=str
+    )
+    network_uri_or_chain.add_argument(
+        "--network", help=f"Alias of the network (from the {CONFIG_NAME}).", type=str
+    )
+    network_uri_or_chain.add_argument(
+        "--chain",
+        "-c",
+        help="The chain name or chain id. Using this flag will set ignore-config to true. Moccasin will use it's internal mapping to map the chain to the moccasin natively supported block explorer.",
+        type=str,
+    )
+
+    ## Explorer command: list
+    explorer_list_parser = explorer_subparsers.add_parser(
+        "list", help="List all natively supported block explorers and chains."
+    )
+    explorer_list_parser.add_argument(
+        "--by-id", help="List by chain id.", action="store_true"
+    )
+    explorer_list_parser.add_argument(
+        "--json", help="Format as json.", action="store_true"
+    )
+
+    # TODO selectors
+    # Show a list of function selectors for a contract
     return main_parser, sub_parsers
 
 
@@ -403,7 +475,7 @@ def add_network_args_to_parser(parser: argparse.ArgumentParser):
 
 
 def get_version() -> str:
-    version = metadata.version("moccasin")
+    version = importlib.metadata.version("moccasin")
     # Attempt to parse from `pyproject.toml` if not found
     if not version:
         with open(

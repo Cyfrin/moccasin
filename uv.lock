@@ -775,7 +775,7 @@ requires-dist = [
     { name = "sphinx-argparse", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
-    { name = "titanoboa", specifier = ">=0.2.2" },
+    { name = "titanoboa", git = "https://github.com/vyperlang/titanoboa.git?rev=master" },
     { name = "titanoboa-zksync", specifier = ">=0.2.2" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
@@ -1362,7 +1362,7 @@ wheels = [
 [[package]]
 name = "titanoboa"
 version = "0.2.2"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/vyperlang/titanoboa.git?rev=master#4768207288ec8fb23a4817ae193bd707ab9d1e8f" }
 dependencies = [
     { name = "eth-abi" },
     { name = "eth-account" },
@@ -1377,10 +1377,6 @@ dependencies = [
     { name = "typing-extensions" },
     { name = "vvm" },
     { name = "vyper" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/5c/6d/69c3230b89dd793ae205153bf9fab80e925aea453761eb420db18f892bf4/titanoboa-0.2.2.tar.gz", hash = "sha256:16a1676fa9ad74b6a3f9fcec9eff037ba3afd98c5e00b81b1a0f9ee6120ef6a8", size = 87275 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c1/d7/7b310c85e2dd41c6e37c67ddc6b48c1e96b41d4f4752e15660a18fe2fafb/titanoboa-0.2.2-py3-none-any.whl", hash = "sha256:337ba91a40c10c87fd31bd1c712bcf5ac6681ebb0f7f55891580489bde3d58c8", size = 97453 },
 ]
 
 [[package]]

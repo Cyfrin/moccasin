@@ -38,7 +38,7 @@ ANVIL_KEYSTORE_SAVED = {
 }
 
 INSTALLATION_STARTING_TOML = """[project]
-dependencies = ["snekmate", "gaboon-cli"]
+dependencies = ["snekmate", "moccasin"]
 
 # PRESERVE COMMENTS
 

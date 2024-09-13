@@ -2,9 +2,15 @@
 dependencies = ["snekmate==0.1.0"]
 src = "contracts"
 out = "build"
+explorer_api_key = "${ETHERSCAN_API_KEY}"
+save_abi_path = "abis"
+
+[networks.contracts]
+price_feed = { abi_from_file_path = "mocks/MockV3Aggregator.vy", force_deploy = false, deployer_path = "mock_deployer/deploy_feed" }
 
 [networks.zksync]
 url = "http://hi"
+contracts = {}
 
 [networks.zksync.extra_data]
 uniswap = "asfasfsaf"
@@ -12,14 +18,20 @@ compound = "asdfsf"
 
 [networks.anvil]
 url = "http://127.0.0.1:8545"
+unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
+default_account_name = "anvil1"
+
+[networks.anvil.contracts]
+price_feed = { address = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi_from_explorer = false }
 
 [networks.fake_chain]
 url = "${FAKE_CHAIN_RPC_URL}"
 fork = true
 
-[networks.mainnet]
+[networks.mainnet_fork]
 url = "${MAINNET_RPC_URL}"
 fork = true
+explorer_uri = "https://api.etherscan.io/api"
 
-[networks.mainnet.extra_data]
+[networks.mainnet_fork.extra_data]
 usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"

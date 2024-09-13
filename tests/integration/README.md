@@ -1,0 +1,1 @@
+There are tests where you need some kind of environment variable or external service.
