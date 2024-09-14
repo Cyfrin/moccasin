@@ -1,12 +1,22 @@
 [project]
-dependencies = ["snekmate==0.1.0"]
+dependencies = [
+    "snekmate==0.1.0",
+]
 src = "contracts"
 out = "build"
 explorer_api_key = "${ETHERSCAN_API_KEY}"
 save_abi_path = "abis"
 
 [networks.contracts]
-price_feed = { abi_from_file_path = "mocks/MockV3Aggregator.vy", force_deploy = false, deployer_path = "mock_deployer/deploy_feed" }
+# TODO: Change name to `deployer_script`. 
+# TODO: Change name to `abi` (can be magic)
+# TODO: Make deployer_script be a python module or a file name
+# Example: "deployer_script" or "foo/deployer_script.py" not "foo/deployer_script" (cuz it looks like a dir)
+price_feed = { abi_from_file_path = "mocks/MockV3Aggregator.vy", force_deploy = false, deployer_path = "mock_deployer/deploy_feed", fixture = false }
+
+[networks.optimism]
+explorer_api_key = "${OPTIMISTIC_ETHERSCAN_API_KEY}"
+chain_id = 10
 
 [networks.zksync]
 url = "http://hi"

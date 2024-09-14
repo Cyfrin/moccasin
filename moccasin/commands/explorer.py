@@ -9,13 +9,18 @@ from moccasin.constants.vars import (
     DEFAULT_NETWORKS_BY_CHAIN_ID,
 )
 from moccasin.logging import logger, set_log_level
-from moccasin.config import get_config
+from moccasin.config import get_config, Network
+
+ALIAS_TO_COMMAND = {"get": "fetch"}
 
 
 def main(args: Namespace) -> int:
-    if args.explorer_command == "list":
+    explorer_command = ALIAS_TO_COMMAND.get(
+        args.explorer_command, args.explorer_command
+    )
+    if explorer_command == "list":
         list_supported_explorers(args.by_id, json=args.json)
-    elif args.explorer_command == "get":
+    elif explorer_command == "fetch":
         boa_get_abi_from_explorer(
             args.address,
             name=args.name,
@@ -23,8 +28,7 @@ def main(args: Namespace) -> int:
             api_key=args.api_key,
             save_abi_path=args.save_abi_path,
             ignore_config=args.ignore_config,
-            chain=args.chain,
-            network=args.network,
+            network_name_or_id=args.network,
         )
     else:
         logger.warning(f"Unknown explorer command: {args.explorer_command}")
@@ -37,45 +41,49 @@ def boa_get_abi_from_explorer(
     uri: str | None = None,
     api_key: str | None = None,
     save_abi_path: str | None = None,
+    save: bool = False,
     ignore_config: bool = False,
-    chain: str | None = None,
-    network: str | None = None,
+    network_name_or_id: str | None = None,
     quiet: bool = False,  # This is for when this function is used as a library
 ) -> list:
     if quiet:
         set_log_level(quiet=True)
 
-    if not api_key:
-        api_key = os.getenv(DEFAULT_API_KEY_ENV_VAR)
-
-    if chain is not None:
-        ignore_config = True
-        if chain.isdigit():
-            chain_id = int(chain)
-            uri = DEFAULT_NETWORKS_BY_CHAIN_ID.get(chain_id, {}).get("explorer")
-        else:
-            uri = DEFAULT_NETWORKS_BY_NAME.get(chain, {}).get("explorer")
-
+    network: Network | None = None
+    # 1. If not ignore_config, grab stuff from the config
     if not ignore_config:
         config = get_config()
-        if network:
-            config.networks.set_active_network(network)
-        active_network = config.get_active_network()
+        if network_name_or_id:
+            network = config.networks.get_network(network_name_or_id)
+            if network.chain_id:
+                network_name_or_id = str(network.chain_id)
         if not uri:
-            uri = active_network.explorer_uri
+            uri = network.explorer_uri
         if not api_key:
-            api_key = active_network.explorer_api_key
+            api_key = network.explorer_api_key
         if not save_abi_path:
-            save_abi_path = active_network.save_abi_path
+            save_abi_path = network.save_abi_path
+
+    # 2. If you still don't have a uri, check the default networks
+    if not uri:
+        if str(network_name_or_id).isdigit():
+            chain_id = int(network_name_or_id)
+            uri = DEFAULT_NETWORKS_BY_CHAIN_ID.get(chain_id, {}).get("explorer")
+        else:
+            uri = DEFAULT_NETWORKS_BY_NAME.get(network_name_or_id, {}).get("explorer")
+
+    # 3. Only for api, finally, check ENV variable
+    if not api_key:
+        api_key = os.getenv(DEFAULT_API_KEY_ENV_VAR)
 
     if not api_key:
         raise ValueError(
             f"No API key provided. Please provide one in the command line with --api-key or set the environment variable:\n{DEFAULT_API_KEY_ENV_VAR}"
         )
 
-    if save_abi_path and not name:
+    if (save and save_abi_path and not name) or (save and not save_abi_path):
         raise ValueError(
-            "If you provide a save path, you must also provide a name for the ABI file via --save-abi-path."
+            "If you wish to save the ABI, you must also provide both a --name and a --save-abi-path."
         )
 
     abi: list = []
@@ -86,7 +94,7 @@ def boa_get_abi_from_explorer(
             logger.warning(f"No ABI found for address: {address}")
             return abi
 
-    if save_abi_path:
+    if save_abi_path and save:
         name = str(name)
         if not name.endswith(".json"):
             name = name + ".json"

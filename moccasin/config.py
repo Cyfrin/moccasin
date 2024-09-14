@@ -40,6 +40,7 @@ class Network:
     url: str | None = None
     is_fork: bool = False
     is_zksync: bool = False
+    chain_id: int | None = None
     default_account_name: str | None = None
     unsafe_password_file: Path | None = None
     explorer_uri: str | None = None
@@ -93,6 +94,8 @@ class Network:
         return self.get_or_deploy_contract(*args, **kwargs)
 
     # TODO this function is way too big
+    # TODO have this be a private function, and have a public function that is just like:
+    # get_or_deploy_contract(contract_name, force_deploy, address)
     def get_or_deploy_contract(
         self,
         contract_name: str,
@@ -278,7 +281,7 @@ class Network:
                     f"Invalid ABI file extension for {abi_path} for contract {logging_contract_name}. Must be .json, .vy, or .vyi"
                 )
         if abi_from_explorer:
-            from moccasin.commands.from_explorer import boa_get_abi_from_explorer
+            from moccasin.commands.explorer import boa_get_abi_from_explorer
 
             abi = boa_get_abi_from_explorer(str(address), quiet=True)
         return abi
@@ -361,6 +364,7 @@ class _Networks:
                     is_fork=network_data.get("fork", False),
                     url=network_data.get("url", None),
                     is_zksync=network_data.get("zksync", False),
+                    chain_id=network_data.get("chain_id", None),
                     explorer_uri=network_data.get("explorer_uri", default_explorer_uri),
                     save_abi_path=network_data.get(
                         SAVE_ABI_PATH, default_save_abi_path
@@ -388,11 +392,28 @@ class _Networks:
         self._networks[new_network.name] = new_network
         return new_network
 
-    def get_or_deploy_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
-        return self.get_active_network().get_or_deploy_contract(*args, **kwargs)
+    def get_network(self, network_name_or_id: str | int) -> Network:
+        if isinstance(network_name_or_id, int):
+            return self.get_network_by_chain_id(network_name_or_id)
+        else:
+            if network_name_or_id.isdigit():
+                return self.get_network_by_chain_id(int(network_name_or_id))
+        return self.get_network_by_name(network_name_or_id)
+
+    def get_network_by_chain_id(self, chain_id: int) -> Network:
+        for network in self._networks.values():
+            if network.chain_id == chain_id:
+                return network
+        raise ValueError(f"Network with chain_id {chain_id} not found.")
 
     def get_network_by_name(self, alias: str) -> Network:
-        return self._networks[alias]
+        network = self._networks.get(alias, None)
+        if not network:
+            raise ValueError(f"Network {alias} not found.")
+        return network
+
+    def get_or_deploy_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
+        return self.get_active_network().get_or_deploy_contract(*args, **kwargs)
 
     # TODO
     # REVIEW: i think it might be better to delegate to `boa.set_env`
@@ -401,21 +422,24 @@ class _Networks:
     # boa.set_env_from_network(moccasin.networks.zksync)
     # ```
     # otherwise it is too confusing where moccasin ends and boa starts.
-    def set_active_network(self, name_or_url: str | Network, is_fork: bool = False):
+    def set_active_network(self, name_url_or_id: str | Network, is_fork: bool = False):
         env_to_set: _AnyEnv
-        if isinstance(name_or_url, Network):
-            env_to_set = name_or_url.get_or_create_env(is_fork)
-            self._networks[name_or_url.name] = env_to_set
+        if isinstance(name_url_or_id, Network):
+            env_to_set = name_url_or_id.get_or_create_env(is_fork)
+            self._networks[name_url_or_id.name] = env_to_set
         else:
-            if name_or_url.startswith("http"):
-                new_network = self._create_custom_network(name_or_url, is_fork=is_fork)
+            if name_url_or_id.startswith("http"):
+                new_network = self._create_custom_network(
+                    name_url_or_id, is_fork=is_fork
+                )
                 env_to_set = new_network.get_or_create_env(is_fork)
             else:
-                if name_or_url in self._networks:
-                    env_to_set = self._networks[name_or_url].get_or_create_env(is_fork)
+                network = self.get_network(name_url_or_id)
+                if network:
+                    network.get_or_create_env(is_fork)
                 else:
                     raise ValueError(
-                        f"Network {name_or_url} not found. Please pass a valid URL/RPC or valid network name."
+                        f"Network {name_url_or_id} not found. Please pass a valid URL/RPC or valid network name."
                     )
 
     def _create_custom_network(self, url: str, is_fork: bool = False) -> Network:
