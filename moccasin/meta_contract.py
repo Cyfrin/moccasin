@@ -1,21 +1,28 @@
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Any
-from moccasin.constants.vars import SCRIPT_FOLDER
 from boa.contracts.vyper.vyper_contract import VyperContract
+from moccasin.logging import logger
 
 
+# TODO: Potentially renamed to `NamedContract`
 @dataclass
-class MoccasinContract:
+class MetaContract:
     contract_name: str
     force_deploy: bool | None = None
     abi: str | None = None
     abi_from_file_path: str | Path | None = None
-    abi_from_etherscan: bool = False
+    abi_from_etherscan: bool | None = None
     deployer_path: str | Path | None = None
     address: str | None = None
+    vyper_contract: VyperContract | None = None
 
-    def set_defaults(self, other: "MoccasinContract"):
+    def update_from_deployment(self, deployed_contract: VyperContract):
+        self.abi = deployed_contract.abi
+        self.address = deployed_contract.address
+        self.vyper_contract = deployed_contract
+
+    def set_defaults(self, other: "MetaContract"):
         self.force_deploy = (
             self.force_deploy if self.force_deploy is not None else other.force_deploy
         )
@@ -42,8 +49,9 @@ class MoccasinContract:
 
     def _deploy(
         self,
+        script_folder: str,
         deployer_path: str | Path | None = None,
-        script_folder: str | None = SCRIPT_FOLDER,
+        update_from_deploy: bool = True,
     ) -> VyperContract:
         if deployer_path:
             deployer_path = str(deployer_path)
@@ -63,6 +71,16 @@ class MoccasinContract:
             if deployer_module_path.strip().endswith(".vy")
             else deployer_module_path
         )
+        logger.debug(f"Deploying contract using {deployer_module_path}...")
         import importlib
 
-        return importlib.import_module(f"{deployer_module_path}").moccasin_main()
+        vyper_contract: VyperContract = importlib.import_module(
+            f"{deployer_module_path}"
+        ).moccasin_main()
+        if not isinstance(vyper_contract, VyperContract):
+            raise ValueError(
+                f"Your {deployer_module_path} script for {self.contract_name} set in deployer path must return a VyperContract object"
+            )
+        if update_from_deploy:
+            self.update_from_deployment(vyper_contract)
+        return vyper_contract

@@ -1,14 +1,12 @@
 from pathlib import Path
 import subprocess
 import os
-from tests.utils.anvil import ANVIL_URL
 from tests.conftest import (
     COMPLEX_PROJECT_PATH,
     ANVIL1_PRIVATE_KEY,
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
 )
-from web3 import Web3
 
 
 # --------------------------------------------------------------
@@ -38,6 +36,27 @@ def test_run_default(mox_path):
     assert "Ending count:  1" in result.stdout
 
 
+def test_multiple_manifest_returns_the_same_or_different(mox_path):
+    current_dir = Path.cwd()
+    os.chdir(COMPLEX_PROJECT_PATH)
+    try:
+        result = subprocess.run(
+            [mox_path, "run", "quad_manifest"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+    print_statements = result.stdout.split("\n")
+    assert print_statements[0] == print_statements[1] == print_statements[2]
+    assert print_statements[3] != print_statements[0]
+    assert_broadcast_count(print_statements, 0)
+
+
+# ------------------------------------------------------------------
+#                           WITH ANVIL
+# ------------------------------------------------------------------
 def test_run_with_network(mox_path, anvil_process):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
@@ -109,31 +128,32 @@ def test_run_fork_should_not_send_transactions(
     assert result.returncode == 0
 
 
-def test_deploy_via_config_get_or_deploy_contract(mox_path, set_fake_chain_rpc):
-    current_dir = Path.cwd()
-    os.chdir(COMPLEX_PROJECT_PATH)
-    try:
-        result = subprocess.run(
-            [mox_path, "run", "deploy_coffee"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-    finally:
-        os.chdir(current_dir)
-
-
-def test_deploy_from_loaded_state_network_via_config(
-    mox_path, set_fake_chain_rpc, anvil_process
+def test_multiple_manifest_returns_the_same_or_different_on_real_network(
+    mox_path, anvil_process
 ):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
         result = subprocess.run(
-            [mox_path, "run", "deploy", "--network", "fake_chain"],
+            [mox_path, "run", "quad_manifest", "--network", "anvil"],
             check=True,
             capture_output=True,
             text=True,
         )
     finally:
         os.chdir(current_dir)
+    print_statements = result.stdout.split("\n")
+    assert print_statements[0] == print_statements[1] == print_statements[2]
+    assert print_statements[3] != print_statements[0]
+    assert_broadcast_count(print_statements, 1)
+
+
+# ------------------------------------------------------------------
+#                            HELPERS
+# ------------------------------------------------------------------
+def assert_broadcast_count(print_statements: list, count: int):
+    broadcast_count = 0
+    for statement in print_statements:
+        if "tx broadcasted" in statement:
+            broadcast_count += 1
+    assert broadcast_count == count
