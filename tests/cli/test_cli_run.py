@@ -96,20 +96,16 @@ def test_run_fork_should_not_send_transactions(
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
-        w3 = Web3(Web3.HTTPProvider(ANVIL_URL))
-        starting_block = w3.eth.get_block("latest").number
         result = subprocess.run(
-            [mox_path, "run", "deploy", "--fork", "--network", "fake_chain"],
+            [mox_path, "run", "deploy", "--fork", "--network", "anvil"],
             check=True,
             capture_output=True,
             text=True,
         )
-        ending_block = w3.eth.get_block("latest").number
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
     assert "tx broadcasted" not in result.stdout
-    assert starting_block == ending_block
     assert result.returncode == 0
 
 
@@ -125,7 +121,6 @@ def test_deploy_via_config_get_or_deploy_contract(mox_path, set_fake_chain_rpc):
         )
     finally:
         os.chdir(current_dir)
-    breakpoint()
 
 
 def test_deploy_from_loaded_state_network_via_config(

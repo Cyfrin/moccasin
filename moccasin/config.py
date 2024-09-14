@@ -57,10 +57,7 @@ class Network:
         from boa_zksync import ZksyncEnv
 
         if self.is_fork:
-            self._network_env = Env()
-            self._network_env = cast(_AnyEnv, self._network_env)
-            boa.fork(self.url)  # This won't work for ZKSync?
-            self._network_env.nickname = self.name
+            self.set_fork(self.is_fork)
         else:
             if self.is_zksync:
                 self._network_env = ZksyncEnv(EthereumRPC(self.url), nickname=self.name)
@@ -70,9 +67,17 @@ class Network:
                 )
         return self._network_env
 
-    def get_or_create_env(self) -> _AnyEnv:
+    def set_fork(self, is_fork: bool):
+        if self.is_fork != is_fork:
+            self._network_env = Env()
+            self._network_env = cast(_AnyEnv, self._network_env)
+            boa.fork(self.url)  # This won't work for ZKSync?
+            self._network_env.nickname = self.name
+
+    def get_or_create_env(self, is_fork: bool) -> _AnyEnv:
         import boa
 
+        self.set_fork(is_fork)
         if self._network_env:
             boa.set_env(self._network_env)
             return self._network_env
@@ -81,6 +86,7 @@ class Network:
         return new_env
 
     # TODO this function is way too big
+    # manifest_contract()
     def get_or_deploy_contract(
         self,
         contract_name: str,
@@ -116,6 +122,7 @@ class Network:
         Returns:
             VyperContract: The deployed contract instance, or a blank contract if the contract is not found.
         """
+        # TODO: Have this funcion save this to the contracts dict
         moccasin_contract = self.contracts.get(
             contract_name, MoccasinContract("blank_moccasin_contract_name")
         )
@@ -332,15 +339,15 @@ class _Networks:
     def set_active_network(self, name_or_url: str | Network, is_fork: bool = False):
         env_to_set: _AnyEnv
         if isinstance(name_or_url, Network):
-            env_to_set = name_or_url.get_or_create_env()
+            env_to_set = name_or_url.get_or_create_env(is_fork)
             self._networks[name_or_url.name] = env_to_set
         else:
             if name_or_url.startswith("http"):
                 new_network = self._create_custom_network(name_or_url, is_fork=is_fork)
-                env_to_set = new_network.get_or_create_env()
+                env_to_set = new_network.get_or_create_env(is_fork)
             else:
                 if name_or_url in self._networks:
-                    env_to_set = self._networks[name_or_url].get_or_create_env()
+                    env_to_set = self._networks[name_or_url].get_or_create_env(is_fork)
                 else:
                     raise ValueError(
                         f"Network {name_or_url} not found. Please pass a valid URL/RPC or valid network name."

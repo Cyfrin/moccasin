@@ -7,9 +7,11 @@ from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
 from eth_utils import to_bytes
 from moccasin.commands.wallet import decrypt_key
 from typing import cast
+from moccasin.logging import logger
+from eth_typing import ChecksumAddress
 
 
-class MoccasinAccount:
+class MoccasinAccount(LocalAccount):
     def __init__(
         self,
         private_key: str | bytes | None = None,
@@ -17,8 +19,10 @@ class MoccasinAccount:
         password: str = None,
         password_file_path: Path = None,
     ):
-        self._private_key = private_key
-        self._local_account: LocalAccount | None = None
+        self._private_key = None
+        self._publicapi = Account()
+        self._address = None
+
         if private_key:
             private_key = to_bytes(hexstr=private_key)
         private_key = cast(bytes, private_key)
@@ -31,32 +35,38 @@ class MoccasinAccount:
             private_key = self.unlock(
                 password=password, password_file_path=password_file_path
             )
-        if not private_key:
-            raise Warning("Be sure to call unlock before trying to send a transaction.")
-        self._local_account = LocalAccount(PrivateKey(private_key), Account())
 
-    def __getattr__(self, name):
-        if self._local_account is not None:
-            try:
-                return getattr(self._local_account, name)
-            except AttributeError:
-                pass
-        raise AttributeError(
-            f"'{self.__class__.__name__}' object has no attribute '{name}'"
-        )
+        if private_key:
+            self._init_key(private_key)
+        else:
+            logger.warning(
+                "Be sure to call unlock before trying to send a transaction."
+            )
+
+    @property
+    def private_key(self) -> bytes:
+        return self.key
+
+    @property
+    def address(self) -> ChecksumAddress | None:
+        if self.private_key:
+            return PrivateKey(self.private_key).public_key.to_checksum_address()
+        return None
+
+    def _init_key(self, private_key: bytes):
+        private_key_converted = PrivateKey(private_key)
+        self._address = private_key_converted.public_key.to_checksum_address()
+        key_raw: bytes = private_key_converted.to_bytes()
+        self._private_key = key_raw
+        self._key_obj: PrivateKey = private_key_converted
 
     def set_keystore_path(self, keystore_path: Path | str):
         if isinstance(keystore_path, str):
             keystore_path = DEFAULT_KEYSTORES_PATH.joinpath(Path(keystore_path))
         self.keystore_path = keystore_path
 
-    def set_private_key(self, private_key: str | HexBytes):
-        self._private_key = (
-            private_key if isinstance(private_key, HexBytes) else HexBytes(private_key)
-        )
-
     def unlocked(self) -> bool:
-        return self._private_key is not None
+        return self.private_key is not None
 
     def unlock(
         self,
@@ -71,10 +81,11 @@ class MoccasinAccount:
                 raise Exception(
                     "No keystore path provided. Set it with set_keystore_path (path)"
                 )
-            self._private_key = decrypt_key(
+            decrypted_key = decrypt_key(
                 self.keystore_path.stem,
                 password=password,
                 password_file_path=password_file_path,
                 keystores_path=self.keystore_path.parent,
             )
-        return cast(HexBytes, self._private_key)
+            self._init_key(decrypted_key)
+        return cast(HexBytes, self.private_key)

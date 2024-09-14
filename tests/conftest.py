@@ -118,7 +118,7 @@ def installation_cleanup_dependencies():
         shutil.rmtree(created_folder_path)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def anvil_process():
-    with AnvilProcess(args=["--state-path", ANVIL_STORED_STATE_PATH]):
+    with AnvilProcess(args=["--load-state", str(ANVIL_STORED_STATE_PATH), "-b", "1"]):
         yield
