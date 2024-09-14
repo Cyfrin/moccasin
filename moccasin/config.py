@@ -85,6 +85,10 @@ class Network:
         boa.set_env(new_env)
         return new_env
 
+    # TODO: Potentially rename to instantiate_contract
+    def instantiate_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
+        return self.get_or_deploy_contract(*args, **kwargs)
+
     def manifest_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
         return self.get_or_deploy_contract(*args, **kwargs)
 
@@ -93,6 +97,7 @@ class Network:
         self,
         contract_name: str,
         force_deploy: bool = False,
+        # TODO: Maybe remove this ABI shit
         abi: str
         | list
         | VyperDeployer

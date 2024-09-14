@@ -5,7 +5,8 @@ from boa.contracts.vyper.vyper_contract import VyperContract
 from moccasin.logging import logger
 
 
-# TODO: Potentially renamed to `NamedContract`
+# TODO: Potentially renamed to `NamedContract`, or `ContractConfig`
+# TODO: Maybe this has the same interface as VyperDeployer
 @dataclass
 class MetaContract:
     contract_name: str
