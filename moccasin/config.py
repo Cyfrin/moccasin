@@ -288,6 +288,9 @@ class Network:
             abi = boa_get_abi_from_explorer(str(address), quiet=True)
         return abi  # type: ignore
 
+    def get_named_contract(self, contract_name: str) -> NamedContract | None:
+        return self.contracts.get(contract_name, None)
+
     @property
     def alias(self) -> str:
         return self.name
