@@ -208,7 +208,7 @@ def decrypt_key(
     password_file_path: Path | None = None,
     keystores_path: Path = DEFAULT_KEYSTORES_PATH,
     print_key: bool = False,
-) -> HexBytes | None:
+) -> HexBytes:
     keystore_path = keystores_path.joinpath(name)
     key = None
     if password_file_path:
@@ -234,16 +234,14 @@ def decrypt_key(
             try:
                 key = EthAccountsClass.decrypt(keystore_json, password)
             except Exception:
-                logger.error("Passwords do not match.")
-                return None
+                raise ValueError("Passwords do not match.")
         elif password_file_path:
             with password_file_path.open("r") as fp:
                 password = fp.read().strip()
             try:
                 key = EthAccountsClass.decrypt(keystore_json, password)
             except Exception:
-                logger.error("Passwords do not match.")
-                return None
+                raise ValueError("Passwords do not match.")
     key = cast(HexBytes, key)
     if print_key:
         logger.info(f"Private key: {key.to_0x_hex()}")

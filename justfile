@@ -14,9 +14,18 @@ format:
 format-check:
     uv run ruff check .
 
-# Run tests, fail on first test failure
+# Run unit and CLI tests, fail on first test failure
 test:
-    uv run pytest -x -s --ignore=tests/data/
+    uv run pytest -x -s --ignore=tests/data/ --ignore=tests/integration/
+
+# Run integration tests, read the README.md in the tests/integration directory for more information
+test-i:
+    uv run pytest tests/integration -x -s --ignore=tests/data/ 
+
+# Run both unit and integration tests
+test-all:
+    @just test
+    @just test-i
 
 # Run tests, fail on first test failure, enter debugger on failure
 test-pdb:

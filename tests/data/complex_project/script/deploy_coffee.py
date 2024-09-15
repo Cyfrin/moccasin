@@ -1,0 +1,14 @@
+from moccasin.boa_tools import VyperContract
+from moccasin.config import get_config
+from contracts import BuyMeACoffee
+
+
+def deploy() -> VyperContract:
+    active_network = get_config().get_active_network()
+    price_feed: VyperContract = active_network.get_or_deploy_contract("price_feed")
+    buy_me_a_coffe: VyperContract = BuyMeACoffee.deploy(price_feed.address)
+    print(f"Deployed BuyMeACoffee to {buy_me_a_coffe.address}")
+
+
+def moccasin_main() -> VyperContract:
+    return deploy()

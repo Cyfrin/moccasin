@@ -1,3 +1,6 @@
 {
     "vyper.command": "/Users/patrick/code/moccasin/.venv/bin/vyper",
+    "files.exclude": {
+        "**/__pycache__": true
+    },
 }

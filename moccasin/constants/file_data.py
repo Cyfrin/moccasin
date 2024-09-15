@@ -252,3 +252,10 @@ url = "https://sepolia.era.zksync.dev"
 chain_id = 300
 is_zksync = true
 """
+
+VSCODE_SETTINGS_DEFAULT = """{
+    "files.exclude": {
+        "**/__pycache__": true
+    },
+}
+"""

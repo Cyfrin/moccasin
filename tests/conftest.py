@@ -9,6 +9,7 @@ from moccasin.commands.wallet import save_to_keystores
 import tempfile
 from tests.utils.anvil import ANVIL_URL
 from moccasin.config import Config, initialize_global_config
+from tests.utils.anvil import AnvilProcess
 
 COMPLEX_PROJECT_PATH = Path(__file__).parent.joinpath("data/complex_project/")
 INSTALL_PROJECT_PATH = Path(__file__).parent.joinpath("data/installation_project/")
@@ -36,9 +37,10 @@ ANVIL_KEYSTORE_SAVED = {
     "id": "27ea3a2d-e080-402a-a607-ee7caf8d0a06",
     "version": 3,
 }
+ANVIL_STORED_STATE_PATH = Path(__file__).parent.joinpath("data/anvil_data/state.json")
 
 INSTALLATION_STARTING_TOML = """[project]
-dependencies = ["snekmate", "gaboon-cli"]
+dependencies = ["snekmate", "moccasin"]
 
 # PRESERVE COMMENTS
 
@@ -63,7 +65,7 @@ def anvil_keystore(monkeypatch):
 
 
 @pytest.fixture
-def anvil_fork(monkeypatch):
+def set_fake_chain_rpc(monkeypatch):
     monkeypatch.setenv("FAKE_CHAIN_RPC_URL", ANVIL_URL)
     yield
 
@@ -114,3 +116,9 @@ def installation_cleanup_dependencies():
         f.write(INSTALLATION_STARTING_TOML)
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)
+
+
+@pytest.fixture()
+def anvil_process():
+    with AnvilProcess(args=["--load-state", str(ANVIL_STORED_STATE_PATH), "-b", "1"]):
+        yield

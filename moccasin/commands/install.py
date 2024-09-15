@@ -10,7 +10,7 @@ from moccasin.logging import logger
 import os
 from base64 import b64encode
 import re
-import requests
+import requests  # type: ignore
 import sys
 import traceback
 from tqdm import tqdm
@@ -93,7 +93,6 @@ def _github_installs(
         repo_install_path = org_install_path.joinpath(f"{repo}")
         versions_install_path = base_install_path.joinpath(PACKAGE_VERSION_FILE)
 
-        # TODO: Allow for multiple versions of the same package to be installed
         if repo_install_path.exists():
             with open(versions_install_path, "rb") as f:
                 versions = tomllib.load(f)
@@ -222,13 +221,11 @@ def _pip_installs(
 ):
     logger.info(f"Installing {len(package_ids)} pip packages...")
     cmd = []
-    # TODO: Allow for multiple versions of the same package to be installed
     if installer == "uv":
         cmd = ["uv", "pip", "install", *package_ids, "--target", str(base_install_path)]
     else:
         cmd = ["pip", "install", *package_ids, "--target", str(base_install_path)]
 
-    # TODO: `--upgrade` and `--force` options.
     capture_output = quiet
     try:
         subprocess.run(cmd, capture_output=capture_output, check=True)

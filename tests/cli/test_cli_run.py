@@ -1,16 +1,17 @@
 from pathlib import Path
 import subprocess
 import os
-from tests.utils.anvil import AnvilProcess, ANVIL_URL
 from tests.conftest import (
     COMPLEX_PROJECT_PATH,
     ANVIL1_PRIVATE_KEY,
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
 )
-from web3 import Web3
 
 
+# --------------------------------------------------------------
+#                         WITHOUT ANVIL
+# --------------------------------------------------------------
 def test_run_help(mox_path):
     current_dir = Path.cwd()
     try:
@@ -35,25 +36,45 @@ def test_run_default(mox_path):
     assert "Ending count:  1" in result.stdout
 
 
-def test_run_with_network(mox_path):
+def test_multiple_manifest_returns_the_same_or_different(mox_path):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
-        with AnvilProcess():
-            result = subprocess.run(
-                [
-                    mox_path,
-                    "run",
-                    "deploy",
-                    "--network",
-                    "anvil",
-                    "--private-key",
-                    ANVIL1_PRIVATE_KEY,
-                ],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
+        result = subprocess.run(
+            [mox_path, "run", "quad_manifest"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+    print_statements = result.stdout.split("\n")
+    assert print_statements[0] == print_statements[1] == print_statements[2]
+    assert print_statements[3] != print_statements[0]
+    assert_broadcast_count(print_statements, 0)
+
+
+# ------------------------------------------------------------------
+#                           WITH ANVIL
+# ------------------------------------------------------------------
+def test_run_with_network(mox_path, anvil_process):
+    current_dir = Path.cwd()
+    os.chdir(COMPLEX_PROJECT_PATH)
+    try:
+        result = subprocess.run(
+            [
+                mox_path,
+                "run",
+                "deploy",
+                "--network",
+                "anvil",
+                "--private-key",
+                ANVIL1_PRIVATE_KEY,
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
@@ -61,27 +82,26 @@ def test_run_with_network(mox_path):
     assert result.returncode == 0
 
 
-def test_run_with_keystore_account(mox_path, anvil_keystore):
+def test_run_with_keystore_account(mox_path, anvil_keystore, anvil_process):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
-        with AnvilProcess():
-            result = subprocess.run(
-                [
-                    mox_path,
-                    "run",
-                    "deploy",
-                    "--network",
-                    "anvil",
-                    "--account",
-                    ANVIL1_KEYSTORE_NAME,
-                    "--password",
-                    ANVIL1_KEYSTORE_PASSWORD,
-                ],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
+        result = subprocess.run(
+            [
+                mox_path,
+                "run",
+                "deploy",
+                "--network",
+                "anvil",
+                "--account",
+                ANVIL1_KEYSTORE_NAME,
+                "--password",
+                ANVIL1_KEYSTORE_PASSWORD,
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
@@ -89,23 +109,51 @@ def test_run_with_keystore_account(mox_path, anvil_keystore):
     assert result.returncode == 0
 
 
-def test_run_fork_should_not_send_transactions(mox_path, anvil_fork):
+def test_run_fork_should_not_send_transactions(
+    mox_path, set_fake_chain_rpc, anvil_process
+):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
-        with AnvilProcess():
-            w3 = Web3(Web3.HTTPProvider(ANVIL_URL))
-            starting_block = w3.eth.get_block("latest").number
-            result = subprocess.run(
-                [mox_path, "run", "deploy", "--fork", "--network", "fake_chain"],
-                check=True,
-                capture_output=True,
-                text=True,
-            )
-            ending_block = w3.eth.get_block("latest").number
+        result = subprocess.run(
+            [mox_path, "run", "deploy", "--fork", "--network", "anvil"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
     assert "tx broadcasted" not in result.stdout
-    assert starting_block == ending_block
     assert result.returncode == 0
+
+
+def test_multiple_manifest_returns_the_same_or_different_on_real_network(
+    mox_path, anvil_process
+):
+    current_dir = Path.cwd()
+    os.chdir(COMPLEX_PROJECT_PATH)
+    try:
+        result = subprocess.run(
+            [mox_path, "run", "quad_manifest", "--network", "anvil"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+    print_statements = result.stdout.split("\n")
+    assert print_statements[0] == print_statements[1] == print_statements[2]
+    assert print_statements[3] != print_statements[0]
+    assert_broadcast_count(print_statements, 1)
+
+
+# ------------------------------------------------------------------
+#                            HELPERS
+# ------------------------------------------------------------------
+def assert_broadcast_count(print_statements: list, count: int):
+    broadcast_count = 0
+    for statement in print_statements:
+        if "tx broadcasted" in statement:
+            broadcast_count += 1
+    assert broadcast_count == count

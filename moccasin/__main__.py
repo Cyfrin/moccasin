@@ -7,8 +7,6 @@ from moccasin.logging import logger, set_log_level
 import sys
 from moccasin.constants.vars import CONFIG_NAME
 
-from importlib import metadata
-
 
 GAB_CLI_VERSION_STRING = "Moccasin CLI v{}"
 
@@ -19,7 +17,7 @@ ALIAS_TO_COMMAND = {
     "config": "config_",
 }
 
-PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet"]
+PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer"]
 
 
 def main(argv: list) -> int:
@@ -34,9 +32,9 @@ def main(argv: list) -> int:
 
     main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
 
-    ######################
-    ### PARSING STARTS ###
-    ######################
+    # ------------------------------------------------------------------
+    #                         PARSING STARTS
+    # ------------------------------------------------------------------
     if len(argv) == 0 or (len(argv) == 1 and (argv[0] == "-h" or argv[0] == "--help")):
         main_parser.print_help()
         return 0
@@ -73,8 +71,9 @@ def generate_main_parser_and_sub_parsers() -> (
     )
     sub_parsers = main_parser.add_subparsers(dest="command")
 
-    # Init command
-    # ========================================================================
+    # ------------------------------------------------------------------
+    #                          INIT COMMAND
+    # ------------------------------------------------------------------
     init_parser = sub_parsers.add_parser(
         "init",
         help="Initialize a new project.",
@@ -108,9 +107,13 @@ This will create a basic directory structure at the path you specific, which loo
         help="Overwrite existing project.",
         action="store_true",
     )
+    init_parser.add_argument(
+        "--vscode", help="Add a .vscode/settings.json file.", action="store_true"
+    )
 
-    # Compile command
-    # ========================================================================
+    # ------------------------------------------------------------------
+    #                        COMPILE COMMAND
+    # ------------------------------------------------------------------
     sub_parsers.add_parser(
         "compile",
         help="Compiles the project.",
@@ -126,8 +129,9 @@ Use this command to prepare your contracts for deployment or testing.""",
         parents=[parent_parser],
     )
 
-    # Test command
-    # ========================================================================
+    # ------------------------------------------------------------------
+    #                          TEST COMMAND
+    # ------------------------------------------------------------------
     test_parser = sub_parsers.add_parser(
         "test",
         help="Runs all tests in the project.",
@@ -200,8 +204,9 @@ Use this command to prepare your contracts for deployment or testing.""",
         help="Start the debugger for each test that fails.",
     )
 
-    # Run command
-    # ========================================================================
+    # ------------------------------------------------------------------
+    #                          RUN COMMAND
+    # ------------------------------------------------------------------
     run_parser = sub_parsers.add_parser(
         "run",
         help="Runs a script with the project's context.",
@@ -239,8 +244,9 @@ Use this command to prepare your contracts for deployment or testing.""",
         action=RequirePasswordAction,
     )
 
-    # Wallet command
-    # ========================================================================
+    # ------------------------------------------------------------------
+    #                         WALLET COMMAND
+    # ------------------------------------------------------------------
     wallet_parser = sub_parsers.add_parser(
         "wallet",
         help="Wallet management utilities.",
@@ -318,8 +324,9 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
     delete_parser.add_argument("keystore_file_name", help="Name of keystore file")
 
-    # Console command
-    # ========================================================================
+    # ------------------------------------------------------------------
+    #                        CONSOLE COMMAND
+    # ------------------------------------------------------------------
     console_parser = sub_parsers.add_parser(
         "console",
         help="BETA, USE AT YOUR OWN RISK: Interact with the network in a python shell.",
@@ -328,8 +335,9 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
     add_network_args_to_parser(console_parser)
 
-    # Install command
-    # ========================================================================
+    # ------------------------------------------------------------------
+    #                        INSTALL COMMAND
+    # ------------------------------------------------------------------
     install_parser = sub_parsers.add_parser(
         "install",
         help="Installs the project's dependencies.",
@@ -358,8 +366,9 @@ Examples:
         nargs="*",
     )
 
-    # Purge command
-    # ========================================================================
+    # ------------------------------------------------------------------
+    #                         PURGE COMMAND
+    # ------------------------------------------------------------------
     purge_parser = sub_parsers.add_parser(
         "purge",
         help="Purge a given dependency",
@@ -373,8 +382,9 @@ Examples:
         nargs="+",
     )
 
-    # Config command
-    # ========================================================================
+    # ------------------------------------------------------------------
+    #                         CONFIG COMMAND
+    # ------------------------------------------------------------------
     sub_parsers.add_parser(
         "config",
         help="View the Moccasin configuration.",
@@ -382,12 +392,83 @@ Examples:
         parents=[parent_parser],
     )
 
+    # ------------------------------------------------------------------
+    #                        EXPLORER COMMAND
+    # ------------------------------------------------------------------
+    explorer_parser = sub_parsers.add_parser(
+        "explorer",
+        help="Work with block explorers to get data.",
+        description="Work with block explorers to get data.",
+        parents=[parent_parser],
+    )
+    # Create subparsers under 'explorer'
+    explorer_subparsers = explorer_parser.add_subparsers(dest="explorer_command")
+
+    ## Explorer command: fetch
+    get_parser = explorer_subparsers.add_parser(
+        "fetch",
+        aliases=["get"],
+        help="Retrieve the ABI of a contract from a block explorer.",
+        description="""Retreive the ABI of a contract from a block explorer.
+
+This command will attempt to use the environment variable ETHERSCAN_API_KEY as the API key for Etherscan. If this environment variable is not set, you can provide the API key as an argument to the command.
+""",
+        parents=[parent_parser],
+    )
+    get_parser.add_argument(
+        "address", help="The address you want to pull from.", type=str
+    )
+    get_parser.add_argument("--name", help="Optional name for the contract.", type=str)
+    get_parser.add_argument(
+        "--api-key",
+        "--explorer-api-key",
+        help="API key for the block explorer.",
+        type=str,
+    )
+    get_parser.add_argument(
+        "--ignore-config",
+        "-i",
+        help="Don't pull values from the config.",
+        action="store_true",
+    )
+    get_parser.add_argument(
+        "--save-abi-path",
+        help="Location to save the returned abi. This will only be applied if you also add the '--save' flag.",
+        type=str,
+    )
+    get_parser.add_argument(
+        "--save",
+        help="If added, the ABI will be saved to the 'save-abi-path' given in the command line or config.",
+        action="store_true",
+    )
+
+    network_uri_or_chain = get_parser.add_mutually_exclusive_group()
+    network_uri_or_chain.add_argument(
+        "--uri", help="API URI endpoint for explorer.", type=str
+    )
+    network_uri_or_chain.add_argument(
+        "--network",
+        help=f"Name/alias of the network (from the {CONFIG_NAME}). If chain_id is set in the config, you may also use that.",
+        type=str,
+    )
+
+    ## Explorer command: list
+    explorer_list_parser = explorer_subparsers.add_parser(
+        "list", help="List all natively supported block explorers and chains."
+    )
+    explorer_list_parser.add_argument(
+        "--by-id", help="List by chain id.", action="store_true"
+    )
+    explorer_list_parser.add_argument(
+        "--json", help="Format as json.", action="store_true"
+    )
+
     return main_parser, sub_parsers
 
 
-######################
-## Helper Functions ##
-######################
+# ------------------------------------------------------------------
+#                        HELPER FUNCTIONS
+# ------------------------------------------------------------------
 def add_network_args_to_parser(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--fork", action="store_true", help="If you want to fork the RPC."
@@ -403,7 +484,7 @@ def add_network_args_to_parser(parser: argparse.ArgumentParser):
 
 
 def get_version() -> str:
-    version = metadata.version("moccasin")
+    version = importlib.metadata.version("moccasin")
     # Attempt to parse from `pyproject.toml` if not found
     if not version:
         with open(

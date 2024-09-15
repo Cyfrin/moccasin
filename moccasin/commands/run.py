@@ -8,8 +8,6 @@ from moccasin._sys_path_and_config_setup import (
 )
 from argparse import Namespace
 
-BOA_VM = "pyevm"
-
 
 def main(args: Namespace) -> int:
     initialize_global_config()

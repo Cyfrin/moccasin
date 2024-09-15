@@ -62,7 +62,10 @@ def _setup_network_and_account_from_args(
         )
 
     if mox_account:
-        boa.env.add_account(mox_account, force_eoa=True)
+        if fork:
+            boa.env.eoa = mox_account.address
+        else:
+            boa.env.add_account(mox_account, force_eoa=True)
     if boa.env.eoa is None:
         logger.warning(
             "No default EOA account found. Please add an account to the environment before attempting a transaction."

@@ -1,0 +1,31 @@
+# pragma version ^0.4.0
+# SPDX-License-Identifier: MIT
+
+"""
+@title AggregatorV3Interface
+"""
+
+@external
+@view 
+def decimals() -> uint8:
+    ... 
+
+@external   
+@view 
+def description() -> String[1000]:
+    ... 
+
+@external
+@view 
+def version() -> uint256:
+    ... 
+
+@external
+@view 
+def getRoundData(_roundId: uint80) -> (uint80, int256, uint256, uint256, uint80):
+    ... 
+
+@external
+@view 
+def latestRoundData() -> (uint80, int256, uint256, uint256, uint80): 
+    ...
