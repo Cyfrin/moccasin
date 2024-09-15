@@ -23,9 +23,7 @@ TESTS_FOLDER = "tests"
 DEFAULT_PROJECT_FOLDERS = [CONTRACTS_FOLDER, TESTS_FOLDER, SCRIPT_FOLDER]
 DEFAULT_MOCCASIN_FOLDER = Path.home().joinpath(".moccasin/")
 DEFAULT_KEYSTORES_PATH = DEFAULT_MOCCASIN_FOLDER.joinpath("keystores/")
-# TODO - add a --foundry flag for wallet commands to use foundry keystores
 FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
-# TODO: Make this configurable
 DOT_ENV_FILE = ".env"
 CONSOLE_HISTORY_FILE = "moccasin_history"
 DEFAULT_API_KEY_ENV_VAR = "EXPLORER_API_KEY"

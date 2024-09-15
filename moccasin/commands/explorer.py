@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import cast
 import boa
 from argparse import Namespace
 import os
@@ -43,7 +44,7 @@ def boa_get_abi_from_explorer(
     save_abi_path: str | None = None,
     save: bool = False,
     ignore_config: bool = False,
-    network_name_or_id: str | None = None,
+    network_name_or_id: str = "",
     quiet: bool = False,  # This is for when this function is used as a library
 ) -> list:
     if quiet:
@@ -55,14 +56,16 @@ def boa_get_abi_from_explorer(
         config = get_config()
         if network_name_or_id:
             network = config.networks.get_network(network_name_or_id)
+            network = cast(Network, network)
             if network.chain_id:
                 network_name_or_id = str(network.chain_id)
-        if not uri:
-            uri = network.explorer_uri
-        if not api_key:
-            api_key = network.explorer_api_key
-        if not save_abi_path:
-            save_abi_path = network.save_abi_path
+        if network is not None:
+            if not uri:
+                uri = network.explorer_uri
+            if not api_key:
+                api_key = network.explorer_api_key
+            if not save_abi_path:
+                save_abi_path = network.save_abi_path
 
     # 2. If you still don't have a uri, check the default networks
     if not uri:

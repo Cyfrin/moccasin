@@ -5,16 +5,14 @@ from boa.contracts.vyper.vyper_contract import VyperContract
 from moccasin.logging import logger
 
 
-# TODO: Potentially renamed to `NamedContract`, or `ContractConfig`
-# TODO: Maybe this has the same interface as VyperDeployer
 @dataclass
-class MetaContract:
+class NamedContract:
     contract_name: str
     force_deploy: bool | None = None
     abi: str | None = None
     abi_from_file_path: str | Path | None = None
     abi_from_etherscan: bool | None = None
-    deployer_path: str | Path | None = None
+    deployer_script: str | Path | None = None
     address: str | None = None
     vyper_contract: VyperContract | None = None
 
@@ -23,7 +21,7 @@ class MetaContract:
         self.address = deployed_contract.address
         self.vyper_contract = deployed_contract
 
-    def set_defaults(self, other: "MetaContract"):
+    def set_defaults(self, other: "NamedContract"):
         self.force_deploy = (
             self.force_deploy if self.force_deploy is not None else other.force_deploy
         )
@@ -38,10 +36,10 @@ class MetaContract:
             if self.abi_from_etherscan is not None
             else other.abi_from_etherscan
         )
-        self.deployer_path = (
-            self.deployer_path
-            if self.deployer_path is not None
-            else other.deployer_path
+        self.deployer_script = (
+            self.deployer_script
+            if self.deployer_script is not None
+            else other.deployer_script
         )
         self.address = self.address if self.address is not None else other.address
 
@@ -51,19 +49,21 @@ class MetaContract:
     def _deploy(
         self,
         script_folder: str,
-        deployer_path: str | Path | None = None,
+        deployer_script: str | Path | None = None,
         update_from_deploy: bool = True,
     ) -> VyperContract:
-        if deployer_path:
-            deployer_path = str(deployer_path)
+        if deployer_script:
+            deployer_script = str(deployer_script)
             deployer_module_path = (
-                deployer_path
-                if deployer_path.startswith(script_folder)
-                else f"{script_folder}.{deployer_path}"
+                deployer_script
+                if deployer_script.startswith(script_folder)
+                else f"{script_folder}.{deployer_script}"
             )
-        deployer_path = self.deployer_path if deployer_path is None else deployer_path
+        deployer_script = (
+            self.deployer_script if deployer_script is None else deployer_script
+        )
 
-        if not deployer_path:
+        if not deployer_script:
             raise ValueError("Deployer path not provided")
 
         deployer_module_path = deployer_module_path.replace("/", ".")

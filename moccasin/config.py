@@ -24,7 +24,7 @@ from moccasin.logging import logger
 import tomlkit
 from boa.contracts.vyper.vyper_contract import VyperDeployer, VyperContract
 from boa.contracts.abi.abi_contract import ABIContractFactory, ABIContract
-from moccasin.meta_contract import MetaContract
+from moccasin.named_contract import NamedContract
 
 if TYPE_CHECKING:
     from boa.network import NetworkEnv
@@ -46,7 +46,7 @@ class Network:
     explorer_uri: str | None = None
     save_abi_path: str | None = None
     explorer_api_key: str | None = None
-    contracts: dict[str, MetaContract] = field(default_factory=dict)
+    contracts: dict[str, NamedContract] = field(default_factory=dict)
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
 
@@ -86,21 +86,22 @@ class Network:
         boa.set_env(new_env)
         return new_env
 
-    # TODO: Potentially rename to instantiate_contract
+    def manifest_contract(
+        self, contract_name: str, force_deploy: bool = False, address: str | None = None
+    ) -> VyperContract | ABIContract:
+        """A wrapper around get_or_deploy_contract that is more explicit about the contract being deployed."""
+        return self.get_or_deploy_contract(
+            contract_name=contract_name, force_deploy=force_deploy, address=address
+        )
+
     def instantiate_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
+        """An alias for get_or_deploy_contract."""
         return self.get_or_deploy_contract(*args, **kwargs)
 
-    def manifest_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
-        return self.get_or_deploy_contract(*args, **kwargs)
-
-    # TODO this function is way too big
-    # TODO have this be a private function, and have a public function that is just like:
-    # get_or_deploy_contract(contract_name, force_deploy, address)
     def get_or_deploy_contract(
         self,
         contract_name: str,
         force_deploy: bool = False,
-        # TODO: Maybe remove this ABI shit
         abi: str
         | list
         | VyperDeployer
@@ -110,7 +111,7 @@ class Network:
         | None = None,
         abi_from_file_path: Path | str | None = None,
         abi_from_explorer: bool | None = None,
-        deployer_path: str | Path | None = None,
+        deployer_script: str | Path | None = None,
         address: str | None = None,
     ) -> VyperContract | ABIContract:
         """Returns or deploys a VyperContract or ABIContract based on the name and address in the config file, or passed to this function.
@@ -126,14 +127,14 @@ class Network:
             - abi: the ABI of the contract. Can be a list, VyperDeployer, VyperContract, ABIContractFactory, or ABIContract.
             - abi_from_file_path: the path to the ABI file. Can be a .json or .vy file.
             - abi_from_explorer: if True, will fetch the ABI from the explorer.
-            - deployer_path: If no address is given, this is the path to deploy the contract.
+            - deployer_script: If no address is given, this is the path to deploy the contract.
             - address: The address of the contract.
 
         Returns:
             VyperContract: The deployed contract instance, or a blank contract if the contract is not found.
         """
-        meta_contract: MetaContract = self.contracts.get(
-            contract_name, MetaContract(contract_name)
+        named_contract: NamedContract = self.contracts.get(
+            contract_name, NamedContract(contract_name)
         )
 
         if (
@@ -146,49 +147,49 @@ class Network:
             )
 
         if not force_deploy:
-            force_deploy = meta_contract.get("force_deploy", False)
+            force_deploy = named_contract.get("force_deploy", False)
         if not abi_from_file_path:
-            abi_from_file_path = meta_contract.get("abi_from_file_path", None)
+            abi_from_file_path = named_contract.get("abi_from_file_path", None)
         if not abi_from_explorer:
-            abi_from_explorer = meta_contract.get("abi_from_explorer", None)
-        if not deployer_path:
-            deployer_path = meta_contract.get("deployer_path", None)
+            abi_from_explorer = named_contract.get("abi_from_explorer", None)
+        if not deployer_script:
+            deployer_script = named_contract.get("deployer_script", None)
         if not address:
-            address = meta_contract.get("address", None)
+            address = named_contract.get("address", None)
 
         # 1. Check if force_deploy is true
         if force_deploy:
-            if not deployer_path:
+            if not deployer_script:
                 raise ValueError(
-                    f"Contract {meta_contract.contract_name} has force_deploy=True but no deployer_path specified in the config file."
+                    f"Contract {named_contract.contract_name} has force_deploy=True but no deployer_script specified in the config file."
                 )
-            return self._deploy_meta_contract(meta_contract, deployer_path)
+            return self._deploy_named_contract(named_contract, deployer_script)
 
         # 2. Setup ABI based on parameters
-        abi: str | None = self._get_abi_from_params(
-            meta_contract.contract_name,
+        abi = self._get_abi_from_params(
+            named_contract.contract_name,
             abi,
             abi_from_file_path,
             abi_from_explorer,
             address,
         )
-        abi = abi if abi else meta_contract.abi
+        abi = abi if abi else named_contract.abi
 
         # ------------------------------------------------------------------
         #             CHECK TO SEE IF WE'VE ALREADY DEPLOYED
         # ------------------------------------------------------------------
         # 3. Happy path, check if the requested contract is what we've already deployed
         if (
-            meta_contract.abi == abi
-            and meta_contract.address == address
-            and meta_contract.vyper_contract
+            named_contract.abi == abi
+            and named_contract.address == address
+            and named_contract.vyper_contract
         ):
-            return meta_contract.vyper_contract
+            return named_contract.vyper_contract
 
         # 4. Happy path, maybe we didn't deploy the contract, but we've been given an abi and address, which works
         if abi and address:
             # Note, we are not putting this into the self.contracts dict, but maybe we should
-            return ABIContractFactory(meta_contract.contract_name, abi).at(address)
+            return ABIContractFactory(named_contract.contract_name, abi).at(address)
 
         # ------------------------------------------------------------------
         #                      WE DEPLOY AFTER HERE
@@ -196,30 +197,31 @@ class Network:
         # 5. Check if there is an address, if no ABI, return a blank contract at an address
         if address and not abi:
             logger.info(
-                f"No abi_source or abi_path found for {meta_contract.contract_name}, returning a blank contract at {address}"
+                f"No abi_source or abi_path found for {named_contract.contract_name}, returning a blank contract at {address}"
             )
-            # We could probably put this into _deploy_meta_contract with a conditional
+            # We could probably put this into _deploy_named_contract with a conditional
             blank_contract: VyperDeployer = boa.loads_partial("")
             vyper_contract = blank_contract.at(address)
-            meta_contract.update_from_deployment(vyper_contract)
-            self.contracts[meta_contract.contract_name] = meta_contract
+            named_contract.update_from_deployment(vyper_contract)
+            self.contracts[named_contract.contract_name] = named_contract
 
         # 6. If no address, deploy the contract
-        if not address and not deployer_path:
+        if not deployer_script:
             raise ValueError(
-                f"Contract {meta_contract.contract_name} has no address or deployer_path specified in the config file."
+                f"Contract {named_contract.contract_name} has no address or deployer_script specified in the config file."
             )
-        return self._deploy_meta_contract(meta_contract, deployer_path)
 
-    def _deploy_meta_contract(
-        self, meta_contract: MetaContract, deployer_path: str | Path
+        return self._deploy_named_contract(named_contract, deployer_script)
+
+    def _deploy_named_contract(
+        self, named_contract: NamedContract, deployer_script: str | Path
     ) -> VyperContract:
         config = get_config()
-        deployed_meta_contract: VyperContract = meta_contract._deploy(
-            config.script_folder, deployer_path, update_from_deploy=True
+        deployed_named_contract: VyperContract = named_contract._deploy(
+            config.script_folder, deployer_script, update_from_deploy=True
         )
-        self.contracts[meta_contract.contract_name] = meta_contract
-        return deployed_meta_contract
+        self.contracts[named_contract.contract_name] = named_contract
+        return deployed_named_contract
 
     def _get_abi_from_params(
         self,
@@ -284,7 +286,7 @@ class Network:
             from moccasin.commands.explorer import boa_get_abi_from_explorer
 
             abi = boa_get_abi_from_explorer(str(address), quiet=True)
-        return abi
+        return abi  # type: ignore
 
     @property
     def alias(self) -> str:
@@ -297,11 +299,11 @@ class Network:
 
 class _Networks:
     _networks: dict[str, Network]
-    _default_moccasin_contracts: dict[str, MetaContract]
+    _default_named_contracts: dict[str, NamedContract]
 
     def __init__(self, toml_data: dict):
         self._networks = {}
-        self._default_moccasin_contracts = {}
+        self._default_named_contracts = {}
         self.custom_networks_counter = 0
 
         default_explorer_api_key = toml_data.get("project", {}).get(
@@ -313,13 +315,13 @@ class _Networks:
 
         self._validate_network_contracts_dict(default_contracts)
         for contract_name, contract_data in default_contracts.items():
-            self._default_moccasin_contracts[contract_name] = MetaContract(
+            self._default_named_contracts[contract_name] = NamedContract(
                 contract_name,
                 force_deploy=contract_data.get("force_deploy", None),
                 abi=contract_data.get("abi", None),
                 abi_from_file_path=contract_data.get("abi_from_file_path", None),
                 abi_from_etherscan=contract_data.get("abi_from_etherscan", None),
-                deployer_path=contract_data.get("deployer_path", None),
+                deployer_script=contract_data.get("deployer_script", None),
                 address=contract_data.get("address", None),
             )
 
@@ -335,12 +337,12 @@ class _Networks:
                 self._validate_network_contracts_dict(
                     starting_network_contracts_dict, network_name=network_name
                 )
-                final_network_contracts = self._default_moccasin_contracts.copy()
+                final_network_contracts = self._default_named_contracts.copy()
                 for (
                     contract_name,
                     contract_data,
                 ) in starting_network_contracts_dict.items():
-                    moccasin_contract = MetaContract(
+                    named_contract = NamedContract(
                         contract_name,
                         force_deploy=contract_data.get("force_deploy", None),
                         abi=contract_data.get("abi", None),
@@ -350,14 +352,14 @@ class _Networks:
                         abi_from_etherscan=contract_data.get(
                             "abi_from_etherscan", None
                         ),
-                        deployer_path=contract_data.get("deployer_path", None),
+                        deployer_script=contract_data.get("deployer_script", None),
                         address=contract_data.get("address", None),
                     )
-                    if self._default_moccasin_contracts.get(contract_name, None):
-                        moccasin_contract.set_defaults(
-                            self._default_moccasin_contracts[contract_name]
+                    if self._default_named_contracts.get(contract_name, None):
+                        named_contract.set_defaults(
+                            self._default_named_contracts[contract_name]
                         )
-                    final_network_contracts[contract_name] = moccasin_contract
+                    final_network_contracts[contract_name] = named_contract
 
                 network = Network(
                     name=network_name,
@@ -387,7 +389,7 @@ class _Networks:
         if boa.env.nickname in self._networks:
             return self._networks[boa.env.nickname]
         new_network = Network(
-            name=boa.env.nickname, contracts=self._default_moccasin_contracts
+            name=boa.env.nickname, contracts=self._default_named_contracts
         )
         self._networks[new_network.name] = new_network
         return new_network
@@ -415,7 +417,6 @@ class _Networks:
     def get_or_deploy_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
         return self.get_active_network().get_or_deploy_contract(*args, **kwargs)
 
-    # TODO
     # REVIEW: i think it might be better to delegate to `boa.set_env`
     # so the usage would be like:
     # ```

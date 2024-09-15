@@ -19,9 +19,11 @@ class MoccasinAccount(LocalAccount):
         password: str = None,
         password_file_path: Path = None,
     ):
-        self._private_key = None
+        # We override the LocalAccount Type
+        self._private_key: bytes | None = None  # type: ignore
+        # We override the LocalAccount Type
+        self._address: ChecksumAddress | None = None  # type: ignore
         self._publicapi = Account()
-        self._address = None
 
         if private_key:
             private_key = to_bytes(hexstr=private_key)
@@ -48,12 +50,14 @@ class MoccasinAccount(LocalAccount):
         return self.key
 
     @property
-    def address(self) -> ChecksumAddress | None:
+    def address(self) -> ChecksumAddress | None:  # type: ignore
         if self.private_key:
             return PrivateKey(self.private_key).public_key.to_checksum_address()
         return None
 
-    def _init_key(self, private_key: bytes):
+    def _init_key(self, private_key: bytes | HexBytes):
+        if isinstance(private_key, HexBytes):
+            private_key = bytes(private_key)
         private_key_converted = PrivateKey(private_key)
         self._address = private_key_converted.public_key.to_checksum_address()
         key_raw: bytes = private_key_converted.to_bytes()

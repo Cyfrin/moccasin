@@ -1,7 +1,5 @@
-from typing import Union
 from moccasin.boa_tools import VyperContract
 from moccasin.config import get_config
-from contracts import BuyMeACoffee
 
 
 # Test to make sure the same address is returned when calling

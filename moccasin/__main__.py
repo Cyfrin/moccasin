@@ -463,8 +463,6 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
         "--json", help="Format as json.", action="store_true"
     )
 
-    # TODO selectors
-    # Show a list of function selectors for a contract
     return main_parser, sub_parsers
 
 
