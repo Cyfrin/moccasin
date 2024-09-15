@@ -1,4 +1,5 @@
 import importlib
+from importlib import metadata
 from pathlib import Path
 import tomllib
 import argparse
@@ -504,7 +505,7 @@ def add_network_args_to_parser(parser: argparse.ArgumentParser):
 
 
 def get_version() -> str:
-    version = importlib.metadata.version("moccasin")
+    version = metadata.version("moccasin")
     # Attempt to parse from `pyproject.toml` if not found
     if not version:
         with open(
