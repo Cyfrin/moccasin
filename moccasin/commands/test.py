@@ -7,6 +7,9 @@ from moccasin._sys_path_and_config_setup import (
 import pytest
 import sys
 from argparse import Namespace
+from _pytest.config import get_config as get_pytest_config
+
+from moccasin.constants.vars import TESTS_FOLDER
 
 PYTEST_ARGS: list[str] = [
     "file_or_dir",
@@ -55,7 +58,7 @@ def main(args: Namespace) -> int:
 def _run_project_tests(pytest_args: List[str], network: str = None, fork: bool = False):
     config = get_config()
     config_root = config.get_root()
-    test_path = "test"
+    test_path = TESTS_FOLDER
 
     with _patch_sys_path([config_root, config_root / test_path]):
         _setup_network_and_account_from_args(
@@ -67,6 +70,14 @@ def _run_project_tests(pytest_args: List[str], network: str = None, fork: bool =
             password=None,
             password_file_path=None,
         )
+
+        pytest_args = [
+            "--confcutdir",
+            str(config_root),
+            "--rootdir",
+            str(config_root),
+        ] + pytest_args
+
         return_code: int = pytest.main(["--assert=plain"] + pytest_args)
         if return_code:
             sys.exit(return_code)

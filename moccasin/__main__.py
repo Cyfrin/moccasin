@@ -221,28 +221,24 @@ Use this command to prepare your contracts for deployment or testing.""",
         default="./script/deploy.py",
     )
     add_network_args_to_parser(run_parser)
+    add_account_args_to_parser(run_parser)
 
-    key_or_account_group = run_parser.add_mutually_exclusive_group()
-    key_or_account_group.add_argument(
-        "--account", help="Keystore account you want to use.", type=str
+    # ------------------------------------------------------------------
+    #                         DEPLOY COMMAND
+    # ------------------------------------------------------------------
+    deploy_parser = sub_parsers.add_parser(
+        "deploy",
+        help="Deploys a contract named in the config with a deploy script.",
+        description="Deploys a contract named in the config with a deploy script.",
+        parents=[parent_parser],
     )
-    key_or_account_group.add_argument(
-        "--private-key",
-        help="Private key you want to use to get an unlocked account.",
+    deploy_parser.add_argument(
+        "contract_name",
+        help=f"Name of contract in your {CONFIG_NAME} to deploy.",
         type=str,
     )
-
-    password_group = run_parser.add_mutually_exclusive_group()
-    password_group.add_argument(
-        "--password",
-        help="Password for the keystore account.",
-        action=RequirePasswordAction,
-    )
-    password_group.add_argument(
-        "--password-file-path",
-        help="Path to the file containing the password for the keystore account.",
-        action=RequirePasswordAction,
-    )
+    add_network_args_to_parser(deploy_parser)
+    add_account_args_to_parser(deploy_parser)
 
     # ------------------------------------------------------------------
     #                         WALLET COMMAND
@@ -469,6 +465,30 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
 # ------------------------------------------------------------------
 #                        HELPER FUNCTIONS
 # ------------------------------------------------------------------
+def add_account_args_to_parser(parser: argparse.ArgumentParser):
+    key_or_account_group = parser.add_mutually_exclusive_group()
+    key_or_account_group.add_argument(
+        "--account", help="Keystore account you want to use.", type=str
+    )
+    key_or_account_group.add_argument(
+        "--private-key",
+        help="Private key you want to use to get an unlocked account.",
+        type=str,
+    )
+
+    password_group = parser.add_mutually_exclusive_group()
+    password_group.add_argument(
+        "--password",
+        help="Password for the keystore account.",
+        action=RequirePasswordAction,
+    )
+    password_group.add_argument(
+        "--password-file-path",
+        help="Path to the file containing the password for the keystore account.",
+        action=RequirePasswordAction,
+    )
+
+
 def add_network_args_to_parser(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--fork", action="store_true", help="If you want to fork the RPC."
