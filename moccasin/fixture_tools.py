@@ -1,17 +1,24 @@
 from types import ModuleType
-from typing import Callable
-import pytest
+from typing import Callable, Literal, cast
+from pytest import fixture
 from moccasin.config import get_config
 from boa.contracts.vyper.vyper_contract import VyperContract
 from boa.contracts.abi.abi_contract import ABIContract
 import inspect
 
 
+ScopeType = Literal["function", "class", "module", "package", "session"]
+
+
 def request_fixtures(
     fixture_requests: list[str | tuple[str, str]], scope: str = "module"
 ):
     # Dear Charles, don't kill me. Idk how this works.
-    caller_frame = inspect.currentframe().f_back
+    current_frame = inspect.currentframe()
+    if current_frame is None or current_frame.f_back is None:
+        raise RuntimeError("Cannot determine caller module")
+    caller_frame = current_frame.f_back
+
     caller_module = inspect.getmodule(caller_frame)
     if caller_module is None:
         raise RuntimeError("Cannot determine caller module")
@@ -46,20 +53,19 @@ def request_fixture(
         return active_network.get_or_deploy_contract(named_contract_name)
 
     # Create the fixture function
-    fixture = make_fixture(deploy_func, fixture_name, scope)
+    fixture_function = make_fixture(deploy_func, fixture_name, cast(ScopeType, scope))
 
     # Add the fixture to the module's namespace
-    setattr(module, fixture_name, fixture)
+    setattr(module, fixture_name, fixture_function)
 
 
 def make_fixture(
     deploy_func: Callable[[], VyperContract | ABIContract],
     fixture_name: str,
-    scope: str,
+    scope: Literal["function", "class", "module", "package", "session"],
 ) -> Callable[[], VyperContract | ABIContract]:
-    @pytest.fixture(scope=scope)
-    def fixture(deploy_func=deploy_func):
+    @fixture(scope=scope, name=fixture_name)
+    def fixture_func(deploy_func=deploy_func):
         return deploy_func()
 
-    fixture.__name__ = fixture_name
-    return fixture
+    return cast(Callable[[], VyperContract | ABIContract], fixture_func)

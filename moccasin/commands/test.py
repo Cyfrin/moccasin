@@ -7,7 +7,6 @@ from moccasin._sys_path_and_config_setup import (
 import pytest
 import sys
 from argparse import Namespace
-from _pytest.config import get_config as get_pytest_config
 
 from moccasin.constants.vars import TESTS_FOLDER
 
