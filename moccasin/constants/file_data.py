@@ -218,6 +218,11 @@ from script.deploy import deploy
 def counter_contract():
     return deploy()"""
 
+COVERAGERC = """
+[run]
+plugins = boa.coverage
+"""
+
 TEST_COUNTER_DEFAULT = """def test_increment(counter_contract):
     counter_contract.increment()
     assert counter_contract.number() == 2"""
