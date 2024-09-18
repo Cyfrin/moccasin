@@ -25,6 +25,7 @@ DEFAULT_MOCCASIN_FOLDER = Path.home().joinpath(".moccasin/")
 DEFAULT_KEYSTORES_PATH = DEFAULT_MOCCASIN_FOLDER.joinpath("keystores/")
 FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
 DOT_ENV_FILE = ".env"
+DOT_ENV_KEY = "dot_env"
 CONSOLE_HISTORY_FILE = "moccasin_history"
 DEFAULT_API_KEY_ENV_VAR = "EXPLORER_API_KEY"
 
