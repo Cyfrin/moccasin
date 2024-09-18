@@ -67,10 +67,17 @@ def main(args: Namespace) -> int:
                             pytest_args.extend([option, str(item)])
                     else:
                         pytest_args.extend([option, str(value)])
-    return _run_project_tests(pytest_args, network=args.network, fork=args.fork)
+    return _run_project_tests(
+        pytest_args, network=args.network, fork=args.fork, prompt_live=args.prompt_live
+    )
 
 
-def _run_project_tests(pytest_args: List[str], network: str = None, fork: bool = False):
+def _run_project_tests(
+    pytest_args: List[str],
+    network: str = None,
+    fork: bool = False,
+    prompt_live: bool = False,
+):
     config = get_config()
     config_root = config.get_root()
     test_path = TESTS_FOLDER
@@ -88,6 +95,7 @@ def _run_project_tests(pytest_args: List[str], network: str = None, fork: bool =
             private_key=None,
             password=None,
             password_file_path=None,
+            prompt_live=prompt_live,
         )
 
         pytest_args = [

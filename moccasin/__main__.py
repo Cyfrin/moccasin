@@ -587,7 +587,10 @@ def add_account_args_to_parser(parser: argparse.ArgumentParser):
 
 def add_network_args_to_parser(parser: argparse.ArgumentParser):
     parser.add_argument(
-        "--fork", action="store_true", help="If you want to fork the RPC."
+        "--fork",
+        nargs="?",  # Allow an optional value
+        const=True,  # Value when the flag is passed without an argument
+        default=None,  # When no flag is passed, help="If you want to fork the RPC."
     )
     network_or_rpc_group = parser.add_mutually_exclusive_group()
     network_or_rpc_group.add_argument(
@@ -595,6 +598,13 @@ def add_network_args_to_parser(parser: argparse.ArgumentParser):
     )
     network_or_rpc_group.add_argument(
         "--url", "--rpc", help="RPC URL to run the script on."
+    )
+    network_or_rpc_group.add_argument(
+        "--prompt-live",
+        nargs="?",  # Allow an optional value
+        const=True,  # Value when the flag is passed without an argument
+        default=None,  # When no flag is passed
+        help="Prompt the user to make sure they want to run this script.",
     )
     return network_or_rpc_group
 

@@ -20,7 +20,10 @@ def main(args: Namespace) -> int:
     # Set up the environment (add necessary paths to sys.path, etc.)
     with _patch_sys_path([config_root, config_root / config.contracts_folder]):
         _setup_network_and_account_from_args(
-            network=args.network, url=args.url, fork=args.fork
+            network=args.network,
+            url=args.url,
+            fork=args.fork,
+            prompt_live=args.prompt_live,
         )
 
         # Ensure the Moccasin folder exists

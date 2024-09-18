@@ -47,6 +47,7 @@ class Network:
     save_abi_path: str | None = None
     explorer_api_key: str | None = None
     contracts: dict[str, NamedContract] = field(default_factory=dict)
+    prompt_live: bool = False
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
 
@@ -75,7 +76,8 @@ class Network:
             boa.fork(self.url)  # This won't work for ZKSync?
             self._network_env.nickname = self.name
 
-    def get_or_create_env(self, is_fork: bool) -> _AnyEnv:
+    def get_or_create_env(self, is_fork: bool | None) -> _AnyEnv:
+        is_fork = is_fork if is_fork is not None else False
         import boa
 
         self.set_fork(is_fork)
@@ -379,6 +381,7 @@ class _Networks:
                     ),
                     default_account_name=network_data.get("default_account_name", None),
                     unsafe_password_file=network_data.get("unsafe_password_file", None),
+                    prompt_live=network_data.get("prompt_live", False),
                     contracts=final_network_contracts,
                     extra_data=network_data.get("extra_data", {}),
                 )
