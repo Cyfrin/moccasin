@@ -147,6 +147,13 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
     add_network_args_to_parser(test_parser)
 
+    # Pytest args
+    test_parser.add_argument(
+        "--gas-profile",
+        default=False,
+        help="Get an output on gas use for test functions.",
+        action="store_true",
+    )
     test_parser.add_argument(
         "-k",
         nargs="?",

@@ -25,6 +25,7 @@ PYTEST_ARGS: list[str] = [
     "disable-pytest-warnings",
     "full-trace",
     "pdb",
+    "gas-profile",
     # Coverage options
     "cov",
     "cov-report",
@@ -45,12 +46,12 @@ def main(args: Namespace) -> int:
 
     # This is not in PYTEST_ARGS
     if "coverage" in args and args.coverage:
-        pytest_args = ["--cov=."]
-        pytest_args.append("--cov-branch")
+        pytest_args.extend(["--cov=.", "--cov-branch"])
 
     for arg in PYTEST_ARGS:
-        if hasattr(args, arg):
-            value = getattr(args, arg)
+        attr_name = arg.replace("-", "_")
+        if hasattr(args, attr_name):
+            value = getattr(args, attr_name)
             if value is not None:
                 if arg == "file_or_dir":
                     pytest_args.append(str(value))
