@@ -1,4 +1,7 @@
-There are tests where you need some kind of environment variable or external service.
+There are tests where you need some kind of environment variable or external service. For example:
+
+- Etherscan
+- GitHub
 
 # Requirements
 
