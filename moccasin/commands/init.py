@@ -15,6 +15,7 @@ from moccasin.constants.file_data import (
     README_MD_SRC,
     COUNTER_VYPER_CONTRACT_SRC,
     CONFTEST_DEFAULT,
+    COVERAGERC,
     DEPLOY_SCRIPT_DEFAULT,
     TEST_COUNTER_DEFAULT,
     GAB_DEFAULT_CONFIG,
@@ -64,6 +65,7 @@ def _create_folders(project_path: Path, vscode: bool = False) -> None:
 def _create_files(project_path: Path, vscode: bool = False) -> None:
     _write_file(project_path.joinpath(".gitignore"), GITIGNORE)
     _write_file(project_path.joinpath(".gitattributes"), GITATTRIBUTES)
+    _write_file(project_path.joinpath(".coveragerc"), COVERAGERC)
     _write_file(
         project_path.joinpath(f"{CONTRACTS_FOLDER}/{COUNTER_CONTRACT}"),
         COUNTER_VYPER_CONTRACT_SRC,

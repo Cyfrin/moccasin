@@ -39,6 +39,7 @@ def _assert_files_and_folders_exist(temp_dir: Path):
         assert temp_dir.joinpath(folder).exists()
     assert temp_dir.joinpath("README.md").exists()
     assert temp_dir.joinpath("moccasin.toml").exists()
+    assert temp_dir.joinpath(".coveragerc").exists()
     assert temp_dir.joinpath(Path(".gitignore")).exists()
     assert temp_dir.joinpath(Path(".gitattributes")).exists()
     with temp_dir.joinpath(Path(".gitignore")).open() as fp:
