@@ -337,10 +337,10 @@ Use this command to prepare your contracts for deployment or testing.""",
     import_parser.add_argument("name", help="Name of account to import")
 
     # Inspect Json
-    inspect_parser = wallet_subparsers.add_parser(
-        "inspect", help="View the JSON of a keystore file"
+    view_parser = wallet_subparsers.add_parser(
+        "view", help="View the JSON of a keystore file"
     )
-    inspect_parser.add_argument("keystore_file_name", help="Name of keystore file")
+    view_parser.add_argument("keystore_file_name", help="Name of keystore file")
 
     # Decrypt Keystore
     decrypt_keystore_parser = wallet_subparsers.add_parser(
@@ -510,6 +510,49 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
     )
     explorer_list_parser.add_argument(
         "--json", help="Format as json.", action="store_true"
+    )
+
+    # ------------------------------------------------------------------
+    #                        INSPECT COMMAND
+    # ------------------------------------------------------------------
+    inspect_parser = sub_parsers.add_parser(
+        "inspect",
+        help="Inspect compiler data of a contract.",
+        description="""Inspect compiler data of a contract. 
+        
+        This command will directly use the Vyper compiler to access this data. For example, to get function signatures and selectors run:
+            
+            mox inspect src/Counter.vy methods
+            
+        or
+        
+            mox inspect Counter methods""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    inspect_parser.add_argument(
+        "contract",
+        help="Path or Contract name of the contract you want to inspect.",
+        type=str,
+    )
+    inspect_parser.add_argument(
+        "inspect_type",
+        help="Type of inspection you want to do.",
+        choices=[
+            "methods",
+            "abi",
+            "natspec",
+            "storage-layout",
+            "ir-nodes",
+            "ir-runtime",
+            "function-signatures",
+            "function-selectors",
+            "selectors",
+            "signatures",
+            "assembly",
+            "venom-functions",
+            "bytecode",
+            "bytecode-runtime",
+        ],
     )
 
     return main_parser, sub_parsers
