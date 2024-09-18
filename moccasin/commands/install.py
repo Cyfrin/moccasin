@@ -124,16 +124,24 @@ def _github_installs(
             download_url = f"https://api.github.com/repos/{org}/{repo}/zipball/refs/tags/{quote(version)}"
             _stream_download(download_url, str(repo_install_path.parent), headers)
 
-        installed = next(
-            i for i in repo_install_path.parent.iterdir() if i not in existing
-        )
-        shutil.move(installed, repo_install_path)
+        try:
+            installed = next(
+                i for i in repo_install_path.parent.iterdir() if i not in existing
+            )
+        except StopIteration:
+            installed = None
+
+        if installed:
+            if repo_install_path.exists():
+                shutil.rmtree(repo_install_path)
+            shutil.move(installed, repo_install_path)
 
         # Update versions file
         if versions_install_path.exists():
             with open(versions_install_path, "rb") as f:
                 versions_data = tomllib.load(f)
-                versions_data[f"{org}/{repo}"] = version
+            versions_data[f"{org}/{repo}"] = version
+            with open(versions_install_path, "wb") as f:
                 tomli_w.dump(versions_data, f)
         else:
             with open(versions_install_path, "w", encoding="utf-8") as f:
