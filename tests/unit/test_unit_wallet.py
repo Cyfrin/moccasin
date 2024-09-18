@@ -1,11 +1,11 @@
 from pathlib import Path
 from typing import List
-from moccasin.commands.wallet import inspect, list_accounts
+from moccasin.commands.wallet import view_wallet, list_accounts
 from tests.conftest import ANVIL1_KEYSTORE_NAME, ANVIL_KEYSTORE_SAVED
 
 
-def test_inspect(anvil_keystore):
-    result = inspect(ANVIL1_KEYSTORE_NAME, keystores_path=anvil_keystore)
+def test_view_wallet(anvil_keystore):
+    result = view_wallet(ANVIL1_KEYSTORE_NAME, keystores_path=anvil_keystore)
     assert result["address"] == ANVIL_KEYSTORE_SAVED["address"]
 
 

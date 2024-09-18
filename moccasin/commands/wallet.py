@@ -31,8 +31,8 @@ def main(args: Namespace) -> int:
         return import_private_key(args.name)
     elif wallet_command == "delete":
         return delete_keystore(args.keystore_file_name)
-    elif wallet_command == "inspect":
-        inspect(args.keystore_file_name)
+    elif wallet_command == "view":
+        view_wallet(args.keystore_file_name)
     elif wallet_command == "decrypt":
         key = decrypt_key(
             args.keystore_file_name,
@@ -48,7 +48,7 @@ def main(args: Namespace) -> int:
     return 0
 
 
-def inspect(
+def view_wallet(
     keystore_file_name: str, keystores_path: Path = DEFAULT_KEYSTORES_PATH
 ) -> dict:
     keystore_path = keystores_path.joinpath(keystore_file_name)

@@ -1,0 +1,18 @@
+from moccasin.commands.inspect import inspect_contract
+from tests.conftest import COMPLEX_PROJECT_PATH
+from pathlib import Path
+import os
+
+
+def test_inspect_counter(complex_project_config):
+    expected_dir = {
+        "set_number(uint256)": "0xd6d1ee14 (3604082196)",
+        "increment()": "0xd09de08a (3500007562)",
+    }
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        result = inspect_contract("Counter", "function_signatures", print_out=False)
+    finally:
+        os.chdir(current_dir)
+    assert result == expected_dir
