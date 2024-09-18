@@ -57,4 +57,21 @@ def test_test_coverage(complex_cleanup_out_folder, complex_cleanup_coverage, mox
     finally:
         os.chdir(current_dir)
     assert "coverage:" in result.stdout
+    assert "Computation" not in result.stdout
     assert current_dir.joinpath(COMPLEX_PROJECT_PATH).joinpath(".coverage").exists()
+
+
+def test_test_gas(complex_cleanup_out_folder, complex_cleanup_coverage, mox_path):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        result = subprocess.run(
+            [mox_path, "test", "--gas-profile"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+    assert "Computation" in result.stdout
+    assert "coverage:" not in result.stdout
