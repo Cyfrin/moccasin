@@ -45,3 +45,16 @@ def test_test_complex_project_passes_pytest_flags(complex_cleanup_out_folder, mo
     assert "1 passed" in result.stdout
     assert "4 deselected" in result.stdout
     assert result.returncode == 0
+
+
+def test_test_coverage(complex_cleanup_out_folder, complex_cleanup_coverage, mox_path):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        result = subprocess.run(
+            [mox_path, "test", "--coverage"], check=True, capture_output=True, text=True
+        )
+    finally:
+        os.chdir(current_dir)
+    assert "coverage:" in result.stdout
+    assert current_dir.joinpath(COMPLEX_PROJECT_PATH).joinpath(".coverage").exists()

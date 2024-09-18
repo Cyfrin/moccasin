@@ -9,7 +9,7 @@ import sys
 from moccasin.constants.vars import CONFIG_NAME
 
 
-GAB_CLI_VERSION_STRING = "Moccasin CLI v{}"
+MOCCASIN_CLI_VERSION_STRING = "Moccasin CLI v{}"
 
 ALIAS_TO_COMMAND = {
     "build": "compile",
@@ -157,7 +157,6 @@ Use this command to prepare your contracts for deployment or testing.""",
                         functions containing extra names in their 'extra_keyword_matches' set, as well as functions which have names assigned directly to them.
                         The matching is case-insensitive.""",
     )
-    test_parser.add_argument("--coverage", help="Run tests with coverage")
     test_parser.add_argument(
         "-m",
         nargs="?",
@@ -203,6 +202,52 @@ Use this command to prepare your contracts for deployment or testing.""",
         "--pdb",
         action="store_true",
         help="Start the debugger for each test that fails.",
+    )
+
+    # Coverage Options
+    test_parser.add_argument(
+        "--coverage",
+        action="store_true",
+        help="Shorthand for adding `--cov=. --cov-branch`.",
+    )
+    test_parser.add_argument("--cov", help="Coverage target directory.", type=Path)
+    test_parser.add_argument(
+        "--cov-report",
+        nargs="*",
+        help="Type of report to generate: term, term-missing, annotate, html, xml, json, lcov (multi-allowed). term, term- missing may be followed by “:skip-covered”. annotate, html, xml, json and lcov may be followed by “:DEST” where DEST specifies the output location. Use –cov-report= to not generate any output..",
+    )
+    test_parser.add_argument(
+        "--cov-config",
+        help="Coverage config file, defaults to a moccasin internal config file loading the boa plugin.",
+    )
+    test_parser.add_argument(
+        "--no-cov-on-fail",
+        action="store_true",
+        help="Do not report coverage if test run fails.",
+    )
+    test_parser.add_argument(
+        "--no-cov", action="store_true", help="Disable coverage report."
+    )
+    test_parser.add_argument(
+        "--cov-reset",
+        action="store_true",
+        help="Reset cov sources accumulated in options so far. Mostly useful for scripts and configuration files.",
+    )
+    test_parser.add_argument(
+        "--cov-fail-under",
+        type=int,
+        help="Fail if the total coverage is less than this value.",
+    )
+    test_parser.add_argument(
+        "--cov-append",
+        action="store_true",
+        help="Do not delete coverage but append to current. Default: False.",
+    )
+    test_parser.add_argument(
+        "--cov-branch", action="store_true", help="Enable branch coverage."
+    )
+    test_parser.add_argument(
+        "--cov-context", help="Coverage context to add to the coverage data."
     )
 
     # ------------------------------------------------------------------
@@ -513,7 +558,7 @@ def get_version() -> str:
         ) as f:
             moccasin_cli_data = tomllib.load(f)
         version = moccasin_cli_data["project"]["version"]
-    return GAB_CLI_VERSION_STRING.format(version)
+    return MOCCASIN_CLI_VERSION_STRING.format(version)
 
 
 def validate_generate_args(args):

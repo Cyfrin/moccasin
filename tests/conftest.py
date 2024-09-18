@@ -87,6 +87,14 @@ def complex_out_folder(complex_project_config) -> Config:
 
 
 @pytest.fixture
+def complex_cleanup_coverage():
+    yield
+    coverage_file = COMPLEX_PROJECT_PATH.joinpath(".coverage")
+    if os.path.exists(coverage_file):
+        os.remove(coverage_file)
+
+
+@pytest.fixture
 def complex_cleanup_out_folder(complex_out_folder):
     yield
     created_folder_path = COMPLEX_PROJECT_PATH.joinpath(complex_out_folder)

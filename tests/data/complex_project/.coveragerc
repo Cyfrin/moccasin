@@ -1,0 +1,6 @@
+[run]
+plugins = boa.coverage
+
+[report]
+omit = tests/*
+show_missing = True

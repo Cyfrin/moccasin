@@ -619,6 +619,7 @@ name = "moccasin"
 version = "0.2.0"
 source = { editable = "." }
 dependencies = [
+    { name = "pytest-cov" },
     { name = "python-dotenv" },
     { name = "titanoboa" },
     { name = "titanoboa-zksync" },
@@ -647,6 +648,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "pytest-cov", specifier = ">=5.0.0" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "shibuya", marker = "extra == 'docs'", specifier = ">=2024.8.30" },
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=8.0.2" },

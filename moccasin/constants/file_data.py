@@ -241,7 +241,7 @@ mox compile
 _For documentation, please run `mox --help` or visit [the Moccasin documentation](https://github.com/cyfrin/moccasin)_
 """
 
-GAB_DEFAULT_CONFIG = """[project]
+MOCCASIN_DEFAULT_CONFIG = """[project]
 src = "src"
 out = "out"
 script = "script"
@@ -262,5 +262,8 @@ VSCODE_SETTINGS_DEFAULT = """{
     "files.exclude": {
         "**/__pycache__": true
     },
+    "files.associations": {
+        ".coveragerc": "toml"
+    }
 }
 """

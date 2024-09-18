@@ -6,6 +6,7 @@ src = "contracts"
 out = "build"
 explorer_api_key = "${ETHERSCAN_API_KEY}"
 save_abi_path = "abis"
+cov_config = ".coveragerc"
 
 [networks.contracts]
 price_feed = { abi_from_file_path = "mocks/MockV3Aggregator.vy", force_deploy = false, deployer_script = "mock_deployer/deploy_feed", fixture = false }

@@ -601,6 +601,10 @@ class Config:
     def src_folder(self) -> str:
         return self.contracts_folder
 
+    @property
+    def cov_config(self) -> str | None:
+        return self.project.get("cov_config", None)
+
     # Tests must be in "tests" folder
     @property
     def test_folder(self) -> str:

@@ -25,20 +25,35 @@ PYTEST_ARGS: list[str] = [
     "disable-pytest-warnings",
     "full-trace",
     "pdb",
+    # Coverage options
+    "cov",
+    "cov-report",
+    "cov-config",
+    "no-cov-on-fail",
+    "no-cov",
+    "cov-reset",
+    "cov-fail-under",
+    "cov-append",
+    "cov-branch",
+    "cov-context",
 ]
 
 
 def main(args: Namespace) -> int:
     initialize_global_config()
     pytest_args = []
+
+    # This is not in PYTEST_ARGS
+    if "coverage" in args and args.coverage:
+        pytest_args = ["--cov=."]
+        pytest_args.append("--cov-branch")
+
     for arg in PYTEST_ARGS:
         if hasattr(args, arg):
             value = getattr(args, arg)
             if value is not None:
                 if arg == "file_or_dir":
                     pytest_args.append(str(value))
-                elif arg == "coverage":
-                    pytest_args.append("--cov=")
                 else:
                     option_prefix = "-" if len(arg) == 1 else "--"
                     option = f"{option_prefix}{arg}"
@@ -59,6 +74,10 @@ def _run_project_tests(pytest_args: List[str], network: str = None, fork: bool =
     config_root = config.get_root()
     test_path = TESTS_FOLDER
 
+    if "cov-config" not in pytest_args:
+        if config.cov_config:
+            pytest_args.extend(["--cov-config", str(config.cov_config)])
+
     with _patch_sys_path([config_root, config_root / test_path]):
         _setup_network_and_account_from_args(
             network=network,
@@ -76,7 +95,6 @@ def _run_project_tests(pytest_args: List[str], network: str = None, fork: bool =
             "--rootdir",
             str(config_root),
         ] + pytest_args
-
         return_code: int = pytest.main(["--assert=plain"] + pytest_args)
         if return_code:
             sys.exit(return_code)

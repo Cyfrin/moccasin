@@ -3,4 +3,7 @@
     "files.exclude": {
         "**/__pycache__": true
     },
+    "files.associations": {
+        ".coveragerc": "toml"
+    }
 }

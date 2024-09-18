@@ -18,7 +18,7 @@ from moccasin.constants.file_data import (
     COVERAGERC,
     DEPLOY_SCRIPT_DEFAULT,
     TEST_COUNTER_DEFAULT,
-    GAB_DEFAULT_CONFIG,
+    MOCCASIN_DEFAULT_CONFIG,
     VSCODE_SETTINGS_DEFAULT,
 )
 from argparse import Namespace
@@ -70,7 +70,7 @@ def _create_files(project_path: Path, vscode: bool = False) -> None:
         project_path.joinpath(f"{CONTRACTS_FOLDER}/{COUNTER_CONTRACT}"),
         COUNTER_VYPER_CONTRACT_SRC,
     )
-    _write_file(project_path.joinpath(CONFIG_NAME), GAB_DEFAULT_CONFIG)
+    _write_file(project_path.joinpath(CONFIG_NAME), MOCCASIN_DEFAULT_CONFIG)
     _write_file(project_path.joinpath(README_PATH), README_MD_SRC)
     _write_file(project_path.joinpath(f"{TESTS_FOLDER}/conftest.py"), CONFTEST_DEFAULT)
     _write_file(
