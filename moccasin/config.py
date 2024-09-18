@@ -12,6 +12,7 @@ from moccasin.constants.vars import (
     INSTALLER,
     DEFAULT_INSTALLER,
     SAVE_ABI_PATH,
+    DOT_ENV_KEY,
 )
 import tomllib
 from dotenv import load_dotenv
@@ -490,6 +491,11 @@ class Config:
 
     def _load_config(self, config_path: Path):
         toml_data: dict = self.read_moccasin_config(config_path)
+        # Need to get the .env file before expanding env vars
+        self.project = {}
+        self.project[DOT_ENV_KEY] = toml_data.get("project", {}).get(
+            DOT_ENV_KEY, DOT_ENV_FILE
+        )
         self._load_env_file()
         toml_data = self.expand_env_vars(toml_data)
         self.networks = _Networks(toml_data)
@@ -502,7 +508,7 @@ class Config:
         self.extra_data = toml_data.get("extra_data", {})
 
     def _load_env_file(self):
-        load_dotenv(dotenv_path=self.project_root.joinpath(DOT_ENV_FILE))
+        load_dotenv(dotenv_path=self.project_root.joinpath(self.dot_env))
 
     def read_moccasin_config(self, config_path: Path = None) -> dict:
         config_path = self._validate_config_path(config_path)
@@ -607,6 +613,10 @@ class Config:
     @property
     def cov_config(self) -> str | None:
         return self.project.get("cov_config", None)
+
+    @property
+    def dot_env(self) -> str:
+        return self.project.get(DOT_ENV_KEY, DOT_ENV_FILE)
 
     # Tests must be in "tests" folder
     @property

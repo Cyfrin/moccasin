@@ -235,10 +235,10 @@ README_MD_SRC = """# Moccasin Project
 
 ```bash
 mox init
-mox compile
+mox run deploy
 ```
 
-_For documentation, please run `mox --help` or visit [the Moccasin documentation](https://github.com/cyfrin/moccasin)_
+_For documentation, please run `mox --help` or visit [the Moccasin documentation](https://cyfrin.github.io/moccasin)_
 """
 
 MOCCASIN_DEFAULT_CONFIG = """[project]
@@ -247,6 +247,7 @@ out = "out"
 script = "script"
 lib = "lib"
 installer = "uv"
+dot_env = ".env"
 
 [networks.sepolia]
 url = "https://ethereum-sepolia-rpc.publicnode.com"
@@ -256,6 +257,9 @@ chain_id = 11155111
 url = "https://sepolia.era.zksync.dev"
 chain_id = 300
 is_zksync = true
+prompt_live = true
+
+# You can view all configuration options at https://cyfrin.github.io/moccasin/all_moccasin_toml_parameters.html
 """
 
 VSCODE_SETTINGS_DEFAULT = """{
