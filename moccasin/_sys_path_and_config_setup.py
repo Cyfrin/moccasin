@@ -38,10 +38,11 @@ def _setup_network_and_account_from_args(
         raise ValueError("Cannot use --fork and --account at the same time")
 
     # Setup Network
+    is_fork_from_cli = fork if fork is not None else False
     if network and not url:
-        config.networks.set_active_network(network, is_fork=fork)
+        config.networks.set_active_network(network, is_fork=is_fork_from_cli)
     if url:
-        config.networks.set_active_network(url, is_fork=fork)
+        config.networks.set_active_network(url, is_fork=is_fork_from_cli)
 
     # Update parameters if not provided in the CLI
     if fork is None:
