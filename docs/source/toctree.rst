@@ -1,6 +1,6 @@
-======
+========
 Moccasin
-======
+========
 
 .. toctree::
     :maxdepth: 2

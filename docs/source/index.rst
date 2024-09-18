@@ -5,7 +5,7 @@
 
 
 Moccasin
-######
+########
 
 Moccasin is a fast, pythonic smart contract development framework heavily powered by `titanoboa <https://github.com/vyperlang/titanoboa>`_.
 
@@ -20,7 +20,7 @@ How to read the documentation
 The moccasin documentation is written in a way that assumes you are on a MacOS or Linux-like system. If you are using windows, we recommend you watch the first `10 minutes of this WSL tutorial <https://www.youtube.com/watch?v=xqUZ4JqHI_8>`_ and work with WSL. WSL stands for "Windows Subsystem for Linux" and it allows you to run a Linux commands on Windows machine.
 
 Why Moccasin?
-===========
+=============
 
 We think web3 needs the following:
 

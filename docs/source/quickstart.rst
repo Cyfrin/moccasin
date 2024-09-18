@@ -18,6 +18,14 @@ And this will create a new project in a new `my_project` directory. If you want 
 
     mox init my_project --force
 
+If you use VSCode, you can also use:
+
+.. code-block:: bash
+
+    mox init my_project --vscode
+
+Which will create a `.vscode` folder to help make working with VSCode easier. 
+
 Let's check out the files and folders `moccasin` has created:
 
 .. note::
@@ -54,6 +62,12 @@ This is a minimal project structure that `moccasin` creates.
 - `script` is a directory that contains scripts that you can use to deploy your project.
 - `src` is a directory that contains your vyper smart contracts.
 - `tests` is a directory that contains your tests.
+
+If you run `tree . -a`, you'll also see the "hidden" files. 
+
+- `.gitignore` is a file that tells git which files to ignore.
+- `.gitattributes` is a file that tells git how to handle line endings.
+- `.coveragerc` is a file that tells `pytest` how to handle coverage.
 
 
 Deploying a contract 

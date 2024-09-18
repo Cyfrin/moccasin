@@ -28,9 +28,9 @@ A `moccasin.toml` file can look like this:
 
 You can learn more about each of the sections of the `moccasin.toml` file in their respective documentation.
 
-- `Project <project>`_
-- `Network <network>`_
-- `Dependencies <dependencies>`_
+- :doc:`Project <project>`
+- :doc:`Networks <networks>`
+- :doc:`Dependencies <dependencies>`
 
 You can also see a full example of a `moccasin.toml` in the :doc:`all moccasin toml parameters <all_moccasin_toml_parameters>` documentation.
 

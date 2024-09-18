@@ -57,7 +57,7 @@ If you have :doc:`networks <networks>` defined in your :doc:`moccasin.toml <mocc
 
 
 moccasin_main
-===========
+=============
 
 In your scripts, the `moccasin_main` function is special, if you have a function with this name in your script, `moccasin` will run this function by default after running the script like a regular python file. For example, you could also do this:
 
