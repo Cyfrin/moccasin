@@ -22,6 +22,7 @@ def main(args: Namespace) -> int:
             private_key=args.private_key,
             password=args.password,
             password_file_path=args.password_file_path,
+            prompt_live=args.prompt_live,
         )
         config = get_config()
         active_network = config.get_active_network()

@@ -51,8 +51,15 @@ chain_id = 11155111
 
 
 ## BASIC FIXTURES
-@pytest.fixture
-def anvil_keystore(monkeypatch):
+@pytest.fixture(scope="session")
+def session_monkeypatch():
+    monkeypatch = pytest.MonkeyPatch()
+    yield monkeypatch
+    monkeypatch.undo()
+
+
+@pytest.fixture(scope="session")
+def anvil_keystore(session_monkeypatch):
     with tempfile.TemporaryDirectory() as temp_dir:
         save_to_keystores(
             ANVIL1_KEYSTORE_NAME,
@@ -60,13 +67,13 @@ def anvil_keystore(monkeypatch):
             password=ANVIL1_KEYSTORE_PASSWORD,
             keystores_path=Path(temp_dir),
         )
-        monkeypatch.setattr(vars, "DEFAULT_KEYSTORES_PATH", Path(temp_dir))
+        session_monkeypatch.setattr(vars, "DEFAULT_KEYSTORES_PATH", Path(temp_dir))
         yield Path(temp_dir)
 
 
-@pytest.fixture
-def set_fake_chain_rpc(monkeypatch):
-    monkeypatch.setenv("FAKE_CHAIN_RPC_URL", ANVIL_URL)
+@pytest.fixture(scope="session")
+def set_fake_chain_rpc(session_monkeypatch):
+    session_monkeypatch.setenv("FAKE_CHAIN_RPC_URL", ANVIL_URL)
     yield
 
 
@@ -126,7 +133,7 @@ def installation_cleanup_dependencies():
         shutil.rmtree(created_folder_path)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def anvil_process():
     with AnvilProcess(args=["--load-state", str(ANVIL_STORED_STATE_PATH), "-b", "1"]):
         yield

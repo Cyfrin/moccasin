@@ -27,6 +27,13 @@ compound = "asdfsf"
 url = "http://127.0.0.1:8545"
 unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
 default_account_name = "anvil1"
+prompt_live = false
+
+[networks.anvil-live]
+url = "http://127.0.0.1:8545"
+unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
+default_account_name = "anvil1"
+prompt_live = true
 
 [networks.anvil.contracts]
 price_feed = { address = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi_from_explorer = false }
