@@ -110,7 +110,7 @@ def test_run_with_keystore_account(mox_path, anvil_keystore, anvil_process):
 
 
 def test_run_fork_should_not_send_transactions(
-    mox_path, set_fake_chain_rpc, anvil_process
+    mox_path, complex_project_config, set_fake_chain_rpc, anvil_process
 ):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)

@@ -24,7 +24,7 @@ def main(args: Namespace) -> int:
 def inspect_contract(contract: str, inspect_type: str, print_out: bool = False) -> Any:
     config = get_config()
 
-    contract_path = _find_contract(contract, config)
+    contract_path = config._find_contract(contract)
     vyper_deployer = compile_(
         contract_path, config.get_root().joinpath(config.build_folder)
     )
@@ -54,30 +54,3 @@ def inspect_contract(contract: str, inspect_type: str, print_out: bool = False) 
         else:
             pprint.pprint(final_data)
     return final_data
-
-
-def _find_contract(contract_or_contract_path: str, config: Config) -> Path:
-    config_root = config.get_root()
-    contract_path: Path | None = None
-    if contract_or_contract_path.endswith(".vy"):
-        contract_path = config_root / contract_or_contract_path
-    else:
-        contract_name = contract_or_contract_path + ".vy"
-
-    if not contract_path:
-        contracts_location = config_root / config.contracts_folder
-        contract_paths = list(contracts_location.rglob(contract_name))
-        if not contract_paths:
-            raise FileNotFoundError(
-                f"Contract file '{contract_name}' not found under '{config_root}'."
-            )
-        elif len(contract_paths) > 1:
-            found_paths = "\n".join(str(path) for path in contract_paths)
-            raise FileExistsError(
-                f"Multiple contract files named '{contract_name}' found:\n{found_paths}\n"
-                "Please specify the path to the contract file."
-            )
-        else:
-            # Exactly one file found
-            contract_path = contract_paths[0]
-    return contract_path

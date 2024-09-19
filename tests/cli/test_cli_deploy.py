@@ -7,7 +7,7 @@ from tests.conftest import COMPLEX_PROJECT_PATH
 # --------------------------------------------------------------
 #                         WITHOUT ANVIL
 # --------------------------------------------------------------
-def test_deploy_price_feed_pyevm(mox_path):
+def test_deploy_price_feed_pyevm(mox_path, complex_project_config):
     current_dir = Path.cwd()
     try:
         os.chdir(COMPLEX_PROJECT_PATH)

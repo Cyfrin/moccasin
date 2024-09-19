@@ -1,7 +1,7 @@
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Any
-from boa.contracts.vyper.vyper_contract import VyperContract
+from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
 from moccasin.logging import logger
 
 
@@ -10,31 +10,27 @@ class NamedContract:
     contract_name: str
     force_deploy: bool | None = None
     abi: str | None = None
-    abi_from_file_path: str | Path | None = None
-    abi_from_etherscan: bool | None = None
+    abi_from_explorer: bool | None = None
     deployer_script: str | Path | None = None
     address: str | None = None
     vyper_contract: VyperContract | None = None
+    vyper_deployer: VyperDeployer | None = None
 
     def update_from_deployment(self, deployed_contract: VyperContract):
         self.abi = deployed_contract.abi
         self.address = deployed_contract.address
         self.vyper_contract = deployed_contract
+        self.vyper_deployer = deployed_contract.deployer
 
     def set_defaults(self, other: "NamedContract"):
         self.force_deploy = (
             self.force_deploy if self.force_deploy is not None else other.force_deploy
         )
         self.abi = self.abi if self.abi is not None else other.abi
-        self.abi_from_file_path = (
-            self.abi_from_file_path
-            if self.abi_from_file_path is not None
-            else other.abi_from_file_path
-        )
-        self.abi_from_etherscan = (
-            self.abi_from_etherscan
-            if self.abi_from_etherscan is not None
-            else other.abi_from_etherscan
+        self.abi_from_explorer = (
+            self.abi_from_explorer
+            if self.abi_from_explorer is not None
+            else other.abi_from_explorer
         )
         self.deployer_script = (
             self.deployer_script
@@ -69,7 +65,7 @@ class NamedContract:
         deployer_module_path = deployer_module_path.replace("/", ".")
         deployer_module_path = (
             deployer_module_path[:-3]
-            if deployer_module_path.strip().endswith(".vy")
+            if deployer_module_path.strip().endswith(".py")
             else deployer_module_path
         )
         logger.debug(f"Deploying contract using {deployer_module_path}...")
