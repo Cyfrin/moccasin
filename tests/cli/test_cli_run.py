@@ -110,13 +110,13 @@ def test_run_with_keystore_account(mox_path, anvil_keystore, anvil_process):
 
 
 def test_run_fork_should_not_send_transactions(
-    mox_path, complex_project_config, set_fake_chain_rpc, anvil_process
+    mox_path, complex_project_config, set_fake_chain_rpc, anvil_fork_no_state
 ):
     current_dir = Path.cwd()
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
         result = subprocess.run(
-            [mox_path, "run", "deploy", "--fork", "--network", "anvil"],
+            [mox_path, "run", "deploy", "--fork", "--network", "anvil-fork"],
             check=True,
             capture_output=True,
             text=True,

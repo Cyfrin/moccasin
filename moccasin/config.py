@@ -248,10 +248,7 @@ class Network:
             if isinstance(abi, str):
                 # Check if it's a file path
                 if abi.endswith(".json") or abi.endswith(".vy") or abi.endswith(".vyi"):
-                    config_root = config.get_root()
-                    if config.contracts_folder not in abi:
-                        abi = f"{config.contracts_folder}/" + abi
-                    abi_path = config_root.joinpath(Path(abi).expanduser().resolve())
+                    abi_path = config._find_contract(abi)
                     if abi.endswith(".vy"):
                         abi = boa.load_partial(str(abi_path))
                     elif abi_path.suffix == ".json":
@@ -572,29 +569,41 @@ class Config:
 
     def _find_contract(self, contract_or_contract_path: str) -> Path:
         config_root = self.get_root()
-        contract_path: Path | None = None
-        if contract_or_contract_path.endswith(".vy"):
-            contract_path = config_root / contract_or_contract_path
-        else:
-            contract_name = contract_or_contract_path + ".vy"
 
-        if not contract_path:
-            contracts_location = config_root / self.contracts_folder
-            contract_paths = list(contracts_location.rglob(contract_name))
-            if not contract_paths:
-                raise FileNotFoundError(
-                    f"Contract file '{contract_name}' not found under '{config_root}'."
-                )
-            elif len(contract_paths) > 1:
-                found_paths = "\n".join(str(path) for path in contract_paths)
-                raise FileExistsError(
-                    f"Multiple contract files named '{contract_name}' found:\n{found_paths}\n"
-                    "Please specify the path to the contract file."
-                )
-            else:
-                # Exactly one file found
-                contract_path = contract_paths[0]
-        return contract_path
+        # If the path starts with '~', expand to the user's home directory
+        contract_path = Path(contract_or_contract_path).expanduser()
+
+        # If the path is already absolute and exists, return it directly
+        if contract_path.is_absolute() and contract_path.exists():
+            return contract_path
+
+        # Handle contract names without ".vy" by appending ".vy"
+        if not contract_path.suffix == ".vy":
+            contract_path = contract_path.with_suffix(".vy")
+
+        # If the contract path is relative, check if it exists relative to config_root
+        if not contract_path.is_absolute():
+            contract_path = config_root / contract_path
+            if contract_path.exists():
+                return contract_path
+
+        # Search for the contract in the contracts folder if not found by now
+        contracts_location = config_root / self.contracts_folder
+        contract_paths = list(contracts_location.rglob(contract_path.name))
+
+        if not contract_paths:
+            raise FileNotFoundError(
+                f"Contract file '{contract_path.name}' not found under '{contracts_location}'."
+            )
+        elif len(contract_paths) > 1:
+            found_paths = "\n".join(str(path) for path in contract_paths)
+            raise FileExistsError(
+                f"Multiple contract files named '{contract_path.name}' found:\n{found_paths}\n"
+                "Please specify the full path to the contract file."
+            )
+
+        # Return the single found contract
+        return contract_paths[0]
 
     def set_active_network(
         self, name_url_or_id: str | Network, is_fork: bool | None = None

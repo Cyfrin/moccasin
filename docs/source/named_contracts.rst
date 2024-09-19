@@ -61,8 +61,7 @@ There are a number of flags we can set for our `NamedContract`:
     [networks.mainnet-fork.contracts]
     usdc = { 
         address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        # abi = "raw ABI string here...",
-        abi_from_file = "src/ERC20.json",
+        abi = "ERC20.vy",
         abi_from_explorer = true
         fixture = false,
         deployment_script = "script/deploy_erc20.py",
@@ -72,13 +71,14 @@ There are a number of flags we can set for our `NamedContract`:
 Let's break these down:
 
 - `address`: The address of the contract on the network.
-- `abi`: The ABI of the contract. This is a raw string of the ABI. (Not recommended)
-- `abi_from_file`: The path to the ABI file. This is the recommended way to get the ABI. This can be a:
-    - JSON file
-    - ``.vy`` file 
+- `abi`: The ABI source of the contract. This is can be any of the following:
+    - JSON file path to an ABI file
+    - ``.vy`` file path 
     - *Coming soon* A ``.vyi`` file 
+    - A "raw" ABI string
 - `abi_from_explorer`: If you want to get the ABI from an explorer. This is useful if you don't have the ABI and you want to get it from a public source. You'll need to set a ``explorer_api_key`` in your ``moccasin.toml``, or an ``EXPLORER_API_KEY`` environment variable.
 - `fixture`: If you want to use this contract as a :doc:`fixture <fixture>`. 
 - `deployment_script`: The path to the :doc:`deployment script <deploy>`` for this named contract, this will be a shorthand for deploying in the future. 
 - `force_deploy`: If you want to force deploy the contract whenever you refer to this named contract. 
 
+So, 
