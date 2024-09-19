@@ -49,7 +49,7 @@ You can directly import contracts from the `src` folder into your scripts, and i
 Networking 
 ==========
 
-If you have :doc:`networks <networks>` defined in your :doc:`moccasin.toml <moccasin_toml>`, you can directly work with the network in your scripts. For example, if you have a `sepolia` network defined in your `moccasin.toml`:
+If you have :doc:`networks <networks>` defined in your :doc:`moccasin.toml <moccasin_toml>`, you can directly work with the network in your scripts. For example, if you have a `sepolia` network defined in your ``moccasin.toml``:
 
 .. code-block:: bash
 

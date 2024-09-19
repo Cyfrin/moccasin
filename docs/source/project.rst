@@ -16,7 +16,7 @@ A typical moccasin project is structured as follows:
 Where:
 
 - `README.md` is a markdown file that you can use to describe your project.
-- `moccasin.toml` is a configuration file that `moccasin` uses to manage the project.
+- ``moccasin.toml`` is a configuration file that `moccasin` uses to manage the project.
 - `script` is a directory that contains python scripts that you can use to deploy your project.
 - `src` is a directory that contains your vyper smart contracts.
 - `tests` is a directory that contains your tests.
@@ -25,7 +25,7 @@ Where:
 Changing your layout 
 ====================
 
-If you wanted to adjust your contracts location, for example, have your smart contracts folder be named `contracts` instead of `src`, you'd update your `moccasin.toml` file to reflect this change:
+If you wanted to adjust your contracts location, for example, have your smart contracts folder be named `contracts` instead of `src`, you'd update your ``moccasin.toml`` file to reflect this change:
 
 .. code-block:: toml
 

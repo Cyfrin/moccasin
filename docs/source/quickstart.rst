@@ -58,7 +58,7 @@ You'll get an output like:
 This is a minimal project structure that `moccasin` creates. 
 
 - `README.md` is a markdown file that you can use to describe your project.
-- `moccasin.toml` is a configuration file that `moccasin` uses to manage the project.
+- ``moccasin.toml`` is a configuration file that `moccasin` uses to manage the project.
 - `script` is a directory that contains scripts that you can use to deploy your project.
 - `src` is a directory that contains your vyper smart contracts.
 - `tests` is a directory that contains your tests.

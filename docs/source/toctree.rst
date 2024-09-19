@@ -15,16 +15,31 @@ Moccasin
     quickstart.rst
 
 .. toctree::
-    :caption: Project Overview
+    :caption: Core Concepts
     :maxdepth: 2
 
     moccasin.toml <moccasin_toml.rst>
-    project.rst 
+    project.rst
     networks.rst
-    dependencies.rst
+    forked-networks.rst
+    dependencies.rst 
+    named_contracts.rst
+    
+.. toctree::
+    :caption: How-to Guides
+    :maxdepth: 2
+
+    .. TODO 
+    
 
 .. toctree::
-    :caption: Major Commands
+    :caption: Tutorials
+    :maxdepth: 2
+
+    .. TODO 
+
+.. toctree::
+    :caption: Command Reference
     :maxdepth: 2
 
     wallet <wallet.rst>
@@ -33,9 +48,10 @@ Moccasin
     console <console.rst>
 
 .. toctree::
-    :caption: Reference
+    :caption: Class, Config, and other Reference
     :maxdepth: 2
 
     cli_commands.rst
     all_moccasin_toml_parameters.rst
     common-errors.rst
+

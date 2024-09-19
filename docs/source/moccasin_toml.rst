@@ -1,7 +1,7 @@
 moccasin.toml
 ##############
 
-The `moccasin.toml` file created is our configuration file. In this file we can have:
+The ``moccasin.toml`` file created is our configuration file. In this file we can have:
 
 - project and layout settings 
 
@@ -11,7 +11,7 @@ The `moccasin.toml` file created is our configuration file. In this file we can 
 
 - extra data
 
-A `moccasin.toml` file can look like this:
+A ``moccasin.toml`` file can look like this:
 
 .. code-block:: toml
 
@@ -26,13 +26,13 @@ A `moccasin.toml` file can look like this:
     my_key = "{$ETHERSCAN_API_KEY}"
 
 
-You can learn more about each of the sections of the `moccasin.toml` file in their respective documentation.
+You can learn more about each of the sections of the ``moccasin.toml`` file in their respective documentation.
 
 - :doc:`Project <project>`
 - :doc:`Networks <networks>`
 - :doc:`Dependencies <dependencies>`
 
-You can also see a full example of a `moccasin.toml` in the :doc:`all moccasin toml parameters <all_moccasin_toml_parameters>` documentation.
+You can also see a full example of a ``moccasin.toml`` in the :doc:`all moccasin toml parameters <all_moccasin_toml_parameters>` documentation.
 
 Extra Data 
 ==========
@@ -43,3 +43,17 @@ Extra data is a dictionary of data where you can put whatever you'd like. You ca
 
     from moccasin import config
     print(config.get_config().extra_data["my_key"])
+
+Order Of Operations 
+===================
+
+Whenever you run a script, you'll want to remember this order:
+
+1. Script 
+2. Command Line 
+3. ``moccasin.toml``
+4. Defaults 
+
+Whatever you place in your python script, will be the value used, even if your command line has a different value. Similarly, any flag passed to the command line will override any values in your ``moccasin.toml``, which will override any default values moccasin sets.
+
+This allows you to set your config file up, but if you want to make a tweak you don't have to touch your source code, you can just adjust it on the fly!
