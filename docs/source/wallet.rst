@@ -5,18 +5,18 @@ By default, you don't want to ever expose your private key in your scripts. You 
 
 .. code-block:: bash
 
-    $ mox wallet
+    mox wallet --help
 
-    usage: Moccasin CLI wallet [-h] [-d] [-q] {list,ls,generate,g,new,import,i,add,inspect,decrypt,dk,delete,d} ...
+    usage: Moccasin CLI wallet [-h] [-d] [-q] {list,ls,generate,g,new,import,i,add,view,decrypt,dk,delete,d} ...
 
     Wallet management utilities.
 
     positional arguments:
-    {list,ls,generate,g,new,import,i,add,inspect,decrypt,dk,delete,d}
+    {list,ls,generate,g,new,import,i,add,view,decrypt,dk,delete,d}
         list (ls)           List all the accounts in the keystore default directory
         generate (g, new)   Create a new account with a random private key
         import (i, add)     Import a private key into an encrypted keystore
-        inspect             View the JSON of a keystore file
+        view                View the JSON of a keystore file
         decrypt (dk)        Decrypt a keystore file to get the private key
         delete (d)          Delete a keystore file
 
@@ -84,3 +84,12 @@ You can then use these in scripts!
     mox run deploy --account my_account 
 
 And it will ask you for the password to decrypt your private key.
+
+
+
+.. toctree::
+    :maxdepth: 2
+
+    Private Keys <private_key.rst>
+    Accounts in mocasin.toml <config_keys.rst>
+    

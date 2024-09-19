@@ -12,7 +12,7 @@ To create a new project, you can run the following command:
 
     mox init my_project
 
-And this will create a new project in a new `my_project` directory. If you want to create a project in a directory that already has files/folders in it, run:
+And this will create a new project in a new ``my_project`` directory. If you want to create a project in a directory that already has files/folders in it, run:
 
 .. code-block:: bash
 
@@ -24,13 +24,13 @@ If you use VSCode, you can also use:
 
     mox init my_project --vscode
 
-Which will create a `.vscode` folder to help make working with VSCode easier. 
+Which will create a ``.vscode`` folder to help make working with VSCode easier. 
 
-Let's check out the files and folders `moccasin` has created:
+Let's check out the files and folders ``moccasin`` has created:
 
 .. note::
 
-    MacOS users may need to install `tree` with `brew install tree`.
+    MacOS users may need to install ``tree`` with ``brew install tree``. You can of course, just not install tree and skip this ``tree`` command.
 
 Run the following commands:
 
@@ -47,33 +47,33 @@ You'll get an output like:
     ├── README.md
     ├── moccasin.toml
     ├── script
-    │   ├── __init__.py
-    │   └── deploy.py
+    │   ├── __init__.py
+    │   └── deploy.py
     ├── src
-    │   └── Counter.vy
+    │   └── Counter.vy
     └── tests
         ├── conftest.py
         └── test_counter.py
 
 This is a minimal project structure that `moccasin` creates. 
 
-- `README.md` is a markdown file that you can use to describe your project.
+- ``README.md`` is a markdown file that you can use to describe your project.
 - ``moccasin.toml`` is a configuration file that `moccasin` uses to manage the project.
-- `script` is a directory that contains scripts that you can use to deploy your project.
-- `src` is a directory that contains your vyper smart contracts.
-- `tests` is a directory that contains your tests.
+- ``script`` is a directory that contains scripts that you can use to deploy your project.
+- ``src`` is a directory that contains your vyper smart contracts.
+- ``tests``` is a directory that contains your tests.
 
-If you run `tree . -a`, you'll also see the "hidden" files. 
+If you run ``tree . -a``, you'll also see the "hidden" files. 
 
-- `.gitignore` is a file that tells git which files to ignore.
-- `.gitattributes` is a file that tells git how to handle line endings.
-- `.coveragerc` is a file that tells `pytest` how to handle coverage.
+- ``.gitignore`` is a file that tells git which files to ignore.
+- ``.gitattributes`` is a file that tells git how to handle line endings.
+- ``.coveragerc`` is a file that tells `pytest` how to handle coverage.
 
 
 Deploying a contract 
 ====================
 
-Now, unlike other frameworks, with `moccasin`, we never need to compile! Moccasin uses `titanoboa` under the hood to compile contracts quickly on the fly. Let's open our `deploy.py` file and look inside.
+Now, unlike other frameworks, with ``moccasin``, we never need to compile! Moccasin uses ``titanoboa`` under the hood to compile contracts quickly on the fly. Let's open our ``deploy.py`` file and look inside.
 
 .. code-block:: python
 
@@ -115,7 +115,7 @@ Awesome! This is how easy it is to run scripts with your smart contracts.
 Running tests  
 =============
 
-Under the hood, `moccasin` uses `pytest <https://docs.pytest.org/en/7.1.x/contents.html>`_, and you can use a lot of your favorite pytest command line commands. If you just run:
+Under the hood, ``moccasin`` uses `pytest <https://docs.pytest.org/en/7.1.x/contents.html>`_, and you can use a lot of your favorite pytest command line commands. If you just run:
 
 .. code-block:: bash
 

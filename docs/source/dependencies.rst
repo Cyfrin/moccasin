@@ -63,7 +63,7 @@ You can then use these packages in your vyper contracts, for example in an minia
 
 
 Installing uv/pip/PyPI Dependencies 
-================================
+===================================
 
 Moccasin let's you directly install and work with PyPI packages as you would any other python package. PyPi dependencies in moccasin are by default powered by the `uv <https://docs.astral.sh/uv/>`_ tool. In order to use this, you need to have the `uv` tool installed. However, you can change this setting to `pip` in your `moccasin.tom`.
 

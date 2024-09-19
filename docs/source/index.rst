@@ -9,10 +9,35 @@ Moccasin
 
 Moccasin is a fast, pythonic smart contract development framework heavily powered by `titanoboa <https://github.com/vyperlang/titanoboa>`_.
 
-
 .. note::
 
    This project is under active development.
+
+.. code-block:: console 
+     
+    usage: Moccasin CLI [-h] [-d] [-q] {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect} ...
+
+    🐍 Pythonic Smart Contract Development Framework
+
+    positional arguments:
+    {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect}
+        init                Initialize a new project.
+        compile (build)     Compiles the project.
+        test                Runs all tests in the project.
+        run (script)        Runs a script with the project's context.
+        deploy              Deploys a contract named in the config with a deploy script.
+        wallet              Wallet management utilities.
+        console             BETA, USE AT YOUR OWN RISK: Interact with the network in a python shell.
+        install             Installs the project's dependencies.
+        purge               Purge a given dependency
+        config              View the Moccasin configuration.
+        explorer            Work with block explorers to get data.
+        inspect             Inspect compiler data of a contract.
+
+    options:
+    -h, --help            show this help message and exit
+    -d, --debug           Run in debug mode
+    -q, --quiet           Suppress all output except errors
 
 How to read the documentation
 =============================

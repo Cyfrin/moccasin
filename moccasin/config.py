@@ -39,9 +39,9 @@ _AnyEnv = Union["NetworkEnv", "Env", "ZksyncEnv"]
 class Network:
     name: str
     url: str | None = None
+    chain_id: int | None = None
     is_fork: bool = False
     is_zksync: bool = False
-    chain_id: int | None = None
     default_account_name: str | None = None
     unsafe_password_file: Path | None = None
     explorer_uri: str | None = None

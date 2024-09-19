@@ -1,6 +1,10 @@
 moccasin.toml
 ##############
 
+.. note:: 
+
+    For an exhaustive list of options for your ``moccasin.toml`` file, see the :doc:`all moccasin toml parameters <all_moccasin_toml_parameters>` documentation.
+
 The ``moccasin.toml`` file created is our configuration file. In this file we can have:
 
 - project and layout settings 
@@ -16,14 +20,17 @@ A ``moccasin.toml`` file can look like this:
 .. code-block:: toml
 
     [project]
+    dependencies = ["snekmate==0.1.0"]
     src = "contracts"
+    explorer_api_key = "${ETHERSCAN_API_KEY}"
+    dot_env = ".env"
 
     [networks.sepolia]
     url = "https://ethereum-sepolia-rpc.publicnode.com"
     chain_id = 11155111
 
     [extra_data]
-    my_key = "{$ETHERSCAN_API_KEY}"
+    my_key = "other_data"
 
 
 You can learn more about each of the sections of the ``moccasin.toml`` file in their respective documentation.
