@@ -137,40 +137,8 @@ You'll get an output like:
     ==================================== 1 passed in 0.01s ====================================
 
 
-Adding python dependencies  
-==========================
-
 .. note:: 
 
-    You can see more about python dependencies in the :doc:`virtual environments documentation <virtual_environments>`.
+    If you want to add python dependencies to your ``moccasin`` project, see: :doc:`virtual environments documentation <virtual_environments>`.
 
-    Ideally, you'll use a virtual environment to manage your python dependencies so they don't get tangled up! That is also in our :doc:`virtual environments documentation <virtual_environments>`
-
-To add a python package, you can install it to your environment or virtual environment like normal:
-
-.. code-block:: bash 
-
-    # The "normal" python way
-    pip install pandas 
-
-    # Our recommended appraoch
-    uv add pandas 
-
-Then, just import the package
-
-.. code-block:: python
-
-    from src import Counter
-    import pandas # HERE!
-
-    def deploy():
-        counter = Counter.deploy()
-        print("Starting count: ", counter.number())
-        counter.increment()
-        print("Ending count: ", counter.number())
-        return counter
-
-    def moccasin_main():
-        return deploy()
-
-And you can use the package in the script!
+But that's it! You've now successfully gotten your first package up and going!

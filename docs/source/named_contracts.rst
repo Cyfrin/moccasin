@@ -60,17 +60,31 @@ Now, just getting the address is pretty boring, typically you want to interact w
 
 There are a number of flags we can set for our ``NamedContract``:
 
-.. code-block:: toml
+.. tabs:: 
+    
+    .. code-tab:: toml true-toml
 
-    [networks.mainnet-fork.contracts]
-    usdc = { 
+        [networks.mainnet-fork.contracts.usdc]
         address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         abi = "ERC20.vy"
         abi_from_explorer = true
         fixture = false
         deployment_script = "script/deploy_erc20.py"
         force_deploy = false
-    }
+    
+    .. code-tab:: bash ugly-toml
+        
+        # Did you know that this format will work the same?
+        # It's technically the "uglier" version toml 
+        [networks.mainnet-fork.contracts]
+        usdc = {
+            address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+            abi = "ERC20.vy"
+            abi_from_explorer = true
+            fixture = false
+            deployment_script = "script/deploy_erc20.py"
+            force_deploy = false
+        }
 
 Let's break these down:
 
