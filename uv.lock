@@ -626,7 +626,6 @@ dependencies = [
     { name = "tomli-w" },
     { name = "tomlkit" },
     { name = "tqdm" },
-    { name = "watchdog" },
 ]
 
 [package.optional-dependencies]
@@ -636,6 +635,8 @@ docs = [
     { name = "sphinx-argparse" },
     { name = "sphinx-copybutton" },
     { name = "sphinx-multiversion" },
+    { name = "sphinx-tabs" },
+    { name = "watchdog" },
 ]
 
 [package.dev-dependencies]
@@ -656,12 +657,13 @@ requires-dist = [
     { name = "sphinx-argparse", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
+    { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
     { name = "titanoboa", git = "https://github.com/vyperlang/titanoboa.git?rev=master" },
     { name = "titanoboa-zksync", specifier = ">=0.2.2" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
-    { name = "watchdog", extras = ["docs"], specifier = ">=5.0.2" },
+    { name = "watchdog", marker = "extra == 'docs'", specifier = ">=5.0.2" },
 ]
 
 [package.metadata.requires-dev]
@@ -1111,6 +1113,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/9a/10/25231164a97a9016bdc73a3530af8f4a6846bdc564af1460af2ff3e59a50/sphinx-multiversion-0.2.4.tar.gz", hash = "sha256:5cd1ca9ecb5eed63cb8d6ce5e9c438ca13af4fa98e7eb6f376be541dd4990bcb", size = 7024 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/05/ad/4989e6be165805694e93d09bc57425aa1368273b7de4fe3083fe4310803a/sphinx_multiversion-0.2.4-py3-none-any.whl", hash = "sha256:dec29f2a5890ad68157a790112edc0eb63140e70f9df0a363743c6258fbeb478", size = 9642 },
+]
+
+[[package]]
+name = "sphinx-tabs"
+version = "3.4.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "docutils" },
+    { name = "pygments" },
+    { name = "sphinx" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/27/32/ab475e252dc2b704e82a91141fa404cdd8901a5cf34958fd22afacebfccd/sphinx-tabs-3.4.5.tar.gz", hash = "sha256:ba9d0c1e3e37aaadd4b5678449eb08176770e0fc227e769b6ce747df3ceea531", size = 16070 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/20/9f/4ac7dbb9f23a2ff5a10903a4f9e9f43e0ff051f63a313e989c962526e305/sphinx_tabs-3.4.5-py3-none-any.whl", hash = "sha256:92cc9473e2ecf1828ca3f6617d0efc0aa8acb06b08c56ba29d1413f2f0f6cf09", size = 9904 },
 ]
 
 [[package]]

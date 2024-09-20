@@ -46,7 +46,7 @@ Moccasin
 ..     :caption: Tutorials
 ..     :maxdepth: 3
 
-..     .. TODO 
+..     new_dev_tutorial.rst
 
 .. toctree::
     :caption: Class, Config, and other Reference

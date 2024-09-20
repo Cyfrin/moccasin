@@ -1,7 +1,6 @@
 Dependencies 
 ############
 
-
 Moccasin allows for working with either:
 
 - :ref:`Installing from GitHub repositories <installing_github_dependencies>`

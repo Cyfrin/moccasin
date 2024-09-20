@@ -44,6 +44,34 @@ How to read the documentation
 
 The moccasin documentation is written in a way that assumes you are on a MacOS or Linux-like system. If you are using windows, we recommend you watch the first `10 minutes of this WSL tutorial <https://www.youtube.com/watch?v=xqUZ4JqHI_8>`_ and work with WSL. WSL stands for "Windows Subsystem for Linux" and it allows you to run a Linux commands on Windows machine.
 
+
+TOML Formatting
+---------------
+
+In TOML you can think of each section as a giant JSON object. Each of these are essentially identical:
+
++----------------------------------+----------------------------------+----------------------------------+
+| TOML (Expanded)                  | TOML (Compact)                   | JSON                             |
++==================================+==================================+==================================+
+| .. code-block:: toml             | .. code-block:: bash             | .. code-block:: json             |
+|                                  |                                  |                                  |
+|    [project]                     |    [project]                     |    {                             |
+|    src = "contracts"             |    src = "contracts"             |      "project": {                |
+|                                  |    networks = {                  |        "src": "contracts",       |
+|    [project.networks.sepolia]    |      sepolia = {                 |        "networks": {             |
+|    url = "https://..."           |        url = "https://...",      |          "sepolia": {            |
+|    chain_id = 11155111           |        chain_id = 11155111       |            "url": "https://...", |
+|                                  |      },                          |            "chain_id": 11155111  |
+|    [project.networks.zksync]     |      zksync = {                  |          },                      |
+|    url = "https://..."           |        url = "https://...",      |          "zksync": {             |
+|    chain_id = 324                |        chain_id = 324            |            "url": "https://...", |
+|                                  |      }                           |            "chain_id": 324       |
+|                                  |    }                             |          }                       |
+|                                  |                                  |        }                         |
+|                                  |                                  |      }                           |
+|                                  |                                  |    }                             |
++----------------------------------+----------------------------------+----------------------------------+
+
 Why Moccasin?
 =============
 

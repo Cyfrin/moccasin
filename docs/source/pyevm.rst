@@ -5,7 +5,7 @@ If you don't specify a network in your command line, by default, ``moccasin`` wi
 
 This is a built-in network that comes with `titanoboa <https://titanoboa.readthedocs.io/en/latest/overview.html>`_, and can be considered the core engine of the whole ``moccasin`` project.
 
-So, when you originally :doc:`mox init <quickstart.rst>` a project, you get a deploy script that looks like this:
+So, when you originally :doc:`mox init <quickstart>` a project, you get a deploy script that looks like this:
 
 .. code-block:: python 
 

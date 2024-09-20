@@ -25,6 +25,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_multiversion",
     "sphinxarg.ext",
+    "sphinx_tabs.tabs",
 ]
 
 master_doc = "toctree"

@@ -1,58 +1,83 @@
-Virtual Environments
-####################
+.. _virtual_environments:
+
+Python packages in your scripts 
+###############################
+
+When you want to add python packages to use in your scripts, it depends on how you installed ``moccasin``. 
+
+In an isolated environment (``uv tool install`` or ``pipx install``)
+--------------------------------------------------------------------
+
+If you installed ``moccasin`` with the ``uv tool install`` or ``pipx install``, you can re-install your ``moccasin`` installation using the ``--with`` flag to "inject" the python packages you want to use.
 
 
-When you want to add python packages to use in your scripts, you can of course install them normally into your environment.
+.. tabs::
 
-.. code-block:: bash 
+    .. code-tab:: bash uv
 
-    # The "normal" python way
-    pip install pandas 
+        # This will reinstall moccasin with pandas
+        uv tool install moccasin --with pandas
+    
+    .. code-tab:: bash pipx
 
-    # The "cooler" way that we are going to teach you
-    uv add pandas 
+        # With pipx you don't need to reinstall, you'll just "inject" the python packages you want to use.
+        pipx inject moccasin pandas
 
-    # Another cool way
-    poetry add pandas
 
-    # This monstrous way
-    uv pip install pandas 
+In a virtual environment (``uv pip install``, ``uv add``, or ``pip install``)
+-----------------------------------------------------------------------------
 
-We highly recommend that you setup a virtual environment for working with your python scripts. And our recommended method is with the ``uv`` tool. 
+Let's say you have setup a virtual environment:
 
-Working with uv 
-===============
+.. tabs::
+
+    .. code-tab:: bash uv 
+
+        uv init
+        uv venv
+        source .venv/bin/activate
+    
+    .. code-tab:: bash pip / python
+
+        python -m venv .venv
+        source .venv/bin/activate
+    
+    .. code-tab:: bash poetry
+
+        poetry init
+        poetry shell
 
 .. note::
 
-    You can view the official `uv documentation <https://docs.astral.sh/uv/>`_ for more information.
+    Remember, to deactivate run:
 
-To install, run:
+    .. code-block:: bash
+        
+        deactivate
 
-.. code-block:: bash
 
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+You can install python packages as you'd expect:
 
-Then, in your ``moccasin`` project run:
+.. tabs::
 
-.. code-block:: bash
+    .. code-tab:: bash uv
 
-    uv init
+        uv add pandas
 
-This will create a ``pyproject.toml`` which will manage your python dependencies. To add python packages to your project, you can run:
+    .. code-tab:: bash uv-pip
 
-.. code-block:: bash
+        uv pip install pandas
+    
+    .. code-tab:: bash pip
 
-    uv add pandas
+        pip install pandas
+    
+    .. code-tab:: bash poetry
 
-And your ``pyproject.toml`` will be updated with the new package. To work with your virtual environment, you can run:
+        poetry add pandas
 
-.. code-block:: bash
+.. note::
 
-    source .venv/bin/activate
+    If you installed ``moccasin`` with ``uv add moccasin`` you'll only be able to use these packages with ``uv run mox``. If you want to use the ``mox`` command in your virtual environment, you'll need to install ``moccasin`` with ``uv pip install moccasin``.
 
-And to deactivate:
-
-.. code-block:: bash
-
-    deactivate
+We highly recommend that you setup a virtual environment or injecting packages into your mox isolated environment for working with your python scripts. And our recommended method is with the ``uv`` tool. 

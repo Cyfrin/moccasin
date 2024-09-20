@@ -15,7 +15,6 @@ dependencies = [
     # For preserving comments when writing to toml
     "tomli-w>=1.0.0",
     "pytest-cov>=5.0.0",
-    "watchdog[docs]>=5.0.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, < 3.13"
@@ -37,6 +36,7 @@ moccasin = { workspace = true }
 
 [project.scripts]
 "mox" = "moccasin:main"
+"moccasin" = "moccasin:main"
 
 [project.optional-dependencies]
 docs = [
@@ -45,6 +45,8 @@ docs = [
     "sphinx-argparse>=0.5.2",
     "sphinx-copybutton>=0.5.2",
     "sphinx-multiversion>=0.2.4",
+    "sphinx-tabs>=3.4.5",
+    "watchdog>=5.0.2",
 ]
 
 [build-system]
