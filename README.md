@@ -7,12 +7,19 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
-<!-- <p align="center">
+<p align="center">
     <br />
     <a href="https://cyfrin.io/">
-        <img src="./img/moccasin-logo.png" width="250" alt=""/></a>
+        <img src="./docs/source/_static/speed-comparisons.png" width="1000" alt=""/></a>
     <br />
-</p> -->
+</p>
+*See comments for notes on benchmarking*
+
+<!-- # Speed Comparisons
+
+*The above comparisions were done taking the `user` result from running the bash `time` command followed by the appropriote command on an M3 MacOS*
+*Compile command tested with a basic vyper counter contract on version 0.4.0 or 0.3.10 depending on compatibility*
+*Test command tested with a basic vyper counter contract on version 0.4.0 or 0.3.10 depending on compatibility* -->
 
 Fast to install, test, and run python commands on your smart contracts.
 
@@ -37,19 +44,6 @@ mox --help
 # Documentation
 
 The documentation roughly attempts to follow [Diátaxis](https://diataxis.fr/).
-
-# Speed Comparisons
-
-*The following comparisions were done taking the `user` result from running the bash `time` command followed by the appropriote command on an M3 MacOS*
-*Compile command tested with a basic vyper counter contract on version 0.4.0 or 0.3.10 depending on compatibility*
-
-
-| Command | Moccasin | Brownie | Hardhat | Foundry | Ape   |
-| ------- | -------- | ------- | ------- | ------- | ----- |
-| help    | 0.03s    | 0.37s   | 0.30s   | 0.01s   | 2.55s |
-| init    | 0.04s    | 0.37s   | xx      | 0.20s   | 5.08s |
-| compile | 0.49s    | 0.42s   | xx      | 0.17s   | 2.00s |
-
 
 # Acknowledgements 
 
