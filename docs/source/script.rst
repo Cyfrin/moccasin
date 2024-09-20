@@ -1,6 +1,14 @@
 Scripting
 #########
 
+.. contents::
+   :depth: 3
+   :local:
+
+
+Help command
+============
+
 .. code-block:: console 
 
      mox run --help
@@ -28,6 +36,10 @@ Scripting
     --password PASSWORD   Password for the keystore account.
     --password-file-path PASSWORD_FILE_PATH
                             Path to the file containing the password for the keystore account.
+
+
+Scripting with Moccasin 
+=======================
 
 
 Scripts are ways to deploy and work with contracts. You can either reference them by path or by name. For example, if your directory looks like this:
@@ -84,6 +96,8 @@ If you have :doc:`networks <networks>` defined in your :doc:`moccasin.toml <mocc
 
     mox run deploy --network sepolia
 
+You can learn more about networks in the :doc:`networks documentation <networks>`.
+
 
 moccasin_main
 =============
@@ -120,3 +134,13 @@ And it would do the same as the following.
         deploy()
 
 You can see a list of arguments in the :doc:`moccasin reference documentation <all_moccasin_toml_parameters>` that you can run with your scripts.
+
+Working with dependencies
+=========================
+
+There are two kinds of dependencies you can work with in your moccasin project:
+
+- :doc:`Smart Contract dependencies <dependencies>`: For contracts that you want to use packages from. 
+- :doc: `Python dependencies <virtual_environments>`: For python packages that you want to use in your scripts.
+
+Each have their own respective documentation. 

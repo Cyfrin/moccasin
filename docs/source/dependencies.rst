@@ -8,6 +8,10 @@ Moccasin allows for working with either:
 
 - :ref:`Installing Python PyPI packages <installing_pip_dependencies>` (these are your "normal" pip packages)
 
+Importantly, the packages/dependencies that you install are *smart contract dependencies only*. Meaning that they are dependencies for your vyper contracts, not for your python scripts.
+
+To see working with python dependencies, go to :doc:`virtual_environments`.
+
 
 .. _installing_github_dependencies: 
 
@@ -120,3 +124,8 @@ You can then use these packages in your vyper contracts, for example in an minia
     def __init__():
         erc20.__init__("my_token", "MT", 18, "my_token_dapp", "0x02")
         ow.__init__()
+
+.. toctree::
+    :maxdepth: 3
+
+    Working with python dependencies <virtual_environments.rst>
