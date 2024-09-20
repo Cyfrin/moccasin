@@ -12,8 +12,8 @@ def get_main_parser() -> argparse.ArgumentParser:
 def get_parsers() -> Tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentParser]]:
     main_parser, subparsers_action = generate_main_parser_and_sub_parsers()
     subparsers = {
-        choice: subparsers_action.choices[choice]
-        for choice in subparsers_action.choices
+        choice: subparsers_action.choices[choice]  # type: ignore
+        for choice in subparsers_action.choices  # type: ignore
     }
     return main_parser, subparsers
 

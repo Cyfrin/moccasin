@@ -1,8 +1,7 @@
 from argparse import Namespace
-from pathlib import Path
 from typing import Any
 
-from moccasin.config import get_config, Config
+from moccasin.config import get_config
 from moccasin.commands.compile import compile_
 import pprint
 

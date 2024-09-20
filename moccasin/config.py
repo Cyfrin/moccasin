@@ -166,7 +166,7 @@ class Network:
             return self._deploy_named_contract(named_contract, deployer_script)
 
         # 2. Setup ABI based on parameters
-        abi: VyperDeployer | str | None = self._get_abi_or_deployer_from_params(
+        abi = self._get_abi_or_deployer_from_params(
             named_contract.contract_name, abi, abi_from_explorer, address
         )
         abi = abi if abi else named_contract.abi
@@ -434,7 +434,9 @@ class _Networks:
                         f"Network {name_url_or_id} not found. Please pass a valid URL/RPC or valid network name."
                     )
 
-    def _create_custom_network(self, url: str, is_fork: bool = False) -> Network:
+    def _create_custom_network(self, url: str, is_fork: bool | None = False) -> Network:
+        if is_fork is None:
+            is_fork = False
         new_network = Network(
             name=f"custom_{self.custom_networks_counter}", url=url, is_fork=is_fork
         )
@@ -608,7 +610,7 @@ class Config:
     def set_active_network(
         self, name_url_or_id: str | Network, is_fork: bool | None = None
     ):
-        self.networks.set_active_network(self, name_url_or_id, is_fork=is_fork)
+        self.networks.set_active_network(name_url_or_id, is_fork=is_fork)
 
     @property
     def installer(self) -> str:
