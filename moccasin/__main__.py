@@ -115,11 +115,11 @@ This will create a basic directory structure at the path you specific, which loo
     # ------------------------------------------------------------------
     #                        COMPILE COMMAND
     # ------------------------------------------------------------------
-    sub_parsers.add_parser(
+    compile_parser = sub_parsers.add_parser(
         "compile",
         help="Compiles the project.",
-        description="""Compiles all Vyper contracts in the project. \n
-This command will:
+        description="""Compiles a specific Vyper contract or all vyper contracts in the project. \n
+If no contract or contract path is given, this command will:
 1. Find all .vy files in the src/ directory
 2. Compile each file using the Vyper compiler
 3. Output the compiled artifacts to the out/ directory
@@ -128,6 +128,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         aliases=["build"],
         parents=[parent_parser],
+    )
+
+    compile_parser.add_argument(
+        "contract_or_contract_path",
+        nargs="?",
+        help="Optional argument to compile a specific contract.",
     )
 
     # ------------------------------------------------------------------

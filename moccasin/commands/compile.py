@@ -15,16 +15,24 @@ from boa.contracts.vvm.vvm_contract import VVMDeployer
 from argparse import Namespace
 
 
-def main(_: Namespace) -> int:
+def main(args: Namespace) -> int:
     initialize_global_config()
     config = get_config()
     project_path: Path = config.get_root()
-    compile_project(
-        project_path,
-        project_path.joinpath(config.out_folder),
-        project_path.joinpath(config.contracts_folder),
-        write_data=True,
-    )
+
+    if args.contract_or_contract_path:
+        contract_path = config._find_contract(args.contract_or_contract_path)
+        compile_(
+            contract_path, project_path.joinpath(config.out_folder), write_data=True
+        )
+        logger.info(f"Done compiling {contract_path.stem}")
+    else:
+        compile_project(
+            project_path,
+            project_path.joinpath(config.out_folder),
+            project_path.joinpath(config.contracts_folder),
+            write_data=True,
+        )
     return 0
 
 
@@ -49,7 +57,11 @@ def compile_project(
     logger.info(f"Compiling {len(contracts_to_compile)} contracts to {build_folder}...")
 
     for contract_path in contracts_to_compile:
-        compile_(contract_path, build_folder, write_data=write_data)
+        try:
+            compile_(contract_path, build_folder, write_data=write_data)
+        except vyper.exceptions.InitializerException:
+            logger.info(f"Skipping contract {contract_path.stem} due to uninitialized.")
+            continue
 
     logger.info("Done compiling project!")
 
@@ -104,6 +116,6 @@ def compile_(
             json.dump(build_data, f, indent=4)
         logger.debug(f"Compilation data saved to {build_file}")
 
-    logger.debug("Done compiling {contract_name}")
+    logger.debug(f"Done compiling {contract_name}")
 
     return deployer
