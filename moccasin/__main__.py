@@ -182,7 +182,9 @@ Use this command to prepare your contracts for deployment or testing.""",
         help="""Exit instantly on first error or failed test.""",
     )
     test_parser.add_argument(
-        "-s", action="store_true", help="""Shortcut for --capture=no"""
+        "-s",
+        action="store_true",
+        help="""A way to show print lines from tests. Shortcut for --capture=no""",
     )
     test_parser.add_argument(
         "--capture ",
