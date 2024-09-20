@@ -36,5 +36,8 @@ docs:
     uv sync --extra docs
     uv run sphinx-build -M html docs/source built_docs
 
+docs-watch:
+    watchmedo shell-command --patterns="*.rst" --recursive --command='uv run sphinx-build -M html docs/source built_docs' docs/source
+
 build-requirements:
     uv pip compile pyproject.toml -o requirements.txt

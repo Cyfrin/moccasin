@@ -1,7 +1,7 @@
 .. _install: 
 
 Installing Moccasin
-#################
+###################
 
 There are a few things you'll need on your machine before you can install Moccasin. Please install the appropriate tools from the `Prerequisites`_ section. Once you have those, the recommended way to :ref:`install Moccasin is via uv <installation-with-uv>`.
 

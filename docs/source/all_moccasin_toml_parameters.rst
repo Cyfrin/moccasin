@@ -1,5 +1,5 @@
 All moccasin toml parameters
-===========================
+============================
 
 .. code-block:: toml
 
@@ -13,6 +13,13 @@ All moccasin toml parameters
     # These are going to be dependencies for your vyper contracts
     dependencies = ["snekmate==0.1.0", "pcaversaccio/snekmate@0.1.0"]
     installer = "uv"
+    save_abi_path = "abis" # location to save ABIs from the explorer
+    cov_config = ".coveragerc" # coverage configuration file
+    dot_env = ".env"  # environment variables file
+
+    [networks.contracts]
+    # Default named contract parameters
+    usdc = {"address" = "0x5fbdb2315678afecb367f032d93f642f64180aa3"}
 
     # Add network settings to easily interact with networks
     [networks.sepolia]
@@ -26,13 +33,16 @@ All moccasin toml parameters
     # If you do, it will unlock it automatically
     # But be careful about storing passwords and private keys! NEVER store them in plain text
     unsafe_password_file = "/home/user/.moccasin/password"  # Replace with actual path
+    explorer_uri = "https://api.etherscan.io/api" # path for the supported explorer 
+    explorer_api_key = "your_api_key" # api key for the supported explorer, overrides the main one 
+    prompt_live = false # A flag that will prompt you before sending a transaction
+
+    [networks.sepolia.contracts]
+    # You can override the default named contract parameters
+    usdc = {"address" = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi = "ERC20.vy", force_deploy = false, fixture = false, deployer_script = "script/deploy.py"}
 
     [networks.sepolia.extra_data]
-    my_key = "{$ETHERSCAN_API_KEY}"
-
-    # It might be a good idea to place addresses in here!
-    [networks.mainnet.extra_data]
-    usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+    my_data = "hi"
 
     # Put whatever else you want in here
     [extra_data]

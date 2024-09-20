@@ -39,9 +39,9 @@ _AnyEnv = Union["NetworkEnv", "Env", "ZksyncEnv"]
 class Network:
     name: str
     url: str | None = None
+    chain_id: int | None = None
     is_fork: bool = False
     is_zksync: bool = False
-    chain_id: int | None = None
     default_account_name: str | None = None
     unsafe_password_file: Path | None = None
     explorer_uri: str | None = None
@@ -60,7 +60,7 @@ class Network:
         from boa_zksync import ZksyncEnv
 
         if self.is_fork:
-            self.set_fork(self.is_fork)
+            self._set_fork()
         else:
             if self.is_zksync:
                 self._network_env = ZksyncEnv(EthereumRPC(self.url), nickname=self.name)
@@ -70,18 +70,18 @@ class Network:
                 )
         return self._network_env
 
-    def set_fork(self, is_fork: bool):
-        if self.is_fork != is_fork:
-            self._network_env = Env()
-            self._network_env = cast(_AnyEnv, self._network_env)
-            boa.fork(self.url)  # This won't work for ZKSync?
-            self._network_env.nickname = self.name
+    def _set_fork(self):
+        self._network_env = Env()
+        self._network_env = cast(_AnyEnv, self._network_env)
+        self._network_env.fork(url=self.url, deprecated=False)
+        self._network_env.nickname = self.name
+        self.is_fork = True
 
     def get_or_create_env(self, is_fork: bool | None) -> _AnyEnv:
-        is_fork = is_fork if is_fork is not None else False
-        import boa
-
-        self.set_fork(is_fork)
+        if is_fork is None:
+            is_fork = self.is_fork
+        if is_fork:
+            self._set_fork()
         if self._network_env:
             boa.set_env(self._network_env)
             return self._network_env
@@ -106,13 +106,13 @@ class Network:
         contract_name: str,
         force_deploy: bool = False,
         abi: str
+        | Path
         | list
         | VyperDeployer
         | VyperContract
         | ABIContractFactory
         | ABIContract
         | None = None,
-        abi_from_file_path: Path | str | None = None,
         abi_from_explorer: bool | None = None,
         deployer_script: str | Path | None = None,
         address: str | None = None,
@@ -121,14 +121,12 @@ class Network:
 
         The following arguments are mutually exclusive:
             - abi
-            - abi_from_file_path
             - abi_from_explorer
 
         Args:
             - contract_name: the contract name or deployer for the contract.
             - force_deploy: if True, will deploy the contract even if the contract has an address in the config file.
-            - abi: the ABI of the contract. Can be a list, VyperDeployer, VyperContract, ABIContractFactory, or ABIContract.
-            - abi_from_file_path: the path to the ABI file. Can be a .json or .vy file.
+            - abi: the ABI of the contract. Can be a list, string path to file, string of the ABI, VyperDeployer, VyperContract, ABIContractFactory, or ABIContract.
             - abi_from_explorer: if True, will fetch the ABI from the explorer.
             - deployer_script: If no address is given, this is the path to deploy the contract.
             - address: The address of the contract.
@@ -140,21 +138,20 @@ class Network:
             contract_name, NamedContract(contract_name)
         )
 
-        if (
-            (abi and abi_from_file_path)
-            or (abi and abi_from_explorer)
-            or (abi_from_file_path and abi_from_explorer)
-        ):
+        if abi_from_explorer and abi:
             raise ValueError(
-                "Only one of abi, abi_from_file_path, or abi_from_explorer can be provided."
+                "abi and abi_from_explorer are mutually exclusive. Please only provide one."
             )
 
+        if not abi and not abi_from_explorer:
+            abi = named_contract.get("abi", None)
+            vyper_deployer = named_contract.get("vyper_deployer", None)
+            if vyper_deployer:
+                abi = vyper_deployer
+        if not abi_from_explorer and not abi:
+            abi_from_explorer = named_contract.get("abi_from_explorer", None)
         if not force_deploy:
             force_deploy = named_contract.get("force_deploy", False)
-        if not abi_from_file_path:
-            abi_from_file_path = named_contract.get("abi_from_file_path", None)
-        if not abi_from_explorer:
-            abi_from_explorer = named_contract.get("abi_from_explorer", None)
         if not deployer_script:
             deployer_script = named_contract.get("deployer_script", None)
         if not address:
@@ -169,12 +166,8 @@ class Network:
             return self._deploy_named_contract(named_contract, deployer_script)
 
         # 2. Setup ABI based on parameters
-        abi = self._get_abi_from_params(
-            named_contract.contract_name,
-            abi,
-            abi_from_file_path,
-            abi_from_explorer,
-            address,
+        abi = self._get_abi_or_deployer_from_params(
+            named_contract.contract_name, abi, abi_from_explorer, address
         )
         abi = abi if abi else named_contract.abi
 
@@ -191,8 +184,11 @@ class Network:
 
         # 4. Happy path, maybe we didn't deploy the contract, but we've been given an abi and address, which works
         if abi and address:
-            # Note, we are not putting this into the self.contracts dict, but maybe we should
-            return ABIContractFactory(named_contract.contract_name, abi).at(address)
+            if isinstance(abi, VyperDeployer):
+                return abi.at(address)
+            else:
+                # Note, we are not putting this into the self.contracts dict, but maybe we should
+                return ABIContractFactory(named_contract.contract_name, abi).at(address)
 
         # ------------------------------------------------------------------
         #                      WE DEPLOY AFTER HERE
@@ -207,6 +203,7 @@ class Network:
             vyper_contract = blank_contract.at(address)
             named_contract.update_from_deployment(vyper_contract)
             self.contracts[named_contract.contract_name] = named_contract
+            return vyper_contract
 
         # 6. If no address, deploy the contract
         if not deployer_script:
@@ -226,65 +223,56 @@ class Network:
         self.contracts[named_contract.contract_name] = named_contract
         return deployed_named_contract
 
-    def _get_abi_from_params(
+    def _get_abi_or_deployer_from_params(
         self,
         logging_contract_name: str,
         abi: str
+        | Path
         | list
         | VyperDeployer
         | VyperContract
         | ABIContractFactory
         | ABIContract
         | None = None,
-        abi_from_file_path: Path | str | None = None,
         abi_from_explorer: bool | None = None,
         address: str | None = None,
-    ) -> str | None:
-        abi = None
-        # Validation
+    ) -> str | VyperDeployer | None:
         if abi_from_explorer and not address:
             raise ValueError(
                 f"Cannot get ABI from explorer without an address for contract {logging_contract_name}. Please provide an address."
             )
 
-        # We want to get the ABI into ABI string format, aka this stuff: "[{}]"
+        config = get_config()
+        # TODO, test these branches
         if abi:
+            if isinstance(abi, str):
+                # Check if it's a file path
+                if abi.endswith(".json") or abi.endswith(".vy") or abi.endswith(".vyi"):
+                    abi_path = config._find_contract(abi)
+                    if abi.endswith(".vy"):
+                        abi = boa.load_partial(str(abi_path))
+                    elif abi_path.suffix == ".json":
+                        abi = boa.load_abi(str(abi_path)).abi
+                    elif abi_path.suffix == ".vyi":
+                        raise NotImplementedError(
+                            f"Loading an ABI from Vyper Interface files is not yet supported for contract {logging_contract_name}. You can track the progress here:\nhttps://github.com/vyperlang/vyper/issues/4232"
+                        )
+                # Else, it's just a contract name
+                else:
+                    contract_path = config._find_contract(abi)
+                    abi = boa.load_partial(str(contract_path))
             if isinstance(abi, list):
-                abi = str(abi)
+                # If its an ABI, just take it
+                return str(abi)
             if isinstance(abi, VyperDeployer):
-                from vyper.compiler.output import build_abi_output
+                return abi
+            if isinstance(abi, VyperContract):
+                return abi.deployer
+            if isinstance(abi, ABIContractFactory):
+                return abi.abi
+            if isinstance(abi, ABIContract):
+                return abi.abi
 
-                abi = build_abi_output(abi.compiler_data)
-            if (
-                isinstance(abi, VyperContract)
-                or isinstance(abi, ABIContractFactory)
-                or isinstance(abi, ABIContract)
-            ):
-                abi = abi.abi
-        if abi_from_file_path:  # Can be a json, VyperContract, or VyperInterface
-            if isinstance(abi_from_file_path, str):
-                config = get_config()
-                if config.contracts_folder not in abi_from_file_path:
-                    abi_from_file_path = (
-                        f"{config.contracts_folder}/" + abi_from_file_path
-                    )
-            abi_path = Path(abi_from_file_path).resolve()
-            # Check if the abi_path has .vy, .vyi, or .json extension
-            if abi_path.suffix == ".json":
-                abi = boa.load_abi(str(abi_path)).abi
-            elif abi_path.suffix == ".vy":
-                loaded_abi_from_deployer = boa.load_partial(str(abi_path))
-                from vyper.compiler.output import build_abi_output
-
-                abi = build_abi_output(loaded_abi_from_deployer.compiler_data)
-            elif abi_path.suffix == ".vyi":
-                raise NotImplementedError(
-                    f"Loading an ABI from Vyper Interface files is not yet supported for contract {logging_contract_name}. You can track the progress here:\nhttps://github.com/vyperlang/vyper/issues/4232"
-                )
-            else:
-                raise ValueError(
-                    f"Invalid ABI file extension for {abi_path} for contract {logging_contract_name}. Must be .json, .vy, or .vyi"
-                )
         if abi_from_explorer:
             from moccasin.commands.explorer import boa_get_abi_from_explorer
 
@@ -325,8 +313,7 @@ class _Networks:
                 contract_name,
                 force_deploy=contract_data.get("force_deploy", None),
                 abi=contract_data.get("abi", None),
-                abi_from_file_path=contract_data.get("abi_from_file_path", None),
-                abi_from_etherscan=contract_data.get("abi_from_etherscan", None),
+                abi_from_explorer=contract_data.get("abi_from_explorer", None),
                 deployer_script=contract_data.get("deployer_script", None),
                 address=contract_data.get("address", None),
             )
@@ -352,12 +339,7 @@ class _Networks:
                         contract_name,
                         force_deploy=contract_data.get("force_deploy", None),
                         abi=contract_data.get("abi", None),
-                        abi_from_file_path=contract_data.get(
-                            "abi_from_file_path", None
-                        ),
-                        abi_from_etherscan=contract_data.get(
-                            "abi_from_etherscan", None
-                        ),
+                        abi_from_explorer=contract_data.get("abi_from_explorer", None),
                         deployer_script=contract_data.get("deployer_script", None),
                         address=contract_data.get("address", None),
                     )
@@ -430,7 +412,9 @@ class _Networks:
     # boa.set_env_from_network(moccasin.networks.zksync)
     # ```
     # otherwise it is too confusing where moccasin ends and boa starts.
-    def set_active_network(self, name_url_or_id: str | Network, is_fork: bool = False):
+    def set_active_network(
+        self, name_url_or_id: str | Network, is_fork: bool | None = None
+    ):
         env_to_set: _AnyEnv
         if isinstance(name_url_or_id, Network):
             env_to_set = name_url_or_id.get_or_create_env(is_fork)
@@ -450,7 +434,9 @@ class _Networks:
                         f"Network {name_url_or_id} not found. Please pass a valid URL/RPC or valid network name."
                     )
 
-    def _create_custom_network(self, url: str, is_fork: bool = False) -> Network:
+    def _create_custom_network(self, url: str, is_fork: bool | None = False) -> Network:
+        if is_fork is None:
+            is_fork = False
         new_network = Network(
             name=f"custom_{self.custom_networks_counter}", url=url, is_fork=is_fork
         )
@@ -583,8 +569,48 @@ class Config:
     def get_root(self) -> Path:
         return self._project_root
 
-    def set_active_network(self):
-        self.networks.set_active_network(self)
+    def _find_contract(self, contract_or_contract_path: str) -> Path:
+        config_root = self.get_root()
+
+        # If the path starts with '~', expand to the user's home directory
+        contract_path = Path(contract_or_contract_path).expanduser()
+
+        # If the path is already absolute and exists, return it directly
+        if contract_path.is_absolute() and contract_path.exists():
+            return contract_path
+
+        # Handle contract names without ".vy" by appending ".vy"
+        if not contract_path.suffix == ".vy":
+            contract_path = contract_path.with_suffix(".vy")
+
+        # If the contract path is relative, check if it exists relative to config_root
+        if not contract_path.is_absolute():
+            contract_path = config_root / contract_path
+            if contract_path.exists():
+                return contract_path
+
+        # Search for the contract in the contracts folder if not found by now
+        contracts_location = config_root / self.contracts_folder
+        contract_paths = list(contracts_location.rglob(contract_path.name))
+
+        if not contract_paths:
+            raise FileNotFoundError(
+                f"Contract file '{contract_path.name}' not found under '{contracts_location}'."
+            )
+        elif len(contract_paths) > 1:
+            found_paths = "\n".join(str(path) for path in contract_paths)
+            raise FileExistsError(
+                f"Multiple contract files named '{contract_path.name}' found:\n{found_paths}\n"
+                "Please specify the full path to the contract file."
+            )
+
+        # Return the single found contract
+        return contract_paths[0]
+
+    def set_active_network(
+        self, name_url_or_id: str | Network, is_fork: bool | None = None
+    ):
+        self.networks.set_active_network(name_url_or_id, is_fork=is_fork)
 
     @property
     def installer(self) -> str:
@@ -639,7 +665,7 @@ class Config:
 
     @staticmethod
     def find_project_root(start_path: Path | str = Path.cwd()) -> Path:
-        current_path = Path(start_path).resolve()
+        current_path = Path(start_path).expanduser().resolve()
         while True:
             # Move up to the parent directory
             parent_path = current_path.parent

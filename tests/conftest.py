@@ -137,3 +137,9 @@ def installation_cleanup_dependencies():
 def anvil_process():
     with AnvilProcess(args=["--load-state", str(ANVIL_STORED_STATE_PATH), "-b", "1"]):
         yield
+
+
+@pytest.fixture
+def anvil_fork_no_state():
+    with AnvilProcess(args=["-p", "8546"]):
+        yield

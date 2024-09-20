@@ -1,7 +1,7 @@
 Testing
 ####### 
 
-`moccasin` uses `pytest` under the hood, so you can setup your tests like regular `titanoboa` based python tests.
+``moccasin`` uses ``pytest`` under the hood, so you can setup your tests like regular ``titanoboa`` based python tests.
 
 .. code-block:: python 
 
@@ -15,7 +15,7 @@ Testing
         counter_contract.increment()
         assert counter_contract.number() == 3
 
-And run all your tests with `mox test`, to get an output like:
+And run all your tests with ``mox test``, to get an output like:
 
 .. code-block:: console 
 
@@ -31,3 +31,16 @@ And run all your tests with `mox test`, to get an output like:
     tests/test_fork_usdc.py .                                                                  [100%]
 
     ======================================= 3 passed in 0.01s ========================================
+
+This is the most basic setup for testing. 
+
+
+.. toctree::
+    :maxdepth: 2
+
+    Gas Profiling <gas_profiling.rst>
+    Coverage <coverage.rst>
+    Fixutres <fixtures.rst>
+    Testing with boa <titanoboa_testing.rst>
+    How to prank <pranking.rst>
+    

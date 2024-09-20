@@ -29,7 +29,7 @@ For example:
     # With a version
     mox install pcaversaccio/snekmate@0.1.0
 
-This will create an entry in your `moccasin.toml` file that looks like this:
+This will create an entry in your ``moccasin.toml`` file that looks like this:
 
 .. code-block:: toml
 
@@ -44,10 +44,11 @@ You can then use these packages in your vyper contracts, for example in an minia
 
 .. code-block:: python
 
-    from lib.snekmate.auth import ownable as ow
+    # As of today, you cannot "remap" import paths in Vyper
+    from lib.pcaversaccio.snekmate.src.snekmate.auth import ownable as ow
     initializes: ow
 
-    from lib.snekmate.tokens import erc20
+    from lib.pcaversaccio.snekmate.src.snekmate.tokens import erc20
     initializes: erc20[ownable := ow]
     exports: erc20.__interface__
 
@@ -61,21 +62,21 @@ You can then use these packages in your vyper contracts, for example in an minia
 .. _installing_pip_dependencies: 
 
 
-Installing pip/PyPI Dependencies 
-================================
+Installing uv/pip/PyPI Dependencies 
+===================================
 
 Moccasin let's you directly install and work with PyPI packages as you would any other python package. PyPi dependencies in moccasin are by default powered by the `uv <https://docs.astral.sh/uv/>`_ tool. In order to use this, you need to have the `uv` tool installed. However, you can change this setting to `pip` in your `moccasin.tom`.
 
 .. code-block:: toml
 
     [project]
-    installer = "pip" # change/add this setting
+    installer = "uv" # change/add this setting
 
 As of today, `moccasin` supports:
 
-- `pip`
-
 - `uv`
+
+- `pip`
 
 You can also directly install and work with PyPI packages as you would any other python package. To install a package from PyPI, you can run the following:
 
@@ -93,7 +94,7 @@ For example:
 
     Snekmate is both a `pypi <https://pypi.org/project/snekmate/>`_ and a GitHub package.
 
-This will create an entry in your `moccasin.toml` file that looks like this:
+This will create an entry in your ``moccasin.toml`` file that looks like this:
 
 .. code-block:: toml
 
@@ -101,3 +102,21 @@ This will create an entry in your `moccasin.toml` file that looks like this:
     dependencies = [
         "snekmate==0.1.0",
     ]
+
+You can then use these packages in your vyper contracts, for example in an miniaml ERC20 vyper contract:
+
+.. code-block:: python
+
+    # Vyper will directly inject the package into your contract
+    from snekmate.auth import ownable as ow
+    initializes: ow
+
+    from snekmate.tokens import erc20
+    initializes: erc20[ownable := ow]
+    exports: erc20.__interface__
+
+    @deploy
+    @payable
+    def __init__():
+        erc20.__init__("my_token", "MT", 18, "my_token_dapp", "0x02")
+        ow.__init__()

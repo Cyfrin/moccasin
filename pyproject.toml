@@ -15,6 +15,7 @@ dependencies = [
     # For preserving comments when writing to toml
     "tomli-w>=1.0.0",
     "pytest-cov>=5.0.0",
+    "watchdog[docs]>=5.0.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, < 3.13"

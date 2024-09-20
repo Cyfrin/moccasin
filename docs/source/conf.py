@@ -56,3 +56,9 @@ smv_remote_whitelist = r"^origin$"
 smv_branch_whitelist = r"^master$"  # master is gross
 smv_tag_whitelist = r"^v\d+\.\d+.\d+$"
 version = moccasin.version()
+
+jinja_contexts = {
+    "moccasin_wrapper_for_docs": {
+        "get_mox_help_output": "moccasin_wrapper_for_docs.get_mox_help_output"
+    }
+}

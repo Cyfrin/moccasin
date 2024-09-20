@@ -38,20 +38,25 @@ def _setup_network_and_account_from_args(
         raise ValueError("Cannot use --fork and --account at the same time")
 
     # Setup Network
+    is_fork_from_cli = fork if fork is not None else None
     if network and not url:
-        config.networks.set_active_network(network, is_fork=fork)
+        config.networks.set_active_network(network, is_fork=is_fork_from_cli)
     if url:
-        config.networks.set_active_network(url, is_fork=fork)
+        config.networks.set_active_network(url, is_fork=is_fork_from_cli)
+
+    active_network = config.get_active_network()
+    if active_network is None:
+        raise ValueError("No active network set. Please set a network.")
 
     # Update parameters if not provided in the CLI
     if fork is None:
-        fork = config.get_active_network().is_fork
+        fork = active_network.is_fork
     if password_file_path is None:
-        password_file_path = config.networks.get_active_network().unsafe_password_file
+        password_file_path = active_network.unsafe_password_file
     if account is None:
-        account = config.networks.get_active_network().default_account_name
+        account = active_network.default_account_name
     if prompt_live is None:
-        prompt_live = config.get_active_network().prompt_live
+        prompt_live = active_network.prompt_live
 
     if prompt_live:
         if not fork:

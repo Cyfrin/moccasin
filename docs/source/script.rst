@@ -1,6 +1,35 @@
 Scripting
 #########
 
+.. code-block:: console 
+
+     mox run --help
+    usage: Moccasin CLI run [-h] [-d] [-q] [--fork [FORK]] [--network NETWORK | --url URL | --prompt-live [PROMPT_LIVE]]
+                            [--account ACCOUNT | --private-key PRIVATE_KEY] [--password PASSWORD | --password-file-path PASSWORD_FILE_PATH]
+                            script_name_or_path
+
+    Runs a script with the project's context.
+
+    positional arguments:
+    script_name_or_path   Name of the script in the script folder, or the path to your script.
+
+    options:
+    -h, --help            show this help message and exit
+    -d, --debug           Run in debug mode
+    -q, --quiet           Suppress all output except errors
+    --fork [FORK]
+    --network NETWORK     Alias of the network (from the moccasin.toml).
+    --url URL, --rpc URL  RPC URL to run the script on.
+    --prompt-live [PROMPT_LIVE]
+                            Prompt the user to make sure they want to run this script.
+    --account ACCOUNT     Keystore account you want to use.
+    --private-key PRIVATE_KEY
+                            Private key you want to use to get an unlocked account.
+    --password PASSWORD   Password for the keystore account.
+    --password-file-path PASSWORD_FILE_PATH
+                            Path to the file containing the password for the keystore account.
+
+
 Scripts are ways to deploy and work with contracts. You can either reference them by path or by name. For example, if your directory looks like this:
 
 .. code-block:: bash
@@ -16,7 +45,7 @@ Scripts are ways to deploy and work with contracts. You can either reference the
         ├── conftest.py
         └── test_counter.py
 
-You can run the `deploy.py` script with either:
+You can run the ``deploy.py`` script with either:
 
 .. code-block:: bash
 
@@ -31,7 +60,7 @@ or
 Importing from src 
 ==================
 
-You can directly import contracts from the `src` folder into your scripts, and interact with them! Let's say you have a `Counter` contract in your `src` folder:
+You can directly import contracts from the ``src`` folder into your scripts, and interact with them! Let's say you have a ``Counter`` contract in your ``src`` folder:
 
 .. code-block:: python
 
@@ -49,7 +78,7 @@ You can directly import contracts from the `src` folder into your scripts, and i
 Networking 
 ==========
 
-If you have :doc:`networks <networks>` defined in your :doc:`moccasin.toml <moccasin_toml>`, you can directly work with the network in your scripts. For example, if you have a `sepolia` network defined in your `moccasin.toml`:
+If you have :doc:`networks <networks>` defined in your :doc:`moccasin.toml <moccasin_toml>`, you can directly work with the network in your scripts. For example, if you have a `sepolia` network defined in your ``moccasin.toml``:
 
 .. code-block:: bash
 
@@ -57,7 +86,7 @@ If you have :doc:`networks <networks>` defined in your :doc:`moccasin.toml <mocc
 
 
 moccasin_main
-===========
+=============
 
 In your scripts, the `moccasin_main` function is special, if you have a function with this name in your script, `moccasin` will run this function by default after running the script like a regular python file. For example, you could also do this:
 

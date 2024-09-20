@@ -1,41 +1,58 @@
-======
+========
 Moccasin
-======
+========
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     Overview <index.rst>
 
 .. toctree::
     :caption: Getting Started
-    :maxdepth: 2
+    :maxdepth: 3
 
     installing-moccasin.rst
     quickstart.rst
 
 .. toctree::
-    :caption: Project Overview
-    :maxdepth: 2
+    :caption: Core Concepts
+    :maxdepth: 3
 
     moccasin.toml <moccasin_toml.rst>
-    project.rst 
+    project.rst
     networks.rst
-    dependencies.rst
+    dependencies.rst 
+    named_contracts.rst
+    testing.rst
+    Wallet <wallet.rst>
+  
 
 .. toctree::
-    :caption: Major Commands
-    :maxdepth: 2
+    :caption: Scripting
+    :maxdepth: 3
 
-    wallet <wallet.rst>
     run <script.rst>
-    test <testing.rst>
     console <console.rst>
+    deploy <deploy.rst>
+
+.. .. toctree::
+..     :caption: How-to Guides
+..     :maxdepth: 3
+
+..     .. TODO 
+    
+
+.. .. toctree::
+..     :caption: Tutorials
+..     :maxdepth: 3
+
+..     .. TODO 
 
 .. toctree::
-    :caption: Reference
-    :maxdepth: 2
+    :caption: Class, Config, and other Reference
+    :maxdepth: 3
 
     cli_commands.rst
     all_moccasin_toml_parameters.rst
     common-errors.rst
+
