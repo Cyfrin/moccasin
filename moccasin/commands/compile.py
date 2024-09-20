@@ -9,6 +9,10 @@ from vyper.exceptions import VersionException
 import traceback
 import sys
 
+import os
+import multiprocessing
+import time
+
 from boa import load_partial
 from boa.contracts.vyper.vyper_contract import VyperDeployer
 from boa.contracts.vvm.vvm_contract import VVMDeployer
@@ -48,8 +52,27 @@ def compile_project(
 
     logger.info(f"Compiling {len(contracts_to_compile)} contracts to {build_folder}...")
 
-    for contract_path in contracts_to_compile:
-        compile_(contract_path, build_folder, write_data=write_data)
+    n_cpus = max(1, len(os.sched_getaffinity(0)) - 2)
+    jobs = []
+
+    with multiprocessing.Pool(n_cpus) as pool:
+        for contract_path in contracts_to_compile:
+            res = pool.apply_async(compile_, (contract_path, build_folder), dict(write_data=write_data))
+            jobs.append(res)
+
+        # loop over jobs waiting for them to complete.
+        # use nowait check so that bubbling up of exceptions isn't blocked
+        # by a slow job
+        while len(jobs) > 0:
+            tmp = []
+            for job in jobs:
+                if job.ready():
+                    # bubble up any exceptions
+                    job.get()
+                else:
+                    tmp.append(job)
+            jobs = tmp
+            time.sleep(0.001)  # relax
 
     logger.info("Done compiling project!")
 
