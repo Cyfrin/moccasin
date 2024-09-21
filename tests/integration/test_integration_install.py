@@ -1,9 +1,10 @@
-from pathlib import Path
 import os
 import subprocess
-from tests.conftest import INSTALL_PROJECT_PATH
-from moccasin.constants.vars import DEPENDENCIES_FOLDER
+from pathlib import Path
+
 from moccasin.config import Config
+from moccasin.constants.vars import DEPENDENCIES_FOLDER
+from tests.conftest import INSTALL_PROJECT_PATH
 
 pip_package_name = "snekmate"
 org_name = "pcaversaccio"

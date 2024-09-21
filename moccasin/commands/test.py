@@ -1,13 +1,14 @@
+import sys
+from argparse import Namespace
 from typing import List
-from moccasin.config import initialize_global_config, get_config
+
+import pytest
+
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
     _setup_network_and_account_from_args,
 )
-import pytest
-import sys
-from argparse import Namespace
-
+from moccasin.config import get_config, initialize_global_config
 from moccasin.constants.vars import TESTS_FOLDER
 
 PYTEST_ARGS: list[str] = [

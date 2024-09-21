@@ -6,9 +6,10 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import moccasin
 import os
 import sys
+
+import moccasin
 
 sys.path.insert(0, os.path.abspath("."))
 

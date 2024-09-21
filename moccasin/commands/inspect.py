@@ -1,9 +1,9 @@
+import pprint
 from argparse import Namespace
 from typing import Any
 
-from moccasin.config import get_config
 from moccasin.commands.compile import compile_
-import pprint
+from moccasin.config import get_config
 
 FUNCTION_SIGNATURES_ALTS = [
     "methods",

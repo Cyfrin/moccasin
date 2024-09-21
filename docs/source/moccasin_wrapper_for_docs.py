@@ -1,6 +1,7 @@
-from typing import Tuple
-from moccasin.__main__ import generate_main_parser_and_sub_parsers
 import argparse
+from typing import Tuple
+
+from moccasin.__main__ import generate_main_parser_and_sub_parsers
 
 
 # Wrapper function for sphinx-argparse

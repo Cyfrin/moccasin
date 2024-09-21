@@ -1,11 +1,12 @@
-from pathlib import Path
-import subprocess
 import os
+import subprocess
+from pathlib import Path
+
 from tests.conftest import (
-    COMPLEX_PROJECT_PATH,
-    ANVIL1_PRIVATE_KEY,
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
+    ANVIL1_PRIVATE_KEY,
+    COMPLEX_PROJECT_PATH,
 )
 
 

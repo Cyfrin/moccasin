@@ -1,9 +1,10 @@
 import subprocess
 import tempfile
 from pathlib import Path
+
 from moccasin.config import Config
+from moccasin.constants.file_data import GITATTRIBUTES, GITIGNORE
 from moccasin.constants.vars import DEFAULT_PROJECT_FOLDERS
-from moccasin.constants.file_data import GITIGNORE, GITATTRIBUTES
 
 EXPECTED_HELP_TEXT = "Pythonic Smart Contract Development Framework"
 

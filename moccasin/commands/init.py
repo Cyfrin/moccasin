@@ -1,27 +1,28 @@
+from argparse import Namespace
 from pathlib import Path
-from moccasin.logging import logger
+
+from moccasin.constants.file_data import (
+    CONFTEST_DEFAULT,
+    COUNTER_VYPER_CONTRACT_SRC,
+    COVERAGERC,
+    DEPLOY_SCRIPT_DEFAULT,
+    GITATTRIBUTES,
+    GITIGNORE,
+    MOCCASIN_DEFAULT_CONFIG,
+    README_MD_SRC,
+    TEST_COUNTER_DEFAULT,
+    VSCODE_SETTINGS_DEFAULT,
+)
 from moccasin.constants.vars import (
     CONFIG_NAME,
+    CONTRACTS_FOLDER,
+    COUNTER_CONTRACT,
     DEFAULT_PROJECT_FOLDERS,
     README_PATH,
-    COUNTER_CONTRACT,
-    CONTRACTS_FOLDER,
     SCRIPT_FOLDER,
     TESTS_FOLDER,
 )
-from moccasin.constants.file_data import (
-    GITIGNORE,
-    GITATTRIBUTES,
-    README_MD_SRC,
-    COUNTER_VYPER_CONTRACT_SRC,
-    CONFTEST_DEFAULT,
-    COVERAGERC,
-    DEPLOY_SCRIPT_DEFAULT,
-    TEST_COUNTER_DEFAULT,
-    MOCCASIN_DEFAULT_CONFIG,
-    VSCODE_SETTINGS_DEFAULT,
-)
-from argparse import Namespace
+from moccasin.logging import logger
 
 
 def main(args: Namespace) -> int:

@@ -1,7 +1,9 @@
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
+
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
+
 from moccasin.logging import logger
 
 

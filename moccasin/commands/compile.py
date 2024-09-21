@@ -1,22 +1,22 @@
-from pathlib import Path
-from vyper.compiler.phases import CompilerData
-import vyper.compiler.output
 import json
-from moccasin.logging import logger
-from moccasin.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER, MOCCASIN_GITHUB
-from moccasin.config import get_config, initialize_global_config
-from vyper.exceptions import VersionException
-import traceback
-import sys
-
-import os
 import multiprocessing
+import os
+import sys
 import time
-
-from boa import load_partial
-from boa.contracts.vyper.vyper_contract import VyperDeployer
-from boa.contracts.vvm.vvm_contract import VVMDeployer
+import traceback
 from argparse import Namespace
+from pathlib import Path
+
+import vyper.compiler.output
+from boa import load_partial
+from boa.contracts.vvm.vvm_contract import VVMDeployer
+from boa.contracts.vyper.vyper_contract import VyperDeployer
+from vyper.compiler.phases import CompilerData
+from vyper.exceptions import VersionException
+
+from moccasin.config import get_config, initialize_global_config
+from moccasin.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER, MOCCASIN_GITHUB
+from moccasin.logging import logger
 
 
 def main(args: Namespace) -> int:

@@ -1,4 +1,5 @@
 import sys
+
 from moccasin import __main__
 
 

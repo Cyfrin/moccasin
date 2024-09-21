@@ -1,11 +1,12 @@
+import inspect
 from types import ModuleType
 from typing import Callable, Literal, cast
-from pytest import fixture
-from moccasin.config import get_config
-from boa.contracts.vyper.vyper_contract import VyperContract
-from boa.contracts.abi.abi_contract import ABIContract
-import inspect
 
+from boa.contracts.abi.abi_contract import ABIContract
+from boa.contracts.vyper.vyper_contract import VyperContract
+from pytest import fixture
+
+from moccasin.config import get_config
 
 ScopeType = Literal["function", "class", "module", "package", "session"]
 

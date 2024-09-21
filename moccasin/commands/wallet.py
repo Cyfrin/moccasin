@@ -1,16 +1,17 @@
-import json
 import getpass
-from pathlib import Path
+import json
 import shutil
-from typing import Any
-from moccasin.logging import logger
-from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
+from argparse import Namespace
+from pathlib import Path
+from typing import Any, cast
+
 from eth_account import Account as EthAccountsClass
 from eth_account.signers.local import LocalAccount
-from hexbytes import HexBytes
 from eth_account.types import PrivateKeyType
-from argparse import Namespace
-from typing import cast
+from hexbytes import HexBytes
+
+from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
+from moccasin.logging import logger
 
 ALIAS_TO_COMMAND = {"add": "import", "i": "import"}
 
