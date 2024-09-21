@@ -13,13 +13,7 @@ A fast, pythonic, Vyper smart contract testing and development framework.
         <img src="./docs/source/_static/speed-comparisons.png" width="1000" alt=""/></a>
     <br />
 </p>
-*See comments for notes on benchmarking*
-
-<!-- # Speed Comparisons
-
-*The above comparisions were done taking the `user` result from running the bash `time` command followed by the appropriote command on an M3 MacOS*
-*Compile command tested with a basic vyper counter contract on version 0.4.0 or 0.3.10 depending on compatibility*
-*Test command tested with a basic vyper counter contract on version 0.4.0 or 0.3.10 depending on compatibility* -->
+*You can see how we conducted these tests from the [benchmarking repo](https://github.com/PatrickAlphaC/benchmarking-frameworks)*
 
 Fast to install, test, and run python commands on your smart contracts.
 
