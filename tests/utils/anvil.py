@@ -1,7 +1,7 @@
+import atexit
+import signal
 import subprocess
 import time
-import signal
-import atexit
 
 ANVIL_URL = "http://127.0.0.1:8545"
 

@@ -1,7 +1,8 @@
+import os
+from pathlib import Path
+
 from moccasin.commands.inspect import inspect_contract
 from tests.conftest import COMPLEX_PROJECT_PATH
-from pathlib import Path
-import os
 
 
 def test_inspect_counter(complex_project_config):

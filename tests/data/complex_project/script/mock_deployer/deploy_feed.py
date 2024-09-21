@@ -1,4 +1,5 @@
 from contracts.mocks import MockV3Aggregator
+
 from moccasin.boa_tools import VyperContract
 
 DECIMALS = 18

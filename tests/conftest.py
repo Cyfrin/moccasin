@@ -1,15 +1,16 @@
-from pathlib import Path
-import pytest
 import os
-import sys
 import shutil
-from moccasin.constants.vars import DEPENDENCIES_FOLDER
+import sys
+import tempfile
+from pathlib import Path
+
+import pytest
+
 import moccasin.constants.vars as vars
 from moccasin.commands.wallet import save_to_keystores
-import tempfile
-from tests.utils.anvil import ANVIL_URL
 from moccasin.config import Config, initialize_global_config
-from tests.utils.anvil import AnvilProcess
+from moccasin.constants.vars import DEPENDENCIES_FOLDER
+from tests.utils.anvil import ANVIL_URL, AnvilProcess
 
 COMPLEX_PROJECT_PATH = Path(__file__).parent.joinpath("data/complex_project/")
 INSTALL_PROJECT_PATH = Path(__file__).parent.joinpath("data/installation_project/")

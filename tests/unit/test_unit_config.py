@@ -1,5 +1,6 @@
-from moccasin.config import get_config
 import os
+
+from moccasin.config import get_config
 
 
 def test_set_dot_env(complex_project_config):

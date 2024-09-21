@@ -1,12 +1,13 @@
-from pathlib import Path
-from moccasin.logging import logger
-from moccasin.config import get_config, initialize_global_config
 import importlib.util
+from argparse import Namespace
+from pathlib import Path
+
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
     _setup_network_and_account_from_args,
 )
-from argparse import Namespace
+from moccasin.config import get_config, initialize_global_config
+from moccasin.logging import logger
 
 
 def main(args: Namespace) -> int:

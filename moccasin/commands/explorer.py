@@ -1,16 +1,18 @@
 import json
+import os
+from argparse import Namespace
 from pathlib import Path
 from typing import cast
+
 import boa
-from argparse import Namespace
-import os
+
+from moccasin.config import Network, get_config
 from moccasin.constants.vars import (
     DEFAULT_API_KEY_ENV_VAR,
-    DEFAULT_NETWORKS_BY_NAME,
     DEFAULT_NETWORKS_BY_CHAIN_ID,
+    DEFAULT_NETWORKS_BY_NAME,
 )
 from moccasin.logging import logger, set_log_level
-from moccasin.config import get_config, Network
 
 ALIAS_TO_COMMAND = {"get": "fetch"}
 

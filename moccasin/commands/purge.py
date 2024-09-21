@@ -1,8 +1,10 @@
-from argparse import Namespace
 import subprocess
+from argparse import Namespace
+
+from packaging.requirements import Requirement
+
 from moccasin._dependency_helpers import get_base_install_path
 from moccasin.config import get_config
-from packaging.requirements import Requirement
 from moccasin.logging import logger
 
 

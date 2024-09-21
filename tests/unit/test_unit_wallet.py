@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List
-from moccasin.commands.wallet import view_wallet, list_accounts
+
+from moccasin.commands.wallet import list_accounts, view_wallet
 from tests.conftest import ANVIL1_KEYSTORE_NAME, ANVIL_KEYSTORE_SAVED
 
 

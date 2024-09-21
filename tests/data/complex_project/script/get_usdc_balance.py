@@ -1,5 +1,6 @@
-from moccasin import config
 from boa.contracts.vyper.vyper_contract import VyperContract
+
+from moccasin import config
 
 
 def get_decimals():

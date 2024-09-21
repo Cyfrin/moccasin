@@ -1,13 +1,13 @@
+import argparse
 import importlib
+import sys
+import tomllib
 from importlib import metadata
 from pathlib import Path
-import tomllib
-import argparse
 from typing import Tuple
-from moccasin.logging import logger, set_log_level
-import sys
-from moccasin.constants.vars import CONFIG_NAME
 
+from moccasin.constants.vars import CONFIG_NAME
+from moccasin.logging import logger, set_log_level
 
 MOCCASIN_CLI_VERSION_STRING = "Moccasin CLI v{}"
 

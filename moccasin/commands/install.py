@@ -1,25 +1,27 @@
-from argparse import Namespace
-from dataclasses import dataclass
-from io import BytesIO
-from pathlib import Path
+import os
+import re
 import shutil
 import subprocess
-from packaging.requirements import Requirement
-from moccasin.config import get_config
-from moccasin.logging import logger
-import os
-from base64 import b64encode
-import re
-import requests  # type: ignore
 import sys
-import traceback
-from tqdm import tqdm
-import zipfile
-from moccasin.constants.vars import REQUEST_HEADERS, PACKAGE_VERSION_FILE
 import tomllib
-import tomli_w
+import traceback
+import zipfile
+from argparse import Namespace
+from base64 import b64encode
+from dataclasses import dataclass
 from enum import Enum
+from io import BytesIO
+from pathlib import Path
 from urllib.parse import quote
+
+import requests  # type: ignore
+import tomli_w
+from packaging.requirements import Requirement
+from tqdm import tqdm
+
+from moccasin.config import get_config
+from moccasin.constants.vars import PACKAGE_VERSION_FILE, REQUEST_HEADERS
+from moccasin.logging import logger
 
 
 class DependencyType(Enum):

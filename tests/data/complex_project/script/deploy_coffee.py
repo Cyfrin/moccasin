@@ -1,6 +1,7 @@
+from contracts import BuyMeACoffee
+
 from moccasin.boa_tools import VyperContract
 from moccasin.config import get_config
-from contracts import BuyMeACoffee
 
 
 def deploy() -> VyperContract:

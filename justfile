@@ -8,10 +8,12 @@ typecheck:
 
 # Run formatter
 format:
+    uv run ruff check --select I --fix
     uv run ruff check . --fix
 
 # Run formatter - no fix
 format-check:
+    uv run ruff check --select I 
     uv run ruff check .
 
 # Run unit and CLI tests, fail on first test failure

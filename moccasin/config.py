@@ -1,30 +1,32 @@
-from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, TYPE_CHECKING, Union, cast
-from moccasin.constants.vars import (
-    CONFIG_NAME,
-    DOT_ENV_FILE,
-    CONTRACTS_FOLDER,
-    BUILD_FOLDER,
-    TESTS_FOLDER,
-    SCRIPT_FOLDER,
-    DEPENDENCIES_FOLDER,
-    INSTALLER,
-    DEFAULT_INSTALLER,
-    SAVE_ABI_PATH,
-    DOT_ENV_KEY,
-)
-import tomllib
-from dotenv import load_dotenv
 import os
 import shutil
 import tempfile
+import tomllib
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Union, cast
+
 import boa
-from boa.environment import Env
-from moccasin.logging import logger
 import tomlkit
-from boa.contracts.vyper.vyper_contract import VyperDeployer, VyperContract
-from boa.contracts.abi.abi_contract import ABIContractFactory, ABIContract
+from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
+from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
+from boa.environment import Env
+from dotenv import load_dotenv
+
+from moccasin.constants.vars import (
+    BUILD_FOLDER,
+    CONFIG_NAME,
+    CONTRACTS_FOLDER,
+    DEFAULT_INSTALLER,
+    DEPENDENCIES_FOLDER,
+    DOT_ENV_FILE,
+    DOT_ENV_KEY,
+    INSTALLER,
+    SAVE_ABI_PATH,
+    SCRIPT_FOLDER,
+    TESTS_FOLDER,
+)
+from moccasin.logging import logger
 from moccasin.named_contract import NamedContract
 
 if TYPE_CHECKING:
@@ -56,7 +58,7 @@ class Network:
         # perf: save time on imports in the (common) case where
         # we just import config for its utils but don't actually need
         # to switch networks
-        from boa.network import NetworkEnv, EthereumRPC
+        from boa.network import EthereumRPC, NetworkEnv
         from boa_zksync import ZksyncEnv
 
         if self.is_fork:

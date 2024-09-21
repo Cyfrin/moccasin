@@ -1,11 +1,13 @@
-from pathlib import Path
-import sys
-from moccasin.config import get_config
-from moccasin.moccasin_account import MoccasinAccount
-import boa
-from moccasin.logging import logger
 import contextlib
+import sys
+from pathlib import Path
 from typing import Iterator, List
+
+import boa
+
+from moccasin.config import get_config
+from moccasin.logging import logger
+from moccasin.moccasin_account import MoccasinAccount
 
 
 @contextlib.contextmanager

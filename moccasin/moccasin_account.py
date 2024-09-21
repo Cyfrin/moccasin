@@ -1,14 +1,16 @@
 from pathlib import Path
+from typing import cast
+
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_keys.datatypes import PrivateKey
-from hexbytes import HexBytes
-from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
-from eth_utils import to_bytes
-from moccasin.commands.wallet import decrypt_key
-from typing import cast
-from moccasin.logging import logger
 from eth_typing import ChecksumAddress
+from eth_utils import to_bytes
+from hexbytes import HexBytes
+
+from moccasin.commands.wallet import decrypt_key
+from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
+from moccasin.logging import logger
 
 
 class MoccasinAccount(LocalAccount):

@@ -1,6 +1,7 @@
 import os
-from pathlib import Path
 import subprocess
+from pathlib import Path
+
 from moccasin.commands.explorer import boa_get_abi_from_explorer
 from tests.conftest import COMPLEX_PROJECT_PATH
 

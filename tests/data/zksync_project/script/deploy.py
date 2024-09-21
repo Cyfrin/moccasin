@@ -1,4 +1,5 @@
 from src import Counter
+
 from moccasin.boa_tools import ZksyncContract
 
 # from boa.contracts.vyper.vyper_contract import VyperContract

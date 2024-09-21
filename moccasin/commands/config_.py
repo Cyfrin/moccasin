@@ -1,5 +1,6 @@
 from argparse import Namespace
-from moccasin.config import get_config, Config
+
+from moccasin.config import Config, get_config
 from moccasin.logging import logger
 
 
