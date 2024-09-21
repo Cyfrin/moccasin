@@ -39,6 +39,7 @@ def main(args: Namespace) -> int:
         )
     return 0
 
+
 def _get_cpu_count():
     if hasattr(os, "process_cpu_count"):
         # python 3.13+
@@ -66,6 +67,7 @@ def compile_project(
 
     logger.info(f"Compiling {len(contracts_to_compile)} contracts to {build_folder}...")
 
+    multiprocessing.set_start_method("fork", force=False)
 
     n_cpus = max(1, _get_cpu_count() - 2)
     jobs = []
@@ -96,8 +98,6 @@ def compile_project(
                     tmp.append(job)
             jobs = tmp
             time.sleep(0.001)  # relax
-
-    logger.info("Done compiling project!")
 
     logger.info("Done compiling project!")
 
