@@ -13,7 +13,8 @@ A fast, pythonic, Vyper smart contract testing and development framework.
         <img src="./docs/source/_static/speed-comparisons.png" width="1000" alt=""/></a>
     <br />
 </p>
-*You can see how we conducted these tests from the [benchmarking repo](https://github.com/PatrickAlphaC/benchmarking-frameworks)*
+
+_You can see how we conducted these tests from the [benchmarking repo](https://github.com/PatrickAlphaC/benchmarking-frameworks)._
 
 Fast to install, test, and run python commands on your smart contracts.
 
