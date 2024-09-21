@@ -50,23 +50,22 @@ def main(args: Namespace) -> int:
 
     for arg in PYTEST_ARGS:
         attr_name = arg.replace("-", "_")
-        if hasattr(args, attr_name):
+        if getattr(args, attr_name, None) is not None:
             value = getattr(args, attr_name)
-            if value is not None:
-                if arg == "file_or_dir":
-                    pytest_args.append(str(value))
-                else:
-                    option_prefix = "-" if len(arg) == 1 else "--"
-                    option = f"{option_prefix}{arg}"
+            if arg == "file_or_dir":
+                pytest_args.append(str(value))
+            else:
+                option_prefix = "-" if len(arg) == 1 else "--"
+                option = f"{option_prefix}{arg}"
 
-                    if isinstance(value, bool):
-                        if value:
-                            pytest_args.append(option)
-                    elif isinstance(value, list):
-                        for item in value:
-                            pytest_args.extend([option, str(item)])
-                    else:
-                        pytest_args.extend([option, str(value)])
+                if isinstance(value, bool):
+                    if value:
+                        pytest_args.append(option)
+                elif isinstance(value, list):
+                    for item in value:
+                        pytest_args.extend([option, str(item)])
+                else:
+                    pytest_args.extend([option, str(value)])
     return _run_project_tests(
         pytest_args, network=args.network, fork=args.fork, prompt_live=args.prompt_live
     )
