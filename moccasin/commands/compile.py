@@ -9,6 +9,10 @@ from vyper.exceptions import VersionException
 import traceback
 import sys
 
+import os
+import multiprocessing
+import time
+
 from boa import load_partial
 from boa.contracts.vyper.vyper_contract import VyperDeployer
 from boa.contracts.vvm.vvm_contract import VVMDeployer
@@ -36,6 +40,13 @@ def main(args: Namespace) -> int:
     return 0
 
 
+def _get_cpu_count():
+    if hasattr(os, "process_cpu_count"):
+        # python 3.13+
+        return os.process_cpu_count()
+    return os.cpu_count()
+
+
 def compile_project(
     project_path: Path | None = None,
     build_folder: Path | None = None,
@@ -56,12 +67,37 @@ def compile_project(
 
     logger.info(f"Compiling {len(contracts_to_compile)} contracts to {build_folder}...")
 
-    for contract_path in contracts_to_compile:
-        try:
-            compile_(contract_path, build_folder, write_data=write_data)
-        except vyper.exceptions.InitializerException:
-            logger.info(f"Skipping contract {contract_path.stem} due to uninitialized.")
-            continue
+    multiprocessing.set_start_method("fork", force=False)
+
+    n_cpus = max(1, _get_cpu_count() - 2)
+    jobs = []
+
+    with multiprocessing.Pool(n_cpus) as pool:
+        for contract_path in contracts_to_compile:
+            res = pool.apply_async(
+                compile_, (contract_path, build_folder), dict(write_data=write_data)
+            )
+            jobs.append(res)
+
+        # loop over jobs waiting for them to complete.
+        # use nowait check so that bubbling up of exceptions isn't blocked
+        # by a slow job
+        while len(jobs) > 0:
+            tmp = []
+            for job in jobs:
+                if job.ready():
+                    # bubble up any exceptions
+                    try:
+                        job.get()
+                    except vyper.exceptions.InitializerException:
+                        logger.info(
+                            f"Skipping contract {contract_path.stem} due to uninitialized."
+                        )
+                        continue
+                else:
+                    tmp.append(job)
+            jobs = tmp
+            time.sleep(0.001)  # relax
 
     logger.info("Done compiling project!")
 
