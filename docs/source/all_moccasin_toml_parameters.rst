@@ -42,7 +42,6 @@ All possible options
     # You can have pip-style dependencies and also github-style dependencies
     # These are going to be dependencies for your vyper contracts
     dependencies = ["snekmate==0.1.0", "pcaversaccio/snekmate@0.1.0"]
-    installer = "uv"
     save_abi_path = "abis" # location to save ABIs from the explorer
     cov_config = ".coveragerc" # coverage configuration file
     dot_env = ".env"  # environment variables file

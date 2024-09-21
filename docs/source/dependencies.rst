@@ -1,7 +1,7 @@
 Dependencies 
 ############
 
-Moccasin allows for working with either:
+For working with smart contracts, ``moccasin`` allows for working with either:
 
 - :ref:`Installing from GitHub repositories <installing_github_dependencies>`
 
@@ -68,20 +68,9 @@ You can then use these packages in your vyper contracts, for example in an minia
 Installing uv/pip/PyPI Dependencies 
 ===================================
 
-Moccasin let's you directly install and work with PyPI packages as you would any other python package. PyPi dependencies in moccasin are by default powered by the `uv <https://docs.astral.sh/uv/>`_ tool. In order to use this, you need to have the `uv` tool installed. However, you can change this setting to `pip` in your `moccasin.tom`.
+Moccasin let's you directly install and work with PyPI packages as you would any other python package. PyPi dependencies in moccasin are by default powered by the `uv <https://docs.astral.sh/uv/>`_ tool under the hood. It comes built-in with ``moccasin``.  
 
-.. code-block:: toml
-
-    [project]
-    installer = "uv" # change/add this setting
-
-As of today, `moccasin` supports:
-
-- `uv`
-
-- `pip`
-
-You can also directly install and work with PyPI packages as you would any other python package. To install a package from PyPI, you can run the following:
+To install a package from PyPI, you can run the following:
 
 .. code-block:: bash
 
