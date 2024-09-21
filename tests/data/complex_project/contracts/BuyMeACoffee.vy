@@ -1,4 +1,5 @@
 # pragma version 0.4.0
+# pragma enable-decimals
 # SPDX-License-Identifier: MIT
 
 """
@@ -18,6 +19,8 @@ from interfaces import AggregatorV3Interface
 MINIMUM_USD: public(constant(uint256)) = 50 * (10**18)
 PRECISION: constant(uint256) = 1 * (10**18)
 OWNER: public(immutable(address))
+
+some_value: public(decimal)
 
 funders: public(DynArray[address, 100])
 address_to_amount_funded: public(HashMap[address, uint256])
