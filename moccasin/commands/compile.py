@@ -19,16 +19,24 @@ from boa.contracts.vvm.vvm_contract import VVMDeployer
 from argparse import Namespace
 
 
-def main(_: Namespace) -> int:
+def main(args: Namespace) -> int:
     initialize_global_config()
     config = get_config()
     project_path: Path = config.get_root()
-    compile_project(
-        project_path,
-        project_path.joinpath(config.out_folder),
-        project_path.joinpath(config.contracts_folder),
-        write_data=True,
-    )
+
+    if args.contract_or_contract_path:
+        contract_path = config._find_contract(args.contract_or_contract_path)
+        compile_(
+            contract_path, project_path.joinpath(config.out_folder), write_data=True
+        )
+        logger.info(f"Done compiling {contract_path.stem}")
+    else:
+        compile_project(
+            project_path,
+            project_path.joinpath(config.out_folder),
+            project_path.joinpath(config.contracts_folder),
+            write_data=True,
+        )
     return 0
 
 def _get_cpu_count():
@@ -58,12 +66,15 @@ def compile_project(
 
     logger.info(f"Compiling {len(contracts_to_compile)} contracts to {build_folder}...")
 
+
     n_cpus = max(1, _get_cpu_count() - 2)
     jobs = []
 
     with multiprocessing.Pool(n_cpus) as pool:
         for contract_path in contracts_to_compile:
-            res = pool.apply_async(compile_, (contract_path, build_folder), dict(write_data=write_data))
+            res = pool.apply_async(
+                compile_, (contract_path, build_folder), dict(write_data=write_data)
+            )
             jobs.append(res)
 
         # loop over jobs waiting for them to complete.
@@ -74,11 +85,19 @@ def compile_project(
             for job in jobs:
                 if job.ready():
                     # bubble up any exceptions
-                    job.get()
+                    try:
+                        job.get()
+                    except vyper.exceptions.InitializerException:
+                        logger.info(
+                            f"Skipping contract {contract_path.stem} due to uninitialized."
+                        )
+                        continue
                 else:
                     tmp.append(job)
             jobs = tmp
             time.sleep(0.001)  # relax
+
+    logger.info("Done compiling project!")
 
     logger.info("Done compiling project!")
 
@@ -133,6 +152,6 @@ def compile_(
             json.dump(build_data, f, indent=4)
         logger.debug(f"Compilation data saved to {build_file}")
 
-    logger.debug("Done compiling {contract_name}")
+    logger.debug(f"Done compiling {contract_name}")
 
     return deployer

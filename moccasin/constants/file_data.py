@@ -183,7 +183,7 @@ lib/
 """
 
 COUNTER_VYPER_CONTRACT_SRC = """# SPDX-License-Identifier: MIT
-# @version 0.4.0
+# pragma version 0.4.0
 
 number: public(uint256)
 

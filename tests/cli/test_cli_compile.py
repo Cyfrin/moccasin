@@ -37,3 +37,19 @@ def test_compile_alias_build_project(complex_cleanup_out_folder, mox_path):
         os.chdir(current_dir)
     assert "Running compile command" in result.stderr
     assert result.returncode == 0
+
+
+def test_compile_one(complex_cleanup_out_folder, mox_path):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        result = subprocess.run(
+            [mox_path, "build", "BuyMeACoffee.vy"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+    assert "Done compiling BuyMeACoffee" in result.stderr
+    assert result.returncode == 0

@@ -33,3 +33,14 @@ If you wanted to adjust your contracts location, for example, have your smart co
     src = "contracts"
 
 
+Vyper Compiler Options 
+======================
+
+By default, ``moccasin`` discourages passing compiler options in the ``moccasin.toml`` file or CLI. Instead, if you wish to use `vyper <https://docs.vyperlang.org/en/stable/>`_ CLI commands, you'll just put them right in the ``pragma`` of the contract:
+
+.. code-block:: python
+
+    # pragma version 0.4.0
+    # pragma enable-decimals
+
+    some_value: public(decimal)
