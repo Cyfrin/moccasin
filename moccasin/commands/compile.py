@@ -31,6 +31,12 @@ def main(_: Namespace) -> int:
     )
     return 0
 
+def _get_cpu_count():
+    if hasattr(os, "process_cpu_count"):
+        # python 3.13+
+        return os.process_cpu_count()
+    return os.cpu_count()
+
 
 def compile_project(
     project_path: Path | None = None,
@@ -52,7 +58,7 @@ def compile_project(
 
     logger.info(f"Compiling {len(contracts_to_compile)} contracts to {build_folder}...")
 
-    n_cpus = max(1, len(os.sched_getaffinity(0)) - 2)
+    n_cpus = max(1, _get_cpu_count() - 2)
     jobs = []
 
     with multiprocessing.Pool(n_cpus) as pool:
