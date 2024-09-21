@@ -47,7 +47,7 @@ def main(args: Namespace):
             pip_requirements.append(requirement)
     install_path: Path = config.get_base_dependencies_install_path()
     if len(pip_requirements) > 0:
-        _pip_installs(pip_requirements, install_path, config.installer, args.quiet)
+        _pip_installs(pip_requirements, install_path, args.quiet)
     if len(github_requirements) > 0:
         _github_installs(github_requirements, install_path, args.quiet)
     return 0
@@ -226,15 +226,10 @@ def _get_download_url_from_tag(org: str, repo: str, version: str, headers: dict)
     )
 
 
-def _pip_installs(
-    package_ids: list[str], base_install_path: Path, installer: str, quiet: bool = False
-):
+def _pip_installs(package_ids: list[str], base_install_path: Path, quiet: bool = False):
     logger.info(f"Installing {len(package_ids)} pip packages...")
     cmd = []
-    if installer == "uv":
-        cmd = ["uv", "pip", "install", *package_ids, "--target", str(base_install_path)]
-    else:
-        cmd = ["pip", "install", *package_ids, "--target", str(base_install_path)]
+    cmd = ["uv", "pip", "install", *package_ids, "--target", str(base_install_path)]
 
     capture_output = quiet
     try:
@@ -242,10 +237,6 @@ def _pip_installs(
     except FileNotFoundError as e:
         logger.info(
             f"Stack trace:\n{''.join(traceback.format_exception(type(e), e, e.__traceback__))}"
-        )
-        logger.error(e)
-        logger.info(
-            f'Your installer {installer} is not found in your system PATH.\nPlease install {installer} or update your installer in your moccasin.toml as: \n\n[project]\ninstaller = "your installer here (pip or uv)"'
         )
         sys.exit(1)
 
