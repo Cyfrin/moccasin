@@ -12,7 +12,7 @@ from boa import load_partial
 from boa.contracts.vvm.vvm_contract import VVMDeployer
 from boa.contracts.vyper.vyper_contract import VyperDeployer
 from vyper.compiler.phases import CompilerData
-from vyper.exceptions import VersionException
+from vyper.exceptions import VersionException, _BaseVyperException
 
 from moccasin.config import get_config, initialize_global_config
 from moccasin.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER, MOCCASIN_GITHUB
@@ -125,6 +125,10 @@ def compile_(
         logger.info(f"Perhaps make an issue on the GitHub repo: {MOCCASIN_GITHUB}")
         logger.info("If this contract is optional, you can ignore this error.")
         return None
+    except _BaseVyperException as exc:
+        if callable(exc._hint):
+            exc._hint = exc._hint()
+        raise exc
 
     abi: list
     bytecode: bytes
