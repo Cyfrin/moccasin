@@ -66,9 +66,10 @@ def request_fixture(
             f"No deploy function found for '{contract_name}' on network {active_network.name}"
         )
 
-    @pytest.fixture(scope=scope)
+    @pytest.fixture(scope=scope, name=fixture_name)
     def _fixture():
         return active_network.get_or_deploy_contract(contract_name)
 
     # add the fixture to the module's namespace
+    # REVIEW: i don't think is actually necessary?
     setattr(module, fixture_name, _fixture)
