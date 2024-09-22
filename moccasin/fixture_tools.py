@@ -1,9 +1,6 @@
 import inspect
 from types import ModuleType
-from typing import Callable, Literal, cast
 
-from boa.contracts.abi.abi_contract import ABIContract
-from boa.contracts.vyper.vyper_contract import VyperContract
 import pytest
 
 from moccasin.config import get_config
@@ -56,7 +53,7 @@ def request_fixture(
     module = _find_calling_module()
 
     active_network = get_config().get_active_network()
-    named_contract = active_network.get_named_contract(named_contract_name)
+    named_contract = active_network.get_named_contract(contract_name)
     if named_contract is None:
         raise ValueError(
             f"No contract found for contract '{contract_name}' on network {active_network.name}"
