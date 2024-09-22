@@ -1,4 +1,4 @@
-from moccasin.commands.install import classify_dependency, DependencyType
+from moccasin.commands.install import DependencyType, classify_dependency
 
 
 def test_classify_dependency_pip():
