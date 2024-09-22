@@ -68,5 +68,6 @@ def request_fixture(
         return active_network.get_or_deploy_contract(contract_name)
 
     # add the fixture to the module's namespace
-    # REVIEW: i don't think is actually necessary?
+    # is this actually necessary? is there some other way to register fixtures
+    # with pytest?
     setattr(module, fixture_name, _fixture)
