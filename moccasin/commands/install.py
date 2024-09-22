@@ -66,6 +66,26 @@ def classify_dependency(dependency: str) -> DependencyType:
     return DependencyType.PIP
 
 
+def extract_org_and_package(path: str) -> tuple[str, str]:
+    if "@" in path:
+        path, _ = path.split("@", 1)
+    path = path.strip().strip("'\"")
+    github_url_pattern = r"(?:https?://github\.com/|git\+https?://github\.com/)([\w-]+)/([\w-]+)(?:\.git)?"
+
+    # Check if it's a full GitHub URL
+    match = re.match(github_url_pattern, path)
+    if match:
+        return match.group(1), match.group(2)
+
+    # If it's not a full URL, treat it as org/package
+    parts = path.split("/")
+    if len(parts) >= 2:
+        return parts[0], parts[1]
+
+    # If we can't parse it, raise an exception
+    raise ValueError(f"Unable to extract organization and package from '{path}'")
+
+
 # Much of this code thanks to brownie
 # https://github.com/eth-brownie/brownie/blob/master/brownie/_config.py
 def _github_installs(
@@ -79,7 +99,7 @@ def _github_installs(
             else:
                 path = package_id
                 version = None  # We'll fetch the latest version later
-            org, repo = path.split("/")
+            org, repo = extract_org_and_package(path)
         except ValueError:
             raise ValueError(
                 "Invalid package ID. Must be given as ORG/REPO[@VERSION]"
@@ -309,7 +329,7 @@ class GitHubDependency:
         else:
             path, version = dep_string, None
 
-        org, repo = str(path).split("/")
+        org, repo = extract_org_and_package(path)
         return cls(org, repo, version)
 
     def format_no_version(self) -> str:
