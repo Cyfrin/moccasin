@@ -16,7 +16,7 @@ from urllib.parse import quote
 
 import requests  # type: ignore
 import tomli_w
-from packaging.requirements import Requirement
+from packaging.requirements import Requirement, InvalidRequirement
 from tqdm import tqdm
 
 from moccasin.config import get_config
@@ -54,11 +54,10 @@ def main(args: Namespace):
 
 
 def classify_dependency(dependency: str) -> DependencyType:
-    dependency = dependency.strip().strip("\"'")
+    dependency = dependency.strip().strip("'\"")
 
-    # GitHub patterns
     github_shorthand = r"^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)(@[a-zA-Z0-9_.-]+)?$"
-    github_url = r"^(git\+)?(https?://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+)(\.git)?(@[a-zA-Z0-9_.-]+)?$"
+    github_url = r"^https://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$"
 
     if re.match(github_shorthand, dependency) or re.match(github_url, dependency):
         return DependencyType.GITHUB
@@ -66,24 +65,13 @@ def classify_dependency(dependency: str) -> DependencyType:
     return DependencyType.PIP
 
 
-def extract_org_and_package(path: str) -> tuple[str, str]:
-    if "@" in path:
-        path, _ = path.split("@", 1)
-    path = path.strip().strip("'\"")
-    github_url_pattern = r"(?:https?://github\.com/|git\+https?://github\.com/)([\w-]+)/([\w-]+)(?:\.git)?"
-
-    # Check if it's a full GitHub URL
-    match = re.match(github_url_pattern, path)
-    if match:
-        return match.group(1), match.group(2)
-
-    # If it's not a full URL, treat it as org/package
-    parts = path.split("/")
-    if len(parts) >= 2:
-        return parts[0], parts[1]
-
-    # If we can't parse it, raise an exception
-    raise ValueError(f"Unable to extract organization and package from '{path}'")
+def preprocess_requirement(package: str) -> str:
+    package = package.strip().strip("'\"")
+    git_url_pattern = r"^git\+https?://.*"
+    if re.match(git_url_pattern, package):
+        package_name = package.split("/")[-1].replace(".git", "")
+        return package_name
+    return package
 
 
 # Much of this code thanks to brownie
@@ -99,7 +87,7 @@ def _github_installs(
             else:
                 path = package_id
                 version = None  # We'll fetch the latest version later
-            org, repo = extract_org_and_package(path)
+            org, repo = path.split("/")
         except ValueError:
             raise ValueError(
                 "Invalid package ID. Must be given as ORG/REPO[@VERSION]"
@@ -270,7 +258,9 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
     config = get_config()
     dependencies = config.get_dependencies()
     typed_dependencies = [
-        dep for dep in dependencies if classify_dependency(dep) == dependency_type
+        preprocess_requirement(dep)
+        for dep in dependencies
+        if classify_dependency(dep) == dependency_type
     ]
 
     to_delete = set()
@@ -278,7 +268,12 @@ def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyT
 
     if dependency_type == DependencyType.PIP:
         for package in new_package_ids:
-            package_req = Requirement(package)
+            try:
+                processed_package = preprocess_requirement(package)
+                package_req = Requirement(processed_package)
+            except InvalidRequirement:
+                logger.warning(f"Invalid requirement format for package: {package}")
+                continue
             for dep in typed_dependencies:
                 dep_req = Requirement(dep)
                 if dep_req.name == package_req.name:
@@ -329,7 +324,7 @@ class GitHubDependency:
         else:
             path, version = dep_string, None
 
-        org, repo = extract_org_and_package(path)
+        org, repo = str(path).split("/")
         return cls(org, repo, version)
 
     def format_no_version(self) -> str:
