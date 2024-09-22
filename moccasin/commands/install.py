@@ -54,10 +54,13 @@ def main(args: Namespace):
 
 
 def classify_dependency(dependency: str) -> DependencyType:
-    # GitHub dependency pattern
-    github_pattern = r"^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)(@[a-zA-Z0-9_.-]+)?$"
+    dependency = dependency.strip().strip("\"'")
 
-    if re.match(github_pattern, dependency):
+    # GitHub patterns
+    github_shorthand = r"^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)(@[a-zA-Z0-9_.-]+)?$"
+    github_url = r"^(git\+)?(https?://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+)(\.git)?(@[a-zA-Z0-9_.-]+)?$"
+
+    if re.match(github_shorthand, dependency) or re.match(github_url, dependency):
         return DependencyType.GITHUB
 
     return DependencyType.PIP
