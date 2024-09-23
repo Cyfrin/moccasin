@@ -21,6 +21,7 @@ def request_fixtures(
 
         request_fixture(contract_name, fixture_name, scope)
 
+
 def _find_calling_module() -> ModuleType:
     current_frame = inspect.currentframe()
     if current_frame is None:
@@ -44,9 +45,7 @@ def _find_calling_module() -> ModuleType:
 
 
 def request_fixture(
-    contract_name: str,
-    fixture_name: str = None,
-    scope: str = "module",
+    contract_name: str, fixture_name: str = None, scope: str = "module"
 ):
     fixture_name = fixture_name or contract_name
 
@@ -63,7 +62,7 @@ def request_fixture(
             f"No deploy function found for '{contract_name}' on network {active_network.name}"
         )
 
-    @pytest.fixture(scope=scope, name=fixture_name)
+    @pytest.fixture(scope=scope, name=fixture_name)  # type: ignore
     def _fixture():
         return active_network.get_or_deploy_contract(contract_name)
 

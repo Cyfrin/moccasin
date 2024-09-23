@@ -16,7 +16,7 @@ from urllib.parse import quote
 
 import requests  # type: ignore
 import tomli_w
-from packaging.requirements import Requirement, InvalidRequirement
+from packaging.requirements import InvalidRequirement, Requirement
 from tqdm import tqdm
 
 from moccasin.config import get_config
