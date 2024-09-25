@@ -141,6 +141,6 @@ Working with dependencies
 There are two kinds of dependencies you can work with in your moccasin project:
 
 - :doc:`Smart Contract dependencies <dependencies>`: For contracts that you want to use packages from. 
-- :doc: `Python dependencies <virtual_environments>`: For python packages that you want to use in your scripts.
+- :doc:`Python dependencies <virtual_environments>`: For python packages that you want to use in your scripts.
 
 Each have their own respective documentation. 

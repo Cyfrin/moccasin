@@ -10,8 +10,9 @@ BUILD_FOLDER = "out"
 CONTRACTS_FOLDER = "src"
 SCRIPT_FOLDER = "script"
 DEPENDENCIES_FOLDER = "lib"
-INSTALLER = "installer"
-DEFAULT_INSTALLER = "uv"
+PYEVM = "pyevm"
+ERAVM = "eravm"
+DEFAULT_NETWORK = PYEVM
 
 # Project Config Keys
 SAVE_ABI_PATH = "save_abi_path"
@@ -28,6 +29,15 @@ DOT_ENV_FILE = ".env"
 DOT_ENV_KEY = "dot_env"
 CONSOLE_HISTORY_FILE = "moccasin_history"
 DEFAULT_API_KEY_ENV_VAR = "EXPLORER_API_KEY"
+RESTRICTED_VALUES_FOR_LOCAL_NETWORK = [
+    "url",
+    "chain_id",
+    "is_fork",
+    "is_zksync",
+    "prompt_live",
+    "explorer_uri",
+    "exploer_api_key",
+]
 
 # Testing Vars
 DEFAULT_ANVIL_PRIVATE_KEY = (

@@ -1,3 +1,13 @@
+[project]
+default_network_name = "eravm"
+# default_network = "pyevm"
+
+[networks.pyevm]
+# cannot set URL, chain_id, is_fork, is_zksync
+
+[networks.eravm]
+is_zksync = true
+
 [networks.zksync-local]
 url = "http://127.0.0.1:8011"
 chain_id = 260

@@ -45,6 +45,17 @@ All possible options
     save_abi_path = "abis" # location to save ABIs from the explorer
     cov_config = ".coveragerc" # coverage configuration file
     dot_env = ".env"  # environment variables file
+    default_network = "pyevm" # default network to use. `pyevm` is the local network. "eravm" is the local ZKSync network
+
+    [networks.pyevm]
+    # The basic EVM local network
+    # cannot set URL, chain_id, is_fork, is_zksync, prompt_live, explorer_uri, explorer_api_key
+    default_account_name = "anvil"
+
+    [networks.eravm]
+    # The special ZKSync Era local network
+    # cannot set URL, chain_id, is_fork, is_zksync, prompt_live, explorer_uri, explorer_api_key
+    default_account_name = "anvil"
 
     [networks.contracts]
     # Default named contract parameters
