@@ -10,7 +10,7 @@ from moccasin._sys_path_and_config_setup import (
     _setup_network_and_account_from_args_and_cli,
     get_sys_paths_list,
 )
-from moccasin.config import get_config, initialize_global_config
+from moccasin.config import Config, get_config, initialize_global_config
 from moccasin.constants.vars import TESTS_FOLDER
 
 PYTEST_ARGS: list[str] = [
@@ -79,8 +79,10 @@ def _run_project_tests(
     network: str = None,
     fork: bool = False,
     prompt_live: bool = False,
+    config: Config = None,
 ):
-    config = get_config()
+    if config is None:
+        config = get_config()
     config_root = config.get_root()
     test_path = config_root.joinpath(TESTS_FOLDER)
 
