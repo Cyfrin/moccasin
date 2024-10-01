@@ -20,8 +20,22 @@ SAVE_ABI_PATH = "save_abi_path"
 # Tests folder is always tests
 TESTS_FOLDER = "tests"
 
+# Installation Variables
+REQUEST_HEADERS = {"User-Agent": "Moccasin"}
+PACKAGE_VERSION_FILE = "versions.toml"
+PYPI = "pypi"
+GITHUB = "github"
+
+
 # Complex Vars
-DEFAULT_PROJECT_FOLDERS = [CONTRACTS_FOLDER, TESTS_FOLDER, SCRIPT_FOLDER]
+DEFAULT_PROJECT_FOLDERS = [
+    CONTRACTS_FOLDER,
+    TESTS_FOLDER,
+    SCRIPT_FOLDER,
+    DEPENDENCIES_FOLDER + "/" + GITHUB,
+    DEPENDENCIES_FOLDER + "/" + PYPI,
+]
+
 DEFAULT_MOCCASIN_FOLDER = Path.home().joinpath(".moccasin/")
 DEFAULT_KEYSTORES_PATH = DEFAULT_MOCCASIN_FOLDER.joinpath("keystores/")
 FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
@@ -46,12 +60,6 @@ DEFAULT_ANVIL_PRIVATE_KEY = (
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 )
 DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-
-# Installation Variables
-REQUEST_HEADERS = {"User-Agent": "Moccasin"}
-PACKAGE_VERSION_FILE = "versions.toml"
-PYPI = "pypi"
-GITHUB = "github"
 
 MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
 

@@ -65,7 +65,7 @@ def new_project(
 
 def _create_folders(project_path: Path, vscode: bool = False) -> None:
     for folder in DEFAULT_PROJECT_FOLDERS:
-        Path(project_path).joinpath(folder).mkdir(exist_ok=True)
+        Path(project_path).joinpath(folder).mkdir(exist_ok=True, parents=True)
     if vscode:
         Path(project_path).joinpath(".vscode").mkdir(exist_ok=True)
 
