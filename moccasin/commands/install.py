@@ -23,6 +23,9 @@ from moccasin.config import get_or_initialize_config
 from moccasin.constants.vars import PACKAGE_VERSION_FILE, REQUEST_HEADERS
 from moccasin.logging import logger
 
+PYPI = "pypi"
+GITHUB = "github"
+
 
 class DependencyType(Enum):
     GITHUB = "github"
@@ -47,9 +50,9 @@ def main(args: Namespace):
             pip_requirements.append(requirement)
     install_path: Path = config.get_base_dependencies_install_path()
     if len(pip_requirements) > 0:
-        _pip_installs(pip_requirements, install_path, args.quiet)
+        _pip_installs(pip_requirements, install_path.joinpath(PYPI), args.quiet)
     if len(github_requirements) > 0:
-        _github_installs(github_requirements, install_path, args.quiet)
+        _github_installs(github_requirements, install_path.joinpath(GITHUB), args.quiet)
     return 0
 
 
@@ -102,7 +105,7 @@ def _github_installs(
             logger.info(f"Using latest version for {org}/{repo}: {version}")
 
         org_install_path = base_install_path.joinpath(f"{org}")
-        org_install_path.mkdir(exist_ok=True)
+        org_install_path.mkdir(exist_ok=True, parents=True)
         repo_install_path = org_install_path.joinpath(f"{repo}")
         versions_install_path = base_install_path.joinpath(PACKAGE_VERSION_FILE)
 
