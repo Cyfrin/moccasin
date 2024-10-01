@@ -9,6 +9,12 @@ save_abi_path = "abis"
 cov_config = ".coveragerc"
 dot_env = ".hello"
 
+[networks.pyevm]
+is_zksync = false
+
+[networks.eravm]
+is_zksync = true
+
 [networks.contracts]
 price_feed = { abi = "MockV3Aggregator", force_deploy = false, deployer_script = "mock_deployer/deploy_feed.py", fixture = false }
 
@@ -40,7 +46,6 @@ prompt_live = false
 url = "http://127.0.0.1:8545"
 unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
 default_account_name = "anvil1"
-prompt_live = true
 
 [networks.anvil.contracts]
 price_feed = { address = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi_from_explorer = false }

@@ -52,7 +52,7 @@ class Network:
     save_abi_path: str | None = None
     explorer_api_key: str | None = None
     contracts: dict[str, NamedContract] = field(default_factory=dict)
-    prompt_live: bool = False
+    prompt_live: bool = True
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
 
@@ -348,9 +348,9 @@ class _Networks:
 
         # add pyevm and eravm
         if PYEVM not in toml_data["networks"]:
-            toml_data["networks"][PYEVM] = {}
-        if ERAVM not in self._networks:
-            toml_data["networks"][ERAVM] = {"is_zksync": True}
+            toml_data["networks"][PYEVM] = {"is_zksync": False, "prompt_live": False}
+        if ERAVM not in toml_data["networks"]:
+            toml_data["networks"][ERAVM] = {"is_zksync": True, "prompt_live": False}
 
         for network_name, network_data in toml_data["networks"].items():
             # Check for restricted items for pyevm or eravm
@@ -360,11 +360,16 @@ class _Networks:
                         raise ValueError(
                             f"Cannot set {key} for network {network_name}."
                         )
-            if network_name is PYEVM:
-                if "is_zksync" in network_data.keys():
-                    raise ValueError(
-                        f"Cannot set is_zksync for network {network_name}."
-                    )
+                if network_name == PYEVM:
+                    if toml_data["networks"][PYEVM].get("is_zksync", False) is True:
+                        raise ValueError(
+                            f"is_zksync for {network_name} must be false. Please adjust it."
+                        )
+                if network_name == ERAVM:
+                    if toml_data["networks"][ERAVM].get("is_zksync", True) is False:
+                        raise ValueError(
+                            f"is_zksync for {network_name} must be True. Please adjust it."
+                        )
 
             if network_name == "contracts":
                 continue
@@ -379,6 +384,14 @@ class _Networks:
                         starting_network_contracts_dict,
                     )
                 )
+
+                if (
+                    network_name in [PYEVM, ERAVM]
+                    or network_data.get("fork", False)
+                    and network_data.get("prompt_live", None) is None
+                ):
+                    network_data["prompt_live"] = False
+
                 network = Network(
                     name=network_name,
                     is_fork=network_data.get("fork", False),
@@ -394,7 +407,7 @@ class _Networks:
                     ),
                     default_account_name=network_data.get("default_account_name", None),
                     unsafe_password_file=network_data.get("unsafe_password_file", None),
-                    prompt_live=network_data.get("prompt_live", False),
+                    prompt_live=network_data.get("prompt_live", True),
                     contracts=final_network_contracts,
                     extra_data=network_data.get("extra_data", {}),
                 )

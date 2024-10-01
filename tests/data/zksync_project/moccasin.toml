@@ -1,9 +1,5 @@
 [project]
 default_network_name = "eravm"
-# default_network = "pyevm"
-
-# [networks.pyevm]
-# # cannot set URL, chain_id, is_fork, is_zksync
 
 # eravm will always have is_zksync be true!
 # [networks.eravm]
