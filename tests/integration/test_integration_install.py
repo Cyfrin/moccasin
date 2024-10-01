@@ -2,6 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
+from moccasin.commands.install import GITHUB, PYPI
 from moccasin.config import Config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
 from tests.conftest import INSTALL_PROJECT_PATH
@@ -28,7 +29,7 @@ def test_install_without_parameters_installs_packages_in_toml(
     assert f"+ {pip_package_name}=={version}" in result.stderr
     assert (
         Path(INSTALL_PROJECT_PATH)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{pip_package_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{PYPI}/{pip_package_name}")
         .exists()
     )
 
@@ -55,7 +56,7 @@ def test_double_install_snekmate(installation_cleanup_dependencies, mox_path):
     assert result_two.returncode == 0
     assert (
         Path(INSTALL_PROJECT_PATH)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{org_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{org_name}")
         .exists()
     )
 
@@ -108,7 +109,7 @@ def test_can_install_with_version(installation_cleanup_dependencies, mox_path):
     assert f"{github_package_name}@{version}" in config.dependencies
     assert (
         Path(INSTALL_PROJECT_PATH)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{org_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{org_name}")
         .exists()
     )
 
@@ -138,6 +139,6 @@ def test_can_change_versions(installation_cleanup_dependencies, mox_path):
     assert f"{github_package_name}@{new_version}" in config.dependencies
     assert (
         Path(INSTALL_PROJECT_PATH)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{org_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{org_name}")
         .exists()
     )
