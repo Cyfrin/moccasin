@@ -33,13 +33,15 @@ RESTRICTED_VALUES_FOR_LOCAL_NETWORK = [
     "url",
     "chain_id",
     "is_fork",
-    "is_zksync",
     "prompt_live",
     "explorer_uri",
     "exploer_api_key",
 ]
 
 # Testing Vars
+ERA_DEFAULT_PRIVATE_KEY = (
+    "0x3d3cbc973389cb26f657686445bcc75662b415b656078503592ac8c1abb8810e"
+)
 DEFAULT_ANVIL_PRIVATE_KEY = (
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 )

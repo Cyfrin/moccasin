@@ -86,7 +86,6 @@ def _run_project_tests(
         if config.cov_config:
             pytest_args.extend(["--cov-config", str(config.cov_config)])
 
-    breakpoint()
     with _patch_sys_path([config_root, config_root / test_path]):
         _setup_network_and_account_from_args_and_cli(
             network=network,

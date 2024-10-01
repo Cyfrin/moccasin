@@ -5,7 +5,8 @@ from typing import Iterator, List
 
 import boa
 
-from moccasin.config import get_config, Network
+from moccasin.config import Network, get_config
+from moccasin.constants.vars import ERA_DEFAULT_PRIVATE_KEY, ERAVM
 from moccasin.logging import logger
 from moccasin.moccasin_account import MoccasinAccount
 
@@ -50,23 +51,22 @@ def _setup_network_and_account_from_args_and_cli(
     mox_account: MoccasinAccount | None = None
     config = get_config()
 
-    # TODO: Get the network name by checking the CLI, then checking the config for the default name.
-    # Should set the defaults (like pyevm) for example.
+    if network is None:
+        network = config.default_network
 
     # 1. Update the network with the CLI values
-    if network is not None:
-        config.set_active_network(
-            network,
-            is_fork=fork,
-            url=url,
-            default_account_name=account,
-            # private_key=private_key, # No private key in networks
-            # password=password, # No password in networks
-            password_file_path=password_file_path,
-            prompt_live=prompt_live,
-            explorer_uri=explorer_uri,
-            explorer_api_key=explorer_api_key,
-        )
+    config.set_active_network(
+        network,
+        is_fork=fork,
+        url=url,
+        default_account_name=account,
+        # private_key=private_key, # No private key in networks
+        # password=password, # No password in networks
+        password_file_path=password_file_path,
+        prompt_live=prompt_live,
+        explorer_uri=explorer_uri,
+        explorer_api_key=explorer_api_key,
+    )
 
     active_network: Network = config.get_active_network()
     if active_network is None:
@@ -103,6 +103,9 @@ def _setup_network_and_account_from_args_and_cli(
             boa.env.eoa = mox_account.address
         else:
             boa.env.add_account(mox_account, force_eoa=True)
+
+    if not mox_account and active_network.name is ERAVM:
+        boa.env.add_account(MoccasinAccount(private_key=ERA_DEFAULT_PRIVATE_KEY))
 
     # Check if it's a fork, pyevm, or eravm
     if not active_network.is_testing_network():

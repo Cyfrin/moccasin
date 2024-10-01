@@ -660,7 +660,7 @@ requires-dist = [
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
     { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
     { name = "titanoboa", git = "https://github.com/vyperlang/titanoboa.git?rev=master" },
-    { name = "titanoboa-zksync", specifier = ">=0.2.2" },
+    { name = "titanoboa-zksync", specifier = ">=0.2.3" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
@@ -1187,8 +1187,8 @@ wheels = [
 
 [[package]]
 name = "titanoboa"
-version = "0.2.2"
-source = { git = "https://github.com/vyperlang/titanoboa.git?rev=master#4768207288ec8fb23a4817ae193bd707ab9d1e8f" }
+version = "0.2.3"
+source = { git = "https://github.com/vyperlang/titanoboa.git?rev=master#f00e12bd0743c567a76885bcfd7a6151fcfbd951" }
 dependencies = [
     { name = "eth-abi" },
     { name = "eth-account" },
@@ -1207,14 +1207,14 @@ dependencies = [
 
 [[package]]
 name = "titanoboa-zksync"
-version = "0.2.2"
+version = "0.2.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "titanoboa" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e3/c9/051a16354c2b8347c5aeb803ad88965d4f31b7454d5c05c672d047f65521/titanoboa_zksync-0.2.2.tar.gz", hash = "sha256:d7150635040b4fff25d9866c4531dcf8061be49885ae1d8d19a8b2161b09bf40", size = 21754 }
+sdist = { url = "https://files.pythonhosted.org/packages/c1/93/44d1a5103ca3861b2dfefbeb325ce05aaa5ea13023bb8496d58a73536dc1/titanoboa_zksync-0.2.3.tar.gz", hash = "sha256:658608df0aed48f37d0b0a91a16a010fc94f99083c0568b922749a357a1c861a", size = 22404 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8d/b0/45e66ba7144693f7f70a162834e6696072142249a492e36bec692ed9223c/titanoboa_zksync-0.2.2-py3-none-any.whl", hash = "sha256:e6633fd5cf60dfcb935c8bbb2595e9e3bd83e4ef9ed8a6e394c3a4b2911f7ab9", size = 20950 },
+    { url = "https://files.pythonhosted.org/packages/ab/52/dece80b7a7e7ccea8433ea7c828bbd0366bf70ece14a4b8af4035a02c732/titanoboa_zksync-0.2.3-py3-none-any.whl", hash = "sha256:e0faba82915ed36482282d6bdf36e920b92a98649e1977906ecde6d1c216e9fb", size = 21335 },
 ]
 
 [[package]]

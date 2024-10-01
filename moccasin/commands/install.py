@@ -19,7 +19,7 @@ import tomli_w
 from packaging.requirements import InvalidRequirement, Requirement
 from tqdm import tqdm
 
-from moccasin.config import get_config
+from moccasin.config import get_or_initialize_config
 from moccasin.constants.vars import PACKAGE_VERSION_FILE, REQUEST_HEADERS
 from moccasin.logging import logger
 
@@ -31,7 +31,7 @@ class DependencyType(Enum):
 
 def main(args: Namespace):
     requirements = args.requirements
-    config = get_config()
+    config = get_or_initialize_config()
     if len(requirements) == 0:
         requirements = config.get_dependencies()
     if len(requirements) == 0:
@@ -255,7 +255,7 @@ def _pip_installs(package_ids: list[str], base_install_path: Path, quiet: bool =
 
 
 def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyType):
-    config = get_config()
+    config = get_or_initialize_config()
     dependencies = config.get_dependencies()
     typed_dependencies = [
         preprocess_requirement(dep)

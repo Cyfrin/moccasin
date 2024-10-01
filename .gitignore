@@ -22,3 +22,4 @@ default
 secrets/
 secret/
 .DS_Store
+era_test_node.log
