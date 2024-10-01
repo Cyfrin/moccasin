@@ -75,7 +75,7 @@ All possible options
     unsafe_password_file = "/home/user/.moccasin/password"  # Replace with actual path
     explorer_uri = "https://api.etherscan.io/api" # path for the supported explorer 
     explorer_api_key = "your_api_key" # api key for the supported explorer, overrides the main one 
-    prompt_live = false # A flag that will prompt you before sending a transaction
+    prompt_live = false # A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks 
 
     [networks.sepolia.contracts]
     # You can override the default named contract parameters

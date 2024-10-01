@@ -188,6 +188,27 @@ def test_network_operation_cancelled_on_no_input(
     assert result.returncode == 0
 
 
+def test_prompt_live_on_non_test_networks(
+    mox_path, complex_project_config, anvil_process
+):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(COMPLEX_PROJECT_PATH)
+        result = subprocess.run(
+            [mox_path, "run", "deploy", "--network", "anvil-live"],
+            input="\n",
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+    assert (
+        "The transactions run on this will actually be broadcast/transmitted, spending gas associated with your account. Are you sure you wish to continue?"
+        in result.stdout
+    )
+
+
 # ------------------------------------------------------------------
 #                            HELPERS
 # ------------------------------------------------------------------

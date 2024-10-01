@@ -36,7 +36,7 @@ def run_script(
     password_file_path: Path = None,
     fork: bool = False,
     url: str = None,
-    prompt_live: bool = False,
+    prompt_live: bool = None,
 ):
     config = get_config()
     script_path: Path = get_script_path(script_name_or_path)

@@ -78,7 +78,7 @@ def _run_project_tests(
     pytest_args: List[str],
     network: str = None,
     fork: bool = False,
-    prompt_live: bool = False,
+    prompt_live: bool = None,
     config: Config = None,
 ):
     if config is None:
