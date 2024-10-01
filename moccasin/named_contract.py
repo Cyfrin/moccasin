@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
+from boa_zksync.contract import ZksyncContract
 
 from moccasin.logging import logger
 
@@ -76,9 +77,12 @@ class NamedContract:
         vyper_contract: VyperContract = importlib.import_module(
             f"{deployer_module_path}"
         ).moccasin_main()
-        if not isinstance(vyper_contract, VyperContract):
+
+        if not isinstance(vyper_contract, VyperContract) and not isinstance(
+            vyper_contract, ZksyncContract
+        ):
             raise ValueError(
-                f"Your {deployer_module_path} script for {self.contract_name} set in deployer path must return a VyperContract object"
+                f"Your {deployer_module_path} script for {self.contract_name} set in deployer path must return a VyperContract or ZksyncContract object"
             )
         if update_from_deploy:
             self.update_from_deployment(vyper_contract)

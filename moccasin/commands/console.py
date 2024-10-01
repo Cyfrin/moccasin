@@ -6,7 +6,7 @@ from pathlib import Path
 
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
-    _setup_network_and_account_from_args,
+    _setup_network_and_account_from_args_and_cli,
 )
 from moccasin.config import get_config, initialize_global_config
 from moccasin.constants.vars import CONSOLE_HISTORY_FILE, DEFAULT_MOCCASIN_FOLDER
@@ -20,7 +20,7 @@ def main(args: Namespace) -> int:
 
     # Set up the environment (add necessary paths to sys.path, etc.)
     with _patch_sys_path([config_root, config_root / config.contracts_folder]):
-        _setup_network_and_account_from_args(
+        _setup_network_and_account_from_args_and_cli(
             network=args.network,
             url=args.url,
             fork=args.fork,

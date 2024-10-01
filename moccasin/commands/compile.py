@@ -14,8 +14,13 @@ from boa.contracts.vyper.vyper_contract import VyperDeployer
 from vyper.compiler.phases import CompilerData
 from vyper.exceptions import VersionException, _BaseVyperException
 
-from moccasin.config import get_config, initialize_global_config
-from moccasin.constants.vars import BUILD_FOLDER, CONTRACTS_FOLDER, MOCCASIN_GITHUB
+from moccasin.config import Config, get_config, initialize_global_config
+from moccasin.constants.vars import (
+    BUILD_FOLDER,
+    CONTRACTS_FOLDER,
+    ERAVM,
+    MOCCASIN_GITHUB,
+)
 from moccasin.logging import logger
 
 
@@ -24,10 +29,16 @@ def main(args: Namespace) -> int:
     config = get_config()
     project_path: Path = config.get_root()
 
+    is_zksync: bool = _set_zksync_test_env_if_applicable(args, config)
+
     if args.contract_or_contract_path:
         contract_path = config._find_contract(args.contract_or_contract_path)
+
         compile_(
-            contract_path, project_path.joinpath(config.out_folder), write_data=True
+            contract_path,
+            project_path.joinpath(config.out_folder),
+            is_zksync=is_zksync,
+            write_data=True,
         )
         logger.info(f"Done compiling {contract_path.stem}")
     else:
@@ -35,9 +46,31 @@ def main(args: Namespace) -> int:
             project_path,
             project_path.joinpath(config.out_folder),
             project_path.joinpath(config.contracts_folder),
+            is_zksync=is_zksync,
             write_data=True,
         )
     return 0
+
+
+def _set_zksync_test_env_if_applicable(args: Namespace, config: Config) -> bool:
+    is_zksync = args.is_zksync if args.is_zksync is not None else None
+
+    if is_zksync:
+        config.set_active_network(ERAVM)
+        return True
+
+    if args.network is not None and is_zksync is None:
+        config.set_active_network(args.network)
+        is_zksync = config.get_active_network().is_zksync
+
+    if config.default_network is not None and is_zksync is None:
+        config.set_active_network(config.default_network)
+        is_zksync = config.get_active_network().is_zksync
+
+    if is_zksync is None:
+        is_zksync = False
+
+    return is_zksync
 
 
 def _get_cpu_count():
@@ -51,6 +84,7 @@ def compile_project(
     project_path: Path | None = None,
     build_folder: Path | None = None,
     contracts_folder: Path | None = None,
+    is_zksync: bool = False,
     write_data: bool = False,
 ):
     if project_path is None:
@@ -75,7 +109,9 @@ def compile_project(
     with multiprocessing.Pool(n_cpus) as pool:
         for contract_path in contracts_to_compile:
             res = pool.apply_async(
-                compile_, (contract_path, build_folder), dict(write_data=write_data)
+                compile_,
+                (contract_path, build_folder),
+                dict(is_zksync=is_zksync, write_data=write_data),
             )
             jobs.append(res)
 
@@ -106,6 +142,7 @@ def compile_(
     contract_path: Path,
     build_folder: Path,
     compiler_args: dict | None = None,
+    is_zksync: bool = False,
     write_data: bool = False,
 ) -> VyperDeployer | None:
     logger.debug(f"Compiling contract {contract_path}")
@@ -132,21 +169,28 @@ def compile_(
 
     abi: list
     bytecode: bytes
-    if isinstance(deployer, VVMDeployer):
-        abi = deployer.abi
-        bytecode = deployer.bytecode
+    vm = "evm"
+
+    if is_zksync:
+        abi = deployer._abi
+        bytecode = deployer.zkvyper_data.bytecode
+        vm = "eravm"
     else:
-        compiler_data: CompilerData = deployer.compiler_data
-        bytecode = compiler_data.bytecode
-        abi = vyper.compiler.output.build_abi_output(compiler_data)
+        if isinstance(deployer, VVMDeployer):
+            abi = deployer.abi
+            bytecode = deployer.bytecode
+        else:
+            compiler_data: CompilerData = deployer.compiler_data
+            bytecode = compiler_data.bytecode
+            abi = vyper.compiler.output.build_abi_output(compiler_data)
 
     # Save Compilation Data
     contract_name = Path(contract_path).stem
-
     build_data = {
         "contract_name": contract_name,
         "bytecode": bytecode.hex(),
         "abi": abi,
+        "vm": vm,
     }
 
     if write_data:

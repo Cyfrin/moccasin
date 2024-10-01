@@ -136,6 +136,13 @@ Use this command to prepare your contracts for deployment or testing.""",
         help="Optional argument to compile a specific contract.",
     )
 
+    zksync_ground = compile_parser.add_mutually_exclusive_group()
+    zksync_ground.add_argument(
+        "--network", help=f"Alias of the network (from the {CONFIG_NAME})."
+    )
+
+    zksync_ground.add_argument("--is_zksync", nargs="?", const=True, default=None)
+
     # ------------------------------------------------------------------
     #                          TEST COMMAND
     # ------------------------------------------------------------------

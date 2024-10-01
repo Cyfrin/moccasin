@@ -7,7 +7,8 @@ INITIAL_ANSWER = int(2000e18)
 
 
 def deploy_mock() -> VyperContract:
-    return MockV3Aggregator.deploy(DECIMALS, INITIAL_ANSWER)
+    aggregator = MockV3Aggregator.deploy(DECIMALS, INITIAL_ANSWER)
+    return aggregator
 
 
 def moccasin_main() -> VyperContract:

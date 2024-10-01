@@ -11,17 +11,20 @@ import tomlkit
 from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
 from boa.environment import Env
+from boa_zksync import set_zksync_fork, set_zksync_test_env
 from dotenv import load_dotenv
 
 from moccasin.constants.vars import (
     BUILD_FOLDER,
     CONFIG_NAME,
     CONTRACTS_FOLDER,
-    DEFAULT_INSTALLER,
+    DEFAULT_NETWORK,
     DEPENDENCIES_FOLDER,
     DOT_ENV_FILE,
     DOT_ENV_KEY,
-    INSTALLER,
+    ERAVM,
+    PYEVM,
+    RESTRICTED_VALUES_FOR_LOCAL_NETWORK,
     SAVE_ABI_PATH,
     SCRIPT_FOLDER,
     TESTS_FOLDER,
@@ -32,7 +35,6 @@ from moccasin.named_contract import NamedContract
 if TYPE_CHECKING:
     from boa.network import NetworkEnv
     from boa_zksync import ZksyncEnv
-
 
 _AnyEnv = Union["NetworkEnv", "Env", "ZksyncEnv"]
 
@@ -54,42 +56,49 @@ class Network:
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
 
-    def _create_env(self) -> _AnyEnv:
+    def _set_boa_env(self) -> _AnyEnv:
         # perf: save time on imports in the (common) case where
         # we just import config for its utils but don't actually need
         # to switch networks
         from boa.network import EthereumRPC, NetworkEnv
         from boa_zksync import ZksyncEnv
 
+        # 1. Check for forking, and set (You cannot fork from a NetworkEnv, only a "new" Env!)
         if self.is_fork:
-            self._set_fork()
-        else:
             if self.is_zksync:
-                self._network_env = ZksyncEnv(EthereumRPC(self.url), nickname=self.name)
+                set_zksync_fork(url=self.url)
             else:
-                self._network_env = NetworkEnv(
-                    EthereumRPC(self.url), nickname=self.name
-                )
+                boa.fork(self.url)
+
+        # 2. Non-forked local networks
+        elif self.name == PYEVM:
+            env = Env()
+            boa.set_env(env)
+        elif self.name == ERAVM:
+            set_zksync_test_env()
+
+        # 3. Finally, "true" networks
+        elif self.is_zksync:
+            env = ZksyncEnv(EthereumRPC(self.url), nickname=self.name)
+            boa.set_env(env)
+        else:
+            env = NetworkEnv(EthereumRPC(self.url), nickname=self.name)
+            boa.set_env(env)
+
+        boa.env.nickname = self.name
+        return boa.env
+
+    def create_and_set_or_set_boa_env(self, **kwargs) -> _AnyEnv:
+        for key, value in kwargs.items():
+            if value is not None:
+                setattr(self, key, value)
+
+        # REVIEW: Performance improvement. We don't need to create a new env if the kwargs are the same.
+        # Potentially unnecessary
+        if self.kwargs_are_different(**kwargs) or self._network_env is None:
+            self._set_boa_env()
+        self._network_env = boa.env
         return self._network_env
-
-    def _set_fork(self):
-        self._network_env = Env()
-        self._network_env = cast(_AnyEnv, self._network_env)
-        self._network_env.fork(url=self.url, deprecated=False)
-        self._network_env.nickname = self.name
-        self.is_fork = True
-
-    def get_or_create_env(self, is_fork: bool | None) -> _AnyEnv:
-        if is_fork is None:
-            is_fork = self.is_fork
-        if is_fork:
-            self._set_fork()
-        if self._network_env:
-            boa.set_env(self._network_env)
-            return self._network_env
-        new_env: _AnyEnv = self._create_env()
-        boa.set_env(new_env)
-        return new_env
 
     def manifest_contract(
         self, contract_name: str, force_deploy: bool = False, address: str | None = None
@@ -215,6 +224,14 @@ class Network:
 
         return self._deploy_named_contract(named_contract, deployer_script)
 
+    def is_testing_network(self) -> bool:
+        """Returns True if network is:
+        1. pyevm
+        2. eravm
+        3. A fork
+        """
+        return self.name in [PYEVM, ERAVM] or self.is_fork
+
     def _deploy_named_contract(
         self, named_contract: NamedContract, deployer_script: str | Path
     ) -> VyperContract:
@@ -292,22 +309,31 @@ class Network:
     def identifier(self) -> str:
         return self.name
 
+    def kwargs_are_different(self, **kwargs) -> bool:
+        for key, value in kwargs.items():
+            if getattr(self, key, None) != value:
+                return True
+        return False
+
 
 class _Networks:
     _networks: dict[str, Network]
     _default_named_contracts: dict[str, NamedContract]
+    default_network_name: str
 
     def __init__(self, toml_data: dict):
         self._networks = {}
         self._default_named_contracts = {}
         self.custom_networks_counter = 0
+        project_data = toml_data.get("project", {})
 
-        default_explorer_api_key = toml_data.get("project", {}).get(
-            "explorer_api_key", None
-        )
-        default_explorer_uri = toml_data.get("project", {}).get("explorer_uri", None)
-        default_save_abi_path = toml_data.get("project", {}).get("save_abi_path", None)
+        default_explorer_api_key = project_data.get("explorer_api_key", None)
+        default_explorer_uri = project_data.get("explorer_uri", None)
+        default_save_abi_path = project_data.get("save_abi_path", None)
         default_contracts = toml_data.get("networks", {}).get("contracts", {})
+        self.default_network_name = project_data.get(
+            "default_network_name", DEFAULT_NETWORK
+        )
 
         self._validate_network_contracts_dict(default_contracts)
         for contract_name, contract_data in default_contracts.items():
@@ -320,11 +346,26 @@ class _Networks:
                 address=contract_data.get("address", None),
             )
 
+        # add pyevm and eravm
+        if PYEVM not in toml_data["networks"]:
+            toml_data["networks"][PYEVM] = {}
+        if ERAVM not in self._networks:
+            toml_data["networks"][ERAVM] = {"is_zksync": True}
+
         for network_name, network_data in toml_data["networks"].items():
-            if network_name == "pyevm":
-                raise ValueError(
-                    "pyevm is a reserved network name, at this time, overriding defaults is not supported. Please remove it from your moccasin.toml."
-                )
+            # Check for restricted items for pyevm or eravm
+            if network_name in [PYEVM, ERAVM]:
+                for key in network_data.keys():
+                    if key in RESTRICTED_VALUES_FOR_LOCAL_NETWORK:
+                        raise ValueError(
+                            f"Cannot set {key} for network {network_name}."
+                        )
+            if network_name is PYEVM:
+                if "is_zksync" in network_data.keys():
+                    raise ValueError(
+                        f"Cannot set is_zksync for network {network_name}."
+                    )
+
             if network_name == "contracts":
                 continue
             else:
@@ -332,25 +373,12 @@ class _Networks:
                 self._validate_network_contracts_dict(
                     starting_network_contracts_dict, network_name=network_name
                 )
-                final_network_contracts = self._default_named_contracts.copy()
-                for (
-                    contract_name,
-                    contract_data,
-                ) in starting_network_contracts_dict.items():
-                    named_contract = NamedContract(
-                        contract_name,
-                        force_deploy=contract_data.get("force_deploy", None),
-                        abi=contract_data.get("abi", None),
-                        abi_from_explorer=contract_data.get("abi_from_explorer", None),
-                        deployer_script=contract_data.get("deployer_script", None),
-                        address=contract_data.get("address", None),
+                final_network_contracts = (
+                    self._generate_network_contracts_from_defaults(
+                        self._default_named_contracts.copy(),
+                        starting_network_contracts_dict,
                     )
-                    if self._default_named_contracts.get(contract_name, None):
-                        named_contract.set_defaults(
-                            self._default_named_contracts[contract_name]
-                        )
-                    final_network_contracts[contract_name] = named_contract
-
+                )
                 network = Network(
                     name=network_name,
                     is_fork=network_data.get("fork", False),
@@ -375,6 +403,25 @@ class _Networks:
 
     def __len__(self):
         return len(self._networks)
+
+    def _generate_network_contracts_from_defaults(
+        self, starting_default_contracts: dict, starting_network_contracts_dict: dict
+    ) -> dict:
+        for contract_name, contract_data in starting_network_contracts_dict.items():
+            named_contract = NamedContract(
+                contract_name,
+                force_deploy=contract_data.get("force_deploy", None),
+                abi=contract_data.get("abi", None),
+                abi_from_explorer=contract_data.get("abi_from_explorer", None),
+                deployer_script=contract_data.get("deployer_script", None),
+                address=contract_data.get("address", None),
+            )
+            if self._default_named_contracts.get(contract_name, None):
+                named_contract.set_defaults(
+                    self._default_named_contracts[contract_name]
+                )
+            starting_default_contracts[contract_name] = named_contract
+        return starting_default_contracts
 
     def get_active_network(self) -> Network:
         if boa.env.nickname in self._networks:
@@ -408,33 +455,18 @@ class _Networks:
     def get_or_deploy_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
         return self.get_active_network().get_or_deploy_contract(*args, **kwargs)
 
-    # REVIEW: i think it might be better to delegate to `boa.set_env`
-    # so the usage would be like:
-    # ```
-    # boa.set_env_from_network(moccasin.networks.zksync)
-    # ```
-    # otherwise it is too confusing where moccasin ends and boa starts.
-    def set_active_network(
-        self, name_url_or_id: str | Network, is_fork: bool | None = None
-    ):
-        env_to_set: _AnyEnv
-        if isinstance(name_url_or_id, Network):
-            env_to_set = name_url_or_id.get_or_create_env(is_fork)
-            self._networks[name_url_or_id.name] = env_to_set
-        else:
-            if name_url_or_id.startswith("http"):
-                new_network = self._create_custom_network(
-                    name_url_or_id, is_fork=is_fork
-                )
-                env_to_set = new_network.get_or_create_env(is_fork)
-            else:
-                network = self.get_network(name_url_or_id)
-                if network:
-                    network.get_or_create_env(is_fork)
-                else:
-                    raise ValueError(
-                        f"Network {name_url_or_id} not found. Please pass a valid URL/RPC or valid network name."
-                    )
+    def set_active_network(self, name_of_network_or_network: str | Network, **kwargs):
+        if not isinstance(name_of_network_or_network, str) and not isinstance(
+            name_of_network_or_network, Network
+        ):
+            raise ValueError("The first argument must be a string or a Network object.")
+
+        if isinstance(name_of_network_or_network, str):
+            name_of_network_or_network = self.get_network(name_of_network_or_network)
+            name_of_network_or_network = cast(Network, name_of_network_or_network)
+
+        name_of_network_or_network.create_and_set_or_set_boa_env(**kwargs)
+        self._networks[name_of_network_or_network.name] = name_of_network_or_network
 
     def _create_custom_network(self, url: str, is_fork: bool | None = False) -> Network:
         if is_fork is None:
@@ -528,7 +560,7 @@ class Config:
             return [self.expand_env_vars(item) for item in value]
         return value
 
-    def get_active_network(self):
+    def get_active_network(self) -> Network:
         return self.networks.get_active_network()
 
     def get_or_deploy_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
@@ -609,14 +641,8 @@ class Config:
         # Return the single found contract
         return contract_paths[0]
 
-    def set_active_network(
-        self, name_url_or_id: str | Network, is_fork: bool | None = None
-    ):
-        self.networks.set_active_network(name_url_or_id, is_fork=is_fork)
-
-    @property
-    def installer(self) -> str:
-        return self.project.get(INSTALLER, DEFAULT_INSTALLER)
+    def set_active_network(self, name_url_or_id: str | Network, **kwargs):
+        self.networks.set_active_network(name_url_or_id, **kwargs)
 
     @property
     def project_root(self) -> Path:
@@ -659,6 +685,14 @@ class Config:
     def lib_folder(self) -> str:
         return self.project.get(DEPENDENCIES_FOLDER, DEPENDENCIES_FOLDER)
 
+    @property
+    def default_network(self) -> str:
+        return self.networks.default_network_name
+
+    @property
+    def default_network_name(self) -> str:
+        return self.default_network
+
     @staticmethod
     def load_config_from_path(config_path: Path | None = None) -> "Config":
         if config_path is None:
@@ -691,11 +725,21 @@ class Config:
 _config: Config | None = None
 
 
-def get_config() -> Config:
+def get_or_initialize_config() -> Config:
     global _config
-    if _config is not None:
-        return _config
-    return initialize_global_config()
+    if _config is None:
+        _config = initialize_global_config()
+    return _config
+
+
+def get_config() -> Config:
+    """Get the global Config object."""
+    global _config
+    if _config is None:
+        raise ValueError(
+            "Global Config object not initialized, initialize with initialize_global_config"
+        )
+    return _config
 
 
 def initialize_global_config(config_path: Path | None = None) -> Config:

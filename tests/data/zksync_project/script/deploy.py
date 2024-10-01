@@ -1,4 +1,4 @@
-from src import Counter
+from src import Difficulty
 
 from moccasin.boa_tools import ZksyncContract
 
@@ -6,11 +6,9 @@ from moccasin.boa_tools import ZksyncContract
 
 
 def deploy() -> ZksyncContract:
-    counter: ZksyncContract = Counter.deploy()
-    print("Starting count: ", counter.number())
-    counter.increment()
-    print("Ending count: ", counter.number())
-    return counter
+    difficulty: ZksyncContract = Difficulty.deploy()
+    print("Difficulty: ", difficulty.get_difficulty())
+    return difficulty
 
 
 def moccasin_main() -> ZksyncContract:

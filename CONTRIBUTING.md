@@ -11,6 +11,7 @@ Issues, feedback, and sharing that you're using Titanoboa and Vyper on social me
 - [Table of Contents](#table-of-contents)
 - [Setup](#setup)
   - [Requirements](#requirements)
+    - [ZKSync requirements](#zksync-requirements)
   - [Installing for local development](#installing-for-local-development)
   - [Running Tests](#running-tests)
 - [Code Style Guide](#code-style-guide)
@@ -35,6 +36,14 @@ You must have the following installed to proceed with contributing to this proje
   - This project is not tested on Windows, so it is recommended to use a Linux or MacOS machine, or use a tool like [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) for windows users.
 - [just](https://github.com/casey/just)
   - You'll know you did it right if you can run `just --version` and you see a response like `just 1.35.0`
+
+### ZKSync requirements
+If you wish to run the ZKSync tests, you'll need these as well (ran with `just test-z`)
+
+- [era_test_node](https://github.com/matter-labs/era-test-node)
+  - You'll know you did it right if you can run `era_test_node --version` and you see a response like `era_test_node 0.1.0 (a178051e8 2024-09-07)`
+- [era-compiler-vyper](https://github.com/matter-labs/era-compiler-vyper)
+  - You'll know you did it right if you can run `zkvyper --version` and you see a response like `Vyper compiler for ZKsync v1.5.4 (LLVM build f9f732c8ebdb88fb8cd4528482a00e4f65bcb8b7)`
 
 ## Installing for local development 
 
