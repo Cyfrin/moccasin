@@ -1,0 +1,3 @@
+{
+    "vyper.command": "vyper -p ./lib/github -p ./lib/pypi"
+}

@@ -7,19 +7,18 @@ from pathlib import Path
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
     _setup_network_and_account_from_args_and_cli,
+    get_sys_paths_list,
 )
-from moccasin.config import get_config, initialize_global_config
+from moccasin.config import initialize_global_config
 from moccasin.constants.vars import CONSOLE_HISTORY_FILE, DEFAULT_MOCCASIN_FOLDER
 from moccasin.logging import logger
 
 
 def main(args: Namespace) -> int:
-    initialize_global_config()
-    config = get_config()
-    config_root = config.get_root()
+    config = initialize_global_config()
 
     # Set up the environment (add necessary paths to sys.path, etc.)
-    with _patch_sys_path([config_root, config_root / config.contracts_folder]):
+    with _patch_sys_path(get_sys_paths_list(config)):
         _setup_network_and_account_from_args_and_cli(
             network=args.network,
             url=args.url,

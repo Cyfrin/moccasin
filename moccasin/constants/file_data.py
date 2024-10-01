@@ -268,6 +268,16 @@ VSCODE_SETTINGS_DEFAULT = """{
     },
     "files.associations": {
         ".coveragerc": "toml"
-    }
+    },
+    "vyper.command": "vyper -p ./lib/github -p ./lib/pypi"
 }
+"""
+
+PYPROJECT_TOML_DEFAULT = """[project]
+name = "moccasin_project"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
 """

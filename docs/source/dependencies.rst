@@ -47,11 +47,10 @@ You can then use these packages in your vyper contracts, for example in an minia
 
 .. code-block:: python
 
-    # As of today, you cannot "remap" import paths in Vyper
-    from lib.pcaversaccio.snekmate.src.snekmate.auth import ownable as ow
+    from pcaversaccio.snekmate.src.snekmate.auth import ownable as ow
     initializes: ow
 
-    from lib.pcaversaccio.snekmate.src.snekmate.tokens import erc20
+    from pcaversaccio.snekmate.src.snekmate.tokens import erc20
     initializes: erc20[ownable := ow]
     exports: erc20.__interface__
 
@@ -61,6 +60,23 @@ You can then use these packages in your vyper contracts, for example in an minia
         erc20.__init__("my_token", "MT", 18, "my_token_dapp", "0x02")
         ow.__init__()
 
+``moccasin`` is smart enough to know that the `lib/github` and `lib/pypi` folders are part of the search path, but you can also explicitly add your dependencies.
+
+.. code-block:: python
+
+    # This is the "true" search path
+    from lib.github.pcaversaccio.snekmate.src.snekmate.auth import ownable as ow
+    initializes: ow
+
+    from lib.github.pcaversaccio.snekmate.src.snekmate.tokens import erc20
+    initializes: erc20[ownable := ow]
+    exports: erc20.__interface__
+
+    @deploy
+    @payable
+    def __init__():
+        erc20.__init__("my_token", "MT", 18, "my_token_dapp", "0x02")
+        ow.__init__()
 
 .. _installing_pip_dependencies: 
 

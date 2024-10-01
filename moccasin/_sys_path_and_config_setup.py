@@ -5,10 +5,31 @@ from typing import Iterator, List
 
 import boa
 
-from moccasin.config import Network, get_config
+from moccasin.config import Network, get_config, Config
 from moccasin.constants.vars import ERA_DEFAULT_PRIVATE_KEY, ERAVM
 from moccasin.logging import logger
 from moccasin.moccasin_account import MoccasinAccount
+from moccasin.constants.vars import PYPI, GITHUB
+
+
+def get_sys_paths_list(config: Config) -> List[Path]:
+    config_root = config.get_root()
+    config_contracts = config_root.joinpath(config.contracts_folder)
+
+    base_install_path = config_root.joinpath(config.lib_folder)
+
+    # REVIEW: We could also look into the versions.toml file and add those to the search path too
+    # This way, we could make the imports even cleaner
+    github_dependencies = base_install_path.joinpath(GITHUB)
+    pypi_dependencies = base_install_path.joinpath(PYPI)
+
+    return [
+        config_root,
+        config_contracts,
+        github_dependencies,
+        pypi_dependencies,
+        base_install_path,
+    ]
 
 
 @contextlib.contextmanager

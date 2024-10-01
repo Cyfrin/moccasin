@@ -13,6 +13,7 @@ github_package_name = f"{org_name}/{pip_package_name}"
 version = "0.1.0"
 new_version = "0.0.5"
 comment_content = "PRESERVE COMMENTS"
+test_repo = "patrickalphac/test_repo"
 
 
 def test_install_without_parameters_installs_packages_in_toml(
@@ -142,3 +143,22 @@ def test_can_change_versions(installation_cleanup_dependencies, mox_path):
         .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{org_name}")
         .exists()
     )
+
+
+def test_can_compile_with_github_search_path(
+    installation_cleanup_dependencies, mox_path
+):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(INSTALL_PROJECT_PATH)
+        result_install = subprocess.run(
+            [mox_path, "install", test_repo], check=True, capture_output=True, text=True
+        )
+        result_compile = subprocess.run(
+            [mox_path, "compile"], check=True, capture_output=True, text=True
+        )
+    finally:
+        os.chdir(current_dir)
+    assert "Done compiling project!" in result_compile.stderr
+    assert result_install.returncode == 0
+    assert result_compile.returncode == 0

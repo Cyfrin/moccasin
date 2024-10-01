@@ -7,6 +7,7 @@ import pytest
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
     _setup_network_and_account_from_args_and_cli,
+    get_sys_paths_list,
 )
 from moccasin.config import get_config, initialize_global_config
 from moccasin.constants.vars import TESTS_FOLDER
@@ -86,7 +87,10 @@ def _run_project_tests(
         if config.cov_config:
             pytest_args.extend(["--cov-config", str(config.cov_config)])
 
-    with _patch_sys_path([config_root, config_root / test_path]):
+    list_of_paths = get_sys_paths_list(config)
+    list_of_paths.append(test_path)
+
+    with _patch_sys_path(list_of_paths):
         _setup_network_and_account_from_args_and_cli(
             network=network,
             url=None,

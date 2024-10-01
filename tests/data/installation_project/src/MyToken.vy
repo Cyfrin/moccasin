@@ -1,5 +1,8 @@
-from lib.snekmate.auth import ownable as ow
-from lib.snekmate.tokens import erc20
+# from snekmate.auth import ownable as ow
+# from snekmate.tokens import erc20
+from snekmate.auth import ownable as ow
+from snekmate.tokens import erc20
+from PatrickAlphaC.test_repo import my_contract
 
 initializes: ow
 initializes: erc20[ownable := ow]
