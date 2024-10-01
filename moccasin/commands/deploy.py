@@ -3,18 +3,17 @@ from argparse import Namespace
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
     _setup_network_and_account_from_args_and_cli,
+    get_sys_paths_list,
 )
 from moccasin.config import get_config, initialize_global_config
 from moccasin.logging import logger
 
 
 def main(args: Namespace) -> int:
-    initialize_global_config()
-    config_contracts = get_config().contracts_folder
-    config_root = get_config().get_root()
+    config = initialize_global_config()
 
     # Set up the environment (add necessary paths to sys.path, etc.)
-    with _patch_sys_path([config_root, config_root / config_contracts]):
+    with _patch_sys_path(get_sys_paths_list(config)):
         _setup_network_and_account_from_args_and_cli(
             network=args.network,
             url=args.url,

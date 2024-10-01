@@ -50,6 +50,8 @@ DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 # Installation Variables
 REQUEST_HEADERS = {"User-Agent": "Moccasin"}
 PACKAGE_VERSION_FILE = "versions.toml"
+PYPI = "pypi"
+GITHUB = "github"
 
 MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
 

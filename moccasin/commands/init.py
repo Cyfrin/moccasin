@@ -9,6 +9,7 @@ from moccasin.constants.file_data import (
     GITATTRIBUTES,
     GITIGNORE,
     MOCCASIN_DEFAULT_CONFIG,
+    PYPROJECT_TOML_DEFAULT,
     README_MD_SRC,
     TEST_COUNTER_DEFAULT,
     VSCODE_SETTINGS_DEFAULT,
@@ -27,14 +28,20 @@ from moccasin.logging import logger
 
 def main(args: Namespace) -> int:
     path: Path = new_project(
-        args.path or ".", args.force or False, args.vscode or False
+        args.path or ".",
+        args.force or False,
+        args.vscode or False,
+        args.pyproject or False,
     )
     logger.info(f"Project initialized at {str(path)}")
     return 0
 
 
 def new_project(
-    project_path_str: str = ".", force: bool = False, vscode: bool = False
+    project_path_str: str = ".",
+    force: bool = False,
+    vscode: bool = False,
+    pyproject: bool = False,
 ) -> Path:
     """Initializes a new project.
 
@@ -52,7 +59,7 @@ def new_project(
         )
     project_path.mkdir(exist_ok=True)
     _create_folders(project_path, vscode=vscode)
-    _create_files(project_path, vscode=vscode)
+    _create_files(project_path, vscode=vscode, pyproject=pyproject)
     return project_path
 
 
@@ -63,7 +70,9 @@ def _create_folders(project_path: Path, vscode: bool = False) -> None:
         Path(project_path).joinpath(".vscode").mkdir(exist_ok=True)
 
 
-def _create_files(project_path: Path, vscode: bool = False) -> None:
+def _create_files(
+    project_path: Path, vscode: bool = False, pyproject: bool = False
+) -> None:
     _write_file(project_path.joinpath(".gitignore"), GITIGNORE)
     _write_file(project_path.joinpath(".gitattributes"), GITATTRIBUTES)
     _write_file(project_path.joinpath(".coveragerc"), COVERAGERC)
@@ -85,6 +94,8 @@ def _create_files(project_path: Path, vscode: bool = False) -> None:
         _write_file(
             project_path.joinpath(".vscode/settings.json"), VSCODE_SETTINGS_DEFAULT
         )
+    if pyproject:
+        _write_file(project_path.joinpath("pyproject.toml"), PYPROJECT_TOML_DEFAULT)
 
 
 def _write_file(path: Path, contents: str, overwrite: bool = False) -> None:

@@ -20,11 +20,8 @@ from packaging.requirements import InvalidRequirement, Requirement
 from tqdm import tqdm
 
 from moccasin.config import get_or_initialize_config
-from moccasin.constants.vars import PACKAGE_VERSION_FILE, REQUEST_HEADERS
+from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
 from moccasin.logging import logger
-
-PYPI = "pypi"
-GITHUB = "github"
 
 
 class DependencyType(Enum):

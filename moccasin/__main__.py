@@ -111,6 +111,9 @@ This will create a basic directory structure at the path you specific, which loo
     init_parser.add_argument(
         "--vscode", help="Add a .vscode/settings.json file.", action="store_true"
     )
+    init_parser.add_argument(
+        "--pyproject", help="Add a pyproject.toml file.", action="store_true"
+    )
 
     # ------------------------------------------------------------------
     #                        COMPILE COMMAND

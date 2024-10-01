@@ -14,6 +14,7 @@ from boa.contracts.vyper.vyper_contract import VyperDeployer
 from vyper.compiler.phases import CompilerData
 from vyper.exceptions import VersionException, _BaseVyperException
 
+from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
 from moccasin.config import Config, get_config, initialize_global_config
 from moccasin.constants.vars import (
     BUILD_FOLDER,
@@ -25,30 +26,29 @@ from moccasin.logging import logger
 
 
 def main(args: Namespace) -> int:
-    initialize_global_config()
-    config = get_config()
+    config = initialize_global_config()
     project_path: Path = config.get_root()
 
     is_zksync: bool = _set_zksync_test_env_if_applicable(args, config)
 
-    if args.contract_or_contract_path:
-        contract_path = config._find_contract(args.contract_or_contract_path)
-
-        compile_(
-            contract_path,
-            project_path.joinpath(config.out_folder),
-            is_zksync=is_zksync,
-            write_data=True,
-        )
-        logger.info(f"Done compiling {contract_path.stem}")
-    else:
-        compile_project(
-            project_path,
-            project_path.joinpath(config.out_folder),
-            project_path.joinpath(config.contracts_folder),
-            is_zksync=is_zksync,
-            write_data=True,
-        )
+    with _patch_sys_path(get_sys_paths_list(config)):
+        if args.contract_or_contract_path:
+            contract_path = config._find_contract(args.contract_or_contract_path)
+            compile_(
+                contract_path,
+                project_path.joinpath(config.out_folder),
+                is_zksync=is_zksync,
+                write_data=True,
+            )
+            logger.info(f"Done compiling {contract_path.stem}")
+        else:
+            compile_project(
+                project_path,
+                project_path.joinpath(config.out_folder),
+                project_path.joinpath(config.contracts_folder),
+                is_zksync=is_zksync,
+                write_data=True,
+            )
     return 0
 
 
