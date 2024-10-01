@@ -5,11 +5,10 @@ from typing import Iterator, List
 
 import boa
 
-from moccasin.config import Network, get_config, Config
-from moccasin.constants.vars import ERA_DEFAULT_PRIVATE_KEY, ERAVM
+from moccasin.config import Config, Network, get_config
+from moccasin.constants.vars import ERA_DEFAULT_PRIVATE_KEY, ERAVM, GITHUB, PYPI
 from moccasin.logging import logger
 from moccasin.moccasin_account import MoccasinAccount
-from moccasin.constants.vars import PYPI, GITHUB
 
 
 def get_sys_paths_list(config: Config) -> List[Path]:
@@ -33,7 +32,7 @@ def get_sys_paths_list(config: Config) -> List[Path]:
 
 
 @contextlib.contextmanager
-def _patch_sys_path(paths: List[str | Path]) -> Iterator[None]:
+def _patch_sys_path(paths: List[Path]) -> Iterator[None]:
     str_paths = [str(p) for p in paths]
     anchor = sys.path
     try:

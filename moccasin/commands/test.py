@@ -1,5 +1,6 @@
 import sys
 from argparse import Namespace
+from pathlib import Path
 from typing import List
 
 import pytest
@@ -81,13 +82,13 @@ def _run_project_tests(
 ):
     config = get_config()
     config_root = config.get_root()
-    test_path = TESTS_FOLDER
+    test_path = config_root.joinpath(TESTS_FOLDER)
 
     if "cov-config" not in pytest_args:
         if config.cov_config:
             pytest_args.extend(["--cov-config", str(config.cov_config)])
 
-    list_of_paths = get_sys_paths_list(config)
+    list_of_paths: list[Path] = get_sys_paths_list(config)
     list_of_paths.append(test_path)
 
     with _patch_sys_path(list_of_paths):
