@@ -10,14 +10,19 @@ import boa
 import tomlkit
 from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
+from boa_zksync.contract import ZksyncContract
+from boa_zksync.deployer import ZksyncDeployer
 from boa.environment import Env
 from boa_zksync import set_zksync_fork, set_zksync_test_env
 from dotenv import load_dotenv
+from boa.deployments import get_deployments_db, Deployment
 
 from moccasin.constants.vars import (
     BUILD_FOLDER,
     CONFIG_NAME,
     CONTRACTS_FOLDER,
+    DB_PATH_LIVE_DEFAULT,
+    DB_PATH_LOCAL_DEFAULT,
     DEFAULT_NETWORK,
     DEPENDENCIES_FOLDER,
     DOT_ENV_FILE,
@@ -26,8 +31,10 @@ from moccasin.constants.vars import (
     PYEVM,
     RESTRICTED_VALUES_FOR_LOCAL_NETWORK,
     SAVE_ABI_PATH,
+    SAVE_TO_DB,
     SCRIPT_FOLDER,
     TESTS_FOLDER,
+    GET_MOST_RECENT_SQL,
 )
 from moccasin.logging import logger
 from moccasin.named_contract import NamedContract
@@ -53,15 +60,28 @@ class Network:
     explorer_api_key: str | None = None
     contracts: dict[str, NamedContract] = field(default_factory=dict)
     prompt_live: bool = True
+    save_to_db: bool = True
+    db_path: str = DB_PATH_LOCAL_DEFAULT
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
 
-    def _set_boa_env(self) -> _AnyEnv:
+    def _set_boa_env_and_db(self) -> _AnyEnv:
+        """Sets the boa.env to the current network, this additionally sets up the database."""
         # perf: save time on imports in the (common) case where
         # we just import config for its utils but don't actually need
         # to switch networks
         from boa.network import EthereumRPC, NetworkEnv
         from boa_zksync import ZksyncEnv
+        from boa.deployments import DeploymentsDB, set_deployments_db
+
+        # 0. Set the database
+        # The local networks should be validated at this point
+        db: DeploymentsDB
+        if self.save_to_db:
+            db = DeploymentsDB(path=self.db_path)
+        else:
+            db = DeploymentsDB(path=DB_PATH_LOCAL_DEFAULT)
+        set_deployments_db(db)
 
         # 1. Check for forking, and set (You cannot fork from a NetworkEnv, only a "new" Env!)
         if self.is_fork:
@@ -96,19 +116,47 @@ class Network:
         # REVIEW: Performance improvement. We don't need to create a new env if the kwargs are the same.
         # Potentially unnecessary
         if self.kwargs_are_different(**kwargs) or self._network_env is None:
-            self._set_boa_env()
+            self._set_boa_env_and_db()
         self._network_env = boa.env
         return self._network_env
 
+    def get_most_recently_deployed_deployment(
+        self, contract_name: str
+    ) -> Deployment | None:
+        db = get_deployments_db()
+        deployments: list[Deployment] = db._get_deployments_from_sql(
+            GET_MOST_RECENT_SQL, contract_name
+        )
+        if len(deployments) == 0:
+            return None
+        return deployments[0]
+
+    def get_most_recently_deployed_contract(
+        self, contract_name: str
+    ) -> VyperContract | ZksyncContract | None:
+        deployment = self.get_most_recently_deployed_deployment(contract_name)
+
+        contract_to_retrun = VyperContract | ZksyncContract
+
+        # TODO:
+        # if self.is_zksync:
+        #     contract_to_retrun = ZksyncDeployer(deployment.source_code)
+        # else:
+        #     contract_to_retrun = VyperDeployer.at(deployment.contract_address)
+
+        return contract_to_retrun
+
     def manifest_contract(
         self, contract_name: str, force_deploy: bool = False, address: str | None = None
-    ) -> VyperContract | ABIContract:
+    ) -> VyperContract | ZksyncContract | ABIContract:
         """A wrapper around get_or_deploy_contract that is more explicit about the contract being deployed."""
         return self.get_or_deploy_contract(
             contract_name=contract_name, force_deploy=force_deploy, address=address
         )
 
-    def instantiate_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
+    def instantiate_contract(
+        self, *args, **kwargs
+    ) -> VyperContract | ZksyncContract | ABIContract:
         """An alias for get_or_deploy_contract."""
         return self.get_or_deploy_contract(*args, **kwargs)
 
@@ -121,14 +169,16 @@ class Network:
         | list
         | VyperDeployer
         | VyperContract
+        | ZksyncContract
+        | ZksyncDeployer
         | ABIContractFactory
         | ABIContract
         | None = None,
         abi_from_explorer: bool | None = None,
         deployer_script: str | Path | None = None,
         address: str | None = None,
-    ) -> VyperContract | ABIContract:
-        """Returns or deploys a VyperContract or ABIContract based on the name and address in the config file, or passed to this function.
+    ) -> VyperContract | ZksyncContract | ABIContract:
+        """Returns or deploys a VyperContract, ZksyncContract, or ABIContract based on the name and address in the config file, or passed to this function.
 
         The following arguments are mutually exclusive:
             - abi
@@ -137,13 +187,13 @@ class Network:
         Args:
             - contract_name: the contract name or deployer for the contract.
             - force_deploy: if True, will deploy the contract even if the contract has an address in the config file.
-            - abi: the ABI of the contract. Can be a list, string path to file, string of the ABI, VyperDeployer, VyperContract, ABIContractFactory, or ABIContract.
+            - abi: the ABI of the contract. Can be a list, string path to file, string of the ABI, VyperDeployer, VyperContract, ZksyncDeployer, ZksyncContract, ABIContractFactory, or ABIContract.
             - abi_from_explorer: if True, will fetch the ABI from the explorer.
             - deployer_script: If no address is given, this is the path to deploy the contract.
             - address: The address of the contract.
 
         Returns:
-            VyperContract: The deployed contract instance, or a blank contract if the contract is not found.
+            VyperContract | ZksyncContract | ABIContract: The deployed contract instance, or a blank contract if the contract is not found.
         """
         named_contract: NamedContract = self.contracts.get(
             contract_name, NamedContract(contract_name)
@@ -186,6 +236,7 @@ class Network:
         #             CHECK TO SEE IF WE'VE ALREADY DEPLOYED
         # ------------------------------------------------------------------
         # 3. Happy path, check if the requested contract is what we've already deployed
+        # We don't need to check the DB since we are checking the address on this network
         if (
             named_contract.abi == abi
             and named_contract.address == address
@@ -193,9 +244,11 @@ class Network:
         ):
             return named_contract.vyper_contract
 
-        # 4. Happy path, maybe we didn't deploy the contract, but we've been given an abi and address, which works
+        # 4. Happy path, we check for this contract in the DB
+
+        # 5. Happy path, maybe we didn't deploy the contract, but we've been given an abi and address, which works
         if abi and address:
-            if isinstance(abi, VyperDeployer):
+            if isinstance(abi, VyperDeployer) or isinstance(abi, ZksyncDeployer):
                 return abi.at(address)
             else:
                 # Note, we are not putting this into the self.contracts dict, but maybe we should
@@ -210,7 +263,7 @@ class Network:
                 f"No abi_source or abi_path found for {named_contract.contract_name}, returning a blank contract at {address}"
             )
             # We could probably put this into _deploy_named_contract with a conditional
-            blank_contract: VyperDeployer = boa.loads_partial("")
+            blank_contract: VyperDeployer | ZksyncDeployer = boa.loads_partial("")
             vyper_contract = blank_contract.at(address)
             named_contract.update_from_deployment(vyper_contract)
             self.contracts[named_contract.contract_name] = named_contract
@@ -224,7 +277,7 @@ class Network:
 
         return self._deploy_named_contract(named_contract, deployer_script)
 
-    def is_testing_network(self) -> bool:
+    def is_local_or_forked_network(self) -> bool:
         """Returns True if network is:
         1. pyevm
         2. eravm
@@ -234,10 +287,12 @@ class Network:
 
     def _deploy_named_contract(
         self, named_contract: NamedContract, deployer_script: str | Path
-    ) -> VyperContract:
+    ) -> VyperContract | ZksyncContract:
         config = get_config()
-        deployed_named_contract: VyperContract = named_contract._deploy(
-            config.script_folder, deployer_script, update_from_deploy=True
+        deployed_named_contract: VyperContract | ZksyncContract = (
+            named_contract._deploy(
+                config.script_folder, deployer_script, update_from_deploy=True
+            )
         )
         self.contracts[named_contract.contract_name] = named_contract
         return deployed_named_contract
@@ -250,12 +305,14 @@ class Network:
         | list
         | VyperDeployer
         | VyperContract
+        | ZksyncContract
+        | ZksyncDeployer
         | ABIContractFactory
         | ABIContract
         | None = None,
         abi_from_explorer: bool | None = None,
         address: str | None = None,
-    ) -> str | VyperDeployer | None:
+    ) -> str | VyperDeployer | ZksyncDeployer | None:
         if abi_from_explorer and not address:
             raise ValueError(
                 f"Cannot get ABI from explorer without an address for contract {logging_contract_name}. Please provide an address."
@@ -283,9 +340,9 @@ class Network:
             if isinstance(abi, list):
                 # If its an ABI, just take it
                 return str(abi)
-            if isinstance(abi, VyperDeployer):
+            if isinstance(abi, VyperDeployer) or isinstance(abi, ZksyncDeployer):
                 return abi
-            if isinstance(abi, VyperContract):
+            if isinstance(abi, VyperContract) or isinstance(abi, ZksyncContract):
                 return abi.deployer
             if isinstance(abi, ABIContractFactory):
                 return abi.abi
@@ -319,12 +376,14 @@ class Network:
 class _Networks:
     _networks: dict[str, Network]
     _default_named_contracts: dict[str, NamedContract]
+    db_path: Path
     default_network_name: str
 
-    def __init__(self, toml_data: dict):
+    def __init__(self, toml_data: dict, db_path: Path):
         self._networks = {}
         self._default_named_contracts = {}
         self.custom_networks_counter = 0
+        self.db_path = db_path
         project_data = toml_data.get("project", {})
 
         default_explorer_api_key = project_data.get("explorer_api_key", None)
@@ -346,31 +405,12 @@ class _Networks:
                 address=contract_data.get("address", None),
             )
 
-        # add pyevm and eravm
-        if PYEVM not in toml_data["networks"]:
-            toml_data["networks"][PYEVM] = {"is_zksync": False, "prompt_live": False}
-        if ERAVM not in toml_data["networks"]:
-            toml_data["networks"][ERAVM] = {"is_zksync": True, "prompt_live": False}
+        toml_data = self._add_local_network_defaults(toml_data)
 
         for network_name, network_data in toml_data["networks"].items():
             # Check for restricted items for pyevm or eravm
             if network_name in [PYEVM, ERAVM]:
-                for key in network_data.keys():
-                    if key in RESTRICTED_VALUES_FOR_LOCAL_NETWORK:
-                        raise ValueError(
-                            f"Cannot set {key} for network {network_name}."
-                        )
-                if network_name == PYEVM:
-                    if toml_data["networks"][PYEVM].get("is_zksync", False) is True:
-                        raise ValueError(
-                            f"is_zksync for {network_name} must be false. Please adjust it."
-                        )
-                if network_name == ERAVM:
-                    if toml_data["networks"][ERAVM].get("is_zksync", True) is False:
-                        raise ValueError(
-                            f"is_zksync for {network_name} must be True. Please adjust it."
-                        )
-
+                self._validate_local_network_data(network_data, network_name)
             if network_name == "contracts":
                 continue
             else:
@@ -384,14 +424,9 @@ class _Networks:
                         starting_network_contracts_dict,
                     )
                 )
-
-                if (
-                    network_name in [PYEVM, ERAVM]
-                    or network_data.get("fork", False)
-                    and network_data.get("prompt_live", None) is None
-                ):
-                    network_data["prompt_live"] = False
-
+                if network_data.get("fork", None) is True:
+                    network_data = self._add_fork_network_defaults(network_data)
+                    self._validate_fork_network_defaults(network_data)
                 network = Network(
                     name=network_name,
                     is_fork=network_data.get("fork", False),
@@ -408,6 +443,8 @@ class _Networks:
                     default_account_name=network_data.get("default_account_name", None),
                     unsafe_password_file=network_data.get("unsafe_password_file", None),
                     prompt_live=network_data.get("prompt_live", True),
+                    save_to_db=network_data.get(SAVE_TO_DB, True),
+                    db_path=self.db_path,
                     contracts=final_network_contracts,
                     extra_data=network_data.get("extra_data", {}),
                 )
@@ -445,6 +482,9 @@ class _Networks:
         self._networks[new_network.name] = new_network
         return new_network
 
+    def get_db_path(self) -> Path:
+        return self.db_path
+
     def get_network(self, network_name_or_id: str | int) -> Network:
         if isinstance(network_name_or_id, int):
             return self.get_network_by_chain_id(network_name_or_id)
@@ -465,7 +505,9 @@ class _Networks:
             raise ValueError(f"Network {alias} not found.")
         return network
 
-    def get_or_deploy_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
+    def get_or_deploy_contract(
+        self, *args, **kwargs
+    ) -> VyperContract | ZksyncContract | ABIContract:
         return self.get_active_network().get_or_deploy_contract(*args, **kwargs)
 
     def set_active_network(self, name_of_network_or_network: str | Network, **kwargs):
@@ -508,6 +550,59 @@ class _Networks:
                     f"Contracts must be a dictionary in your {CONFIG_NAME}."
                 )
 
+    @staticmethod
+    def _add_local_network_defaults(toml_data: dict) -> dict:
+        if "networks" not in toml_data:
+            toml_data["networks"] = {}
+
+        # Define default values for PYEVM and ERAVM
+        local_networks_defaults = {
+            PYEVM: {"is_zksync": False, "prompt_live": False, SAVE_TO_DB: False},
+            ERAVM: {"is_zksync": True, "prompt_live": False, SAVE_TO_DB: False},
+        }
+
+        for local_network, local_network_data in local_networks_defaults.items():
+            if local_network not in toml_data["networks"]:
+                toml_data["networks"][local_network] = {}
+
+            for key, value in local_network_data.items():
+                if toml_data["networks"][local_network].get(key, None) is None:
+                    toml_data["networks"][local_network][key] = value
+        return toml_data
+
+    @staticmethod
+    def _add_fork_network_defaults(network_data: dict) -> dict:
+        network_data["prompt_live"] = network_data.get("prompt_live", False)
+        network_data[SAVE_TO_DB] = network_data.get(SAVE_TO_DB, False)
+        return network_data
+
+    @staticmethod
+    def _validate_fork_network_defaults(network_data: dict):
+        if network_data.get(SAVE_TO_DB, False) is True:
+            raise ValueError(
+                "You cannot save forked network data to a live database. Please set 'save_to_db' to 'False' or leave it unset."
+            )
+
+    @staticmethod
+    def _validate_local_network_data(network_data: dict, network_name: str):
+        for key in network_data.keys():
+            if key in RESTRICTED_VALUES_FOR_LOCAL_NETWORK:
+                raise ValueError(f"Cannot set {key} for network {network_name}.")
+            if network_name == PYEVM:
+                if network_data.get("is_zksync", False) is True:
+                    raise ValueError(
+                        f"is_zksync for {network_name} must be false. Please adjust it in your config."
+                    )
+            if network_name == ERAVM:
+                if network_data.get("is_zksync", True) is False:
+                    raise ValueError(
+                        f"is_zksync for {network_name} must be True. Please adjust it in your config."
+                    )
+            if network_data.get(SAVE_TO_DB) is True:
+                raise ValueError(
+                    f"{SAVE_TO_DB} for {network_name} must be 'False' or left unset. Please adjust it in your config."
+                )
+
 
 class Config:
     _project_root: Path
@@ -531,9 +626,17 @@ class Config:
         )
         self._load_env_file()
         toml_data = self.expand_env_vars(toml_data)
-        self.networks = _Networks(toml_data)
         self.dependencies = toml_data.get("project", {}).get("dependencies", [])
         self.project = toml_data.get("project", {})
+
+        # Setup networks and the database for deployments
+        # Review, we could probably skip this if the active network is local...
+        db_path_str = toml_data.get("project", {}).get("db_path", DB_PATH_LIVE_DEFAULT)
+        db_path = Path(db_path_str).expanduser()
+        if not db_path.is_absolute():
+            db_path = self._project_root.joinpath(db_path)
+        self.networks = _Networks(toml_data, db_path)
+
         if TESTS_FOLDER in self.project:
             logger.warning(
                 f"Tests folder is set to {self.project[TESTS_FOLDER]}. This is not supported and will be ignored."
@@ -576,7 +679,12 @@ class Config:
     def get_active_network(self) -> Network:
         return self.networks.get_active_network()
 
-    def get_or_deploy_contract(self, *args, **kwargs) -> VyperContract | ABIContract:
+    def get_db_path(self) -> Path:
+        return self.networks.get_db_path()
+
+    def get_or_deploy_contract(
+        self, *args, **kwargs
+    ) -> VyperContract | ZksyncContract | ABIContract:
         return self.get_active_network().get_or_deploy_contract(*args, **kwargs)
 
     def get_dependencies(self) -> list[str]:

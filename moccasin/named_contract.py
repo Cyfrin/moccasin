@@ -50,7 +50,7 @@ class NamedContract:
         script_folder: str,
         deployer_script: str | Path | None = None,
         update_from_deploy: bool = True,
-    ) -> VyperContract:
+    ) -> VyperContract | ZksyncContract:
         if deployer_script:
             deployer_script = str(deployer_script)
             deployer_module_path = (
@@ -74,7 +74,7 @@ class NamedContract:
         logger.debug(f"Deploying contract using {deployer_module_path}...")
         import importlib
 
-        vyper_contract: VyperContract = importlib.import_module(
+        vyper_contract: VyperContract | ZksyncContract = importlib.import_module(
             f"{deployer_module_path}"
         ).moccasin_main()
 

@@ -43,7 +43,7 @@ def _patch_sys_path(paths: List[Path]) -> Iterator[None]:
         sys.path = anchor
 
 
-def _setup_network_and_account_from_args_and_cli(
+def _setup_network_and_account_from_config_and_cli(
     network: str = None,
     url: str = None,
     fork: bool | None = None,
@@ -128,7 +128,7 @@ def _setup_network_and_account_from_args_and_cli(
         boa.env.add_account(MoccasinAccount(private_key=ERA_DEFAULT_PRIVATE_KEY))
 
     # Check if it's a fork, pyevm, or eravm
-    if not active_network.is_testing_network():
+    if not active_network.is_local_or_forked_network():
         if boa.env.eoa is None:
             logger.warning(
                 "No default EOA account found. Please add an account to the environment before attempting a transaction."

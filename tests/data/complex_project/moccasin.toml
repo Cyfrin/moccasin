@@ -8,12 +8,16 @@ explorer_api_key = "${ETHERSCAN_API_KEY}"
 save_abi_path = "abis"
 cov_config = ".coveragerc"
 dot_env = ".hello"
+db_path = ".deployments.db"
+# db_path = "/Users/patrick/code/moccasin/tests/data/complex_project/.deployments.db"
 
 [networks.pyevm]
 is_zksync = false
+save_to_db = false
 
 [networks.eravm]
 is_zksync = true
+save_to_db = false
 
 [networks.contracts]
 price_feed = { abi = "MockV3Aggregator", force_deploy = false, deployer_script = "mock_deployer/deploy_feed.py", fixture = false }
@@ -35,6 +39,7 @@ url = "http://127.0.0.1:8545"
 unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
 default_account_name = "anvil1"
 prompt_live = false
+save_to_db = true                                            # The default is true for non-local networks
 
 [networks.anvil-fork]
 url = "http://127.0.0.1:8546"
@@ -46,6 +51,7 @@ prompt_live = false
 url = "http://127.0.0.1:8545"
 unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
 default_account_name = "anvil1"
+save_to_db = true
 
 [networks.anvil.contracts]
 price_feed = { address = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi_from_explorer = false }

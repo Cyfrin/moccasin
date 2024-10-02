@@ -180,6 +180,8 @@ lib/
 .password.unsafe
 .password
 .password*
+.deployments*
+.deployments.db
 """
 
 COUNTER_VYPER_CONTRACT_SRC = """# SPDX-License-Identifier: MIT

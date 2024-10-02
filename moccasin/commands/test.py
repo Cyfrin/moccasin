@@ -7,7 +7,7 @@ import pytest
 
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
-    _setup_network_and_account_from_args_and_cli,
+    _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
 from moccasin.config import Config, get_config, initialize_global_config
@@ -94,7 +94,7 @@ def _run_project_tests(
     list_of_paths.append(test_path)
 
     with _patch_sys_path(list_of_paths):
-        _setup_network_and_account_from_args_and_cli(
+        _setup_network_and_account_from_config_and_cli(
             network=network,
             url=None,
             fork=fork,
