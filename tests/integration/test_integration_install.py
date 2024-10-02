@@ -5,15 +5,16 @@ from pathlib import Path
 from moccasin.commands.install import GITHUB, PYPI
 from moccasin.config import Config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
-from tests.conftest import INSTALL_PROJECT_PATH
-
-pip_package_name = "snekmate"
-org_name = "pcaversaccio"
-github_package_name = f"{org_name}/{pip_package_name}"
-version = "0.1.0"
-new_version = "0.0.5"
-comment_content = "PRESERVE COMMENTS"
-test_repo = "patrickalphac/test_repo"
+from tests.conftest import (
+    INSTALL_PROJECT_PATH,
+    comment_content,
+    github_package_name,
+    new_version,
+    org_name,
+    patrick_package_name,
+    pip_package_name,
+    version,
+)
 
 
 def test_install_without_parameters_installs_packages_in_toml(
@@ -152,7 +153,10 @@ def test_can_compile_with_github_search_path(
     try:
         os.chdir(INSTALL_PROJECT_PATH)
         result_install = subprocess.run(
-            [mox_path, "install", test_repo], check=True, capture_output=True, text=True
+            [mox_path, "install", patrick_package_name],
+            check=True,
+            capture_output=True,
+            text=True,
         )
         result_compile = subprocess.run(
             [mox_path, "compile"], check=True, capture_output=True, text=True

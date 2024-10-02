@@ -583,6 +583,11 @@ class Config:
         return self.dependencies
 
     def write_dependencies(self, dependencies: list):
+        """Writes the dependencies to the config file.
+
+        This will overwrite the existing dependencies with the new ones. So if you wish to keep old ones,
+        read from the dependencies first.
+        """
         target_path = self._project_root / CONFIG_NAME
         toml_data = self.read_moccasin_config_preserve_comments(target_path)
         toml_data["project"]["dependencies"] = dependencies  # type: ignore

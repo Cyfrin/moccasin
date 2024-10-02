@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-
 from moccasin.commands.run import get_script_path, run_script
 from tests.conftest import COMPLEX_PROJECT_PATH
 
