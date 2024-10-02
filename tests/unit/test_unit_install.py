@@ -1,4 +1,4 @@
-from moccasin.commands.install import (
+from moccasin._dependency_utils import (
     DependencyType,
     classify_dependency,
     preprocess_requirement,

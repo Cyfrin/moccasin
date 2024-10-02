@@ -14,6 +14,7 @@ from tests.utils.anvil import ANVIL_URL, AnvilProcess
 
 COMPLEX_PROJECT_PATH = Path(__file__).parent.joinpath("data/complex_project/")
 INSTALL_PROJECT_PATH = Path(__file__).parent.joinpath("data/installation_project/")
+PURGE_PROJECT_PATH = Path(__file__).parent.joinpath("data/purge_project/")
 ZKSYNC_PROJECT_PATH = Path(__file__).parent.joinpath("data/zksync_project/")
 ANVIL1_PRIVATE_KEY = (
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
@@ -50,6 +51,26 @@ dependencies = ["snekmate", "moccasin"]
 url = "https://ethereum-sepolia-rpc.publicnode.com"
 chain_id = 11155111
 """
+
+PURGE_STARTING_TOML = """[project]
+dependencies = ["snekmate", "patrickalphac/test_repo"]
+
+# PRESERVE COMMENTS
+
+[networks.sepolia]
+url = "https://ethereum-sepolia-rpc.publicnode.com"
+chain_id = 11155111
+"""
+
+pip_package_name = "snekmate"
+org_name = "pcaversaccio"
+github_package_name = f"{org_name}/{pip_package_name}"
+version = "0.1.0"
+new_version = "0.0.5"
+comment_content = "PRESERVE COMMENTS"
+patrick_org_name = "patrickalphac"
+patrick_repo_name = "test_repo"
+patrick_package_name = f"{patrick_org_name}/{patrick_repo_name}"
 
 
 ## BASIC FIXTURES
@@ -176,3 +197,32 @@ def anvil_process():
 def anvil_fork_no_state():
     with AnvilProcess(args=["-p", "8546"]):
         yield
+
+
+## PURGE PROJECT FIXTURES
+@pytest.fixture(scope="session")
+def purge_project_config() -> Config:
+    return initialize_global_config(PURGE_PROJECT_PATH)
+
+
+@pytest.fixture
+def purge_reset_dependencies():
+    # Create a temporary directory
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        # Copy the entire project directory to the temporary location
+        shutil.copytree(
+            PURGE_PROJECT_PATH, temp_path / PURGE_PROJECT_PATH.name, dirs_exist_ok=True
+        )
+        yield
+        for item in (temp_path / PURGE_PROJECT_PATH.name).iterdir():
+            if item.is_dir():
+                shutil.rmtree(PURGE_PROJECT_PATH / item.name, ignore_errors=True)
+                shutil.copytree(
+                    item, PURGE_PROJECT_PATH / item.name, dirs_exist_ok=True
+                )
+            else:
+                shutil.copy2(item, PURGE_PROJECT_PATH / item.name)
+
+        with open(PURGE_PROJECT_PATH.joinpath("moccasin.toml"), "w") as f:
+            f.write(PURGE_STARTING_TOML)

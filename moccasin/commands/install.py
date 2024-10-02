@@ -8,25 +8,22 @@ import traceback
 import zipfile
 from argparse import Namespace
 from base64 import b64encode
-from dataclasses import dataclass
-from enum import Enum
 from io import BytesIO
 from pathlib import Path
 from urllib.parse import quote
 
 import requests  # type: ignore
 import tomli_w
-from packaging.requirements import InvalidRequirement, Requirement
 from tqdm import tqdm
 
+from moccasin._dependency_utils import (
+    DependencyType,
+    _write_new_dependencies,
+    classify_dependency,
+)
 from moccasin.config import get_or_initialize_config
 from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
 from moccasin.logging import logger
-
-
-class DependencyType(Enum):
-    GITHUB = "github"
-    PIP = "pip"
 
 
 def main(args: Namespace):
@@ -53,27 +50,6 @@ def main(args: Namespace):
     return 0
 
 
-def classify_dependency(dependency: str) -> DependencyType:
-    dependency = dependency.strip().strip("'\"")
-
-    github_shorthand = r"^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)(@[a-zA-Z0-9_.-]+)?$"
-    github_url = r"^https://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+$"
-
-    if re.match(github_shorthand, dependency) or re.match(github_url, dependency):
-        return DependencyType.GITHUB
-
-    return DependencyType.PIP
-
-
-def preprocess_requirement(package: str) -> str:
-    package = package.strip().strip("'\"")
-    git_url_pattern = r"^git\+https?://.*"
-    if re.match(git_url_pattern, package):
-        package_name = package.split("/")[-1].replace(".git", "")
-        return package_name
-    return package
-
-
 # Much of this code thanks to brownie
 # https://github.com/eth-brownie/brownie/blob/master/brownie/_config.py
 def _github_installs(
@@ -88,6 +64,8 @@ def _github_installs(
                 path = package_id
                 version = None  # We'll fetch the latest version later
             org, repo = path.split("/")
+            org = org.strip().lower()
+            repo = repo.strip().lower()
         except ValueError:
             raise ValueError(
                 "Invalid package ID. Must be given as ORG/REPO[@VERSION]"
@@ -109,10 +87,10 @@ def _github_installs(
         if repo_install_path.exists():
             with open(versions_install_path, "rb") as f:
                 versions = tomllib.load(f)
+                versions = {k.lower(): v for k, v in versions.items()}
                 installed_version = versions.get(f"{org}/{repo}", None)
             if installed_version == version:
-                logger.info(f"Installed {org}/{repo}")
-                _write_dependencies([f"{org}/{repo}@{version}"], DependencyType.GITHUB)
+                logger.info(f"{org}/{repo} already installed at version {version}")
                 return f"{org}/{repo}@{version}"
             else:
                 logger.info(
@@ -160,7 +138,7 @@ def _github_installs(
             with open(versions_install_path, "w", encoding="utf-8") as f:
                 toml_string = tomli_w.dumps({f"{org}/{repo}": version})
                 f.write(toml_string)
-        _write_dependencies(github_ids, DependencyType.GITHUB)
+        _write_new_dependencies(github_ids, DependencyType.GITHUB)
 
 
 def _get_latest_version(org: str, repo: str, headers: dict) -> str:
@@ -251,86 +229,4 @@ def _pip_installs(package_ids: list[str], base_install_path: Path, quiet: bool =
         )
         sys.exit(1)
 
-    _write_dependencies(package_ids, DependencyType.PIP)
-
-
-def _write_dependencies(new_package_ids: list[str], dependency_type: DependencyType):
-    config = get_or_initialize_config()
-    dependencies = config.get_dependencies()
-    typed_dependencies = [
-        preprocess_requirement(dep)
-        for dep in dependencies
-        if classify_dependency(dep) == dependency_type
-    ]
-
-    to_delete = set()
-    updated_packages = set()
-
-    if dependency_type == DependencyType.PIP:
-        for package in new_package_ids:
-            try:
-                processed_package = preprocess_requirement(package)
-                package_req = Requirement(processed_package)
-            except InvalidRequirement:
-                logger.warning(f"Invalid requirement format for package: {package}")
-                continue
-            for dep in typed_dependencies:
-                dep_req = Requirement(dep)
-                if dep_req.name == package_req.name:
-                    to_delete.add(dep)
-                    updated_packages.add(package_req.name)
-
-            if package_req.name not in updated_packages:
-                logger.info(f"Installed new package: {package}")
-            else:
-                logger.info(f"Updated package: {package}")
-    else:  # GIT dependencies
-        for package in new_package_ids:
-            package_dep = GitHubDependency.from_string(package)
-            for dep in typed_dependencies:
-                dep_gh = GitHubDependency.from_string(dep)
-                if dep_gh.org == package_dep.org and dep_gh.repo == package_dep.repo:
-                    to_delete.add(dep)
-                    updated_packages.add(package_dep.format_no_version())
-
-            if f"{package_dep.org}/{package_dep.repo}" not in updated_packages:
-                logger.info(f"Installed {package}")
-            else:
-                logger.info(f"Updated {package}")
-
-    # Remove old versions of updated packages
-    dependencies = [dep for dep in dependencies if dep not in to_delete]
-
-    # Add new packages while preserving order
-    new_deps = []
-    for dep in dependencies + new_package_ids:
-        if dep not in new_deps:
-            new_deps.append(dep)
-
-    if len(new_deps) > 0:
-        config.write_dependencies(new_deps)
-
-
-@dataclass
-class GitHubDependency:
-    org: str
-    repo: str
-    version: str | None = None
-
-    @classmethod
-    def from_string(cls, dep_string: str) -> "GitHubDependency":
-        if "@" in dep_string:
-            path, version = dep_string.split("@")
-        else:
-            path, version = dep_string, None
-
-        org, repo = str(path).split("/")
-        return cls(org, repo, version)
-
-    def format_no_version(self) -> str:
-        return f"{self.org}/{self.repo}"
-
-    def __str__(self) -> str:
-        if self.version:
-            return f"{self.org}/{self.repo}@{self.version}"
-        return self.format_no_version()
+    _write_new_dependencies(package_ids, DependencyType.PIP)

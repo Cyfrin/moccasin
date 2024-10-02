@@ -1,0 +1,19 @@
+[project]
+src = "src"
+out = "out"
+script = "script"
+lib = "lib"
+installer = "uv"
+dot_env = ".env"
+
+[networks.sepolia]
+url = "https://ethereum-sepolia-rpc.publicnode.com"
+chain_id = 11155111
+
+[networks.zksync-sepolia]
+url = "https://sepolia.era.zksync.dev"
+chain_id = 300
+is_zksync = true
+prompt_live = true
+
+# You can view all configuration options at https://cyfrin.github.io/moccasin/all_moccasin_toml_parameters.html
