@@ -40,6 +40,7 @@ unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
 default_account_name = "anvil1"
 prompt_live = false
 save_to_db = true                                            # The default is true for non-local networks
+chain_id = 31337
 
 [networks.anvil-fork]
 url = "http://127.0.0.1:8546"

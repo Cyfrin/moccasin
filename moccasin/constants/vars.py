@@ -64,9 +64,10 @@ DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
 
 # Database vars
-GET_MOST_RECENT_SQL = """SELECT *
+GET_MOST_RECENT_SQL = """SELECT {}
 FROM deployments
 WHERE contract_name = ?
+  AND json_extract(tx_dict, '$.chainId') = ?
 ORDER BY broadcast_ts DESC
 LIMIT 1;"""
 

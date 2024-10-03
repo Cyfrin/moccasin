@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Type
 
+from vyper.compiler.phases import CompilerData
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
+from boa.deployments import Deployment
 from boa_zksync.contract import ZksyncContract
 
 from moccasin.logging import logger
@@ -87,3 +89,18 @@ class NamedContract:
         if update_from_deploy:
             self.update_from_deployment(vyper_contract)
         return vyper_contract
+
+    @classmethod
+    def from_deployment(
+        cls, deployment: Deployment, deployer_class: Type[Any], contract_name: str
+    ) -> "NamedContract":
+        pass
+        # compiler_data: CompilerData = CompilerData(deployer.)
+        # vyper_deployer = deployer_class()
+        # return cls(
+        #     contract_name=deployment.contract_name,
+        #     abi=deployment.abi,
+        #     address=deployment.address,
+        #     vyper_contract=deployment.vyper_contract,
+        #     vyper_deployer=deployment.vyper_deployer,
+        # )

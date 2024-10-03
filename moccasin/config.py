@@ -5,9 +5,11 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Union, cast
+from eth_utils import to_hex
 
 import boa
 import tomlkit
+from boa.interpret import _get_default_deployer_class
 from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
 from boa_zksync.contract import ZksyncContract
@@ -105,6 +107,15 @@ class Network:
             env = NetworkEnv(EthereumRPC(self.url), nickname=self.name)
             boa.set_env(env)
 
+        # 4. Quick sanity check on chain_id
+        if not self.is_local_or_forked_network():
+            expected_chain_id = boa.env.get_chain_id()  # type: ignore
+            if self.chain_id and self.chain_id != expected_chain_id:
+                raise ValueError(
+                    f"Chain ID mismatch. Expected {expected_chain_id}, but user placed {self.chain_id} in their {CONFIG_NAME}."
+                )
+            self.chain_id = expected_chain_id if not self.chain_id else self.chain_id
+
         boa.env.nickname = self.name
         return boa.env
 
@@ -121,11 +132,21 @@ class Network:
         return self._network_env
 
     def get_most_recently_deployed_deployment(
-        self, contract_name: str
+        self, contract_name: str, chain_id: int | str | None = None
     ) -> Deployment | None:
         db = get_deployments_db()
+        if chain_id is None:
+            chain_id = to_hex(self.chain_id)
+        else:
+            chain_id = to_hex(chain_id)
+        # TODO
+        # Add get_all_deployments, and get_current_deployment
+        # get_current_deployment checks the integrity hash
+        # get_all_deployments does not
+        # get_most_recently_deployed_deployment has an option to check the integrity hash
+        field_names = db._get_fieldnames_str()
         deployments: list[Deployment] = db._get_deployments_from_sql(
-            GET_MOST_RECENT_SQL, contract_name
+            GET_MOST_RECENT_SQL.format(field_names), (contract_name, chain_id)
         )
         if len(deployments) == 0:
             return None
@@ -135,16 +156,15 @@ class Network:
         self, contract_name: str
     ) -> VyperContract | ZksyncContract | None:
         deployment = self.get_most_recently_deployed_deployment(contract_name)
-
-        contract_to_retrun = VyperContract | ZksyncContract
-
-        # TODO:
-        # if self.is_zksync:
-        #     contract_to_retrun = ZksyncDeployer(deployment.source_code)
-        # else:
-        #     contract_to_retrun = VyperDeployer.at(deployment.contract_address)
-
-        return contract_to_retrun
+        if deployment is not None:
+            deployer_class = _get_default_deployer_class()
+            breakpoint()
+            named_contract = NamedContract.from_deployment(
+                deployment, deployer_class, contract_name
+            )
+            # deployer = boa.loads_partial(deployment.source_code, name=contract_name)
+            # return deployer.at(deployment.address)
+        return None
 
     def manifest_contract(
         self, contract_name: str, force_deploy: bool = False, address: str | None = None
@@ -222,7 +242,7 @@ class Network:
         if force_deploy:
             if not deployer_script:
                 raise ValueError(
-                    f"Contract {named_contract.contract_name} has force_deploy=True but no deployer_script specified in the config file."
+                    f"Contract {named_contract.contract_name} has force_deploy=True but no deployer_script specified in their {CONFIG_NAME}."
                 )
             return self._deploy_named_contract(named_contract, deployer_script)
 
@@ -245,6 +265,11 @@ class Network:
             return named_contract.vyper_contract
 
         # 4. Happy path, we check for this contract in the DB
+        vyper_contract: VyperContract | ZksyncContract | None = (
+            self.get_most_recently_deployed_contract(named_contract.contract_name)
+        )
+        if vyper_contract is not None:
+            return vyper_contract
 
         # 5. Happy path, maybe we didn't deploy the contract, but we've been given an abi and address, which works
         if abi and address:
@@ -272,7 +297,7 @@ class Network:
         # 6. If no address, deploy the contract
         if not deployer_script:
             raise ValueError(
-                f"Contract {named_contract.contract_name} has no address or deployer_script specified in the config file."
+                f"Contract {named_contract.contract_name} has no address or deployer_script specified in the {CONFIG_NAME}."
             )
 
         return self._deploy_named_contract(named_contract, deployer_script)
@@ -664,7 +689,7 @@ class Config:
         if not str(config_path).endswith(f"/{CONFIG_NAME}"):
             config_path = config_path.joinpath(CONFIG_NAME)
         if not config_path.exists():
-            raise FileNotFoundError(f"Config file not found: {config_path}")
+            raise FileNotFoundError(f"{CONFIG_NAME} not found: {config_path}")
         return config_path
 
     def expand_env_vars(self, value):
@@ -866,6 +891,10 @@ def get_config() -> Config:
             "Global Config object not initialized, initialize with initialize_global_config"
         )
     return _config
+
+
+def get_active_network() -> Network:
+    return get_config().get_active_network()
 
 
 def initialize_global_config(config_path: Path | None = None) -> Config:
