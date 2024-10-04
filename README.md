@@ -4,8 +4,7 @@
 
 <p align="center">
     <br />
-    <a href="https://cyfrin.io/">
-        <img src="./docs/source/_static/moccasin_logo.svg" width="225" alt=""/></a>
+        <img src="./docs/source/_static/gh_banner.png" width="100%" alt=""/></a>
     <br />
 </p>
 
