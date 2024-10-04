@@ -7,7 +7,7 @@ import pytest
 
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
-    _setup_network_and_account_from_args_and_cli,
+    _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
 from moccasin.config import Config, get_config, initialize_global_config
@@ -70,7 +70,12 @@ def main(args: Namespace) -> int:
                 else:
                     pytest_args.extend([option, str(value)])
     return _run_project_tests(
-        pytest_args, network=args.network, fork=args.fork, prompt_live=args.prompt_live
+        pytest_args,
+        network=args.network,
+        fork=args.fork,
+        prompt_live=args.prompt_live,
+        db_path=args.db_path,
+        save_to_db=args.save_to_db,
     )
 
 
@@ -79,6 +84,8 @@ def _run_project_tests(
     network: str = None,
     fork: bool = False,
     prompt_live: bool = None,
+    db_path: str = None,
+    save_to_db: bool = None,
     config: Config = None,
 ):
     if config is None:
@@ -94,7 +101,7 @@ def _run_project_tests(
     list_of_paths.append(test_path)
 
     with _patch_sys_path(list_of_paths):
-        _setup_network_and_account_from_args_and_cli(
+        _setup_network_and_account_from_config_and_cli(
             network=network,
             url=None,
             fork=fork,
@@ -103,6 +110,8 @@ def _run_project_tests(
             password=None,
             password_file_path=None,
             prompt_live=prompt_live,
+            db_path=db_path,
+            save_to_db=save_to_db,
         )
 
         pytest_args = [

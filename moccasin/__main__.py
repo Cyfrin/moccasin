@@ -18,7 +18,7 @@ ALIAS_TO_COMMAND = {
     "config": "config_",
 }
 
-PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer"]
+PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer", "deployments"]
 
 
 def main(argv: list) -> int:
@@ -573,6 +573,44 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
         ],
     )
 
+    # ------------------------------------------------------------------
+    #                      DEPLOYMENTS COMMAND
+    # ------------------------------------------------------------------
+    deployments_parser = sub_parsers.add_parser(
+        "deployments",
+        help="View deployments of the project from your DB.",
+        description="""View deployments of the project from your DB.
+        
+        The --format-level will determine how much information you want to print based on your deployment.
+
+        Format levels:
+        - 0: Contract Address
+        - 1: Contract Address and Name
+        - 2: Contract Address, Name, and Source Code
+        - 3: Everything
+        - 4: Raw JSON
+        """,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        parents=[parent_parser],
+    )
+    deployments_parser.add_argument(
+        "contract_name", help="Name of the contract to get."
+    )
+    deployments_parser.add_argument(
+        "--format-level",
+        "-f",
+        default=1,
+        help="Format level of how much information you want to print based on your deployment.",
+    )
+    deployments_parser.add_argument(
+        "--checked",
+        action="store_true",
+        help="Only return contracts that match the current edition of the code by comparing integrity hashes.",
+    )
+    deployments_parser.add_argument(
+        "--limit", default=None, help="Limit the number of deployments to get."
+    )
+    add_network_args_to_parser(deployments_parser)
     return main_parser, sub_parsers
 
 
@@ -624,7 +662,19 @@ def add_network_args_to_parser(parser: argparse.ArgumentParser):
         default=None,  # When no flag is passed
         help="Prompt the user to make sure they want to run this script.",
     )
-    return network_or_rpc_group
+    parser.add_argument(
+        "--db-path",
+        default=None,
+        help="The location of your database, defaults to your working project's database in your {CONFIG_NAME}.",
+    )
+    parser.add_argument(
+        "--save-to-db",
+        nargs="?",  # Allow an optional value
+        const=True,  # Value when the flag is passed without an argument
+        default=None,  # When no flag is passed
+        help="Save the deployment to the database.",
+    )
+    return parser
 
 
 def get_version() -> str:

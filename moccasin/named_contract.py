@@ -19,7 +19,7 @@ class NamedContract:
     vyper_contract: VyperContract | None = None
     vyper_deployer: VyperDeployer | None = None
 
-    def update_from_deployment(self, deployed_contract: VyperContract):
+    def update_from_deployed_contract(self, deployed_contract: VyperContract):
         self.abi = deployed_contract.abi
         self.address = deployed_contract.address
         self.vyper_contract = deployed_contract
@@ -50,7 +50,7 @@ class NamedContract:
         script_folder: str,
         deployer_script: str | Path | None = None,
         update_from_deploy: bool = True,
-    ) -> VyperContract:
+    ) -> VyperContract | ZksyncContract:
         if deployer_script:
             deployer_script = str(deployer_script)
             deployer_module_path = (
@@ -74,7 +74,7 @@ class NamedContract:
         logger.debug(f"Deploying contract using {deployer_module_path}...")
         import importlib
 
-        vyper_contract: VyperContract = importlib.import_module(
+        vyper_contract: VyperContract | ZksyncContract = importlib.import_module(
             f"{deployer_module_path}"
         ).moccasin_main()
 
@@ -85,5 +85,5 @@ class NamedContract:
                 f"Your {deployer_module_path} script for {self.contract_name} set in deployer path must return a VyperContract or ZksyncContract object"
             )
         if update_from_deploy:
-            self.update_from_deployment(vyper_contract)
+            self.update_from_deployed_contract(vyper_contract)
         return vyper_contract

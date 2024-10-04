@@ -11,17 +11,20 @@ chain_id = 260
 zksync = true
 default_account_name = "zk-rich1"
 unsafe_password_file = "~/.moccasin/unsafe-passwords/zk-rich1"
+save_to_db = false
 
 [networks.zksync-sepolia]
 url = "https://sepolia.era.zksync.dev"
 chain_id = 300
 zksync = true
 default_account_name = "default"
+save_to_db = false
 
 [networks.anvil]
 url = "http://127.0.0.1:8545"
 default_account_name = "anvil1"
 unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
+save_to_db = false
 
 [extra_data]
 hi = true

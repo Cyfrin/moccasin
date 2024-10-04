@@ -1,6 +1,6 @@
 # from snekmate.auth import ownable as ow
 # from snekmate.tokens import erc20
-from snekmate.auth import ownable as ow
+from snekmate.auth import ownable as ow 
 from snekmate.tokens import erc20
 from PatrickAlphaC.test_repo import my_contract
 

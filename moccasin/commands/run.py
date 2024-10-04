@@ -4,7 +4,7 @@ from pathlib import Path
 
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
-    _setup_network_and_account_from_args_and_cli,
+    _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
 from moccasin.config import get_config, initialize_global_config
@@ -23,6 +23,7 @@ def main(args: Namespace) -> int:
         fork=args.fork,
         url=args.url,
         prompt_live=args.prompt_live,
+        db_path=args.db_path,
     )
     return 0
 
@@ -37,13 +38,14 @@ def run_script(
     fork: bool = False,
     url: str = None,
     prompt_live: bool = None,
+    db_path: str = None,
 ):
     config = get_config()
     script_path: Path = get_script_path(script_name_or_path)
 
     # Set up the environment (add necessary paths to sys.path, etc.)
     with _patch_sys_path(get_sys_paths_list(config)):
-        _setup_network_and_account_from_args_and_cli(
+        _setup_network_and_account_from_config_and_cli(
             network=network,
             url=url,
             fork=fork,
@@ -52,6 +54,7 @@ def run_script(
             password=password,
             password_file_path=password_file_path,
             prompt_live=prompt_live,
+            db_path=db_path,
         )
 
         # We give the user's script the module name "deploy_script_moccasin"

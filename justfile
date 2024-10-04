@@ -37,6 +37,11 @@ test-all:
 test-pdb:
     uv run pytest -x -s --ignore=tests/data/ --pdb
 
+# For when you want to run the same anvil chain as what's used in the tests
+anvil:
+    anvil --load-state tests/data/anvil_data/state.json
+
+
 # Build documentation
 docs:
     uv sync --extra docs

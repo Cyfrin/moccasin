@@ -6,7 +6,7 @@ from pathlib import Path
 
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
-    _setup_network_and_account_from_args_and_cli,
+    _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
 from moccasin.config import initialize_global_config
@@ -19,11 +19,16 @@ def main(args: Namespace) -> int:
 
     # Set up the environment (add necessary paths to sys.path, etc.)
     with _patch_sys_path(get_sys_paths_list(config)):
-        _setup_network_and_account_from_args_and_cli(
+        _setup_network_and_account_from_config_and_cli(
             network=args.network,
             url=args.url,
             fork=args.fork,
+            account=args.account,
+            private_key=args.private_key,
+            password=args.password,
+            password_file_path=args.password_file_path,
             prompt_live=args.prompt_live,
+            db_path=args.db_path,
         )
 
         # Ensure the Moccasin folder exists

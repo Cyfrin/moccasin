@@ -1,0 +1,14 @@
+[project]
+src = "src"
+
+[networks.contracts]
+price_feed = { abi = "MockV3Aggregator", force_deploy = false, deployer_script = "mock_deployer/deploy_feed.py", fixture = false }
+# You can view all configuration options at https://cyfrin.github.io/moccasin/all_moccasin_toml_parameters.html
+
+[networks.anvil]
+url = "http://127.0.0.1:8545"
+unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
+default_account_name = "anvil1"
+prompt_live = false
+save_to_db = true
+chain_id = 31337

@@ -659,7 +659,7 @@ requires-dist = [
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
     { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
-    { name = "titanoboa", git = "https://github.com/vyperlang/titanoboa.git?rev=master" },
+    { name = "titanoboa", git = "https://github.com/charles-cooper/titanoboa.git?rev=feat%2Fdeployments-abi" },
     { name = "titanoboa-zksync", specifier = ">=0.2.3" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
@@ -1188,7 +1188,7 @@ wheels = [
 [[package]]
 name = "titanoboa"
 version = "0.2.3"
-source = { git = "https://github.com/vyperlang/titanoboa.git?rev=master#f00e12bd0743c567a76885bcfd7a6151fcfbd951" }
+source = { git = "https://github.com/charles-cooper/titanoboa.git?rev=feat%2Fdeployments-abi#fb9dfaeca9738421e0460683c891c76d55d56d4e" }
 dependencies = [
     { name = "eth-abi" },
     { name = "eth-account" },

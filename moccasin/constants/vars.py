@@ -12,7 +12,10 @@ SCRIPT_FOLDER = "script"
 DEPENDENCIES_FOLDER = "lib"
 PYEVM = "pyevm"
 ERAVM = "eravm"
+SAVE_TO_DB = "save_to_db"
 DEFAULT_NETWORK = PYEVM
+DB_PATH_LOCAL_DEFAULT = ":memory:"
+DB_PATH_LIVE_DEFAULT = ".deployments.db"
 
 # Project Config Keys
 SAVE_ABI_PATH = "save_abi_path"
@@ -25,7 +28,6 @@ REQUEST_HEADERS = {"User-Agent": "Moccasin"}
 PACKAGE_VERSION_FILE = "versions.toml"
 PYPI = "pypi"
 GITHUB = "github"
-
 
 # Complex Vars
 DEFAULT_PROJECT_FOLDERS = [
@@ -59,8 +61,15 @@ DEFAULT_ANVIL_PRIVATE_KEY = (
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 )
 DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-
 MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
+STARTING_BOA_BALANCE = 1000000000000000000000  # 1,000 Ether
+
+# Database vars
+GET_CONTRACT_SQL = """SELECT {}
+FROM deployments
+WHERE contract_name = ?
+  AND json_extract(tx_dict, '$.chainId') = ?
+ORDER BY broadcast_ts DESC {}"""
 
 # Networking defaults
 DEFAULT_NETWORKS_BY_NAME: dict[str, dict] = {

@@ -1,11 +1,13 @@
 from pathlib import Path
 from typing import cast
 
+from boa.util.abi import Address
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_keys.datatypes import PrivateKey
 from eth_typing import ChecksumAddress
 from eth_utils import to_bytes
+from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 
 from moccasin.commands.wallet import decrypt_key
@@ -20,12 +22,17 @@ class MoccasinAccount(LocalAccount):
         keystore_path_or_account_name: Path | str | None = None,
         password: str = None,
         password_file_path: Path = None,
+        address: Address | None = None,
+        ignore_warning: bool = False,
     ):
         # We override the LocalAccount Type
         self._private_key: bytes | None = None  # type: ignore
         # We override the LocalAccount Type
         self._address: ChecksumAddress | None = None  # type: ignore
         self._publicapi = Account()
+
+        if address:
+            self._address = to_checksum_address(address)
 
         if private_key:
             private_key = to_bytes(hexstr=private_key)
@@ -43,9 +50,10 @@ class MoccasinAccount(LocalAccount):
         if private_key:
             self._init_key(private_key)
         else:
-            logger.warning(
-                "Be sure to call unlock before trying to send a transaction."
-            )
+            if not ignore_warning:
+                logger.warning(
+                    "Be sure to call unlock before trying to send a transaction."
+                )
 
     @property
     def private_key(self) -> bytes:
@@ -55,6 +63,8 @@ class MoccasinAccount(LocalAccount):
     def address(self) -> ChecksumAddress | None:  # type: ignore
         if self.private_key:
             return PrivateKey(self.private_key).public_key.to_checksum_address()
+        if self._address:
+            return self._address
         return None
 
     def _init_key(self, private_key: bytes | HexBytes):
@@ -95,3 +105,7 @@ class MoccasinAccount(LocalAccount):
             )
             self._init_key(decrypted_key)
         return cast(HexBytes, self.private_key)
+
+    @classmethod
+    def from_boa_address(cls, address: Address) -> "MoccasinAccount":
+        return cls()
