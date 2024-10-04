@@ -1,18 +1,18 @@
 from pathlib import Path
 from typing import cast
 
+from boa.util.abi import Address
 from eth_account import Account
 from eth_account.signers.local import LocalAccount
 from eth_keys.datatypes import PrivateKey
 from eth_typing import ChecksumAddress
 from eth_utils import to_bytes
+from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 
 from moccasin.commands.wallet import decrypt_key
 from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
 from moccasin.logging import logger
-from boa.util.abi import Address
-from eth_utils.address import to_checksum_address
 
 
 class MoccasinAccount(LocalAccount):

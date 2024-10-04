@@ -1,13 +1,14 @@
 from argparse import Namespace
+from enum import Enum
 
-from moccasin.config import Config, get_config, initialize_global_config
+from boa.deployments import Deployment
+
 from moccasin._sys_path_and_config_setup import (
-    _patch_sys_path,
     _get_set_active_network_from_cli_and_config,
+    _patch_sys_path,
     get_sys_paths_list,
 )
-from boa.deployments import Deployment
-from enum import Enum
+from moccasin.config import Config, get_config, initialize_global_config
 from moccasin.logging import logger
 
 NUM_DASH = 60

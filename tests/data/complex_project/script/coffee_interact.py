@@ -1,6 +1,7 @@
-from moccasin.config import get_active_network
 from boa.contracts.abi.abi_contract import ABIContract
 from eth_utils import to_wei
+
+from moccasin.config import get_active_network
 
 
 def fund_coffee() -> ABIContract:

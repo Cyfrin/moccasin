@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 import pytest
+
 from moccasin.commands.deployments import print_deployments_from_cli
 from moccasin.commands.run import run_script
 from tests.conftest import DEPLOYMENTS_PROJECT_PATH

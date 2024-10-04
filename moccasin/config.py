@@ -2,11 +2,10 @@ import os
 import shutil
 import tempfile
 import tomllib
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator, Optional, Union, cast
-from eth_utils import to_hex
-import warnings
 
 import boa
 import tomlkit
@@ -14,15 +13,16 @@ import tomlkit
 # If we want to know the specific deployer that the active env is working with
 # from boa.interpret import _get_default_deployer_class
 from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
-from boa.util.abi import Address
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
+from boa.deployments import Deployment, get_deployments_db
+from boa.environment import Env
+from boa.util.abi import Address
+from boa.verifiers import get_verification_bundle
+from boa_zksync import set_zksync_fork, set_zksync_test_env
 from boa_zksync.contract import ZksyncContract
 from boa_zksync.deployer import ZksyncDeployer
-from boa.environment import Env
-from boa_zksync import set_zksync_fork, set_zksync_test_env
 from dotenv import load_dotenv
-from boa.deployments import get_deployments_db, Deployment
-from boa.verifiers import get_verification_bundle
+from eth_utils import to_hex
 
 from moccasin.constants.vars import (
     BUILD_FOLDER,
@@ -35,13 +35,13 @@ from moccasin.constants.vars import (
     DOT_ENV_FILE,
     DOT_ENV_KEY,
     ERAVM,
+    GET_CONTRACT_SQL,
     PYEVM,
     RESTRICTED_VALUES_FOR_LOCAL_NETWORK,
     SAVE_ABI_PATH,
     SAVE_TO_DB,
     SCRIPT_FOLDER,
     TESTS_FOLDER,
-    GET_CONTRACT_SQL,
 )
 from moccasin.logging import logger
 from moccasin.moccasin_account import MoccasinAccount
@@ -69,7 +69,7 @@ class Network:
     contracts: dict[str, NamedContract] = field(default_factory=dict)
     prompt_live: bool = True
     save_to_db: bool = True
-    db_path: str = DB_PATH_LOCAL_DEFAULT
+    db_path: str | Path = DB_PATH_LOCAL_DEFAULT
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
 
@@ -78,9 +78,9 @@ class Network:
         # perf: save time on imports in the (common) case where
         # we just import config for its utils but don't actually need
         # to switch networks
+        from boa.deployments import DeploymentsDB, set_deployments_db
         from boa.network import EthereumRPC, NetworkEnv
         from boa_zksync import ZksyncEnv
-        from boa.deployments import DeploymentsDB, set_deployments_db
 
         # 0. Set the database
         # The local networks should be validated at this point
@@ -197,7 +197,7 @@ class Network:
 
     def _get_deployer_from_contract_name(
         self, contract_name: str, config: Optional["Config"] = None
-    ) -> VyperDeployer | ZksyncDeployer | None:
+    ) -> VyperDeployer | ZksyncDeployer:
         if not config:
             config = get_config()
         contract_path = config._find_contract(contract_name)
@@ -384,7 +384,7 @@ class Network:
                     named_contract.contract_name
                 )
             else:
-                vyper_contract: ABIContract | None = self.get_latest_contract_unchecked(
+                vyper_contract = self.get_latest_contract_unchecked(
                     named_contract.contract_name
                 )
             if vyper_contract is not None:
@@ -509,7 +509,7 @@ class Network:
         return False
 
     def set_boa_eoa(self, account: MoccasinAccount):
-        if self.is_local_or_forked_network:
+        if self.is_local_or_forked_network:  # type: ignore[truthy-function]
             boa.env.eoa = Address(account.address)
         else:
             boa.env.add_account(account, force_eoa=True)

@@ -5,10 +5,15 @@ from typing import Iterator, List
 
 import boa
 from boa.util.abi import Address
-from moccasin.constants.vars import STARTING_BOA_BALANCE
 
 from moccasin.config import Config, Network, get_config
-from moccasin.constants.vars import ERA_DEFAULT_PRIVATE_KEY, ERAVM, GITHUB, PYPI
+from moccasin.constants.vars import (
+    ERA_DEFAULT_PRIVATE_KEY,
+    ERAVM,
+    GITHUB,
+    PYPI,
+    STARTING_BOA_BALANCE,
+)
 from moccasin.logging import logger
 from moccasin.moccasin_account import MoccasinAccount
 
