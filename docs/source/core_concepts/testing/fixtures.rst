@@ -16,7 +16,7 @@ One of the most powerful features of ``moccasin`` is the ability to define fixtu
 Using Fixtures 
 ==============
 
-Fixtures are just :doc:`NamedContracts <named_contracts>` with the ``fixture`` flag set to ``True``.
+Fixtures are just :doc:`NamedContracts </core_concepts/named_contracts>` with the ``fixture`` flag set to ``True``.
 
 .. code-block:: toml 
 

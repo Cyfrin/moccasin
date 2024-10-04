@@ -90,6 +90,6 @@ And it will ask you for the password to decrypt your private key.
 .. toctree::
     :maxdepth: 2
 
-    Private Keys <private_key.rst>
-    Accounts in mocasin.toml <config_keys.rst>
+    Private Keys <wallet/private_key.rst>
+    Accounts in mocasin.toml <wallet/config_keys.rst>
     

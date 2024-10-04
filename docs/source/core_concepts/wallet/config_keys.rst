@@ -1,7 +1,7 @@
 Configurating Keys 
 ##################
 
-The preferred method for working with keys, is encrypting them with the :doc:`mox wallet <wallet>` command. 
+The preferred method for working with keys, is encrypting them with the :doc:`mox wallet </core_concepts/wallet>` command. 
 
 .. code-block:: toml 
 

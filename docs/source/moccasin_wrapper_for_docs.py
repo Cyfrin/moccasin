@@ -3,7 +3,19 @@ from typing import Tuple
 
 from moccasin.__main__ import generate_main_parser_and_sub_parsers
 
+# from moccasin.config import Config, Network, _Networks
+# from moccasin.moccasin_account import MoccasinAccount
+# from moccasin.named_contract import NamedContract
 
+
+# ------------------------------------------------------------------
+#                        CLASS REFERENCE
+# ------------------------------------------------------------------
+
+
+# ------------------------------------------------------------------
+#                          CLI COMMANDS
+# ------------------------------------------------------------------
 # Wrapper function for sphinx-argparse
 def get_main_parser() -> argparse.ArgumentParser:
     main_parser, _ = generate_main_parser_and_sub_parsers()
@@ -38,6 +50,10 @@ def get_run():
 
 def get_deploy():
     return get_subparser("deploy")
+
+
+def get_deployments():
+    return get_subparser("deployments")
 
 
 def get_install():

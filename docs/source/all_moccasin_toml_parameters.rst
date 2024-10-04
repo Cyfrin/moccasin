@@ -46,6 +46,7 @@ All possible options
     cov_config = ".coveragerc" # coverage configuration file
     dot_env = ".env"  # environment variables file
     default_network = "pyevm" # default network to use. `pyevm` is the local network. "eravm" is the local ZKSync network
+    db_path = ".deployments.db" # path to the deployments database
 
     [networks.pyevm]
     # The basic EVM local network
@@ -76,6 +77,7 @@ All possible options
     explorer_uri = "https://api.etherscan.io/api" # path for the supported explorer 
     explorer_api_key = "your_api_key" # api key for the supported explorer, overrides the main one 
     prompt_live = false # A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks 
+    save_to_db = true # A flag that will save the deployment to the database, it defaults to true for "non-testing" networks (not pyevm, eravm, or a fork network)
 
     [networks.sepolia.contracts]
     # You can override the default named contract parameters

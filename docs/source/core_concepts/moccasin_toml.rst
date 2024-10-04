@@ -3,7 +3,7 @@ moccasin.toml
 
 .. note:: 
 
-    For an exhaustive list of options for your ``moccasin.toml`` file, see the :doc:`all moccasin toml parameters <all_moccasin_toml_parameters>` documentation.
+    For an exhaustive list of options for your ``moccasin.toml`` file, see the :doc:`all moccasin toml parameters </all_moccasin_toml_parameters>` documentation.
 
 The ``moccasin.toml`` file created is our configuration file. In this file we can have:
 
@@ -39,7 +39,7 @@ You can learn more about each of the sections of the ``moccasin.toml`` file in t
 - :doc:`Networks <networks>`
 - :doc:`Dependencies <dependencies>`
 
-You can also see a full example of a ``moccasin.toml`` in the :doc:`all moccasin toml parameters <all_moccasin_toml_parameters>` documentation.
+You can also see a full example of a ``moccasin.toml`` in the :doc:`all moccasin toml parameters </all_moccasin_toml_parameters>` documentation.
 
 Extra Data 
 ==========

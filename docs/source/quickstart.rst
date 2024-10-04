@@ -139,6 +139,6 @@ You'll get an output like:
 
 .. note:: 
 
-    If you want to add python dependencies to your ``moccasin`` project, see: :doc:`virtual environments documentation <virtual_environments>`.
+    If you want to add python dependencies to your ``moccasin`` project, see: :doc:`virtual environments documentation </core_concepts/dependencies/virtual_environments>`.
 
 But that's it! You've now successfully gotten your first package up and going!

@@ -44,8 +44,9 @@ anvil:
 
 # Build documentation
 docs:
+    rm -rf built_docs
     uv sync --extra docs
-    uv run sphinx-build -M html docs/source built_docs
+    uv run sphinx-build -M html docs/source built_docs -v
 
 docs-watch:
     watchmedo shell-command --patterns="*.rst" --recursive --command='uv run sphinx-build -M html docs/source built_docs' docs/source
