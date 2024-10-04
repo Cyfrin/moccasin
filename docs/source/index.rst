@@ -1,4 +1,4 @@
-.. image:: _static/docs-logo.png
+.. image:: _static/favicon.svg
     :width: 140px
     :alt: Moccasin logo
     :align: center

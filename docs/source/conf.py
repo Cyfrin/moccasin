@@ -45,6 +45,7 @@ html_theme_options = {
     "github_url": "https://github.com/cyfrin",
 }
 html_static_path = ["_static"]
+html_favicon = "_static/favicon.svg"
 
 # For the "Edit this page ->" link
 html_context = {

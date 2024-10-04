@@ -37,19 +37,19 @@ This will get you a ``counter_contract`` object that you can interact with. It w
 
 There are a number of functions we can call to get either a ``ABIContract`` or ``Deployment`` object. 
 
-- ``get_deployments_unchecked``: This will return all deployments for a given contract name, without checking :ref:`checking integrity <checking_integrity>.
+- ``get_deployments_unchecked``: This will return all deployments for a given contract name, without checking :ref:`checking integrity <checking_integrity>`.
 
-- ``get_deployments_checked``: This will return all deployments for a given contract name, checking :ref:`checking integrity <checking_integrity>.
+- ``get_deployments_checked``: This will return all deployments for a given contract name, checking :ref:`checking integrity <checking_integrity>`.
 
-- ``get_latest_deployment_checked``: This will return the latest deployment for a given contract name, checking :ref:`checking integrity <checking_integrity>.
+- ``get_latest_deployment_checked``: This will return the latest deployment for a given contract name, checking :ref:`checking integrity <checking_integrity>`.
 
-- ``get_latest_deployment_unchecked``: This will return the latest deployment for a given contract name, without checking :ref:`checking integrity <checking_integrity>.
+- ``get_latest_deployment_unchecked``: This will return the latest deployment for a given contract name, without checking :ref:`checking integrity <checking_integrity>`.
 
-- ``get_latest_contract_checked``: This will return the latest contract for a given contract name, checking :ref:`checking integrity <checking_integrity>. It will convert the ``Deployment`` object to an ``ABIContract``.
+- ``get_latest_contract_checked``: This will return the latest contract for a given contract name, checking :ref:`checking integrity <checking_integrity>`. It will convert the ``Deployment`` object to an ``ABIContract``.
 
-- ``get_latest_contract_unchecked``: This will return the latest contract for a given contract name, without checking :ref:`checking integrity <checking_integrity>. It will convert the ``Deployment`` object to an ``ABIContract``.
+- ``get_latest_contract_unchecked``: This will return the latest contract for a given contract name, without checking :ref:`checking integrity <checking_integrity>`. It will convert the ``Deployment`` object to an ``ABIContract``.
 
-- ``get_or_deploy_contract``/``manifest_contract``: This "magical" function will either check the database for a contract, deploy it, check your :doc:`named contracts </core_concepts/named_contracts>`, and a few other places, and if it doesn't find a contract, it will deploy the contract for you. :doc:`You can read more about it here. </core_concepts/named_contracts/manifest_contract>`
+- ``get_or_deploy_contract``/ ``manifest_contract``: This "magical" function will either check the database for a contract, deploy it, check your :doc:`named contracts </core_concepts/named_contracts>`, and a few other places, and if it doesn't find a contract, it will deploy the contract for you. :doc:`You can read more about it here. </core_concepts/named_contracts/manifest_contract>`
 
 .. _checking_integrity:
 
