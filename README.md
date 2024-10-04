@@ -1,6 +1,14 @@
 >[!IMPORTANT]
 > *This repo is a work in progress and is not ready for production use.*
 
+
+<p align="center">
+    <br />
+    <a href="https://cyfrin.io/">
+        <img src="./docs/source/_static/moccasin_logo.svg" width="225" alt=""/></a>
+    <br />
+</p>
+
 # Moccasin
 
 A fast, pythonic, Vyper smart contract testing and development framework.

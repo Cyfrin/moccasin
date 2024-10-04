@@ -26,7 +26,7 @@ Moccasin
     core_concepts/testing.rst
     Wallet <core_concepts/wallet.rst>
     Scripting (run) <core_concepts/script.rst>
-    <core_concepts/deployments.rst>
+    core_concepts/deployments.rst
 
 .. toctree::
     :caption: How-to Guides
