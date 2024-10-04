@@ -15,12 +15,14 @@ Moccasin is a fast, pythonic smart contract development framework heavily powere
 
 .. code-block:: console 
      
-    usage: Moccasin CLI [-h] [-d] [-q] {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect} ...
+    usage: Moccasin CLI [-h] [-d] [-q]
+                    {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect,deployments}
+                    ...
 
     🐍 Pythonic Smart Contract Development Framework
 
     positional arguments:
-    {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect}
+    {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect,deployments}
         init                Initialize a new project.
         compile (build)     Compiles the project.
         test                Runs all tests in the project.
@@ -33,6 +35,7 @@ Moccasin is a fast, pythonic smart contract development framework heavily powere
         config              View the Moccasin configuration.
         explorer            Work with block explorers to get data.
         inspect             Inspect compiler data of a contract.
+        deployments         View deployments of the project from your DB.
 
     options:
     -h, --help            show this help message and exit
@@ -86,4 +89,4 @@ We think web3 needs the following:
 Then, we have some fun plans for AI, formal verification, fuzzing, and more in the future of moccasin, so stay tuned!
 
 
-Head over to :doc:`installing moccasin <installing-moccasin>` to get started.
+Head over to :doc:`installing moccasin <installing_moccasin>` to get started.

@@ -13,7 +13,7 @@ An issue that developers run into when creating smart contracts, is knowing how 
 - How can you test to make sure your deploy scripts work exactly the way your tests run?
 - If I want to simulate a test with a `forked test <forked-networks.rst>`, will my scripts still work?
 
-This is where the ``manifest_contract`` aka ``get_or_deploy_contract`` function comes in. Let's say you have a smart contract that has an address as a constructor parameter, because the address is different on different chains. This additionally is very helpful in testing, and ``NamedContract``\s have built-in ``pytest`` :doc:`fixtures <fixtures>`.
+This is where the ``manifest_contract`` aka ``get_or_deploy_contract`` function comes in. Let's say you have a smart contract that has an address as a constructor parameter, because the address is different on different chains. This additionally is very helpful in testing, and ``NamedContract``\s have built-in ``pytest`` :doc:`fixtures </core_concepts/testing/fixtures>`.
 
 Interacting with a contract on multiple networks with one script 
 ----------------------------------------------------------------
@@ -125,4 +125,4 @@ Then, we just need to adjust the `--network` flag and everything else will work 
 The first 3 commands will do as you expect, directly connecting to the URL you set in your ``moccasin.toml`` file. The last two are special:
 
 - The ``--fork`` flag will setup your script to run locally, using your ``mainnet`` url. 
-- If you don't specify a network, you'll use the special locally running :doc:`pyevm <pyevm>` network.
+- If you don't specify a network, you'll use the special locally running :doc:`pyevm </core_concepts/networks/pyevm>` network.

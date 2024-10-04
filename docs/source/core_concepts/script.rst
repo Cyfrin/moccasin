@@ -133,7 +133,7 @@ And it would do the same as the following.
     def moccasin_main():
         deploy()
 
-You can see a list of arguments in the :doc:`moccasin reference documentation <all_moccasin_toml_parameters>` that you can run with your scripts.
+You can see a list of arguments in the :doc:`moccasin reference documentation </all_moccasin_toml_parameters>` that you can run with your scripts.
 
 Working with dependencies
 =========================
@@ -141,6 +141,12 @@ Working with dependencies
 There are two kinds of dependencies you can work with in your moccasin project:
 
 - :doc:`Smart Contract dependencies <dependencies>`: For contracts that you want to use packages from. 
-- :doc:`Python dependencies <virtual_environments>`: For python packages that you want to use in your scripts.
+- :doc:`Python dependencies </core_concepts/dependencies/virtual_environments>`: For python packages that you want to use in your scripts.
 
 Each have their own respective documentation. 
+
+.. toctree::
+    :maxdepth: 3
+
+    scripting/console.rst
+    scripting/deploy.rst

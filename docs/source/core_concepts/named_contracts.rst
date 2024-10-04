@@ -1,7 +1,7 @@
 Named Contracts  
 ###############
 
-One of the major differentiators between moccasin and other smart contract development tools is more flexible and powerful scripting. One of the such cabailities is built in :doc:`fixtures <fixtures>` and :doc:`named contracts <named_contracts>`.
+One of the major differentiators between moccasin and other smart contract development tools is more flexible and powerful scripting. One of the such cabailities is built in :doc:`fixtures </core_concepts/testing/fixtures>` and :doc:`named contracts </core_concepts/named_contracts>`.
 
 **Named contracts allow you to define deployment scripts, addresses by chain, fixtures settings for testing, and more.**
 
@@ -95,8 +95,8 @@ Let's break these down:
     - *Coming soon* ``.vyi`` file path to a Vyper interface
     - A "raw" ABI string
 - ``abi_from_explorer``: If you want to get the ABI from an explorer. This is useful if you don't have the ABI and you want to get it from a public source. You'll need to set a ``explorer_api_key`` in your ``moccasin.toml``, or an ``EXPLORER_API_KEY`` environment variable.
-- ``fixture```: If you want to use this contract as a :doc:`fixture <fixtures>`. 
-- ``deployment_script``: The path to the :doc:`deployment script <deploy>` for this named contract, this will be a shorthand for deploying in the future. 
+- ``fixture```: If you want to use this contract as a :doc:`fixture </core_concepts/testing/fixtures>`. 
+- ``deployment_script``: The path to the :doc:`deployment script </core_concepts/scripting/deploy>` for this named contract, this will be a shorthand for deploying in the future. 
 - ``force_deploy```: If you want to force deploy the contract when :ref:`manifesting <manifesting>` the contract.
 
 As we know, to interact with a contract, one of the most important things is the ABI. For us to interact with any named contract, we give it an ABI, and we can start interacting with that named contract using the ``manifest_contract`` function. 
@@ -137,5 +137,5 @@ And more! Let's read more about the power of ``NamedContract``\s and how they ca
 .. toctree::
     :maxdepth: 2
 
-    Manifest Contract <manifest_contract.rst>
+    Manifest Contract <named_contracts/manifest_contract.rst>
     

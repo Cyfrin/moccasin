@@ -9,7 +9,7 @@ For working with smart contracts, ``moccasin`` allows for working with either:
 
 Importantly, the packages/dependencies that you install are *smart contract dependencies only*. Meaning that they are dependencies for your vyper contracts, not for your python scripts.
 
-To see working with python dependencies, go to :doc:`virtual_environments`.
+To see working with python dependencies, go to :doc:`/core_concepts/dependencies/virtual_environments`.
 
 
 .. _installing_github_dependencies: 
@@ -132,4 +132,6 @@ You can then use these packages in your vyper contracts, for example in an minia
 .. toctree::
     :maxdepth: 3
 
-    Working with python dependencies <virtual_environments.rst>
+    Working with python dependencies <dependencies/virtual_environments.rst>
+    Removing dependencies (purge) <dependencies/purging.rst>
+    
