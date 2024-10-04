@@ -1,4 +1,4 @@
-.. image:: _static/favicon.svg
+.. image:: _static/mark.svg
     :width: 140px
     :alt: Moccasin logo
     :align: center
