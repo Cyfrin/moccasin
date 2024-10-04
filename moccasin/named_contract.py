@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Type
+from typing import Any
 
-from vyper.compiler.phases import CompilerData
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
-from boa.deployments import Deployment
 from boa_zksync.contract import ZksyncContract
 
 from moccasin.logging import logger
@@ -21,7 +19,7 @@ class NamedContract:
     vyper_contract: VyperContract | None = None
     vyper_deployer: VyperDeployer | None = None
 
-    def update_from_deployment(self, deployed_contract: VyperContract):
+    def update_from_deployed_contract(self, deployed_contract: VyperContract):
         self.abi = deployed_contract.abi
         self.address = deployed_contract.address
         self.vyper_contract = deployed_contract
@@ -87,20 +85,5 @@ class NamedContract:
                 f"Your {deployer_module_path} script for {self.contract_name} set in deployer path must return a VyperContract or ZksyncContract object"
             )
         if update_from_deploy:
-            self.update_from_deployment(vyper_contract)
+            self.update_from_deployed_contract(vyper_contract)
         return vyper_contract
-
-    @classmethod
-    def from_deployment(
-        cls, deployment: Deployment, deployer_class: Type[Any], contract_name: str
-    ) -> "NamedContract":
-        pass
-        # compiler_data: CompilerData = CompilerData(deployer.)
-        # vyper_deployer = deployer_class()
-        # return cls(
-        #     contract_name=deployment.contract_name,
-        #     abi=deployment.abi,
-        #     address=deployment.address,
-        #     vyper_contract=deployment.vyper_contract,
-        #     vyper_deployer=deployment.vyper_deployer,
-        # )

@@ -23,6 +23,7 @@ def main(args: Namespace) -> int:
         fork=args.fork,
         url=args.url,
         prompt_live=args.prompt_live,
+        db_path=args.db_path,
     )
     return 0
 
@@ -37,6 +38,7 @@ def run_script(
     fork: bool = False,
     url: str = None,
     prompt_live: bool = None,
+    db_path: str = None,
 ):
     config = get_config()
     script_path: Path = get_script_path(script_name_or_path)
@@ -52,6 +54,7 @@ def run_script(
             password=password,
             password_file_path=password_file_path,
             prompt_live=prompt_live,
+            db_path=db_path,
         )
 
         # We give the user's script the module name "deploy_script_moccasin"

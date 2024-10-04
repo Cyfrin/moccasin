@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Iterator, List
 
 import boa
+from boa.util.abi import Address
+from moccasin.constants.vars import STARTING_BOA_BALANCE
 
 from moccasin.config import Config, Network, get_config
 from moccasin.constants.vars import ERA_DEFAULT_PRIVATE_KEY, ERAVM, GITHUB, PYPI
@@ -43,6 +45,45 @@ def _patch_sys_path(paths: List[Path]) -> Iterator[None]:
         sys.path = anchor
 
 
+# REVIEW: Might be best to just set this as **kwargs
+def _get_set_active_network_from_cli_and_config(
+    config: Config,
+    network: str = None,
+    url: str = None,
+    fork: bool | None = None,
+    account: str | None = None,
+    password_file_path: Path | None = None,
+    prompt_live: bool | None = None,
+    explorer_uri: str | None = None,
+    explorer_api_key: str | None = None,
+    db_path: str | None = None,
+    save_to_db: bool | None = None,
+) -> Network:
+    if network is None:
+        network = config.default_network
+
+    config.set_active_network(
+        network,
+        is_fork=fork,
+        url=url,
+        default_account_name=account,
+        # private_key=private_key, # No private key in networks
+        # password=password, # No password in networks
+        password_file_path=password_file_path,
+        prompt_live=prompt_live,
+        explorer_uri=explorer_uri,
+        explorer_api_key=explorer_api_key,
+        db_path=db_path,
+        save_to_db=save_to_db,
+    )
+
+    active_network: Network = config.get_active_network()
+    logger.debug(f"Active network set to: {active_network.name}")
+    if active_network is None:
+        raise ValueError("No active network set. Please set a valid network.")
+    return active_network
+
+
 def _setup_network_and_account_from_config_and_cli(
     network: str = None,
     url: str = None,
@@ -54,6 +95,8 @@ def _setup_network_and_account_from_config_and_cli(
     prompt_live: bool | None = None,
     explorer_uri: str | None = None,
     explorer_api_key: str | None = None,
+    db_path: str | None = None,
+    save_to_db: bool | None = None,
 ):
     """All the network and account logic in the function parameters are from the CLI.
     We will use the order of operations to setup the network:
@@ -71,26 +114,20 @@ def _setup_network_and_account_from_config_and_cli(
     mox_account: MoccasinAccount | None = None
     config = get_config()
 
-    if network is None:
-        network = config.default_network
-
     # 1. Update the network with the CLI values
-    config.set_active_network(
+    active_network = _get_set_active_network_from_cli_and_config(
+        config,
         network,
-        is_fork=fork,
-        url=url,
-        default_account_name=account,
-        # private_key=private_key, # No private key in networks
-        # password=password, # No password in networks
-        password_file_path=password_file_path,
-        prompt_live=prompt_live,
-        explorer_uri=explorer_uri,
-        explorer_api_key=explorer_api_key,
+        url,
+        fork,
+        account,
+        password_file_path,
+        prompt_live,
+        explorer_uri,
+        explorer_api_key,
+        db_path,
+        save_to_db,
     )
-
-    active_network: Network = config.get_active_network()
-    if active_network is None:
-        raise ValueError("No active network set. Please set a network.")
 
     # 2. Update and set account
     if active_network.prompt_live:
@@ -119,7 +156,7 @@ def _setup_network_and_account_from_config_and_cli(
         )
 
     if mox_account:
-        if active_network.is_fork:
+        if active_network.is_local_or_forked_network():
             boa.env.eoa = mox_account.address
         else:
             boa.env.add_account(mox_account, force_eoa=True)
@@ -133,3 +170,6 @@ def _setup_network_and_account_from_config_and_cli(
             logger.warning(
                 "No default EOA account found. Please add an account to the environment before attempting a transaction."
             )
+
+    if isinstance(boa.env.eoa, Address) and active_network.is_local_or_forked_network():
+        boa.env.set_balance(boa.env.eoa, STARTING_BOA_BALANCE)

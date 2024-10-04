@@ -4,13 +4,17 @@ import tempfile
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union, cast
+from typing import TYPE_CHECKING, Any, Iterator, Optional, Union, cast
 from eth_utils import to_hex
+import warnings
 
 import boa
 import tomlkit
-from boa.interpret import _get_default_deployer_class
+
+# If we want to know the specific deployer that the active env is working with
+# from boa.interpret import _get_default_deployer_class
 from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
+from boa.util.abi import Address
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
 from boa_zksync.contract import ZksyncContract
 from boa_zksync.deployer import ZksyncDeployer
@@ -18,6 +22,7 @@ from boa.environment import Env
 from boa_zksync import set_zksync_fork, set_zksync_test_env
 from dotenv import load_dotenv
 from boa.deployments import get_deployments_db, Deployment
+from boa.verifiers import get_verification_bundle
 
 from moccasin.constants.vars import (
     BUILD_FOLDER,
@@ -36,9 +41,10 @@ from moccasin.constants.vars import (
     SAVE_TO_DB,
     SCRIPT_FOLDER,
     TESTS_FOLDER,
-    GET_MOST_RECENT_SQL,
+    GET_CONTRACT_SQL,
 )
 from moccasin.logging import logger
+from moccasin.moccasin_account import MoccasinAccount
 from moccasin.named_contract import NamedContract
 
 if TYPE_CHECKING:
@@ -119,6 +125,24 @@ class Network:
         boa.env.nickname = self.name
         return boa.env
 
+    def get_default_account(self) -> MoccasinAccount | Any:
+        """Returns an 'account-like' object."""
+        if hasattr(boa.env, "_accounts"):
+            if boa.env.eoa is not None:
+                return boa.env._accounts[boa.env.eoa]
+        else:
+            if boa.env.eoa is not None:
+                return MoccasinAccount(address=boa.env.eoa, ignore_warning=True)
+        if (
+            self.default_account_name is not None
+            and self.unsafe_password_file is not None
+        ):
+            return MoccasinAccount(
+                keystore_path_or_account_name=self.default_account_name,
+                password_file_path=self.unsafe_password_file,
+            )
+        return None
+
     def create_and_set_or_set_boa_env(self, **kwargs) -> _AnyEnv:
         for key, value in kwargs.items():
             if value is not None:
@@ -131,47 +155,134 @@ class Network:
         self._network_env = boa.env
         return self._network_env
 
-    def get_most_recently_deployed_deployment(
-        self, contract_name: str, chain_id: int | str | None = None
-    ) -> Deployment | None:
+    def _fetch_contracts_from_db(
+        self,
+        contract_name: str,
+        chain_id: int | str | None = None,
+        limit: int | None = None,
+    ) -> Iterator[Deployment]:
+        limit_str = ""
+        if limit is not None:
+            limit_str = f"LIMIT {limit};"
         db = get_deployments_db()
+        if db is None or not self.save_to_db:
+            raise ValueError(
+                f"The database is either not set, or save_to_db is false for network {self.name}."
+            )
+        field_names = db._get_fieldnames_str()
         if chain_id is None:
             chain_id = to_hex(self.chain_id)
         else:
             chain_id = to_hex(chain_id)
-        # TODO
-        # Add get_all_deployments, and get_current_deployment
-        # get_current_deployment checks the integrity hash
-        # get_all_deployments does not
-        # get_most_recently_deployed_deployment has an option to check the integrity hash
-        field_names = db._get_fieldnames_str()
-        deployments: list[Deployment] = db._get_deployments_from_sql(
-            GET_MOST_RECENT_SQL.format(field_names), (contract_name, chain_id)
+        return db._get_deployments_from_sql(
+            GET_CONTRACT_SQL.format(field_names, limit_str), (contract_name, chain_id)
         )
+
+    def has_matching_integrity(
+        self, deployment: Deployment, contract_name: str, config: "Config" = None
+    ):
+        vyper_deployer = self._get_deployer_from_contract_name(contract_name, config)
+        # REVIEW: If boa throws a warning, maybe that's all we need instead of checking the integrity
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore", message="casted bytecode does not match compiled bytecode at*"
+            )
+            contract = vyper_deployer.at(deployment.contract_address)
+        verification_bundle = get_verification_bundle(contract)
+        expected_integrity = verification_bundle["integrity"]
+        actual_integrity = deployment.source_code["integrity"]
+        if expected_integrity != actual_integrity:
+            return False
+        return True
+
+    def _get_deployer_from_contract_name(
+        self, contract_name: str, config: Optional["Config"] = None
+    ) -> VyperDeployer | ZksyncDeployer | None:
+        if not config:
+            config = get_config()
+        contract_path = config._find_contract(contract_name)
+        return boa.load_partial(str(contract_path.absolute()))
+
+    def get_deployments_unchecked(
+        self,
+        contract_name: str,
+        chain_id: int | str | None = None,
+        limit: int | None = None,
+    ) -> list[Deployment]:
+        deployments_iter = self._fetch_contracts_from_db(
+            contract_name, chain_id, limit=limit
+        )
+        return list(deployments_iter)
+
+    def get_deployments_checked(
+        self,
+        contract_name: str,
+        chain_id: int | str | None = None,
+        limit: int | None = None,
+    ) -> list[Deployment]:
+        deployments_iter = self._fetch_contracts_from_db(
+            contract_name, chain_id, limit=limit
+        )
+        deployments_list = []
+        for deployment in deployments_iter:
+            if self.has_matching_integrity(deployment, contract_name):
+                deployments_list.append(deployment)
+        return deployments_list
+
+    def get_latest_deployment_checked(
+        self,
+        contract_name: str,
+        chain_id: int | str | None = None,
+        config: Optional["Config"] = None,
+    ) -> Deployment | None:
+        """Gets a deployment from the database, and checks the integrity hash."""
+        deployments = self.get_deployments_checked(contract_name, chain_id, limit=1)
         if len(deployments) == 0:
             return None
         return deployments[0]
 
-    def get_most_recently_deployed_contract(
-        self, contract_name: str
-    ) -> VyperContract | ZksyncContract | None:
-        deployment = self.get_most_recently_deployed_deployment(contract_name)
+    def get_latest_deployment_unchecked(
+        self, contract_name: str, chain_id: int | str | None = None
+    ) -> Deployment | None:
+        deployments = self.get_deployments_unchecked(contract_name, chain_id)
+        if len(deployments) == 0:
+            return None
+        return deployments[0]
+
+    def get_latest_contract_unchecked(
+        self, contract_name: str, chain_id: int | str | None = None
+    ) -> ABIContract | None:
+        deployment = self.get_latest_deployment_unchecked(contract_name, chain_id)
         if deployment is not None:
-            deployer_class = _get_default_deployer_class()
-            breakpoint()
-            named_contract = NamedContract.from_deployment(
-                deployment, deployer_class, contract_name
-            )
-            # deployer = boa.loads_partial(deployment.source_code, name=contract_name)
-            # return deployer.at(deployment.address)
+            return self._convert_deployment_to_contract(deployment)
+        return None
+
+    def get_latest_contract_checked(
+        self,
+        contract_name: str,
+        chain_id: int | str | None = None,
+        config: Optional["Config"] = None,
+    ) -> ABIContract | None:
+        deployment = self.get_latest_deployment_checked(
+            contract_name, chain_id, config=config
+        )
+        if deployment is not None:
+            return self._convert_deployment_to_contract(deployment)
         return None
 
     def manifest_contract(
-        self, contract_name: str, force_deploy: bool = False, address: str | None = None
+        self,
+        contract_name: str,
+        force_deploy: bool = False,
+        address: str | None = None,
+        checked: bool = False,
     ) -> VyperContract | ZksyncContract | ABIContract:
         """A wrapper around get_or_deploy_contract that is more explicit about the contract being deployed."""
         return self.get_or_deploy_contract(
-            contract_name=contract_name, force_deploy=force_deploy, address=address
+            contract_name=contract_name,
+            force_deploy=force_deploy,
+            address=address,
+            checked=checked,
         )
 
     def instantiate_contract(
@@ -197,6 +308,7 @@ class Network:
         abi_from_explorer: bool | None = None,
         deployer_script: str | Path | None = None,
         address: str | None = None,
+        checked: bool = False,
     ) -> VyperContract | ZksyncContract | ABIContract:
         """Returns or deploys a VyperContract, ZksyncContract, or ABIContract based on the name and address in the config file, or passed to this function.
 
@@ -265,11 +377,18 @@ class Network:
             return named_contract.vyper_contract
 
         # 4. Happy path, we check for this contract in the DB
-        vyper_contract: VyperContract | ZksyncContract | None = (
-            self.get_most_recently_deployed_contract(named_contract.contract_name)
-        )
-        if vyper_contract is not None:
-            return vyper_contract
+        if self.chain_id is not None and self.save_to_db is True:
+            vyper_contract: ABIContract | None = None
+            if checked:
+                vyper_contract = self.get_latest_contract_checked(
+                    named_contract.contract_name
+                )
+            else:
+                vyper_contract: ABIContract | None = self.get_latest_contract_unchecked(
+                    named_contract.contract_name
+                )
+            if vyper_contract is not None:
+                return vyper_contract
 
         # 5. Happy path, maybe we didn't deploy the contract, but we've been given an abi and address, which works
         if abi and address:
@@ -290,7 +409,7 @@ class Network:
             # We could probably put this into _deploy_named_contract with a conditional
             blank_contract: VyperDeployer | ZksyncDeployer = boa.loads_partial("")
             vyper_contract = blank_contract.at(address)
-            named_contract.update_from_deployment(vyper_contract)
+            named_contract.update_from_deployed_contract(vyper_contract)
             self.contracts[named_contract.contract_name] = named_contract
             return vyper_contract
 
@@ -383,6 +502,18 @@ class Network:
     def get_named_contract(self, contract_name: str) -> NamedContract | None:
         return self.contracts.get(contract_name, None)
 
+    def kwargs_are_different(self, **kwargs) -> bool:
+        for key, value in kwargs.items():
+            if getattr(self, key, None) != value:
+                return True
+        return False
+
+    def set_boa_eoa(self, account: MoccasinAccount):
+        if self.is_local_or_forked_network:
+            boa.env.eoa = Address(account.address)
+        else:
+            boa.env.add_account(account, force_eoa=True)
+
     @property
     def alias(self) -> str:
         return self.name
@@ -391,11 +522,14 @@ class Network:
     def identifier(self) -> str:
         return self.name
 
-    def kwargs_are_different(self, **kwargs) -> bool:
-        for key, value in kwargs.items():
-            if getattr(self, key, None) != value:
-                return True
-        return False
+    @staticmethod
+    def _convert_deployment_to_contract(deployment: Deployment) -> ABIContract:
+        contract_factory = ABIContractFactory(
+            deployment.contract_name,
+            deployment.abi,
+            deployment.contract_name + "_" + deployment.source_code["integrity"],
+        )
+        return contract_factory.at(deployment.contract_address)
 
 
 class _Networks:
@@ -539,7 +673,9 @@ class _Networks:
         if not isinstance(name_of_network_or_network, str) and not isinstance(
             name_of_network_or_network, Network
         ):
-            raise ValueError("The first argument must be a string or a Network object.")
+            raise ValueError(
+                f"The first argument must be a string or a Network object, you gave {name_of_network_or_network}."
+            )
 
         if isinstance(name_of_network_or_network, str):
             name_of_network_or_network = self.get_network(name_of_network_or_network)

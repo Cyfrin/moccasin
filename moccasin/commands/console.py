@@ -23,7 +23,12 @@ def main(args: Namespace) -> int:
             network=args.network,
             url=args.url,
             fork=args.fork,
+            account=args.account,
+            private_key=args.private_key,
+            password=args.password,
+            password_file_path=args.password_file_path,
             prompt_live=args.prompt_live,
+            db_path=args.db_path,
         )
 
         # Ensure the Moccasin folder exists

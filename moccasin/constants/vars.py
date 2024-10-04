@@ -62,14 +62,14 @@ DEFAULT_ANVIL_PRIVATE_KEY = (
 )
 DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
+STARTING_BOA_BALANCE = 1000000000000000000000  # 1,000 Ether
 
 # Database vars
-GET_MOST_RECENT_SQL = """SELECT {}
+GET_CONTRACT_SQL = """SELECT {}
 FROM deployments
 WHERE contract_name = ?
   AND json_extract(tx_dict, '$.chainId') = ?
-ORDER BY broadcast_ts DESC
-LIMIT 1;"""
+ORDER BY broadcast_ts DESC {}"""
 
 # Networking defaults
 DEFAULT_NETWORKS_BY_NAME: dict[str, dict] = {

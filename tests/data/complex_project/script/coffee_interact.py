@@ -1,11 +1,19 @@
 from moccasin.config import get_active_network
+from boa.contracts.abi.abi_contract import ABIContract
+from eth_utils import to_wei
 
 
-def fund_coffee():
+def fund_coffee() -> ABIContract:
     active_network = get_active_network()
+    # coffee = active_network.get_latest_contract_checked("BuyMeACoffee")
     coffee = active_network.manifest_contract("BuyMeACoffee")
-    # expecting 0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82
-    breakpoint()
+
+    account = active_network.get_default_account()
+    active_network.set_boa_eoa(account)
+    value = to_wei(1, "ether")
+    coffee.fund(value=value)
+    print("Funded BuyMeACoffee contract with 1 ether")
+    return coffee
 
 
 def moccasin_main():
