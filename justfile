@@ -22,10 +22,10 @@ test:
 
 # Run integration tests, read the README.md in the tests/integration directory for more information
 test-i:
-    uv run pytest tests/integration -x -s --ignore=tests/data/ --ignore=tests/zksync/
+    uv run pytest tests/integration -x -s -nauto --ignore=tests/data/ --ignore=tests/zksync/
 
 test-z:
-    uv run pytest tests/zksync -x -s --ignore=tests/data/ --ignore=tests/integration/
+    uv run pytest tests/zksync -x -s -nauto --ignore=tests/data/ --ignore=tests/integration/
 
 # Run both unit and integration tests
 test-all:

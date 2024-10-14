@@ -9,9 +9,10 @@ authors = [
 dependencies = [
     "titanoboa @ git+https://github.com/charles-cooper/titanoboa.git@feat/deployments-abi",
     "python-dotenv>=1.0.1",
-    "titanoboa-zksync>=v0.2.3",
+    "titanoboa-zksync @ git+https://github.com/PatrickAlphaC/titanoboa-zksync.git@feat/moccasin-overhaul",
     "tqdm>=4.66.5",
-    "tomlkit>=0.13.2",                                                                      # For preserving comments when writing to toml
+    "tomlkit>=0.13.2",
+    # For preserving comments when writing to toml
     "tomli-w>=1.0.0",
     "pytest-cov>=5.0.0",
     "uv>=0.4.15",
@@ -28,7 +29,9 @@ dev-dependencies = [
     "snekmate>=0.1.0",
     "vyper>=0.4.0",
     "ruff>=0.6.3",
+    "pytest-xdist>=3.6.1",
     "moccasin",
+
 ]
 
 [tool.uv.sources]

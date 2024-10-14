@@ -18,7 +18,7 @@ from boa.deployments import Deployment, get_deployments_db
 from boa.environment import Env
 from boa.util.abi import Address
 from boa.verifiers import get_verification_bundle
-from boa_zksync import set_zksync_fork, set_zksync_test_env
+from boa_zksync import set_zksync_fork, set_zksync_test_env, set_zksync_env
 from boa_zksync.contract import ZksyncContract
 from boa_zksync.deployer import ZksyncDeployer
 from dotenv import load_dotenv
@@ -80,7 +80,6 @@ class Network:
         # to switch networks
         from boa.deployments import DeploymentsDB, set_deployments_db
         from boa.network import EthereumRPC, NetworkEnv
-        from boa_zksync import ZksyncEnv
 
         # 0. Set the database
         # The local networks should be validated at this point
@@ -107,8 +106,7 @@ class Network:
 
         # 3. Finally, "true" networks
         elif self.is_zksync:
-            env = ZksyncEnv(EthereumRPC(self.url), nickname=self.name)
-            boa.set_env(env)
+            set_zksync_env(self.url, nickname=self.name)
         else:
             env = NetworkEnv(EthereumRPC(self.url), nickname=self.name)
             boa.set_env(env)
@@ -590,7 +588,7 @@ class _Networks:
                     name=network_name,
                     is_fork=network_data.get("fork", False),
                     url=network_data.get("url", None),
-                    is_zksync=network_data.get("zksync", False),
+                    is_zksync=network_data.get("is_zksync", False),
                     chain_id=network_data.get("chain_id", None),
                     explorer_uri=network_data.get("explorer_uri", default_explorer_uri),
                     save_abi_path=network_data.get(

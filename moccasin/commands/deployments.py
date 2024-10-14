@@ -64,6 +64,7 @@ def print_deployments_from_cli(
             return []
 
         deployments_list = []
+
         if checked:
             deployments_list = active_network.get_deployments_checked(
                 contract_name, limit=limit
