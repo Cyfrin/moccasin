@@ -7,9 +7,9 @@ authors = [
     { name = "charles-cooper", email = "3867501+charles-cooper@users.noreply.github.com" },
 ]
 dependencies = [
-    "titanoboa>=v0.2.4",
+    "titanoboa>=0.2.4",
     "python-dotenv>=1.0.1",
-    "titanoboa-zksync @ git+https://github.com/PatrickAlphaC/titanoboa-zksync.git@feat/moccasin-overhaul",
+    "titanoboa-zksync @ git+https://github.com/DanielSchiavini/titanoboa-zksync.git@feat/contract-verification",
     "tqdm>=4.66.5",
     "tomlkit>=0.13.2",
     # For preserving comments when writing to toml
@@ -31,7 +31,6 @@ dev-dependencies = [
     "ruff>=0.6.3",
     "pytest-xdist>=3.6.1",
     "moccasin",
-
 ]
 
 [tool.uv.sources]

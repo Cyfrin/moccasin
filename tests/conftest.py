@@ -243,7 +243,7 @@ def purge_reset_dependencies():
 #                      DEPLOYMENTS PROJECT FIXTURES
 # ------------------------------------------------------------------
 @pytest.fixture(scope="session")
-def deployments_project_config() -> Generator[Config, None, None]:
+def deployments_project_config_read() -> Generator[Config, None, None]:
     """We need to copy the starting database to a test database before running the tests.
 
     And then, initialize the config file from the moccasin.toml
@@ -295,11 +295,45 @@ def deployments_contract_override():
         f.write(original_content)
 
 
+@pytest.fixture(scope="session")
+def deployments_project_config_write() -> Generator[Config, None, None]:
+    """We need to copy the starting database to a test database before running the tests.
+
+    And then, initialize the config file from the moccasin.toml
+
+    At the end, we should reset the test database to the starting database.
+    """
+    starting_db_path = os.path.join(
+        DEPLOYMENTS_PROJECT_PATH, ".starting_deployments.db"
+    )
+    test_db_path = os.path.join(DEPLOYMENTS_PROJECT_PATH, ".deployments.db")
+
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+
+    if not os.path.exists(starting_db_path):
+        raise FileNotFoundError(f"Starting database not found: {starting_db_path}")
+    shutil.copy2(starting_db_path, test_db_path)
+
+    config = _set_config(DEPLOYMENTS_PROJECT_PATH)
+
+    yield config
+
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+
+
 # ------------------------------------------------------------------
 #                             ANVIL
 # ------------------------------------------------------------------
 @pytest.fixture(scope="module")
 def anvil_process():
+    with AnvilProcess(args=["--load-state", str(ANVIL_STORED_STATE_PATH)]):
+        yield
+
+
+@pytest.fixture(scope="function")
+def anvil_process_reset():
     with AnvilProcess(args=["--load-state", str(ANVIL_STORED_STATE_PATH)]):
         yield
 

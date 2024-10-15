@@ -262,7 +262,6 @@ class Network:
             warnings.filterwarnings(
                 "ignore", message="casted bytecode does not match compiled bytecode at*"
             )
-            breakpoint()
             contract = vyper_deployer.at(deployment.contract_address)
         verification_bundle = get_verification_bundle(contract)
         expected_integrity = verification_bundle["integrity"]

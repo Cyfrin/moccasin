@@ -23,7 +23,7 @@ save_to_db = false
 price_feed = { abi = "MockV3Aggregator", force_deploy = false, deployer_script = "mock_deployer/deploy_feed.py", fixture = false }
 
 [networks.optimism]
-explorer_api_key = "${OPTIMISTIC_API_KEY}"
+explorer_api_key = "${OPTIMISTIC_ETHERSCAN_API_KEY}"
 chain_id = 10
 save_to_db = false
 

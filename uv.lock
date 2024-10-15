@@ -723,7 +723,7 @@ requires-dist = [
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
     { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
     { name = "titanoboa", specifier = ">=0.2.4" },
-    { name = "titanoboa-zksync", git = "https://github.com/PatrickAlphaC/titanoboa-zksync.git?rev=feat%2Fmoccasin-overhaul" },
+    { name = "titanoboa-zksync", git = "https://github.com/DanielSchiavini/titanoboa-zksync.git?rev=feat%2Fcontract-verification" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
@@ -1286,7 +1286,7 @@ wheels = [
 [[package]]
 name = "titanoboa"
 version = "0.2.4"
-source = { git = "https://github.com/vyperlang/titanoboa.git#765b848bf844069c37d5e35da0c44c4fa0c63834" }
+source = { git = "https://github.com/vyperlang/titanoboa.git#034c0aedf02ecd722e564f3838464ce33dbd70f1" }
 dependencies = [
     { name = "eth-abi" },
     { name = "eth-account" },
@@ -1306,7 +1306,7 @@ dependencies = [
 [[package]]
 name = "titanoboa-zksync"
 version = "0.2.3"
-source = { git = "https://github.com/PatrickAlphaC/titanoboa-zksync.git?rev=feat%2Fmoccasin-overhaul#592282ffecb1f7023ef52c1b061f06f875ffba8c" }
+source = { git = "https://github.com/DanielSchiavini/titanoboa-zksync.git?rev=feat%2Fcontract-verification#592282ffecb1f7023ef52c1b061f06f875ffba8c" }
 dependencies = [
     { name = "titanoboa" },
 ]
