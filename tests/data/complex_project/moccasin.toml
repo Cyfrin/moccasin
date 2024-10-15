@@ -4,12 +4,10 @@ dependencies = [
 ]
 src = "contracts"
 out = "build"
-explorer_api_key = "${ETHERSCAN_API_KEY}"
 save_abi_path = "abis"
 cov_config = ".coveragerc"
 dot_env = ".hello"
 db_path = ".deployments.db"
-# db_path = "/Users/patrick/code/moccasin/tests/data/complex_project/.deployments.db"
 
 [networks.pyevm]
 is_zksync = false
@@ -60,6 +58,14 @@ save_to_db = false
 
 [networks.anvil.contracts]
 price_feed = { address = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi_from_explorer = false }
+
+[networks.sepolia-zksync]
+url = "$SEPOLIA_ZKSYNC_RPC_URL"
+save_to_db = false
+prompt_live = false
+is_zksync = true
+default_account_name = "smalltestnet"
+unsafe_password_file = "~/.moccasin/unsafe-passwords/smalltestnet"
 
 [networks.fake_chain]
 url = "${FAKE_CHAIN_RPC_URL}"

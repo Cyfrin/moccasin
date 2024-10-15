@@ -76,6 +76,7 @@ All possible options
     unsafe_password_file = "/home/user/.moccasin/password"  # Replace with actual path
     explorer_uri = "https://api.etherscan.io/api" # path for the supported explorer 
     explorer_api_key = "your_api_key" # api key for the supported explorer, overrides the main one 
+    explorer_type = "blockscout" # If the explorer URL has "blockscout" or "etherscan" in the name, you don't need this
     prompt_live = false # A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks 
     save_to_db = true # A flag that will save the deployment to the database, it defaults to true for "non-testing" networks (not pyevm, eravm, or a fork network)
 

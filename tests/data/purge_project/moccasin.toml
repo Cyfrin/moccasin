@@ -1,12 +1,8 @@
 [project]
-dependencies = [
-    "snekmate",
-    "patrickalphac/test_repo",
-]
+dependencies = ["snekmate", "patrickalphac/test_repo"]
 
 # PRESERVE COMMENTS
 
 [networks.sepolia]
 url = "https://ethereum-sepolia-rpc.publicnode.com"
 chain_id = 11155111
-save_to_db = false

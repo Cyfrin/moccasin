@@ -20,6 +20,7 @@ def test_boa_get_abi_from_explorer_ignore_config_id():
         LINK_ADDRESS_OPT_MAINNET,
         network_name_or_id="10",
         api_key=os.getenv("OPTIMISTIC_ETHERSCAN_API_KEY"),
+        uri="https://api-optimistic.etherscan.io/api",
         ignore_config=True,
     )
     assert isinstance(abi, list)
@@ -28,14 +29,20 @@ def test_boa_get_abi_from_explorer_ignore_config_id():
 
 def test_boa_get_abi_from_explorer_by_name(complex_project_config):
     abi = boa_get_abi_from_explorer(
-        LINK_ADDRESS_OPT_MAINNET, network_name_or_id="optimism"
+        LINK_ADDRESS_OPT_MAINNET,
+        network_name_or_id="optimism",
+        uri="https://api-optimistic.etherscan.io/api",
     )
     assert isinstance(abi, list)
     assert len(abi) == 26
 
 
 def test_boa_get_abi_from_explorer_by_chain_id(complex_project_config):
-    abi = boa_get_abi_from_explorer(LINK_ADDRESS_OPT_MAINNET, network_name_or_id="10")
+    abi = boa_get_abi_from_explorer(
+        LINK_ADDRESS_OPT_MAINNET,
+        network_name_or_id="10",
+        uri="https://api-optimistic.etherscan.io/api",
+    )
     assert isinstance(abi, list)
     assert len(abi) == 26
 

@@ -3,13 +3,15 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
-from typing import Generator
+from typing import Any, Generator, List
 
 import pytest
+from boa.deployments import DeploymentsDB, set_deployments_db
+from typing_extensions import Final
 
 import moccasin.constants.vars as vars
 from moccasin.commands.wallet import save_to_keystores
-from moccasin.config import Config, initialize_global_config
+from moccasin.config import Config, _set_global_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
 from tests.utils.anvil import ANVIL_URL, AnvilProcess
 
@@ -113,17 +115,18 @@ def mox_path():
 # ------------------------------------------------------------------
 #                    COMPLEX PROJECT FIXTURES
 # ------------------------------------------------------------------
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def complex_project_config() -> Config:
     test_db_path = os.path.join(COMPLEX_PROJECT_PATH, ".deployments.db")
+
     if os.path.exists(test_db_path):
         os.remove(test_db_path)
 
-    config = initialize_global_config(COMPLEX_PROJECT_PATH)
+    config = _set_global_config(COMPLEX_PROJECT_PATH)
     return config
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def complex_out_folder(complex_project_config) -> Config:
     return complex_project_config.out_folder
 
@@ -186,12 +189,12 @@ def complex_conftest_override():
 # ------------------------------------------------------------------
 #                     INSTALLATION PROJECT FIXTURES
 # ------------------------------------------------------------------
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def installation_project_config() -> Config:
     test_db_path = os.path.join(INSTALL_PROJECT_PATH, ".deployments.db")
     if os.path.exists(test_db_path):
         os.remove(test_db_path)
-    return initialize_global_config(INSTALL_PROJECT_PATH)
+    return _set_global_config(INSTALL_PROJECT_PATH)
 
 
 @pytest.fixture
@@ -207,12 +210,12 @@ def installation_cleanup_dependencies():
 # ------------------------------------------------------------------
 #                         PURGE PROJECT FIXTURES
 # ------------------------------------------------------------------
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def purge_project_config() -> Config:
     test_db_path = os.path.join(PURGE_PROJECT_PATH, ".deployments.db")
     if os.path.exists(test_db_path):
         os.remove(test_db_path)
-    return initialize_global_config(PURGE_PROJECT_PATH)
+    return _set_global_config(PURGE_PROJECT_PATH)
 
 
 @pytest.fixture
@@ -241,13 +244,15 @@ def purge_reset_dependencies():
 # ------------------------------------------------------------------
 #                      DEPLOYMENTS PROJECT FIXTURES
 # ------------------------------------------------------------------
-@pytest.fixture(scope="session")
-def deployments_project_config() -> Generator[Config, None, None]:
+@pytest.fixture(scope="module")
+def deployments_project_config_read() -> Generator[Config, None, None]:
     """We need to copy the starting database to a test database before running the tests.
 
     And then, initialize the config file from the moccasin.toml
 
     At the end, we should reset the test database to the starting database.
+
+    Note, this is for reading only, we should reset the DB as done in the write tests below.
     """
     starting_db_path = os.path.join(
         DEPLOYMENTS_PROJECT_PATH, ".starting_deployments.db"
@@ -258,7 +263,7 @@ def deployments_project_config() -> Generator[Config, None, None]:
         raise FileNotFoundError(f"Starting database not found: {starting_db_path}")
     shutil.copy2(starting_db_path, test_db_path)
 
-    config = initialize_global_config(DEPLOYMENTS_PROJECT_PATH)
+    config = _set_global_config(DEPLOYMENTS_PROJECT_PATH)
 
     yield config
 
@@ -294,6 +299,43 @@ def deployments_contract_override():
         f.write(original_content)
 
 
+@pytest.fixture(scope="module")
+def deployments_project_config_write() -> Config:
+    config = _set_global_config(DEPLOYMENTS_PROJECT_PATH)
+    return config
+
+
+# So that each deployment test can start from a fresh DB
+@pytest.fixture
+def deployments_database(deployments_project_config_write):
+    """We need to copy the starting database to a test database before running the tests.
+
+    And then, initialize the config file from the moccasin.toml
+
+    At the end, we should reset the test database to the starting database.
+    """
+    starting_db_path = os.path.join(
+        DEPLOYMENTS_PROJECT_PATH, ".starting_deployments.db"
+    )
+    test_db_path = os.path.join(DEPLOYMENTS_PROJECT_PATH, ".deployments.db")
+
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+
+    if not os.path.exists(starting_db_path):
+        raise FileNotFoundError(f"Starting database not found: {starting_db_path}")
+    shutil.copy2(starting_db_path, test_db_path)
+
+    # We have to reset the DB between tests
+    db = DeploymentsDB(deployments_project_config_write.get_active_network().db_path)
+    set_deployments_db(db)
+
+    yield
+
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+
+
 # ------------------------------------------------------------------
 #                             ANVIL
 # ------------------------------------------------------------------
@@ -307,3 +349,28 @@ def anvil_process():
 def anvil_two_no_state():
     with AnvilProcess(args=["-p", "8546"]):
         yield
+
+
+# ------------------------------------------------------------------
+#                         PYTEST HELPERS
+# ------------------------------------------------------------------
+NO_SKIP_OPTION: Final[str] = "--no-skip"
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        NO_SKIP_OPTION,
+        action="store_true",
+        default=False,
+        help="also run skipped tests",
+    )
+
+
+def pytest_collection_modifyitems(config, items: List[Any]):
+    if config.getoption(NO_SKIP_OPTION):
+        for test in items:
+            test.own_markers = [
+                marker
+                for marker in test.own_markers
+                if marker.name not in ("skip", "skipif")
+            ]

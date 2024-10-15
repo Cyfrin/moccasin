@@ -9,16 +9,15 @@ from typing import TYPE_CHECKING, Any, Iterator, Optional, Union, cast
 
 import boa
 import tomlkit
-
-# If we want to know the specific deployer that the active env is working with
-# from boa.interpret import _get_default_deployer_class
 from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
 from boa.deployments import Deployment, get_deployments_db
 from boa.environment import Env
 from boa.util.abi import Address
 from boa.verifiers import get_verification_bundle
-from boa_zksync import set_zksync_fork, set_zksync_test_env
+from boa_zksync import set_zksync_env, set_zksync_fork, set_zksync_test_env
+
+# REVIEW: Could/should these be optionally imported?
 from boa_zksync.contract import ZksyncContract
 from boa_zksync.deployer import ZksyncDeployer
 from dotenv import load_dotenv
@@ -49,9 +48,12 @@ from moccasin.named_contract import NamedContract
 
 if TYPE_CHECKING:
     from boa.network import NetworkEnv
+    from boa.verifiers import Blockscout, VerificationResult
     from boa_zksync import ZksyncEnv
+    from boa_zksync.verifiers import ZksyncExplorer
 
 _AnyEnv = Union["NetworkEnv", "Env", "ZksyncEnv"]
+VERIFIERS = Union["Blockscout", "ZksyncExplorer"]
 
 
 @dataclass
@@ -63,9 +65,10 @@ class Network:
     is_zksync: bool = False
     default_account_name: str | None = None
     unsafe_password_file: Path | None = None
-    explorer_uri: str | None = None
     save_abi_path: str | None = None
+    explorer_uri: str | None = None
     explorer_api_key: str | None = None
+    explorer_type: str | None = None
     contracts: dict[str, NamedContract] = field(default_factory=dict)
     prompt_live: bool = True
     save_to_db: bool = True
@@ -80,7 +83,6 @@ class Network:
         # to switch networks
         from boa.deployments import DeploymentsDB, set_deployments_db
         from boa.network import EthereumRPC, NetworkEnv
-        from boa_zksync import ZksyncEnv
 
         # 0. Set the database
         # The local networks should be validated at this point
@@ -107,8 +109,11 @@ class Network:
 
         # 3. Finally, "true" networks
         elif self.is_zksync:
-            env = ZksyncEnv(EthereumRPC(self.url), nickname=self.name)
-            boa.set_env(env)
+            if self.explorer_type != "zksyncexplorer":
+                logger.warning(
+                    "Explorer type is not zksyncexplorer, as of today, only the zksync explorer is supported with zksync."
+                )
+            set_zksync_env(self.url, explorer_url=self.explorer_uri, nickname=self.name)
         else:
             env = NetworkEnv(EthereumRPC(self.url), nickname=self.name)
             boa.set_env(env)
@@ -122,8 +127,73 @@ class Network:
                 )
             self.chain_id = expected_chain_id if not self.chain_id else self.chain_id
 
+            # 5. Set the explorer type and uri if not set by default ones
+            if self.chain_id is not None and (
+                self.explorer_uri is None or self.explorer_uri is None
+            ):
+                # Review: Is this down here even good?
+                from moccasin.constants.vars import DEFAULT_NETWORKS_BY_CHAIN_ID
+
+                default_network_info = DEFAULT_NETWORKS_BY_CHAIN_ID.get(
+                    self.chain_id, {}
+                )
+                self.explorer_uri = (
+                    self.explorer_uri
+                    if self.explorer_uri is not None
+                    else default_network_info.get("explorer", None)
+                )
+                self.explorer_type = (
+                    self.explorer_type
+                    if self.explorer_type is not None
+                    else default_network_info.get("explorer_type", None)
+                )
+
         boa.env.nickname = self.name
         return boa.env
+
+    def moccasin_verify(
+        self, contract: VyperContract | ZksyncContract
+    ) -> "VerificationResult":
+        """Verifies a contract using your moccasin.toml config."""
+        verifier_class = self.get_verifier_class()
+        verifier_instance = verifier_class(self.explorer_uri, self.explorer_api_key)
+        if self.is_zksync:
+            import boa_zksync
+
+            return boa_zksync.verify(contract, verifier_instance)
+        return boa.verify(contract, verifier_instance)
+
+    def get_verifier_class(self) -> Any:
+        if self.explorer_type is None:
+            if self.explorer_uri is not None:
+                if "blockscout" in self.explorer_uri:
+                    self.explorer_type = "blockscout"
+                elif "zksync" in self.explorer_uri:
+                    self.explorer_type = "zksyncexplorer"
+
+        if self.explorer_type is None:
+            raise ValueError(
+                f"No explorer type found. Please set the explorer_type in your {CONFIG_NAME}."
+            )
+        if self.explorer_uri is None:
+            raise ValueError(
+                f"No explorer_uri found. Please set the `explorer_uri` in your {CONFIG_NAME}."
+            )
+
+        verifier_name = self._to_verifier_name(self.explorer_type)
+        from importlib import import_module
+
+        module = import_module("moccasin.supported_verifiers")
+        return getattr(module, verifier_name)
+
+    def _to_verifier_name(self, verifier_string: str) -> str:
+        if verifier_string.lower().strip() == "blockscout":
+            return "Blockscout"
+        if verifier_string.lower().strip() == "zksyncexplorer":
+            return "ZksyncExplorer"
+        raise ValueError(
+            f"Verifier {verifier_string} is not supported. Please use 'blockscout' or 'zksyncexplorer'."
+        )
 
     def get_default_account(self) -> MoccasinAccount | Any:
         """Returns an 'account-like' object."""
@@ -162,6 +232,8 @@ class Network:
         limit: int | None = None,
     ) -> Iterator[Deployment]:
         limit_str = ""
+        if not isinstance(limit, int) and not isinstance(limit, type(None)):
+            raise ValueError(f"Limit must be an integer, not {type(limit)}.")
         if limit is not None:
             limit_str = f"LIMIT {limit};"
         db = get_deployments_db()
@@ -174,9 +246,8 @@ class Network:
             chain_id = to_hex(self.chain_id)
         else:
             chain_id = to_hex(chain_id)
-        return db._get_deployments_from_sql(
-            GET_CONTRACT_SQL.format(field_names, limit_str), (contract_name, chain_id)
-        )
+        final_sql = GET_CONTRACT_SQL.format(field_names, limit_str)
+        return db._get_deployments_from_sql(final_sql, (contract_name, chain_id))
 
     def has_matching_integrity(
         self, deployment: Deployment, contract_name: str, config: "Config" = None
@@ -429,6 +500,9 @@ class Network:
         """
         return self.name in [PYEVM, ERAVM] or self.is_fork
 
+    def has_explorer(self) -> bool:
+        return self.explorer_uri is not None
+
     def _deploy_named_contract(
         self, named_contract: NamedContract, deployer_script: str | Path
     ) -> VyperContract | ZksyncContract:
@@ -547,6 +621,7 @@ class _Networks:
 
         default_explorer_api_key = project_data.get("explorer_api_key", None)
         default_explorer_uri = project_data.get("explorer_uri", None)
+        default_explorer_type = project_data.get("explorer_type", None)
         default_save_abi_path = project_data.get("save_abi_path", None)
         default_contracts = toml_data.get("networks", {}).get("contracts", {})
         self.default_network_name = project_data.get(
@@ -590,14 +665,17 @@ class _Networks:
                     name=network_name,
                     is_fork=network_data.get("fork", False),
                     url=network_data.get("url", None),
-                    is_zksync=network_data.get("zksync", False),
+                    is_zksync=network_data.get("is_zksync", False),
                     chain_id=network_data.get("chain_id", None),
-                    explorer_uri=network_data.get("explorer_uri", default_explorer_uri),
                     save_abi_path=network_data.get(
                         SAVE_ABI_PATH, default_save_abi_path
                     ),
+                    explorer_uri=network_data.get("explorer_uri", default_explorer_uri),
                     explorer_api_key=network_data.get(
                         "explorer_api_key", default_explorer_api_key
+                    ),
+                    explorer_type=network_data.get(
+                        "explorer_type", default_explorer_type
                     ),
                     default_account_name=network_data.get("default_account_name", None),
                     unsafe_password_file=network_data.get("unsafe_password_file", None),
@@ -1036,5 +1114,11 @@ def get_active_network() -> Network:
 def initialize_global_config(config_path: Path | None = None) -> Config:
     global _config
     assert _config is None
+    _set_global_config(config_path)
+    return get_config()
+
+
+def _set_global_config(config_path: Path | None = None) -> Config:
+    global _config
     _config = Config.load_config_from_path(config_path)
     return _config
