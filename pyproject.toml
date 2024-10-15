@@ -9,7 +9,7 @@ authors = [
 dependencies = [
     "titanoboa>=0.2.4",
     "python-dotenv>=1.0.1",
-    "titanoboa-zksync @ git+https://github.com/DanielSchiavini/titanoboa-zksync.git@feat/contract-verification",
+    "titanoboa-zksync>=0.2.4",
     "tqdm>=4.66.5",
     "tomlkit>=0.13.2",
     # For preserving comments when writing to toml
