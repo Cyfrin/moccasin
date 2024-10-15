@@ -9,7 +9,7 @@ import pytest
 
 import moccasin.constants.vars as vars
 from moccasin.commands.wallet import save_to_keystores
-from moccasin.config import Config, initialize_global_config
+from moccasin.config import Config, _set_config, initialize_global_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
 from tests.utils.anvil import ANVIL_URL, AnvilProcess
 
@@ -116,6 +116,7 @@ def mox_path():
 @pytest.fixture(scope="session")
 def complex_project_config() -> Config:
     test_db_path = os.path.join(COMPLEX_PROJECT_PATH, ".deployments.db")
+
     if os.path.exists(test_db_path):
         os.remove(test_db_path)
 
@@ -258,7 +259,7 @@ def deployments_project_config() -> Generator[Config, None, None]:
         raise FileNotFoundError(f"Starting database not found: {starting_db_path}")
     shutil.copy2(starting_db_path, test_db_path)
 
-    config = initialize_global_config(DEPLOYMENTS_PROJECT_PATH)
+    config = _set_config(DEPLOYMENTS_PROJECT_PATH)
 
     yield config
 

@@ -4,7 +4,6 @@ dependencies = [
 ]
 src = "contracts"
 out = "build"
-explorer_api_key = "${ETHERSCAN_API_KEY}"
 save_abi_path = "abis"
 cov_config = ".coveragerc"
 dot_env = ".hello"
@@ -24,7 +23,7 @@ save_to_db = false
 price_feed = { abi = "MockV3Aggregator", force_deploy = false, deployer_script = "mock_deployer/deploy_feed.py", fixture = false }
 
 [networks.optimism]
-explorer_api_key = "${OPTIMISTIC_ETHERSCAN_API_KEY}"
+explorer_api_key = "${OPTIMISTIC_API_KEY}"
 chain_id = 10
 save_to_db = false
 
@@ -60,6 +59,14 @@ save_to_db = false
 
 [networks.anvil.contracts]
 price_feed = { address = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi_from_explorer = false }
+
+[networks.sepolia-zksync]
+url = "$SEPOLIA_ZKSYNC_RPC_URL"
+save_to_db = false
+prompt_live = false
+is_zksync = true
+default_account_name = "smalltestnet"
+unsafe_password_file = "~/.moccasin/unsafe-passwords/smalltestnet"
 
 [networks.fake_chain]
 url = "${FAKE_CHAIN_RPC_URL}"

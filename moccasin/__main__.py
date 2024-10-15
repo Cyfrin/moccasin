@@ -1,8 +1,7 @@
 import argparse
-import importlib
 import sys
 import tomllib
-from importlib import metadata
+from importlib import import_module, metadata
 from pathlib import Path
 from typing import Tuple
 
@@ -16,6 +15,8 @@ ALIAS_TO_COMMAND = {
     "c": "compile",
     "script": "run",
     "config": "config_",
+    "u": "utils",
+    "util": "utils",
 }
 
 PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer", "deployments"]
@@ -54,7 +55,7 @@ def main(argv: list) -> int:
     if args.command:
         command_to_run = ALIAS_TO_COMMAND.get(args.command, args.command)
         logger.info(f"Running {command_to_run} command...")
-        importlib.import_module(f"moccasin.commands.{command_to_run}").main(args)
+        import_module(f"moccasin.commands.{command_to_run}").main(args)
     else:
         main_parser.print_help()
     return 0
@@ -611,6 +612,28 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
         "--limit", default=None, help="Limit the number of deployments to get."
     )
     add_network_args_to_parser(deployments_parser)
+    # ------------------------------------------------------------------
+    #                         UTILS COMMAND
+    # ------------------------------------------------------------------
+    utils_paraser = sub_parsers.add_parser(
+        "utils",
+        aliases=["u", "util"],
+        help="Helpful utilities - right now it's just the one.",
+        description="Helpful utilities.\n",
+        parents=[parent_parser],
+    )
+    utils_subparaser = utils_paraser.add_subparsers(dest="utils_command")
+
+    # Zero
+    utils_subparaser.add_parser(
+        "zero",
+        aliases=["zero-address", "zero_address", "address-zero", "address_zero"],
+        help="Get the zero address.",
+    )
+
+    # ------------------------------------------------------------------
+    #                             RETURN
+    # ------------------------------------------------------------------
     return main_parser, sub_parsers
 
 

@@ -18,14 +18,14 @@ format-check:
 
 # Run unit and CLI tests, fail on first test failure
 test:
-    uv run pytest -x -s --ignore=tests/data/ --ignore=tests/integration/ --ignore=tests/zksync/
+    uv run pytest --ignore=tests/data/ -x --ignore=tests/integration/ --ignore=tests/zksync/ --ignore=tests/live/
 
 # Run integration tests, read the README.md in the tests/integration directory for more information
 test-i:
-    uv run pytest tests/integration -x -s -nauto --ignore=tests/data/ --ignore=tests/zksync/
+    uv run pytest tests/integration -x --ignore=tests/data/ --ignore=tests/zksync/ --ignore=tests/live/
 
 test-z:
-    uv run pytest tests/zksync -x -s -nauto --ignore=tests/data/ --ignore=tests/integration/
+    uv run pytest tests/zksync -nauto --ignore=tests/data/ --ignore=tests/integration/ --ignore=tests/live/
 
 # Run both unit and integration tests
 test-all:

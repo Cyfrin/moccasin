@@ -7,7 +7,7 @@ authors = [
     { name = "charles-cooper", email = "3867501+charles-cooper@users.noreply.github.com" },
 ]
 dependencies = [
-    "titanoboa @ git+https://github.com/charles-cooper/titanoboa.git@feat/deployments-abi",
+    "titanoboa>=v0.2.4",
     "python-dotenv>=1.0.1",
     "titanoboa-zksync @ git+https://github.com/PatrickAlphaC/titanoboa-zksync.git@feat/moccasin-overhaul",
     "tqdm>=4.66.5",
@@ -76,6 +76,9 @@ exclude = [
 
 [tool.pytest.ini_options]
 addopts = "--ignore=tests/data/"
+markers = [
+    "ignore_isolation: Do not preserve state during tests",
+]
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true

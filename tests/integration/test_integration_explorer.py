@@ -19,7 +19,7 @@ def test_boa_get_abi_from_explorer_ignore_config_id():
     abi = boa_get_abi_from_explorer(
         LINK_ADDRESS_OPT_MAINNET,
         network_name_or_id="10",
-        api_key=os.getenv("OPTIMISTIC_ETHERSCAN_API_KEY"),
+        api_key=os.getenv("OPTIMISTIC_API_KEY"),
         ignore_config=True,
     )
     assert isinstance(abi, list)

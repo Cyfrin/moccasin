@@ -80,14 +80,17 @@ def test_checks_integrity_of_contracts(
     starting_deployments_number = 0
     try:
         os.chdir(DEPLOYMENTS_PROJECT_PATH)
+
         deployments_project_config.set_active_network("anvil")
         active_network = deployments_project_config.get_active_network()
+
         starting_deployments_number = len(
             active_network.get_deployments_checked(COUNTER)
         )
         run_script("deploy", network="anvil")
     finally:
         os.chdir(current_dir)
+
     # Since none of the previously deployed contracts have the new code
     assert starting_deployments_number == 0
 

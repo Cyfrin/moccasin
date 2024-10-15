@@ -14,6 +14,9 @@ Issues, feedback, and sharing that you're using Titanoboa and Vyper on social me
     - [ZKSync requirements](#zksync-requirements)
   - [Installing for local development](#installing-for-local-development)
   - [Running Tests](#running-tests)
+    - [Local Tests](#local-tests)
+    - [Integration Tests](#integration-tests)
+    - [ZKSync Tests](#zksync-tests)
 - [Code Style Guide](#code-style-guide)
   - [Where do you get the `typecheck` and `format` command?](#where-do-you-get-the-typecheck-and-format-command)
 - [Thank you!](#thank-you)
@@ -99,12 +102,31 @@ However, if you run tests and scripts using the `uv` or `just` commands as we wi
 
 First, you'll need to make sure you have the `anvil1` keystore in your `~/.moccasin/keystores` folder. You can [find it here](./tests/data/keystores/anvil1). Please move it there. 
 
+### Local Tests
+
 Run the following:
 
 ```bash
 just test # Check out the justfile to see the command this runs
 ```
 This is equivalent to running `pytest` in the root directory of the project.
+
+### Integration Tests
+
+Read the [README.md in the integration folder](./tests/integration/README.md) to see how to run the integration tests.
+
+```bash
+just test-i # Check out the justfile to see the command this runs# Check out the justfile to see the command this runs
+```
+
+### ZKSync Tests
+
+These will be the zksync tests that require the [ZKsync requirements](#zksync-requirements) to be installed. 
+
+```bash
+just test-z # Check out the justfile to see the command this runs
+
+```
 
 # Code Style Guide
 
