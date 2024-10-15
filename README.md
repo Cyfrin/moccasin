@@ -1,5 +1,5 @@
 >[!IMPORTANT]
-> *This repo is a work in progress and is not ready for production use.*
+> *This repo is a work in progress.*
 
 
 <p align="center">
