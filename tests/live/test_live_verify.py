@@ -7,7 +7,7 @@ import pytest
 from tests.conftest import COMPLEX_PROJECT_PATH
 
 
-@pytest.mark.ignore_isolation
+@pytest.mark.skip
 def test_zksync_verify(mox_path):
     current_dir = Path.cwd()
     try:

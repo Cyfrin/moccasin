@@ -232,6 +232,8 @@ class Network:
         limit: int | None = None,
     ) -> Iterator[Deployment]:
         limit_str = ""
+        if not isinstance(limit, int) and not isinstance(limit, type(None)):
+            raise ValueError(f"Limit must be an integer, not {type(limit)}.")
         if limit is not None:
             limit_str = f"LIMIT {limit};"
         db = get_deployments_db()
@@ -244,10 +246,8 @@ class Network:
             chain_id = to_hex(self.chain_id)
         else:
             chain_id = to_hex(chain_id)
-        final_sql = GET_CONTRACT_SQL.format(
-            field_names, "'" + contract_name + "'", chain_id, limit_str
-        )
-        return db._get_deployments_from_sql(final_sql)
+        final_sql = GET_CONTRACT_SQL.format(field_names, limit_str)
+        return db._get_deployments_from_sql(final_sql, (contract_name, chain_id))
 
     def has_matching_integrity(
         self, deployment: Deployment, contract_name: str, config: "Config" = None
@@ -1114,11 +1114,11 @@ def get_active_network() -> Network:
 def initialize_global_config(config_path: Path | None = None) -> Config:
     global _config
     assert _config is None
-    _set_config(config_path)
+    _set_global_config(config_path)
     return get_config()
 
 
-def _set_config(config_path: Path | None = None) -> Config:
+def _set_global_config(config_path: Path | None = None) -> Config:
     global _config
     _config = Config.load_config_from_path(config_path)
     return _config

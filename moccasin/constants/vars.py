@@ -65,11 +65,7 @@ MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
 STARTING_BOA_BALANCE = 1000000000000000000000  # 1,000 Ether
 
 # Database vars
-GET_CONTRACT_SQL = """SELECT {}
-FROM deployments
-WHERE contract_name = {}
-  AND json_extract(tx_dict, '$.chain_id') = {}
-ORDER BY broadcast_ts DESC {}"""
+GET_CONTRACT_SQL = "SELECT {} FROM deployments WHERE contract_name = ? AND json_extract(tx_dict, '$.chainId') = ? ORDER BY broadcast_ts DESC {}"
 
 # Networking defaults
 DEFAULT_NETWORKS_BY_NAME: dict[str, dict] = {

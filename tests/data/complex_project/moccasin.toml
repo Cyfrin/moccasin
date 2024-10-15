@@ -8,7 +8,6 @@ save_abi_path = "abis"
 cov_config = ".coveragerc"
 dot_env = ".hello"
 db_path = ".deployments.db"
-# db_path = "/Users/patrick/code/moccasin/tests/data/complex_project/.deployments.db"
 
 [networks.pyevm]
 is_zksync = false

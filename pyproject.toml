@@ -75,9 +75,6 @@ exclude = [
 
 [tool.pytest.ini_options]
 addopts = "--ignore=tests/data/"
-markers = [
-    "ignore_isolation: Do not preserve state during tests",
-]
 
 [tool.ruff.format]
 skip-magic-trailing-comma = true
