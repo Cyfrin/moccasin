@@ -160,13 +160,8 @@ class Network:
         if self.is_zksync:
             import boa_zksync
 
-            with boa.set_verifier(verifier_instance):
-                result = boa_zksync.verify(contract, verifier_instance)
-                return result
-        else:
-            with boa.set_verifier(verifier_instance):
-                result = boa.verify(contract, verifier_instance)
-                return result
+            return boa_zksync.verify(contract, verifier_instance)
+        return boa.verify(contract, verifier_instance)
 
     def get_verifier_class(self) -> Any:
         if self.explorer_type is None:
