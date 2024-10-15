@@ -8,7 +8,7 @@ default_network_name = "eravm"
 [networks.zksync-local]
 url = "http://127.0.0.1:8011"
 chain_id = 260
-zksync = true
+is_zksync = true
 default_account_name = "zk-rich1"
 unsafe_password_file = "~/.moccasin/unsafe-passwords/zk-rich1"
 save_to_db = false
@@ -16,7 +16,7 @@ save_to_db = false
 [networks.zksync-sepolia]
 url = "https://sepolia.era.zksync.dev"
 chain_id = 300
-zksync = true
+is_zksync = true
 default_account_name = "default"
 save_to_db = false
 
