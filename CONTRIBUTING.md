@@ -116,7 +116,7 @@ This is equivalent to running `pytest` in the root directory of the project.
 Read the [README.md in the integration folder](./tests/integration/README.md) to see how to run the integration tests.
 
 ```bash
-just test-i # Check out the justfile to see the command this runs# Check out the justfile to see the command this runs
+just test-i # Check out the justfile to see the command this runs
 ```
 
 ### ZKSync Tests
