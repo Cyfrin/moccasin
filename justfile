@@ -18,7 +18,7 @@ format-check:
 
 # Run unit and CLI tests, fail on first test failure
 test:
-    uv run pytest -x -nauto  --ignore=tests/integration/ --ignore=tests/zksync/ 
+    uv run pytest -x --ignore=tests/integration/ --ignore=tests/zksync/ 
 
 # Run integration tests, read the README.md in the tests/integration directory for more information
 test-i:
