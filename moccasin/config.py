@@ -249,9 +249,10 @@ class Network:
             chain_id = to_hex(self.chain_id)
         else:
             chain_id = to_hex(chain_id)
-        return db._get_deployments_from_sql(
-            GET_CONTRACT_SQL.format(field_names, limit_str), (contract_name, chain_id)
+        final_sql = GET_CONTRACT_SQL.format(
+            field_names, "'" + contract_name + "'", chain_id, limit_str
         )
+        return db._get_deployments_from_sql(final_sql)
 
     def has_matching_integrity(
         self, deployment: Deployment, contract_name: str, config: "Config" = None
