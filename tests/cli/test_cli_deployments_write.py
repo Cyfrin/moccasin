@@ -1,7 +1,7 @@
 import os
 import subprocess
-from pathlib import Path
 import warnings
+from pathlib import Path
 
 import pytest
 

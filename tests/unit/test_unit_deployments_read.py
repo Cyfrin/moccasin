@@ -1,4 +1,3 @@
-import pytest
 
 from moccasin.commands.deployments import print_deployments_from_cli
 

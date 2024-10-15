@@ -4,15 +4,16 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Generator, List
-from typing_extensions import Final
+
 import pytest
+from boa.deployments import DeploymentsDB, set_deployments_db
+from typing_extensions import Final
 
 import moccasin.constants.vars as vars
 from moccasin.commands.wallet import save_to_keystores
 from moccasin.config import Config, _set_global_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
 from tests.utils.anvil import ANVIL_URL, AnvilProcess
-from boa.deployments import set_deployments_db, DeploymentsDB
 
 COMPLEX_PROJECT_PATH = Path(__file__).parent.joinpath("data/complex_project/")
 DEPLOYMENTS_PROJECT_PATH = Path(__file__).parent.joinpath("data/deployments_project/")
