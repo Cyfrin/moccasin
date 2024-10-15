@@ -1,6 +1,7 @@
 # Live
 
-This is the super integration test, because we spend real testnet ETH to do this. The reason, is that we need to test verification. 
+This is an integration test, because we spend Sepolia ETH to do this.
+The reason is for testing contract verification. 
 
 ## Requirements
 
