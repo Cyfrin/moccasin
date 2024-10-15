@@ -1,7 +1,6 @@
 >[!IMPORTANT]
 > *This repo is a work in progress.*
 
-
 <p align="center">
     <br />
         <img src="./docs/source/_static/gh_banner.png" width="100%" alt=""/></a>
@@ -14,10 +13,12 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 
+> The smaller bar is better, it means it's faster
+
 <p align="center">
     <br />
     <a href="https://cyfrin.io/">
-        <img src="./docs/source/_static/speed-comparisons.png" width="1000" alt=""/></a>
+        <img src="./docs/source/_static/compile-stats.png" width="1000" alt=""/></a>
     <br />
 </p>
 
@@ -57,6 +58,14 @@ The documentation roughly attempts to follow [Diátaxis](https://diataxis.fr/).
 
 > Agkistrodon piscivorus is a species of venomous snake, a pit viper in the subfamily Crotalinae of the family Viperidae. The generic name is derived from the Greek words ἄγκιστρον agkistron "fish-hook, hook" and ὀδών odon "tooth", and the specific name comes from the Latin piscis 'fish' and voro '(I) eat greedily, devour'; thus, the scientific name translates to "hook-toothed fish-eater". Common names include cottonmouth, northern cottonmouth, water moccasin, swamp moccasin, black moccasin, and simply viper.
 
+# More Stats
+
+<p align="center">
+    <br />
+    <a href="https://cyfrin.io/">
+        <img src="./docs/source/_static/speed-comparisons.png" width="1000" alt=""/></a>
+    <br />
+</p>
 
 # License 
 
