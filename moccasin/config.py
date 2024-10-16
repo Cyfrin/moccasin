@@ -1065,7 +1065,9 @@ class Config:
         return Config(config_path)
 
     @staticmethod
-    def find_project_root(start_path: Path | str = Path.cwd()) -> Path:
+    def find_project_root(start_path: Path | str | None = None) -> Path:
+        if start_path is None:
+            start_path = Path.cwd()
         current_path = Path(start_path).expanduser().resolve()
         while True:
             # Move up to the parent directory

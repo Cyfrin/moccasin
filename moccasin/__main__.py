@@ -163,6 +163,7 @@ Use this command to prepare your contracts for deployment or testing.""",
         nargs="?",
     )
     add_network_args_to_parser(test_parser)
+    add_account_args_to_parser(test_parser)
 
     # Pytest args
     test_parser.add_argument(
@@ -402,6 +403,7 @@ Use this command to prepare your contracts for deployment or testing.""",
         parents=[parent_parser],
     )
     add_network_args_to_parser(console_parser)
+    add_account_args_to_parser(console_parser)
 
     # ------------------------------------------------------------------
     #                        INSTALL COMMAND

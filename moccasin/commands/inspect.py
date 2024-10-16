@@ -3,7 +3,7 @@ from argparse import Namespace
 from typing import Any
 
 from moccasin.commands.compile import compile_
-from moccasin.config import get_config
+from moccasin.config import Config, get_config, initialize_global_config
 
 FUNCTION_SIGNATURES_ALTS = [
     "methods",
@@ -16,12 +16,19 @@ FUNCTION_SIGNATURES_ALTS = [
 
 def main(args: Namespace) -> int:
     inspect_type = args.inspect_type.replace("-", "_")
-    inspect_contract(args.contract, inspect_type, print_out=True)
+    config = initialize_global_config()
+    inspect_contract(args.contract, inspect_type, config=config, print_out=True)
     return 0
 
 
-def inspect_contract(contract: str, inspect_type: str, print_out: bool = False) -> Any:
-    config = get_config()
+def inspect_contract(
+    contract: str,
+    inspect_type: str,
+    config: Config | None = None,
+    print_out: bool = False,
+) -> Any:
+    if config is None:
+        config = get_config()
 
     contract_path = config._find_contract(contract)
     vyper_deployer = compile_(

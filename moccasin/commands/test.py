@@ -76,17 +76,27 @@ def main(args: Namespace) -> int:
         prompt_live=args.prompt_live,
         db_path=args.db_path,
         save_to_db=args.save_to_db,
+        account=args.account,
+        private_key=args.private_key,
+        password=args.password,
+        password_file_path=args.password_file_path,
+        url=args.url,
     )
 
 
 def _run_project_tests(
     pytest_args: List[str],
     network: str = None,
+    account: str = None,
+    private_key: str = None,
+    password: str = None,
+    password_file_path: Path = None,
     fork: bool = False,
     prompt_live: bool = None,
     db_path: str = None,
     save_to_db: bool = None,
     config: Config = None,
+    url: str = None,
 ):
     if config is None:
         config = get_config()
@@ -103,12 +113,12 @@ def _run_project_tests(
     with _patch_sys_path(list_of_paths):
         _setup_network_and_account_from_config_and_cli(
             network=network,
-            url=None,
+            url=url,
             fork=fork,
-            account=None,
-            private_key=None,
-            password=None,
-            password_file_path=None,
+            account=account,
+            private_key=private_key,
+            password=password,
+            password_file_path=password_file_path,
             prompt_live=prompt_live,
             db_path=db_path,
             save_to_db=save_to_db,
