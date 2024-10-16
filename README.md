@@ -25,7 +25,7 @@ Fast to install, test, and run python commands on your smart contracts.
 
 # Quickstart
 
-Head over to [the moccasin installation documentation](https://cyfrin.github.io/moccasin/installing-moccasin.html) to for other install methodologies and getting stated.
+Head over to [the moccasin installation documentation](https://cyfrin.github.io/moccasin/installing_moccasin.html) to for other install methodologies and getting stated.
 
 ## This README Quickstart
 
