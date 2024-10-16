@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from moccasin.commands.run import run_script
-from tests.conftest import DEPLOYMENTS_PROJECT_PATH
+from tests.deployments.conftest import DEPLOYMENTS_PROJECT_PATH
 
 MOCK_AGGREGATOR = "MockV3Aggregator"
 COUNTER = "Counter"
@@ -15,8 +15,7 @@ COUNTER = "Counter"
 # ------------------------------------------------------------------
 #                READING AND WRITING DEPLOYMENTS
 # ------------------------------------------------------------------
-
-
+@pytest.mark.ignore_isolation
 def test_local_networks_dont_have_data_saved_to_db(
     deployments_project_config_write, deployments_database, anvil_process
 ):
@@ -39,6 +38,7 @@ def test_local_networks_dont_have_data_saved_to_db(
         active_network.get_deployments_unchecked(COUNTER)
 
 
+@pytest.mark.ignore_isolation
 def test_checks_integrity_of_contracts(
     mox_path,
     deployments_project_config_write,
@@ -86,6 +86,7 @@ def test_checks_integrity_of_contracts(
     assert latest_contract.address is not None
 
 
+@pytest.mark.ignore_isolation
 def test_records_deployment_on_deployment(
     mox_path, deployments_project_config_write, deployments_database, anvil_process
 ):

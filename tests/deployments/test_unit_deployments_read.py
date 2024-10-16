@@ -1,5 +1,6 @@
-
 from moccasin.commands.deployments import print_deployments_from_cli
+
+import pytest
 
 MOCK_AGGREGATOR = "MockV3Aggregator"
 COUNTER = "Counter"
@@ -8,6 +9,7 @@ COUNTER = "Counter"
 # ------------------------------------------------------------------
 #                      READING DEPLOYMENTS
 # ------------------------------------------------------------------
+@pytest.mark.ignore_isolation
 def test_print_deployments_finds_one(
     capsys, deployments_database, deployments_project_config_read, anvil_process
 ):
@@ -17,6 +19,7 @@ def test_print_deployments_finds_one(
     assert "deployments: 1" in captured.out
 
 
+@pytest.mark.ignore_isolation
 def test_print_deployments_finds_two(
     capsys, deployments_database, deployments_project_config_read, anvil_process
 ):
@@ -26,6 +29,7 @@ def test_print_deployments_finds_two(
     assert "deployments: 2" in captured.out
 
 
+@pytest.mark.ignore_isolation
 def test_format_level_can_be_above_four(
     capsys, deployments_database, deployments_project_config_read, anvil_process
 ):
@@ -35,6 +39,7 @@ def test_format_level_can_be_above_four(
     assert "deployments: 2" in captured.out
 
 
+@pytest.mark.ignore_isolation
 def test_limit_drops_deployment_amount(
     capsys, deployments_database, deployments_project_config_read, anvil_process
 ):
