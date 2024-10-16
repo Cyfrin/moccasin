@@ -1,6 +1,6 @@
-from moccasin.commands.deployments import print_deployments_from_cli
-
 import pytest
+
+from moccasin.commands.deployments import print_deployments_from_cli
 
 MOCK_AGGREGATOR = "MockV3Aggregator"
 COUNTER = "Counter"

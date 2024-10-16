@@ -3,7 +3,7 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Generator, List
+from typing import Any, List
 
 import pytest
 from typing_extensions import Final

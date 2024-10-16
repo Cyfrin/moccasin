@@ -1,10 +1,12 @@
-from pathlib import Path
-import shutil
-from typing import Generator
-import pytest
-from moccasin.config import Config, _set_global_config
 import os
+import shutil
+from pathlib import Path
+from typing import Generator
+
+import pytest
 from boa.deployments import DeploymentsDB, set_deployments_db
+
+from moccasin.config import Config, _set_global_config
 
 DEPLOYMENTS_PROJECT_PATH = Path(__file__).parent.parent.joinpath(
     "data/deployments_project/"

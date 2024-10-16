@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 from argparse import Namespace
+from pathlib import Path
 
 from moccasin.commands.inspect import inspect_contract, main
 from tests.conftest import COMPLEX_PROJECT_PATH
