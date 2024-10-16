@@ -64,7 +64,7 @@ cd moccasin
 *This repo uses uv to manage python dependencies and version. So you don't have to deal with virtual environments (much)*
 
 ```bash
-uv sync
+uv sync --all-extras
 ```
 
 3. Create a new branch
