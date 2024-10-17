@@ -597,7 +597,7 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
         parents=[parent_parser],
     )
     deployments_parser.add_argument(
-        "contract_name", help="Name of the contract to get."
+        "contract_name", help='Name of the contract to get, or "all".'
     )
     deployments_parser.add_argument(
         "--format-level",
@@ -614,6 +614,7 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
         "--limit", default=None, help="Limit the number of deployments to get."
     )
     add_network_args_to_parser(deployments_parser)
+
     # ------------------------------------------------------------------
     #                         UTILS COMMAND
     # ------------------------------------------------------------------

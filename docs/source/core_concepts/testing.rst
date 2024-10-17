@@ -40,7 +40,7 @@ This is the most basic setup for testing.
 
     Gas Profiling <testing/gas_profiling.rst>
     Coverage <testing/coverage.rst>
-    Fixutres <testing/fixtures.rst>
+    Fixtures <testing/fixtures.rst>
     Testing with boa <testing/titanoboa_testing.rst>
     How to prank <testing/pranking.rst>
     

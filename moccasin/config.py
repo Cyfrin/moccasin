@@ -5,19 +5,22 @@ import tomllib
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Iterator, Union, cast
 
 import boa
 import tomlkit
 from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
-from boa.deployments import Deployment, get_deployments_db
+from boa.deployments import (
+    Deployment,
+    DeploymentsDB,
+    get_deployments_db,
+    set_deployments_db,
+)
 from boa.environment import Env
 from boa.util.abi import Address
 from boa.verifiers import get_verification_bundle
 from boa_zksync import set_zksync_env, set_zksync_fork, set_zksync_test_env
-
-# REVIEW: Could/should these be optionally imported?
 from boa_zksync.contract import ZksyncContract
 from boa_zksync.deployer import ZksyncDeployer
 from dotenv import load_dotenv
@@ -40,6 +43,11 @@ from moccasin.constants.vars import (
     SAVE_ABI_PATH,
     SAVE_TO_DB,
     SCRIPT_FOLDER,
+    SQL_AND,
+    SQL_CHAIN_ID,
+    SQL_CONTRACT_NAME,
+    SQL_LIMIT,
+    SQL_WHERE,
     TESTS_FOLDER,
 )
 from moccasin.logging import logger
@@ -76,22 +84,12 @@ class Network:
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
 
-    def _set_boa_env_and_db(self) -> _AnyEnv:
+    def _set_boa_env(self) -> _AnyEnv:
         """Sets the boa.env to the current network, this additionally sets up the database."""
         # perf: save time on imports in the (common) case where
         # we just import config for its utils but don't actually need
         # to switch networks
-        from boa.deployments import DeploymentsDB, set_deployments_db
         from boa.network import EthereumRPC, NetworkEnv
-
-        # 0. Set the database
-        # The local networks should be validated at this point
-        db: DeploymentsDB
-        if self.save_to_db:
-            db = DeploymentsDB(path=self.db_path)
-        else:
-            db = DeploymentsDB(path=DB_PATH_LOCAL_DEFAULT)
-        set_deployments_db(db)
 
         # 1. Check for forking, and set (You cannot fork from a NetworkEnv, only a "new" Env!)
         if self.is_fork:
@@ -163,6 +161,12 @@ class Network:
             return boa_zksync.verify(contract, verifier_instance)
         return boa.verify(contract, verifier_instance)
 
+    def is_matching_boa(self) -> bool:
+        """Returns True if the current network is the active network in boa.
+        This is a good way to test if you've overriden boa as the "active" network.
+        """
+        return boa.env.nickname == self.name
+
     def get_verifier_class(self) -> Any:
         if self.explorer_type is None:
             if self.explorer_uri is not None:
@@ -213,46 +217,156 @@ class Network:
             )
         return None
 
-    def create_and_set_or_set_boa_env(self, **kwargs) -> _AnyEnv:
+    def set_kwargs(self, **kwargs):
         for key, value in kwargs.items():
             if value is not None:
                 setattr(self, key, value)
 
-        # REVIEW: Performance improvement. We don't need to create a new env if the kwargs are the same.
-        # Potentially unnecessary
-        if self.kwargs_are_different(**kwargs) or self._network_env is None:
-            self._set_boa_env_and_db()
+    def _set_boa_db(self) -> None:
+        db: DeploymentsDB
+        if self.save_to_db:
+            db = DeploymentsDB(path=self.db_path)
+        else:
+            db = DeploymentsDB(path=DB_PATH_LOCAL_DEFAULT)
+        set_deployments_db(db)
+
+    def create_and_set_or_set_boa_env(self, **kwargs) -> _AnyEnv:
+        self.set_kwargs(**kwargs)
+        self._set_boa_env()
         self._network_env = boa.env
         return self._network_env
 
-    def _fetch_contracts_from_db(
+    def _generate_sql_from_args(
         self,
-        contract_name: str,
+        contract_name: str | None = None,
         chain_id: int | str | None = None,
         limit: int | None = None,
+        db: DeploymentsDB | None = None,
+    ) -> tuple[str, tuple]:
+        if db is None:
+            db = get_deployments_db()
+
+        where_clauses = []
+        params: list[str | int] = []
+
+        field_names = db._get_fieldnames_str()
+
+        if contract_name is not None:
+            where_clauses.append(SQL_CONTRACT_NAME)
+            params.append(contract_name)
+
+        # Add chain_id condition if provided
+        if chain_id is not None:
+            where_clause = SQL_CHAIN_ID
+            if where_clauses:
+                where_clause = SQL_AND + where_clause
+            where_clauses.append(where_clause)
+            params.append(str(chain_id))
+
+        where_part = ""
+        if where_clauses:
+            where_part = SQL_WHERE + "".join(where_clauses)
+
+        # Add LIMIT if provided
+        limit_part = ""
+        if limit is not None:
+            limit_part = SQL_LIMIT
+            params.append(int(limit))
+
+        sql_query = GET_CONTRACT_SQL.format(field_names, where_part, limit_part)
+        return sql_query, tuple(params)
+
+    def _fetch_deployments_from_db(
+        self,
+        contract_name: str | None = None,
+        chain_id: int | str | None = None,
+        limit: int | None = None,
+        db: DeploymentsDB | None = None,
     ) -> Iterator[Deployment]:
-        limit_str = ""
+        if db is None:
+            db = get_deployments_db()
+        chain_id = to_hex(chain_id) if chain_id is not None else None
         if not isinstance(limit, int) and not isinstance(limit, type(None)):
             raise ValueError(f"Limit must be an integer, not {type(limit)}.")
-        if limit is not None:
-            limit_str = f"LIMIT {limit};"
-        db = get_deployments_db()
-        if db is None or not self.save_to_db:
-            raise ValueError(
-                f"The database is either not set, or save_to_db is false for network {self.name}."
-            )
-        field_names = db._get_fieldnames_str()
-        if chain_id is None:
-            chain_id = to_hex(self.chain_id)
+        final_sql, params = self._generate_sql_from_args(
+            contract_name=contract_name, chain_id=chain_id, limit=limit, db=db
+        )
+        return db._get_deployments_from_sql(final_sql, params)
+
+    def _get_deployments_iterator(
+        self,
+        contract_name: str | None = None,
+        chain_id: int | str | None = None,
+        limit: int | None = None,
+        config_or_db_path: Union["Config", Path, str, None] = None,
+    ) -> Iterator[Deployment]:
+        """Get deployments from the database without an initialized config."""
+        db_path = None
+        if isinstance(config_or_db_path, Config):
+            db_path = config_or_db_path._toml_data.get("db_path", ".deployments.db")
+        elif isinstance(db_path, str):
+            db_path = Path(db_path)
+        elif isinstance(config_or_db_path, Path):
+            db_path = config_or_db_path
+
+        if not db_path:
+            db = get_deployments_db()
         else:
-            chain_id = to_hex(chain_id)
-        final_sql = GET_CONTRACT_SQL.format(field_names, limit_str)
-        return db._get_deployments_from_sql(final_sql, (contract_name, chain_id))
+            db = DeploymentsDB(db_path)
+        return self._fetch_deployments_from_db(
+            contract_name=contract_name, chain_id=chain_id, limit=limit, db=db
+        )
+
+    def get_deployments_unchecked(
+        self,
+        contract_name: str | None = None,
+        limit: int | None = None,
+        chain_id: int | str | None = None,
+        config_or_db_path: Union["Config", Path, str, None] = None,
+    ) -> list[Deployment]:
+        deployments_iter = self._get_deployments_iterator(
+            contract_name=contract_name,
+            chain_id=chain_id,
+            limit=limit,
+            config_or_db_path=config_or_db_path,
+        )
+        return list(deployments_iter)
+
+    def get_deployments_checked(
+        self,
+        contract_name: str | None = None,
+        limit: int | None = None,
+        chain_id: int | str | None = None,
+        config_or_db_path: Union["Config", Path, str, None] = None,
+    ) -> list[Deployment]:
+        deployments_iter = self._get_deployments_iterator(
+            contract_name=contract_name,
+            chain_id=chain_id,
+            limit=limit,
+            config_or_db_path=config_or_db_path,
+        )
+
+        config = config_or_db_path
+        if not isinstance(config_or_db_path, Config):
+            config = get_config()
+        config = cast(Config, config)
+        deployments_list = []
+        for deployment in deployments_iter:
+            if self.has_matching_integrity(deployment, contract_name, config=config):
+                deployments_list.append(deployment)
+        return deployments_list
 
     def has_matching_integrity(
-        self, deployment: Deployment, contract_name: str, config: "Config" = None
-    ):
-        vyper_deployer = self._get_deployer_from_contract_name(contract_name, config)
+        self,
+        deployment: Deployment,
+        contract_name: str | None,
+        config: Union["Config", None] = None,
+    ) -> bool:
+        if config is None:
+            config = get_config()
+        if contract_name is None:
+            raise ValueError("contract_name cannot be None.")
+        vyper_deployer = self.get_deployer_from_contract_name(config, contract_name)
         # REVIEW: If boa throws a warning, maybe that's all we need instead of checking the integrity
         with warnings.catch_warnings():
             warnings.filterwarnings(
@@ -266,79 +380,50 @@ class Network:
             return False
         return True
 
-    def _get_deployer_from_contract_name(
-        self, contract_name: str, config: Optional["Config"] = None
+    def get_deployer_from_contract_name(
+        self, config: "Config", contract_name: str
     ) -> VyperDeployer | ZksyncDeployer:
-        if not config:
-            config = get_config()
-        contract_path = config._find_contract(contract_name)
+        contract_path = config.find_contract(contract_name)
         return boa.load_partial(str(contract_path.absolute()))
 
-    def get_deployments_unchecked(
-        self,
-        contract_name: str,
-        chain_id: int | str | None = None,
-        limit: int | None = None,
-    ) -> list[Deployment]:
-        deployments_iter = self._fetch_contracts_from_db(
-            contract_name, chain_id, limit=limit
-        )
-        return list(deployments_iter)
-
-    def get_deployments_checked(
-        self,
-        contract_name: str,
-        chain_id: int | str | None = None,
-        limit: int | None = None,
-    ) -> list[Deployment]:
-        deployments_iter = self._fetch_contracts_from_db(
-            contract_name, chain_id, limit=limit
-        )
-        deployments_list = []
-        for deployment in deployments_iter:
-            if self.has_matching_integrity(deployment, contract_name):
-                deployments_list.append(deployment)
-        return deployments_list
-
-    def get_latest_deployment_checked(
-        self,
-        contract_name: str,
-        chain_id: int | str | None = None,
-        config: Optional["Config"] = None,
-    ) -> Deployment | None:
-        """Gets a deployment from the database, and checks the integrity hash."""
-        deployments = self.get_deployments_checked(contract_name, chain_id, limit=1)
-        if len(deployments) == 0:
-            return None
-        return deployments[0]
-
     def get_latest_deployment_unchecked(
-        self, contract_name: str, chain_id: int | str | None = None
+        self, contract_name: str | None = None, chain_id: int | str | None = None
     ) -> Deployment | None:
-        deployments = self.get_deployments_unchecked(contract_name, chain_id)
-        if len(deployments) == 0:
-            return None
-        return deployments[0]
+        deployments = self.get_deployments_unchecked(
+            contract_name=contract_name, chain_id=chain_id, limit=1
+        )
+        if len(deployments) > 0:
+            return deployments[0]
+        return None
 
     def get_latest_contract_unchecked(
-        self, contract_name: str, chain_id: int | str | None = None
+        self, contract_name: str | None = None, chain_id: int | str | None = None
     ) -> ABIContract | None:
-        deployment = self.get_latest_deployment_unchecked(contract_name, chain_id)
+        deployment = self.get_latest_deployment_unchecked(
+            contract_name=contract_name, chain_id=chain_id
+        )
         if deployment is not None:
-            return self._convert_deployment_to_contract(deployment)
+            return self.convert_deployment_to_contract(deployment)
+        return None
+
+    def get_latest_deployment_checked(
+        self, contract_name: str | None = None, chain_id: int | str | None = None
+    ) -> Deployment | None:
+        deployments = self.get_deployments_checked(
+            contract_name=contract_name, chain_id=chain_id, limit=1
+        )
+        if len(deployments) > 0:
+            return deployments[0]
         return None
 
     def get_latest_contract_checked(
-        self,
-        contract_name: str,
-        chain_id: int | str | None = None,
-        config: Optional["Config"] = None,
+        self, contract_name: str | None = None, chain_id: int | str | None = None
     ) -> ABIContract | None:
         deployment = self.get_latest_deployment_checked(
-            contract_name, chain_id, config=config
+            contract_name=contract_name, chain_id=chain_id
         )
         if deployment is not None:
-            return self._convert_deployment_to_contract(deployment)
+            return self.convert_deployment_to_contract(deployment)
         return None
 
     def manifest_contract(
@@ -542,7 +627,7 @@ class Network:
             if isinstance(abi, str):
                 # Check if it's a file path
                 if abi.endswith(".json") or abi.endswith(".vy") or abi.endswith(".vyi"):
-                    abi_path = config._find_contract(abi)
+                    abi_path = config.find_contract(abi)
                     if abi.endswith(".vy"):
                         abi = boa.load_partial(str(abi_path))
                     elif abi_path.suffix == ".json":
@@ -553,7 +638,7 @@ class Network:
                         )
                 # Else, it's just a contract name
                 else:
-                    contract_path = config._find_contract(abi)
+                    contract_path = config.find_contract(abi)
                     abi = boa.load_partial(str(contract_path))
             if isinstance(abi, list):
                 # If its an ABI, just take it
@@ -576,12 +661,6 @@ class Network:
     def get_named_contract(self, contract_name: str) -> NamedContract | None:
         return self.contracts.get(contract_name, None)
 
-    def kwargs_are_different(self, **kwargs) -> bool:
-        for key, value in kwargs.items():
-            if getattr(self, key, None) != value:
-                return True
-        return False
-
     def set_boa_eoa(self, account: MoccasinAccount):
         if self.is_local_or_forked_network:  # type: ignore[truthy-function]
             boa.env.eoa = Address(account.address)
@@ -597,7 +676,7 @@ class Network:
         return self.name
 
     @staticmethod
-    def _convert_deployment_to_contract(deployment: Deployment) -> ABIContract:
+    def convert_deployment_to_contract(deployment: Deployment) -> ABIContract:
         contract_factory = ABIContractFactory(
             deployment.contract_name,
             deployment.abi,
@@ -609,12 +688,14 @@ class Network:
 class _Networks:
     _networks: dict[str, Network]
     _default_named_contracts: dict[str, NamedContract]
+    _overriden_active_network: Network | None
     db_path: Path
     default_network_name: str
 
     def __init__(self, toml_data: dict, db_path: Path):
         self._networks = {}
         self._default_named_contracts = {}
+        self._overriden_active_network = None
         self.custom_networks_counter = 0
         self.db_path = db_path
         project_data = toml_data.get("project", {})
@@ -691,6 +772,9 @@ class _Networks:
     def __len__(self):
         return len(self._networks)
 
+    def get_networks(self) -> dict[str, Network]:
+        return self._networks
+
     def _generate_network_contracts_from_defaults(
         self, starting_default_contracts: dict, starting_network_contracts_dict: dict
     ) -> dict:
@@ -711,6 +795,8 @@ class _Networks:
         return starting_default_contracts
 
     def get_active_network(self) -> Network:
+        if self._overriden_active_network is not None:
+            return self._overriden_active_network
         if boa.env.nickname in self._networks:
             return self._networks[boa.env.nickname]
         new_network = Network(
@@ -747,7 +833,13 @@ class _Networks:
     ) -> VyperContract | ZksyncContract | ABIContract:
         return self.get_active_network().get_or_deploy_contract(*args, **kwargs)
 
-    def set_active_network(self, name_of_network_or_network: str | Network, **kwargs):
+    def set_active_network(
+        self,
+        name_of_network_or_network: str | Network,
+        activate_boa=True,
+        activate_db=True,
+        **kwargs,
+    ) -> Network:
         if not isinstance(name_of_network_or_network, str) and not isinstance(
             name_of_network_or_network, Network
         ):
@@ -759,8 +851,16 @@ class _Networks:
             name_of_network_or_network = self.get_network(name_of_network_or_network)
             name_of_network_or_network = cast(Network, name_of_network_or_network)
 
-        name_of_network_or_network.create_and_set_or_set_boa_env(**kwargs)
+        name_of_network_or_network.set_kwargs(**kwargs)
+        if activate_boa:
+            name_of_network_or_network.create_and_set_or_set_boa_env()
+            self._overriden_active_network = None
+        else:
+            self._overriden_active_network = name_of_network_or_network
+        if activate_db:
+            name_of_network_or_network._set_boa_db()
         self._networks[name_of_network_or_network.name] = name_of_network_or_network
+        return name_of_network_or_network
 
     def _create_custom_network(self, url: str, is_fork: bool | None = False) -> Network:
         if is_fork is None:
@@ -844,20 +944,56 @@ class _Networks:
 
 
 class Config:
+    """A wrapper around the moccasin.toml file, it is also the main entry point for doing
+    almost anything with moccasin.
+
+    This class reads the moccasin.toml file and sets up project configuration.
+
+    Attributes:
+        _project_root (Path): The root directory of the project.
+        _toml_data (dict): The raw data from moccasin.toml.
+        dependencies (list[str]): Project dependencies from moccasin.toml.
+        project (dict[str, str]): Project data from moccasin.toml.
+        extra_data (dict[str, Any]): Any additional data from moccasin.toml.
+        networks (_Networks): Network configurations.
+
+    Args:
+        root_path (Path, optional): The root directory of the project. Defaults to None.
+    """
+
     _project_root: Path
-    networks: _Networks
+    _toml_data: dict
     dependencies: list[str]
     project: dict[str, str]
     extra_data: dict[str, Any]
+    networks: _Networks
 
-    def __init__(self, root_path: Path):
+    def __init__(self, root_path: Path | None):
+        if root_path is None:
+            root_path = Config.find_project_root()
+        root_path = cast(Path, root_path)
+
         self._project_root = root_path
+        self._toml_data = {}
         config_path: Path = root_path.joinpath(CONFIG_NAME)
+
         if config_path.exists():
             self._load_config(config_path)
+        else:
+            logger.warning(f"No {CONFIG_NAME} file found. Using default configuration.")
+        self._initialize_networks()
+
+    def _initialize_networks(self):
+        db_path_str = self._toml_data.get("project", {}).get(
+            "db_path", DB_PATH_LIVE_DEFAULT
+        )
+        db_path = Path(db_path_str).expanduser()
+        if not db_path.is_absolute():
+            db_path = self._project_root.joinpath(db_path)
+        self.networks = _Networks(self._toml_data, db_path)
 
     def _load_config(self, config_path: Path):
-        toml_data: dict = self.read_moccasin_config(config_path)
+        toml_data: dict = self.read_config(config_path)
         # Need to get the .env file before expanding env vars
         self.project = {}
         self.project[DOT_ENV_KEY] = toml_data.get("project", {}).get(
@@ -867,44 +1003,29 @@ class Config:
         toml_data = self.expand_env_vars(toml_data)
         self.dependencies = toml_data.get("project", {}).get("dependencies", [])
         self.project = toml_data.get("project", {})
-
-        # Setup networks and the database for deployments
-        # Review, we could probably skip this if the active network is local...
-        db_path_str = toml_data.get("project", {}).get("db_path", DB_PATH_LIVE_DEFAULT)
-        db_path = Path(db_path_str).expanduser()
-        if not db_path.is_absolute():
-            db_path = self._project_root.joinpath(db_path)
-        self.networks = _Networks(toml_data, db_path)
+        self.extra_data = toml_data.get("extra_data", {})
+        self._toml_data = toml_data
 
         if TESTS_FOLDER in self.project:
             logger.warning(
                 f"Tests folder is set to {self.project[TESTS_FOLDER]}. This is not supported and will be ignored."
             )
-        self.extra_data = toml_data.get("extra_data", {})
 
     def _load_env_file(self):
         load_dotenv(dotenv_path=self.project_root.joinpath(self.dot_env))
 
-    def read_moccasin_config(self, config_path: Path = None) -> dict:
-        config_path = self._validate_config_path(config_path)
-        with open(config_path, "rb") as f:
-            return tomllib.load(f)
+    def get_config_path(self) -> Path:
+        return self.config_path
 
-    def read_moccasin_config_preserve_comments(
-        self, config_path: Path = None
-    ) -> tomlkit.TOMLDocument:
-        config_path = self._validate_config_path(config_path)
-        with open(config_path, "rb") as f:
-            return tomlkit.load(f)
+    def read_config_preserve_comments(self, config_path: Path | None = None) -> dict:
+        if config_path is None:
+            config_path = self.config_path
+        return self.read_moccasin_config_preserve_comments(config_path)
 
-    def _validate_config_path(self, config_path: Path = None) -> Path:
-        if not config_path:
-            config_path = self._project_root
-        if not str(config_path).endswith(f"/{CONFIG_NAME}"):
-            config_path = config_path.joinpath(CONFIG_NAME)
-        if not config_path.exists():
-            raise FileNotFoundError(f"{CONFIG_NAME} not found: {config_path}")
-        return config_path
+    def read_config(self, config_path: Path | None = None) -> dict:
+        if config_path is None:
+            config_path = self.config_path
+        return self.read_moccasin_config(config_path)
 
     def expand_env_vars(self, value):
         if isinstance(value, str):
@@ -914,6 +1035,9 @@ class Config:
         elif isinstance(value, list):
             return [self.expand_env_vars(item) for item in value]
         return value
+
+    def get_networks(self) -> dict[str, Network]:
+        return self.networks.get_networks()
 
     def get_active_network(self) -> Network:
         return self.networks.get_active_network()
@@ -935,11 +1059,11 @@ class Config:
         This will overwrite the existing dependencies with the new ones. So if you wish to keep old ones,
         read from the dependencies first.
         """
-        target_path = self._project_root / CONFIG_NAME
-        toml_data = self.read_moccasin_config_preserve_comments(target_path)
+        toml_data = self.read_config_preserve_comments()
         toml_data["project"]["dependencies"] = dependencies  # type: ignore
 
         # Create a temporary file in the same directory as the target file
+        target_path = self._project_root / CONFIG_NAME
         temp_file = tempfile.NamedTemporaryFile(
             mode="w",
             delete=False,
@@ -968,46 +1092,25 @@ class Config:
     def get_root(self) -> Path:
         return self._project_root
 
-    def _find_contract(self, contract_or_contract_path: str) -> Path:
-        config_root = self.get_root()
+    def find_contract(self, contract_or_contract_path: str) -> Path:
+        return self._find_contract(
+            self.project_root, self.contracts_folder, contract_or_contract_path
+        )
 
-        # If the path starts with '~', expand to the user's home directory
-        contract_path = Path(contract_or_contract_path).expanduser()
+    def set_active_network(
+        self,
+        name_url_or_id: str | Network,
+        activate_boa=True,
+        activate_db=True,
+        **kwargs,
+    ) -> Network:
+        return self.networks.set_active_network(
+            name_url_or_id, activate_boa=activate_boa, activate_db=activate_db, **kwargs
+        )
 
-        # If the path is already absolute and exists, return it directly
-        if contract_path.is_absolute() and contract_path.exists():
-            return contract_path
-
-        # Handle contract names without ".vy" by appending ".vy"
-        if not contract_path.suffix == ".vy":
-            contract_path = contract_path.with_suffix(".vy")
-
-        # If the contract path is relative, check if it exists relative to config_root
-        if not contract_path.is_absolute():
-            contract_path = config_root / contract_path
-            if contract_path.exists():
-                return contract_path
-
-        # Search for the contract in the contracts folder if not found by now
-        contracts_location = config_root / self.contracts_folder
-        contract_paths = list(contracts_location.rglob(contract_path.name))
-
-        if not contract_paths:
-            raise FileNotFoundError(
-                f"Contract file '{contract_path.name}' not found under '{contracts_location}'."
-            )
-        elif len(contract_paths) > 1:
-            found_paths = "\n".join(str(path) for path in contract_paths)
-            raise FileExistsError(
-                f"Multiple contract files named '{contract_path.name}' found:\n{found_paths}\n"
-                "Please specify the full path to the contract file."
-            )
-
-        # Return the single found contract
-        return contract_paths[0]
-
-    def set_active_network(self, name_url_or_id: str | Network, **kwargs):
-        self.networks.set_active_network(name_url_or_id, **kwargs)
+    @property
+    def config_path(self) -> Path:
+        return self.project_root.joinpath(CONFIG_NAME)
 
     @property
     def project_root(self) -> Path:
@@ -1059,10 +1162,10 @@ class Config:
         return self.default_network
 
     @staticmethod
-    def load_config_from_path(config_path: Path | None = None) -> "Config":
-        if config_path is None:
-            config_path = Config.find_project_root()
-        return Config(config_path)
+    def load_config_from_root(project_root: Path | None = None) -> "Config":
+        if project_root is None:
+            project_root = Config.find_project_root()
+        return Config(project_root)
 
     @staticmethod
     def find_project_root(start_path: Path | str | None = None) -> Path:
@@ -1088,14 +1191,81 @@ class Config:
 
             current_path = parent_path
 
+    @staticmethod
+    def read_moccasin_config(config_path: Path) -> dict:
+        config_path = Config._validated_config_path(config_path)
+        with open(config_path, "rb") as f:
+            return tomllib.load(f)
+
+    @staticmethod
+    def read_moccasin_config_preserve_comments(
+        config_path: Path,
+    ) -> tomlkit.TOMLDocument:
+        config_path = Config._validated_config_path(config_path)
+        with open(config_path, "rb") as f:
+            return tomlkit.load(f)
+
+    @staticmethod
+    def _validated_config_path(config_path: Path):
+        if not str(config_path).endswith(f"/{CONFIG_NAME}"):
+            config_path = config_path.joinpath(CONFIG_NAME)
+        if not config_path.exists():
+            raise FileNotFoundError(f"{CONFIG_NAME} not found: {config_path}")
+        return config_path
+
+    @staticmethod
+    def _find_contract(
+        project_root: str | Path, contracts_folder: str, contract_or_contract_path: str
+    ) -> Path:
+        project_root = Path(project_root)
+        # If the path starts with '~', expand to the user's home directory
+        contract_path = Path(contract_or_contract_path).expanduser()
+
+        # If the path is already absolute and exists, return it directly
+        if contract_path.is_absolute() and contract_path.exists():
+            return contract_path
+
+        # Handle contract names without ".vy" by appending ".vy"
+        if not contract_path.suffix == ".vy":
+            contract_path = contract_path.with_suffix(".vy")
+
+        # If the contract path is relative, check if it exists relative to config_root
+        if not contract_path.is_absolute():
+            contract_path = project_root / contract_path
+            if contract_path.exists():
+                return contract_path
+
+        # Search for the contract in the contracts folder if not found by now
+        contracts_location = project_root / contracts_folder
+        contract_paths = list(contracts_location.rglob(contract_path.name))
+
+        if not contract_paths:
+            raise FileNotFoundError(
+                f"Contract file '{contract_path.name}' not found under '{contracts_location}'."
+            )
+        elif len(contract_paths) > 1:
+            found_paths = "\n".join(str(path) for path in contract_paths)
+            raise FileExistsError(
+                f"Multiple contract files named '{contract_path.name}' found:\n{found_paths}\n"
+                "Please specify the full path to the contract file."
+            )
+
+        # Return the single found contract
+        return contract_paths[0]
+
 
 _config: Config | None = None
 
 
-def get_or_initialize_config() -> Config:
+def get_active_network() -> Network:
+    return get_config().get_active_network()
+
+
+# REVIEW: Do we need... all of these?
+def get_or_initialize_config(config_path: Path | None = None) -> Config:
     global _config
     if _config is None:
-        _config = initialize_global_config()
+        _config = initialize_global_config(config_path)
     return _config
 
 
@@ -1109,10 +1279,6 @@ def get_config() -> Config:
     return _config
 
 
-def get_active_network() -> Network:
-    return get_config().get_active_network()
-
-
 def initialize_global_config(config_path: Path | None = None) -> Config:
     global _config
     assert _config is None
@@ -1122,5 +1288,5 @@ def initialize_global_config(config_path: Path | None = None) -> Config:
 
 def _set_global_config(config_path: Path | None = None) -> Config:
     global _config
-    _config = Config.load_config_from_path(config_path)
+    _config = Config.load_config_from_root(config_path)
     return _config

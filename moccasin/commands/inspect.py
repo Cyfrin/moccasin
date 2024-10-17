@@ -30,7 +30,7 @@ def inspect_contract(
     if config is None:
         config = get_config()
 
-    contract_path = config._find_contract(contract)
+    contract_path = config.find_contract(contract)
     vyper_deployer = compile_(
         contract_path, config.get_root().joinpath(config.build_folder)
     )

@@ -250,7 +250,7 @@ def anvil_process():
 
 @pytest.fixture
 def anvil_two_no_state():
-    with AnvilProcess(args=["-p", "8546"]):
+    with AnvilProcess(args=["-p", "8546"], port=8546):
         yield
 
 

@@ -6,14 +6,15 @@ import time
 import requests
 from requests import RequestException
 
-ANVIL_URL = "http://127.0.0.1:8545"
+ANVIL_URL = "http://127.0.0.1:{}"
 
 
 class AnvilProcess:
-    def __init__(self, anvil_path="anvil", args=None):
+    def __init__(self, anvil_path="anvil", port=8545, args=None):
         self.anvil_path = anvil_path
         self.args = args or []
         self.process = None
+        self.port = port
 
     def __enter__(self):
         self.process = subprocess.Popen(
@@ -35,7 +36,7 @@ class AnvilProcess:
         while time.time() - start_time < timeout:
             try:
                 response = requests.post(
-                    ANVIL_URL,
+                    ANVIL_URL.format(self.port),
                     json={
                         "jsonrpc": "2.0",
                         "method": "eth_chainId",
