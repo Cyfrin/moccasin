@@ -28,6 +28,8 @@ In TOML you can think of each section as a giant JSON object. Each of these are 
 |                                  |                                  |    }                             |
 +----------------------------------+----------------------------------+----------------------------------+
 
+
+
 All possible options
 --------------------
 
@@ -90,3 +92,13 @@ All possible options
     # Put whatever else you want in here
     [extra_data]
     hi = "hello"
+
+Environment Variables 
+---------------------
+
+Additionally, there are a few environment variables that ``moccasin`` will look for, but it's also ok if they are not set. It's important to note, that the `.env` file you set in the config will be ignored for these values. 
+
+.. code-block:: bash 
+
+    MOCCASIN_DEFAULT_FOLDER = "~/.moccasin" # path to the moccasin folder
+    MOCCASIN_KEYSTORE_PATH = "~/.moccasin/keystore" # path to the keystore

@@ -3,7 +3,7 @@
 Thank you for wanting to contribute! This project reviews PRs that have an associated issue with 
 them. If you have not make an issue for your PR, please make one first. 
 
-Issues, feedback, and sharing that you're using Titanoboa and Vyper on social media is always welcome!
+Issues, feedback, and sharing that you're using Moccasin on social media is always welcome!
 
 # Table of Contents
 
@@ -11,12 +11,13 @@ Issues, feedback, and sharing that you're using Titanoboa and Vyper on social me
 - [Table of Contents](#table-of-contents)
 - [Setup](#setup)
   - [Requirements](#requirements)
-    - [ZKSync requirements](#zksync-requirements)
+    - [ZKync requirements](#zkync-requirements)
   - [Installing for local development](#installing-for-local-development)
   - [Running Tests](#running-tests)
     - [Local Tests](#local-tests)
     - [Integration Tests](#integration-tests)
-    - [ZKSync Tests](#zksync-tests)
+    - [ZKync Tests](#zkync-tests)
+    - [Live Tests](#live-tests)
 - [Code Style Guide](#code-style-guide)
   - [Where do you get the `typecheck` and `format` command?](#where-do-you-get-the-typecheck-and-format-command)
 - [Thank you!](#thank-you)
@@ -40,13 +41,13 @@ You must have the following installed to proceed with contributing to this proje
 - [just](https://github.com/casey/just)
   - You'll know you did it right if you can run `just --version` and you see a response like `just 1.35.0`
 
-### ZKSync requirements
-If you wish to run the ZKSync tests, you'll need these as well (ran with `just test-z`)
+### ZKync requirements
+If you wish to run the ZKync tests, you'll need these as well (ran with `just test-z`)
 
 - [era_test_node](https://github.com/matter-labs/era-test-node)
   - You'll know you did it right if you can run `era_test_node --version` and you see a response like `era_test_node 0.1.0 (a178051e8 2024-09-07)`
 - [era-compiler-vyper](https://github.com/matter-labs/era-compiler-vyper)
-  - You'll know you did it right if you can run `zkvyper --version` and you see a response like `Vyper compiler for ZKsync v1.5.4 (LLVM build f9f732c8ebdb88fb8cd4528482a00e4f65bcb8b7)`
+  - You'll know you did it right if you can run `zkvyper --version` and you see a response like `Vyper compiler for ZKync v1.5.4 (LLVM build f9f732c8ebdb88fb8cd4528482a00e4f65bcb8b7)`
 
 ## Installing for local development 
 
@@ -100,8 +101,6 @@ However, if you run tests and scripts using the `uv` or `just` commands as we wi
 
 ## Running Tests
 
-First, you'll need to make sure you have the `anvil1` keystore in your `~/.moccasin/keystores` folder. You can [find it here](./tests/data/keystores/anvil1). Please move it there. 
-
 ### Local Tests
 
 Run the following:
@@ -119,14 +118,28 @@ Read the [README.md in the integration folder](./tests/integration/README.md) to
 just test-i # Check out the justfile to see the command this runs
 ```
 
-### ZKSync Tests
+### ZKync Tests
 
-These will be the zksync tests that require the [ZKsync requirements](#zksync-requirements) to be installed. 
+These will be the ZKync tests that require the [ZKync requirements](#ZKync-requirements) to be installed. 
 
 ```bash
 just test-z # Check out the justfile to see the command this runs
-
 ```
+
+### Live Tests
+
+A "live test" is sending actual testnet ETH to sepolia. To do this, you'll need:
+1. An environment variable `SEPOLIA_ZKSYNC_RPC_URL` set to the sepolia testnet RPC URL
+2. A `mox wallet` named `smalltestnet` that has some sepolia ETH
+3. A password for your `smalltestnet` wallet in `~/.moccasin/unsafe-passwords/smalltestnet`
+
+Then run:
+
+```bash
+uv run pytest tests/live/test_live_verify.py  --no-skip
+```
+
+> Note: There is almost no reason to run this test.
 
 # Code Style Guide
 
@@ -150,4 +163,4 @@ You can see in `justfile` a list of scripts one can run. To see them all you can
 
 # Thank you!
 
-Thank you for wanting to participate in titanoboa and moccasin!
+Thank you for wanting to participate with moccasin!

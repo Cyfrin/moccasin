@@ -10,7 +10,7 @@ url = "http://127.0.0.1:8011"
 chain_id = 260
 is_zksync = true
 default_account_name = "zk-rich1"
-unsafe_password_file = "~/.moccasin/unsafe-passwords/zk-rich1"
+unsafe_password_file = "$ZK_RICH1_PASSWORD_FILE"
 save_to_db = false
 
 [networks.zksync-sepolia]
@@ -23,7 +23,7 @@ save_to_db = false
 [networks.anvil]
 url = "http://127.0.0.1:8545"
 default_account_name = "anvil1"
-unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
+unsafe_password_file = "$ANVIL1_PASSWORD_FILE"
 save_to_db = false
 
 [networks.era_test_node]
@@ -31,7 +31,7 @@ url = "http://127.0.0.1:8011"
 chain_id = 260
 is_zksync = true
 default_account_name = "zk-rich1"
-unsafe_password_file = "~/.moccasin/unsafe-passwords/zk-rich1"
+unsafe_password_file = "$ZK_RICH1_PASSWORD_FILE"
 save_to_db = true
 prompt_live = false
 

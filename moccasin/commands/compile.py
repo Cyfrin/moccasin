@@ -33,7 +33,7 @@ def main(args: Namespace) -> int:
 
     with _patch_sys_path(get_sys_paths_list(config)):
         if args.contract_or_contract_path:
-            contract_path = config._find_contract(args.contract_or_contract_path)
+            contract_path = config.find_contract(args.contract_or_contract_path)
             compile_(
                 contract_path,
                 project_path.joinpath(config.out_folder),

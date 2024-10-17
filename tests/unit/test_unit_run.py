@@ -15,8 +15,8 @@ def test_get_script_path_for_relative_path(complex_project_config):
     assert script_path == complex_project_config.get_root() / "script/deploy.py"
 
 
-def test_get_script_path_for_absolute_path(complex_project_config):
-    script_path = get_script_path(COMPLEX_PROJECT_PATH.joinpath("./script/deploy.py"))
+def test_get_script_path_for_absolute_path(complex_temp_path, complex_project_config):
+    script_path = get_script_path(complex_temp_path.joinpath("./script/deploy.py"))
     assert script_path == complex_project_config.get_root() / "script/deploy.py"
 
 

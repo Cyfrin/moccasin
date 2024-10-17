@@ -3,11 +3,6 @@ from enum import Enum
 
 from boa.deployments import Deployment
 
-from moccasin._sys_path_and_config_setup import (
-    _get_set_active_network_from_cli_and_config,
-    _patch_sys_path,
-    get_sys_paths_list,
-)
 from moccasin.config import Config, get_config, initialize_global_config
 from moccasin.logging import logger
 
@@ -38,7 +33,7 @@ def main(args: Namespace) -> int:
 
 
 def print_deployments_from_cli(
-    contract_name: str,
+    contract_name: str | None = None,
     format_level: int = PrintVerbosity.CONTRACT_ADDRESS_AND_NAME.value,
     db_path: str | None = None,
     checked: bool = False,
@@ -51,35 +46,49 @@ def print_deployments_from_cli(
     if config is None:
         config = get_config()
 
-    # Set up the environment (add necessary paths to sys.path, etc.)
-    with _patch_sys_path(get_sys_paths_list(config)):
-        active_network = _get_set_active_network_from_cli_and_config(
-            config, network=network, url=url, fork=fork, db_path=db_path
+    if contract_name is not None:
+        if contract_name.strip().lower() == "all":
+            contract_name = None
+
+    if network is None:
+        network = config.default_network
+
+    # Don't activate boa
+    config.set_active_network(
+        network, url=url, fork=fork, db_path=db_path, activate_boa=False
+    )
+    active_network = config.get_active_network()
+
+    if not hasattr(active_network, "chain_id"):
+        logger.warning(
+            "No chain_id found in active network, attempting to connect to the network to retrieve the Chain Id"
+        )
+        active_network.create_and_set_or_set_boa_env()
+
+    if not active_network.save_to_db or not active_network.db_path:
+        logger.error(
+            f"Cannot get deployments without a database path on network {active_network.name}.\nPlease specify one or change networks."
+        )
+        return []
+
+    deployments_list = []
+    if not isinstance(limit, int) and not isinstance(limit, type(None)):
+        raise ValueError(f"Limit must be an integer or None, not {type(limit)}.")
+    if checked:
+        deployments_list = active_network.get_deployments_checked(
+            contract_name=contract_name, limit=limit, chain_id=active_network.chain_id
+        )
+    else:
+        deployments_list = active_network.get_deployments_unchecked(
+            contract_name=contract_name, limit=limit, chain_id=active_network.chain_id
         )
 
-        if not active_network.save_to_db or not active_network.db_path:
-            logger.error(
-                f"Cannot get deployments without a database path on network {active_network.name}.\nPlease specify one or change networks."
-            )
-            return []
+    int_format_level = int(format_level)
+    if int_format_level > len(PrintVerbosity):
+        int_format_level = PrintVerbosity.RAW.value
 
-        deployments_list = []
-
-        if checked:
-            deployments_list = active_network.get_deployments_checked(
-                contract_name, limit=limit
-            )
-        else:
-            deployments_list = active_network.get_deployments_unchecked(
-                contract_name, limit=limit
-            )
-        int_format_level = int(format_level)
-        if int_format_level > len(PrintVerbosity):
-            int_format_level = PrintVerbosity.RAW.value
-
-        print_deployments(deployments_list, PrintVerbosity(int_format_level))
-        return deployments_list
-    return []
+    print_deployments(deployments_list, PrintVerbosity(int_format_level))
+    return deployments_list
 
 
 def print_deployments(deployments_list: list[Deployment], format_level: PrintVerbosity):

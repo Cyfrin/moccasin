@@ -88,9 +88,7 @@ def test_write_to_config_after_install(installation_cleanup_dependencies, mox_pa
     assert github_package_name in config.dependencies
     for dep in starting_dependencies:
         assert dep in config.dependencies
-    assert (
-        comment_content in config.read_moccasin_config_preserve_comments().as_string()
-    )
+    assert comment_content in config.read_config_preserve_comments().as_string()
 
 
 def test_can_install_with_version(installation_cleanup_dependencies, mox_path):

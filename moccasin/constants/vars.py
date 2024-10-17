@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # File Names
@@ -38,11 +39,22 @@ DEFAULT_PROJECT_FOLDERS = [
     DEPENDENCIES_FOLDER + "/" + PYPI,
 ]
 
-DEFAULT_MOCCASIN_FOLDER = Path.home().joinpath(".moccasin/")
-DEFAULT_KEYSTORES_PATH = DEFAULT_MOCCASIN_FOLDER.joinpath("keystores/")
+# Configurable Vars
+MOCCASIN_DEFAULT_FOLDER = Path(
+    os.getenv("MOCCASIN_DEFAULT_FOLDER", Path.home().joinpath(".moccasin/"))
+)
+MOCCASIN_DEFAULT_FOLDER.mkdir(parents=True, exist_ok=True)
+
+MOCCASIN_KEYSTORE_PATH = Path(
+    os.getenv("MOCCASIN_KEYSTORE_PATH", MOCCASIN_DEFAULT_FOLDER.joinpath("keystores/"))
+)
+MOCCASIN_KEYSTORE_PATH.mkdir(parents=True, exist_ok=True)
+
+# Default Network Vars
 FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
 DOT_ENV_FILE = ".env"
 DOT_ENV_KEY = "dot_env"
+KEYSTORES_PATH_KEY = "keystores_path"
 CONSOLE_HISTORY_FILE = "moccasin_history"
 DEFAULT_API_KEY_ENV_VAR = "EXPLORER_API_KEY"
 RESTRICTED_VALUES_FOR_LOCAL_NETWORK = [
@@ -65,7 +77,12 @@ MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
 STARTING_BOA_BALANCE = 1000000000000000000000  # 1,000 Ether
 
 # Database vars
-GET_CONTRACT_SQL = "SELECT {} FROM deployments WHERE contract_name = ? AND json_extract(tx_dict, '$.chainId') = ? ORDER BY broadcast_ts DESC {}"
+GET_CONTRACT_SQL = "SELECT {} FROM deployments {}ORDER BY broadcast_ts DESC {}"
+SQL_WHERE = "WHERE "
+SQL_CONTRACT_NAME = "contract_name = ? "
+SQL_AND = "AND "
+SQL_CHAIN_ID = "json_extract(tx_dict, '$.chainId') = ? "
+SQL_LIMIT = "LIMIT ? "
 
 # Networking defaults
 DEFAULT_NETWORKS_BY_NAME: dict[str, dict] = {

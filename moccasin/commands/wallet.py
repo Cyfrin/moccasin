@@ -10,7 +10,7 @@ from eth_account.signers.local import LocalAccount
 from eth_account.types import PrivateKeyType
 from hexbytes import HexBytes
 
-from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
+from moccasin.constants.vars import MOCCASIN_KEYSTORE_PATH
 from moccasin.logging import logger
 
 ALIAS_TO_COMMAND = {"add": "import", "i": "import"}
@@ -50,7 +50,7 @@ def main(args: Namespace) -> int:
 
 
 def view_wallet(
-    keystore_file_name: str, keystores_path: Path = DEFAULT_KEYSTORES_PATH
+    keystore_file_name: str, keystores_path: Path = MOCCASIN_KEYSTORE_PATH
 ) -> dict:
     keystore_path = keystores_path.joinpath(keystore_file_name)
     if not keystore_path.exists():
@@ -70,7 +70,7 @@ def view_wallet(
     return keystore
 
 
-def list_accounts(keystores_path: Path = DEFAULT_KEYSTORES_PATH) -> list[Any] | None:
+def list_accounts(keystores_path: Path = MOCCASIN_KEYSTORE_PATH) -> list[Any] | None:
     if keystores_path.exists():
         account_paths = sorted(keystores_path.glob("*"))
         logger.info(
@@ -98,14 +98,14 @@ def generate_account(
                 name,
                 new_account,
                 password=password,
-                keystores_path=DEFAULT_KEYSTORES_PATH,
+                keystores_path=MOCCASIN_KEYSTORE_PATH,
             )
         elif password_file:
             save_to_keystores(
                 name,
                 new_account,
                 password_file=Path(password_file),
-                keystores_path=DEFAULT_KEYSTORES_PATH,
+                keystores_path=MOCCASIN_KEYSTORE_PATH,
             )
         else:
             logger.error("No password provided to save account")
@@ -124,7 +124,7 @@ def save_to_keystores(
     account_or_key: LocalAccount | PrivateKeyType,
     password: str = None,
     password_file: Path | None = None,
-    keystores_path: Path = DEFAULT_KEYSTORES_PATH,
+    keystores_path: Path = MOCCASIN_KEYSTORE_PATH,
 ):
     if isinstance(account_or_key, LocalAccount):
         account = account_or_key
@@ -154,7 +154,7 @@ def import_private_key(
     name: str,
     private_key: str | None = None,
     password: str | None = None,
-    keystores_path: Path = DEFAULT_KEYSTORES_PATH,
+    keystores_path: Path = MOCCASIN_KEYSTORE_PATH,
 ) -> int:
     logger.info("Importing private key...")
     if not private_key:
@@ -184,7 +184,7 @@ def import_private_key(
     return 0
 
 
-def delete_keystore(name: str, keystores_path: Path = DEFAULT_KEYSTORES_PATH) -> int:
+def delete_keystore(name: str, keystores_path: Path = MOCCASIN_KEYSTORE_PATH) -> int:
     keystore_path = keystores_path.joinpath(name)
 
     if not keystore_path.exists():
@@ -207,7 +207,7 @@ def decrypt_key(
     name: str,
     password: str | None = None,
     password_file_path: Path | None = None,
-    keystores_path: Path = DEFAULT_KEYSTORES_PATH,
+    keystores_path: Path = MOCCASIN_KEYSTORE_PATH,
     print_key: bool = False,
 ) -> HexBytes:
     keystore_path = keystores_path.joinpath(name)

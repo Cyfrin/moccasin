@@ -152,6 +152,7 @@ def _setup_network_and_account_from_config_and_cli(
             password=password,
             password_file_path=active_network.unsafe_password_file,
         )
+
     # Private key overrides the default account
     if private_key:
         mox_account = MoccasinAccount(
