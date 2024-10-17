@@ -11,6 +11,10 @@
 A fast, pythonic, Vyper smart contract testing and development framework.
 
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+<!-- Add these for 0.3.1 -->
+<!-- [![moccasin](https://img.shields.io/pypi/v/moccasin.svg)](https://pypi.org/project/moccasin/)
+[![license](https://img.shields.io/pypi/l/moccasin.svg)](https://pypi.python.org/pypi/moccasin)
+[![python-versions](https://img.shields.io/pypi/pyversions/moccasin.svg)](https://pypi.python.org/pypi/moccasin) -->
 
 > The smaller bar is better, it means it's faster
 
