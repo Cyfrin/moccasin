@@ -6,17 +6,16 @@ from tests.conftest import (
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
     ANVIL1_PRIVATE_KEY,
-    COMPLEX_PROJECT_PATH,
 )
 
 
 # --------------------------------------------------------------
 #                         WITHOUT ANVIL
 # --------------------------------------------------------------
-def test_run_help(mox_path):
+def test_run_help(mox_path, complex_temp_path):
     current_dir = Path.cwd()
     try:
-        os.chdir(COMPLEX_PROJECT_PATH)
+        os.chdir(complex_temp_path)
         result = subprocess.run(
             [mox_path, "run", "-h"], check=True, capture_output=True, text=True
         )
@@ -25,10 +24,10 @@ def test_run_help(mox_path):
     assert "Moccasin CLI run" in result.stdout
 
 
-def test_run_default(mox_path):
+def test_run_default(mox_path, complex_temp_path):
     current_dir = Path.cwd()
     try:
-        os.chdir(COMPLEX_PROJECT_PATH)
+        os.chdir(complex_temp_path)
         result = subprocess.run(
             [mox_path, "run", "deploy"], check=True, capture_output=True, text=True
         )
@@ -37,9 +36,9 @@ def test_run_default(mox_path):
     assert "Ending count:  1" in result.stdout
 
 
-def test_multiple_manifest_returns_the_same_or_different(mox_path):
+def test_multiple_manifest_returns_the_same_or_different(mox_path, complex_temp_path):
     current_dir = Path.cwd()
-    os.chdir(COMPLEX_PROJECT_PATH)
+    os.chdir(complex_temp_path)
     try:
         result = subprocess.run(
             [mox_path, "run", "quad_manifest"],
@@ -58,9 +57,9 @@ def test_multiple_manifest_returns_the_same_or_different(mox_path):
 # ------------------------------------------------------------------
 #                           WITH ANVIL
 # ------------------------------------------------------------------
-def test_run_with_network(mox_path, anvil_process):
+def test_run_with_network(mox_path, complex_temp_path, anvil_process):
     current_dir = Path.cwd()
-    os.chdir(COMPLEX_PROJECT_PATH)
+    os.chdir(complex_temp_path)
     try:
         result = subprocess.run(
             [
@@ -83,9 +82,9 @@ def test_run_with_network(mox_path, anvil_process):
     assert result.returncode == 0
 
 
-def test_run_with_keystore_account(mox_path, anvil_keystore, anvil_process):
+def test_run_with_keystore_account(mox_path, complex_temp_path, anvil_process):
     current_dir = Path.cwd()
-    os.chdir(COMPLEX_PROJECT_PATH)
+    os.chdir(complex_temp_path)
     try:
         result = subprocess.run(
             [
@@ -111,10 +110,14 @@ def test_run_with_keystore_account(mox_path, anvil_keystore, anvil_process):
 
 
 def test_run_fork_should_not_send_transactions(
-    mox_path, complex_project_config, set_fake_chain_rpc, anvil_two_no_state
+    mox_path,
+    complex_temp_path,
+    complex_project_config,
+    set_fake_chain_rpc,
+    anvil_two_no_state,
 ):
     current_dir = Path.cwd()
-    os.chdir(COMPLEX_PROJECT_PATH)
+    os.chdir(complex_temp_path)
     try:
         result = subprocess.run(
             [mox_path, "run", "deploy", "--fork", "--network", "anvil-fork"],
@@ -130,10 +133,10 @@ def test_run_fork_should_not_send_transactions(
 
 
 def test_multiple_manifest_returns_the_same_or_different_on_real_network(
-    mox_path, anvil_process
+    mox_path, complex_temp_path, anvil_process
 ):
     current_dir = Path.cwd()
-    os.chdir(COMPLEX_PROJECT_PATH)
+    os.chdir(complex_temp_path)
     try:
         result = subprocess.run(
             [mox_path, "run", "quad_manifest", "--network", "anvil"],
@@ -149,9 +152,11 @@ def test_multiple_manifest_returns_the_same_or_different_on_real_network(
     assert_broadcast_count(print_statements, 1)
 
 
-def test_network_should_prompt_on_live(mox_path, set_fake_chain_rpc, anvil_process):
+def test_network_should_prompt_on_live(
+    mox_path, complex_temp_path, set_fake_chain_rpc, anvil_process
+):
     current_dir = Path.cwd()
-    os.chdir(COMPLEX_PROJECT_PATH)
+    os.chdir(complex_temp_path)
     try:
         result = subprocess.run(
             [mox_path, "run", "deploy", "--network", "anvil-live"],
@@ -169,10 +174,10 @@ def test_network_should_prompt_on_live(mox_path, set_fake_chain_rpc, anvil_proce
 
 
 def test_network_operation_cancelled_on_no_input(
-    mox_path, set_fake_chain_rpc, anvil_process
+    mox_path, complex_temp_path, set_fake_chain_rpc, anvil_process
 ):
     current_dir = Path.cwd()
-    os.chdir(COMPLEX_PROJECT_PATH)
+    os.chdir(complex_temp_path)
     try:
         result = subprocess.run(
             [mox_path, "run", "deploy", "--network", "anvil-live"],
@@ -189,11 +194,11 @@ def test_network_operation_cancelled_on_no_input(
 
 
 def test_prompt_live_on_non_test_networks(
-    mox_path, complex_project_config, anvil_process
+    mox_path, complex_temp_path, complex_project_config, anvil_process
 ):
     current_dir = Path.cwd()
     try:
-        os.chdir(COMPLEX_PROJECT_PATH)
+        os.chdir(complex_temp_path)
         result = subprocess.run(
             [mox_path, "run", "deploy", "--network", "anvil-live"],
             input="\n",

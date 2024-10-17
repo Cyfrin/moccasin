@@ -56,10 +56,10 @@ Order Of Operations
 
 Whenever you run a script, you'll want to remember this order:
 
-1. Script 
-2. Command Line 
+1. Script
+2. Command Line
 3. ``moccasin.toml``
-4. Defaults 
+4. Defaults
 
 Whatever you place in your python script, will be the value used, even if your command line has a different value. Similarly, any flag passed to the command line will override any values in your ``moccasin.toml``, which will override any default values moccasin sets.
 

@@ -3,7 +3,7 @@ import shutil
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, List
+from typing import Any, Generator, List
 
 import pytest
 from typing_extensions import Final
@@ -23,26 +23,10 @@ ANVIL1_PRIVATE_KEY = (
 )
 ANVIL1_KEYSTORE_NAME = "anvil1"
 ANVIL1_KEYSTORE_PASSWORD = "password"
-ANVIL_KEYSTORE_SAVED = {
-    "address": "f39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    "crypto": {
-        "cipher": "aes-128-ctr",
-        "cipherparams": {"iv": "c9f63a81441a72e632b1635a662c9633"},
-        "ciphertext": "231713ea92116c583f12e5d2ecc2f542a78a2ab9c75f834b763edda57f2557e2",
-        "kdf": "scrypt",
-        "kdfparams": {
-            "dklen": 32,
-            "n": 262144,
-            "r": 8,
-            "p": 1,
-            "salt": "b0da783cd79eb9b2a8cdb5e215c083a7",
-        },
-        "mac": "f65aec3ade028a51c0002c322063c28d5aeb927b685d57b0d8448810ee6a2884",
-    },
-    "id": "27ea3a2d-e080-402a-a607-ee7caf8d0a06",
-    "version": 3,
-}
 ANVIL_STORED_STATE_PATH = Path(__file__).parent.joinpath("data/anvil_data/state.json")
+ANVIL_STORED_KEYSTORE_PATH = Path(__file__).parent.joinpath(
+    "data/anvil_data/anvil1.json"
+)
 
 INSTALLATION_STARTING_TOML = """[project]
 dependencies = ["snekmate", "moccasin"]
@@ -87,16 +71,30 @@ def session_monkeypatch():
 
 
 @pytest.fixture(scope="session")
-def anvil_keystore(session_monkeypatch):
+def moccasin_home_folder(session_monkeypatch) -> Generator[Path, None, None]:
     with tempfile.TemporaryDirectory() as temp_dir:
-        save_to_keystores(
-            ANVIL1_KEYSTORE_NAME,
-            ANVIL1_PRIVATE_KEY,
-            password=ANVIL1_KEYSTORE_PASSWORD,
-            keystores_path=Path(temp_dir),
-        )
-        session_monkeypatch.setattr(vars, "DEFAULT_KEYSTORES_PATH", Path(temp_dir))
+        session_monkeypatch.setenv("MOCCASIN_DEFAULT_FOLDER", temp_dir)
+        session_monkeypatch.setattr(vars, "MOCCASIN_DEFAULT_FOLDER", Path(temp_dir))
         yield Path(temp_dir)
+
+
+@pytest.fixture(scope="session")
+def anvil_keystore(session_monkeypatch, moccasin_home_folder):
+    keystore_path = moccasin_home_folder.joinpath("keystores")
+    save_to_keystores(
+        ANVIL1_KEYSTORE_NAME,
+        ANVIL1_PRIVATE_KEY,
+        password=ANVIL1_KEYSTORE_PASSWORD,
+        keystores_path=Path(keystore_path),
+    )
+    session_monkeypatch.setenv("MOCCASIN_KEYSTORE_PATH", str(keystore_path))
+    session_monkeypatch.setattr(vars, "MOCCASIN_KEYSTORE_PATH", keystore_path)
+    with tempfile.NamedTemporaryFile(mode="w") as temp_file:
+        temp_file_path = Path(temp_file.name)
+        session_monkeypatch.setenv("ANVIL1_PASSWORD_FILE", str(temp_file_path))
+        temp_file.write(ANVIL1_KEYSTORE_PASSWORD)
+        temp_file.flush()
+        yield Path(keystore_path)
 
 
 @pytest.fixture(scope="session")
@@ -114,13 +112,22 @@ def mox_path():
 #                    COMPLEX PROJECT FIXTURES
 # ------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def complex_project_config() -> Config:
-    test_db_path = os.path.join(COMPLEX_PROJECT_PATH, ".deployments.db")
+def complex_temp_path() -> Generator[Path, None, None]:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        shutil.copytree(
+            COMPLEX_PROJECT_PATH, os.path.join(temp_dir), dirs_exist_ok=True
+        )
+        yield Path(temp_dir)
+
+
+@pytest.fixture(scope="module")
+def complex_project_config(complex_temp_path) -> Config:
+    test_db_path = os.path.join(complex_temp_path, ".deployments.db")
 
     if os.path.exists(test_db_path):
         os.remove(test_db_path)
 
-    config = _set_global_config(COMPLEX_PROJECT_PATH)
+    config = _set_global_config(complex_temp_path)
     return config
 
 
@@ -129,26 +136,27 @@ def complex_out_folder(complex_project_config) -> Config:
     return complex_project_config.out_folder
 
 
+# REVIEW: Do we need these if we are using a temp dir?
 @pytest.fixture
-def complex_cleanup_coverage():
+def complex_cleanup_coverage(complex_temp_path):
     yield
-    coverage_file = COMPLEX_PROJECT_PATH.joinpath(".coverage")
+    coverage_file = complex_temp_path.joinpath(".coverage")
     if os.path.exists(coverage_file):
         os.remove(coverage_file)
 
 
 @pytest.fixture
-def complex_cleanup_out_folder(complex_out_folder):
+def complex_cleanup_out_folder(complex_temp_path, complex_out_folder):
     yield
-    created_folder_path = COMPLEX_PROJECT_PATH.joinpath(complex_out_folder)
+    created_folder_path = complex_temp_path.joinpath(complex_out_folder)
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)
 
 
 @pytest.fixture
-def complex_cleanup_dependencies_folder():
+def complex_cleanup_dependencies_folder(complex_temp_path):
     yield
-    created_folder_path = COMPLEX_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
+    created_folder_path = complex_temp_path.joinpath(DEPENDENCIES_FOLDER)
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)
 
@@ -174,8 +182,8 @@ def coffee():
 
 
 @pytest.fixture
-def complex_conftest_override():
-    conftest_path = COMPLEX_PROJECT_PATH.joinpath("tests/conftest.py")
+def complex_conftest_override(complex_temp_path):
+    conftest_path = complex_temp_path.joinpath("tests/conftest.py")
     original_content = conftest_path.read_text()
     with open(conftest_path, "w") as f:
         f.write(CONFTEST_OVERRIDE_FILE)
@@ -188,18 +196,24 @@ def complex_conftest_override():
 #                     INSTALLATION PROJECT FIXTURES
 # ------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def installation_project_config() -> Config:
-    test_db_path = os.path.join(INSTALL_PROJECT_PATH, ".deployments.db")
+def installation_temp_path() -> Generator[Path, None, None]:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        yield Path(temp_dir)
+
+
+@pytest.fixture(scope="module")
+def installation_project_config(installation_temp_path) -> Config:
+    test_db_path = os.path.join(installation_temp_path, ".deployments.db")
     if os.path.exists(test_db_path):
         os.remove(test_db_path)
-    return _set_global_config(INSTALL_PROJECT_PATH)
+    return _set_global_config(installation_temp_path)
 
 
 @pytest.fixture
-def installation_cleanup_dependencies():
+def installation_cleanup_dependencies(installation_temp_path):
     yield
-    created_folder_path = INSTALL_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
-    with open(INSTALL_PROJECT_PATH.joinpath("moccasin.toml"), "w") as f:
+    created_folder_path = installation_temp_path.joinpath(DEPENDENCIES_FOLDER)
+    with open(installation_temp_path.joinpath("moccasin.toml"), "w") as f:
         f.write(INSTALLATION_STARTING_TOML)
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)
@@ -209,33 +223,37 @@ def installation_cleanup_dependencies():
 #                         PURGE PROJECT FIXTURES
 # ------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def purge_project_config() -> Config:
-    test_db_path = os.path.join(PURGE_PROJECT_PATH, ".deployments.db")
+def purge_temp_path() -> Generator[Path, None, None]:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        yield Path(temp_dir)
+
+
+@pytest.fixture(scope="module")
+def purge_project_config(purge_temp_path) -> Config:
+    test_db_path = os.path.join(purge_temp_path, ".deployments.db")
     if os.path.exists(test_db_path):
         os.remove(test_db_path)
-    return _set_global_config(PURGE_PROJECT_PATH)
+    return _set_global_config(purge_temp_path)
 
 
 @pytest.fixture
-def purge_reset_dependencies():
+def purge_reset_dependencies(purge_temp_path):
     # Create a temporary directory
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
         # Copy the entire project directory to the temporary location
         shutil.copytree(
-            PURGE_PROJECT_PATH, temp_path / PURGE_PROJECT_PATH.name, dirs_exist_ok=True
+            purge_temp_path, temp_path / purge_temp_path.name, dirs_exist_ok=True
         )
         yield
-        for item in (temp_path / PURGE_PROJECT_PATH.name).iterdir():
+        for item in (temp_path / purge_temp_path.name).iterdir():
             if item.is_dir():
-                shutil.rmtree(PURGE_PROJECT_PATH / item.name, ignore_errors=True)
-                shutil.copytree(
-                    item, PURGE_PROJECT_PATH / item.name, dirs_exist_ok=True
-                )
+                shutil.rmtree(purge_temp_path / item.name, ignore_errors=True)
+                shutil.copytree(item, purge_temp_path / item.name, dirs_exist_ok=True)
             else:
-                shutil.copy2(item, PURGE_PROJECT_PATH / item.name)
+                shutil.copy2(item, purge_temp_path / item.name)
 
-        with open(PURGE_PROJECT_PATH.joinpath("moccasin.toml"), "w") as f:
+        with open(purge_temp_path.joinpath("moccasin.toml"), "w") as f:
             f.write(PURGE_STARTING_TOML)
 
 

@@ -7,7 +7,7 @@ price_feed = { abi = "MockV3Aggregator", force_deploy = false, deployer_script =
 
 [networks.anvil]
 url = "http://127.0.0.1:8545"
-unsafe_password_file = "~/.moccasin/unsafe-passwords/anvil1"
+unsafe_password_file = "$ANVIL1_PASSWORD_FILE"
 default_account_name = "anvil1"
 prompt_live = false
 save_to_db = true

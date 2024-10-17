@@ -20,10 +20,15 @@ format-check:
 test:
     uv run pytest -x --ignore=tests/integration/ --ignore=tests/zksync/
 
+# Run the last failed test
+test-lf:
+    uv run pytest --lf -x --ignore=tests/integration/ --ignore=tests/zksync/
+
 # Run integration tests, read the README.md in the tests/integration directory for more information
 test-i:
     uv run pytest tests/integration -x --ignore=tests/zksync/  
 
+# Run zksync tests
 test-z:
     uv run pytest tests/zksync -nauto --ignore=tests/integration/
 

@@ -76,3 +76,19 @@ def test_test_gas(complex_cleanup_out_folder, complex_cleanup_coverage, mox_path
         os.chdir(current_dir)
     assert "Computation" in result.stdout
     assert "coverage:" not in result.stdout
+
+
+def test_duplicate_fixtures(mox_path, complex_temp_path, complex_conftest_override):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(complex_temp_path))
+        result = subprocess.run([mox_path, "test"], capture_output=True, text=True)
+    finally:
+        os.chdir(current_dir)
+
+    assert result.returncode == 4
+
+    # Check for the error message in the output
+    assert "DuplicateFixtureNameError" in result.stderr
+    assert "Duplicate fixture name 'eth_usd' found in tuples" in result.stderr
+    assert "('price_feed', 'eth_usd')" in result.stderr

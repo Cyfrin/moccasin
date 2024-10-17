@@ -2,16 +2,14 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.conftest import COMPLEX_PROJECT_PATH
-
 
 # --------------------------------------------------------------
 #                         WITHOUT ANVIL
 # --------------------------------------------------------------
-def test_deploy_price_feed_pyevm(mox_path, complex_project_config):
+def test_deploy_price_feed_pyevm(mox_path, complex_temp_path, complex_project_config):
     current_dir = Path.cwd()
     try:
-        os.chdir(COMPLEX_PROJECT_PATH)
+        os.chdir(complex_temp_path)
         result = subprocess.run(
             [mox_path, "deploy", "price_feed"],
             check=True,
@@ -26,10 +24,12 @@ def test_deploy_price_feed_pyevm(mox_path, complex_project_config):
 # --------------------------------------------------------------
 #                           WITH ANVIL
 # --------------------------------------------------------------
-def test_deploy_price_feed_anvil(mox_path, anvil_process):
+def test_deploy_price_feed_anvil(
+    mox_path, anvil_keystore, complex_temp_path, anvil_process
+):
     current_dir = Path.cwd()
     try:
-        os.chdir(COMPLEX_PROJECT_PATH)
+        os.chdir(complex_temp_path)
         result = subprocess.run(
             [mox_path, "deploy", "price_feed", "--network", "anvil"],
             check=True,

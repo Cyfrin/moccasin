@@ -10,7 +10,7 @@ from moccasin._sys_path_and_config_setup import (
     get_sys_paths_list,
 )
 from moccasin.config import initialize_global_config
-from moccasin.constants.vars import CONSOLE_HISTORY_FILE, DEFAULT_MOCCASIN_FOLDER
+from moccasin.constants.vars import CONSOLE_HISTORY_FILE, MOCCASIN_DEFAULT_FOLDER
 from moccasin.logging import logger
 
 
@@ -32,9 +32,9 @@ def main(args: Namespace) -> int:
         )
 
         # Ensure the Moccasin folder exists
-        DEFAULT_MOCCASIN_FOLDER.mkdir(parents=True, exist_ok=True)
+        MOCCASIN_DEFAULT_FOLDER.mkdir(parents=True, exist_ok=True)
 
-        history_file = DEFAULT_MOCCASIN_FOLDER.joinpath(CONSOLE_HISTORY_FILE)
+        history_file = MOCCASIN_DEFAULT_FOLDER.joinpath(CONSOLE_HISTORY_FILE)
         validate_history_file(history_file)
         history_file_str = str(history_file)
 

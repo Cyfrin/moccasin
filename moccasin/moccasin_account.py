@@ -11,7 +11,7 @@ from eth_utils.address import to_checksum_address
 from hexbytes import HexBytes
 
 from moccasin.commands.wallet import decrypt_key
-from moccasin.constants.vars import DEFAULT_KEYSTORES_PATH
+from moccasin.constants.vars import MOCCASIN_KEYSTORE_PATH
 from moccasin.logging import logger
 
 
@@ -41,7 +41,7 @@ class MoccasinAccount(LocalAccount):
             self.keystore_path: Path = (
                 keystore_path_or_account_name
                 if isinstance(keystore_path_or_account_name, Path)
-                else DEFAULT_KEYSTORES_PATH.joinpath(keystore_path_or_account_name)
+                else MOCCASIN_KEYSTORE_PATH.joinpath(keystore_path_or_account_name)
             )
             private_key = self.unlock(
                 password=password, password_file_path=password_file_path
@@ -78,7 +78,7 @@ class MoccasinAccount(LocalAccount):
 
     def set_keystore_path(self, keystore_path: Path | str):
         if isinstance(keystore_path, str):
-            keystore_path = DEFAULT_KEYSTORES_PATH.joinpath(Path(keystore_path))
+            keystore_path = MOCCASIN_KEYSTORE_PATH.joinpath(Path(keystore_path))
         self.keystore_path = keystore_path
 
     def unlocked(self) -> bool:

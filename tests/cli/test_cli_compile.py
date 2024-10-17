@@ -2,8 +2,6 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.conftest import COMPLEX_PROJECT_PATH
-
 EXPECTED_HELP_TEXT = "Vyper compiler"
 
 
@@ -27,10 +25,12 @@ def test_build_help(mox_path):
     assert result.returncode == 0
 
 
-def test_compile_alias_build_project(complex_cleanup_out_folder, mox_path):
+def test_compile_alias_build_project(
+    complex_temp_path, complex_cleanup_out_folder, mox_path
+):
     current_dir = Path.cwd()
     try:
-        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        os.chdir(current_dir.joinpath(complex_temp_path))
         result = subprocess.run(
             [mox_path, "build"], check=True, capture_output=True, text=True
         )
@@ -40,10 +40,10 @@ def test_compile_alias_build_project(complex_cleanup_out_folder, mox_path):
     assert result.returncode == 0
 
 
-def test_compile_one(complex_cleanup_out_folder, mox_path):
+def test_compile_one(complex_temp_path, complex_cleanup_out_folder, mox_path):
     current_dir = Path.cwd()
     try:
-        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        os.chdir(current_dir.joinpath(complex_temp_path))
         result = subprocess.run(
             [mox_path, "build", "BuyMeACoffee.vy"],
             check=True,

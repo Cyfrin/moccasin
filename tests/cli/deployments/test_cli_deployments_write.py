@@ -36,6 +36,7 @@ def test_checks_integrity_of_contracts(
     deployments_path,
     deployments_contract_override,
     anvil_process,
+    anvil_keystore,
 ):
     current_dir = Path.cwd()
     try:
