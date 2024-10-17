@@ -1,3 +1,5 @@
+> This tool is in beta, use at your own risk
+
 <p align="center">
     <br />
         <img src="./docs/source/_static/gh_banner.png" width="100%" alt=""/></a>
@@ -9,6 +11,10 @@
 A fast, pythonic, Vyper smart contract testing and development framework.
 
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+<!-- Add these for 0.3.1 -->
+<!-- [![moccasin](https://img.shields.io/pypi/v/moccasin.svg)](https://pypi.org/project/moccasin/)
+[![license](https://img.shields.io/pypi/l/moccasin.svg)](https://pypi.python.org/pypi/moccasin)
+[![python-versions](https://img.shields.io/pypi/pyversions/moccasin.svg)](https://pypi.python.org/pypi/moccasin) -->
 
 > The smaller bar is better, it means it's faster
 
@@ -25,7 +31,7 @@ Fast to install, test, and run python commands on your smart contracts.
 
 # Quickstart
 
-Head over to [the moccasin installation documentation](https://cyfrin.github.io/moccasin/installing_moccasin.html) to for other install methodologies and getting stated.
+Head over to [the moccasin installation documentation](https://cyfrin.github.io/moccasin/installing-moccasin.html) to for other install methodologies and getting stated.
 
 ## This README Quickstart
 
