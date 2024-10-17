@@ -17,12 +17,13 @@ format-check:
     uv run ruff check .
 
 # Run unit and CLI tests, fail on first test failure
+# REVIEW: We should refactor the tests so we can use -nauto here
 test:
-    uv run pytest -x --ignore=tests/integration/ --ignore=tests/zksync/
+    uv run pytest  -x --ignore=tests/integration/ --ignore=tests/zksync/
 
 # Run the last failed test
 test-lf:
-    uv run pytest --lf -x --ignore=tests/integration/ --ignore=tests/zksync/
+    uv run pytest --lf --ignore=tests/integration/ --ignore=tests/zksync/
 
 # Run integration tests, read the README.md in the tests/integration directory for more information
 test-i:

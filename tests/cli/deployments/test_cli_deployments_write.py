@@ -13,7 +13,7 @@ COUNTER = "Counter"
 #                READING AND WRITING DEPLOYMENTS
 # ------------------------------------------------------------------
 def test_local_networks_dont_have_data_saved_to_db(
-    deployments_config, deployments_path, anvil_process
+    deployments_config, deployments_path, anvil
 ):
     current_dir = Path.cwd()
     starting_deployments_number = 0
@@ -31,12 +31,7 @@ def test_local_networks_dont_have_data_saved_to_db(
 
 
 def test_checks_integrity_of_contracts(
-    mox_path,
-    deployments_config,
-    deployments_path,
-    deployments_contract_override,
-    anvil_process,
-    anvil_keystore,
+    mox_path, deployments_config, deployments_path, deployments_contract_override, anvil
 ):
     current_dir = Path.cwd()
     try:
@@ -88,7 +83,7 @@ def test_checks_integrity_of_contracts(
 
 
 def test_records_deployment_on_deployment(
-    mox_path, deployments_config, deployments_path, anvil_process
+    mox_path, deployments_config, deployments_path, anvil
 ):
     current_dir = Path.cwd()
     starting_deployments_number = 0

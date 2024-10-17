@@ -40,17 +40,13 @@ DEFAULT_PROJECT_FOLDERS = [
 ]
 
 # Configurable Vars
-MOCCASIN_DEFAULT_FOLDER = (
-    Path(os.getenv("MOCCASIN_DEFAULT_FOLDER"))
-    if os.getenv("MOCCASIN_DEFAULT_FOLDER")
-    else Path.home().joinpath(".moccasin/")
+MOCCASIN_DEFAULT_FOLDER = Path(
+    os.getenv("MOCCASIN_DEFAULT_FOLDER", Path.home().joinpath(".moccasin/"))
 )
 MOCCASIN_DEFAULT_FOLDER.mkdir(parents=True, exist_ok=True)
 
-MOCCASIN_KEYSTORE_PATH = (
-    Path(os.getenv("MOCCASIN_KEYSTORE_PATH"))
-    if os.getenv("MOCCASIN_KEYSTORE_PATH")
-    else MOCCASIN_DEFAULT_FOLDER.joinpath("keystores/")
+MOCCASIN_KEYSTORE_PATH = Path(
+    os.getenv("MOCCASIN_KEYSTORE_PATH", MOCCASIN_DEFAULT_FOLDER.joinpath("keystores/"))
 )
 MOCCASIN_KEYSTORE_PATH.mkdir(parents=True, exist_ok=True)
 

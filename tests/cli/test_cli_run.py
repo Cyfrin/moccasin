@@ -57,7 +57,7 @@ def test_multiple_manifest_returns_the_same_or_different(mox_path, complex_temp_
 # ------------------------------------------------------------------
 #                           WITH ANVIL
 # ------------------------------------------------------------------
-def test_run_with_network(mox_path, complex_temp_path, anvil_process):
+def test_run_with_network(mox_path, complex_temp_path, anvil):
     current_dir = Path.cwd()
     os.chdir(complex_temp_path)
     try:
@@ -82,7 +82,7 @@ def test_run_with_network(mox_path, complex_temp_path, anvil_process):
     assert result.returncode == 0
 
 
-def test_run_with_keystore_account(mox_path, complex_temp_path, anvil_process):
+def test_run_with_keystore_account(mox_path, complex_temp_path, anvil):
     current_dir = Path.cwd()
     os.chdir(complex_temp_path)
     try:
@@ -115,6 +115,7 @@ def test_run_fork_should_not_send_transactions(
     complex_project_config,
     set_fake_chain_rpc,
     anvil_two_no_state,
+    anvil_keystore,
 ):
     current_dir = Path.cwd()
     os.chdir(complex_temp_path)
@@ -133,7 +134,7 @@ def test_run_fork_should_not_send_transactions(
 
 
 def test_multiple_manifest_returns_the_same_or_different_on_real_network(
-    mox_path, complex_temp_path, anvil_process
+    mox_path, complex_temp_path, anvil
 ):
     current_dir = Path.cwd()
     os.chdir(complex_temp_path)
@@ -153,7 +154,7 @@ def test_multiple_manifest_returns_the_same_or_different_on_real_network(
 
 
 def test_network_should_prompt_on_live(
-    mox_path, complex_temp_path, set_fake_chain_rpc, anvil_process
+    mox_path, complex_temp_path, set_fake_chain_rpc, anvil
 ):
     current_dir = Path.cwd()
     os.chdir(complex_temp_path)
@@ -174,7 +175,7 @@ def test_network_should_prompt_on_live(
 
 
 def test_network_operation_cancelled_on_no_input(
-    mox_path, complex_temp_path, set_fake_chain_rpc, anvil_process
+    mox_path, complex_temp_path, set_fake_chain_rpc, anvil
 ):
     current_dir = Path.cwd()
     os.chdir(complex_temp_path)
@@ -194,7 +195,7 @@ def test_network_operation_cancelled_on_no_input(
 
 
 def test_prompt_live_on_non_test_networks(
-    mox_path, complex_temp_path, complex_project_config, anvil_process
+    mox_path, complex_temp_path, complex_project_config, anvil
 ):
     current_dir = Path.cwd()
     try:

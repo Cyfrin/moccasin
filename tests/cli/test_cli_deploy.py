@@ -24,9 +24,7 @@ def test_deploy_price_feed_pyevm(mox_path, complex_temp_path, complex_project_co
 # --------------------------------------------------------------
 #                           WITH ANVIL
 # --------------------------------------------------------------
-def test_deploy_price_feed_anvil(
-    mox_path, anvil_keystore, complex_temp_path, anvil_process
-):
+def test_deploy_price_feed_anvil(mox_path, complex_temp_path, anvil):
     current_dir = Path.cwd()
     try:
         os.chdir(complex_temp_path)
