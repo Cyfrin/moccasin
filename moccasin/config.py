@@ -862,6 +862,15 @@ class _Networks:
         self._networks[name_of_network_or_network.name] = name_of_network_or_network
         return name_of_network_or_network
 
+    def activate_boa(self):
+        active_network = self.get_active_network()
+        active_network.create_and_set_or_set_boa_env()
+        self._overriden_active_network = None
+
+    def activate_db(self):
+        active_network = self.get_active_network()
+        active_network._set_boa_db()
+
     def _create_custom_network(self, url: str, is_fork: bool | None = False) -> Network:
         if is_fork is None:
             is_fork = False
@@ -1107,6 +1116,12 @@ class Config:
         return self.networks.set_active_network(
             name_url_or_id, activate_boa=activate_boa, activate_db=activate_db, **kwargs
         )
+
+    def activate_boa(self):
+        self.networks.activate_boa()
+
+    def activate_db(self):
+        self.networks.activate_db()
 
     @property
     def config_path(self) -> Path:
