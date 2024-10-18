@@ -10,7 +10,7 @@ Installing Moccasin
 
     1. :ref:`Install uv <installation-with-uv>`
 
-    2. :ref:`In an isolated environment <isolated_uv>`
+    2. :ref:`Install moccasin in an isolated environment <isolated_uv>`
 
     3. :ref:`Check to see if it worked <after_install>`
 
@@ -64,9 +64,7 @@ But you can head over to the `uv installation instructions <https://docs.astral.
 Isolated Environment
 --------------------
 
-To install ``moccasin`` into an isolated environment, you can run:
-
-Then, to install moccasin with `uv`, run:
+To install ``moccasin`` into an isolated environment with ``uv``, run:
 
 .. code-block:: bash
 
