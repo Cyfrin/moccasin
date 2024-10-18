@@ -6,28 +6,35 @@
     <br />
 </p>
 
+
 # Moccasin
 
 A fast, pythonic, Vyper smart contract testing and development framework.
 
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-<!-- Add these for 0.3.1 -->
-<!-- [![moccasin](https://img.shields.io/pypi/v/moccasin.svg)](https://pypi.org/project/moccasin/)
+[![moccasin](https://img.shields.io/pypi/v/moccasin.svg)](https://pypi.org/project/moccasin/)
 [![license](https://img.shields.io/pypi/l/moccasin.svg)](https://pypi.python.org/pypi/moccasin)
-[![python-versions](https://img.shields.io/pypi/pyversions/moccasin.svg)](https://pypi.python.org/pypi/moccasin) -->
-
-> The smaller bar is better, it means it's faster
+[![python-versions](https://img.shields.io/pypi/pyversions/moccasin.svg)](https://pypi.python.org/pypi/moccasin)
 
 <p align="center">
-    <br />
-    <a href="https://cyfrin.io/">
-        <img src="./docs/source/_static/compile-stats.png" width="1000" alt=""/></a>
-    <br />
+  <picture align="center">
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/source/_static/stats-dark.png" width=70%>
+    <source media="(prefers-color-scheme: light)" srcset="./docs/source/_static/stats-light.png" width=70%>
+    <img alt="Shows a bar chart with benchmark results." src="./docs/source/_static/stats-default.png" width=70%>
+  </picture>
 </p>
-
 _You can see how we conducted these tests from the [benchmarking repo](https://github.com/PatrickAlphaC/benchmarking-frameworks)._
 
 Fast to install, test, and run python commands on your smart contracts.
+
+# Highlights
+
+- 🐍 Pythonic start to finish, built on top of Vyper's [titanoboa](https://titanoboa.readthedocs.io/en/latest/)
+- 🔐 ZKsync built-in support
+- 📑 Named Contracts allow you to define smart contract addresses without scaffolding anything yourself
+- 🧪 Custom staging pytest markers so you can run tests anywhere, anyhow
+- 🦊 Support for encrypting wallets, no private keys in `.env` files! 
+- 🧳 GitHub and Python smart contract dependency installation 
 
 # Quickstart
 
