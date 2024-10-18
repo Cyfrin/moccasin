@@ -79,12 +79,19 @@ All possible options
     explorer_uri = "https://api.etherscan.io/api" # path for the supported explorer 
     explorer_api_key = "your_api_key" # api key for the supported explorer, overrides the main one 
     explorer_type = "blockscout" # If the explorer URL has "blockscout" or "etherscan" in the name, you don't need this
-    prompt_live = false # A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks 
+    prompt_live = true # A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks 
     save_to_db = true # A flag that will save the deployment to the database, it defaults to true for "non-testing" networks (not pyevm, eravm, or a fork network)
+    live_or_staging = true # A flag that will determine if the network is live or staging for the `@pytest.mark.staging` decorator, it defaults to true for non-local, non-forked networks
 
     [networks.sepolia.contracts]
     # You can override the default named contract parameters
     usdc = {"address" = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi = "ERC20.vy", force_deploy = false, fixture = false, deployer_script = "script/deploy.py"}
+
+    # You can also format a contract like this, for example, this one is "dai"
+    [networks.sepolia.contracts.dai]
+    address = "0x6b175474e89094c44da98b954eedeac495271d0f"
+    abi = "ERC20.vy"
+    force_deploy = false
 
     [networks.sepolia.extra_data]
     my_data = "hi"

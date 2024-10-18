@@ -4,7 +4,7 @@ from pathlib import Path
 
 import boa
 
-from moccasin.config import Config, get_config
+from moccasin.config import Config
 
 
 # REVIEW: I guess this is cool? You can setup a project without a `moccasin.toml` file? Maybe this is a bug?
@@ -16,14 +16,37 @@ def test_networks_initialized():
 
 
 def test_set_dot_env(complex_project_config):
-    config = get_config()
-    assert config.dot_env == ".hello"
+    assert complex_project_config.dot_env == ".hello"
     assert os.getenv("HELLO_THERE") == "HI"
 
 
 def test_active_boa(complex_project_config):
-    config = get_config()
     network = "anvil"
-    config.set_active_network(network, activate_boa=False)
+    complex_project_config.set_active_network(network, activate_boa=False)
     # The env hasn't updated yet
     assert boa.env.nickname == "pyevm"
+
+
+def test_get_named_contracts(complex_project_config):
+    active_network = complex_project_config.get_active_network()
+    named_contracts = active_network.get_named_contracts()
+    assert isinstance(named_contracts, dict)
+    assert named_contracts["price_feed"] is not None
+
+
+def test_live_or_staging_defaults_to_true(complex_project_config):
+    complex_project_config.set_active_network("anvil", activate_boa=False)
+    active_network = complex_project_config.get_active_network()
+    assert active_network.live_or_staging is True
+
+
+def test_live_or_staging_is_false_for_local(complex_project_config):
+    complex_project_config.set_active_network("pyevm", activate_boa=False)
+    active_network = complex_project_config.get_active_network()
+    assert active_network.live_or_staging is False
+
+
+def test_live_or_staging_is_false_for_fork(complex_project_config):
+    complex_project_config.set_active_network("fake_chain", activate_boa=False)
+    active_network = complex_project_config.get_active_network()
+    assert active_network.live_or_staging is False
