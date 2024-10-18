@@ -41,7 +41,7 @@ Fast to install, test, and run python commands on your smart contracts.
 
 # Quickstart
 
-Head over to [the moccasin installation documentation](https://cyfrin.github.io/moccasin/installing-moccasin.html) to for other install methodologies and getting stated.
+Head over to [the moccasin installation documentation](https://cyfrin.github.io/moccasin/installing_moccasin.html) to for other install methodologies and getting stated.
 
 ## This README Quickstart
 
@@ -59,7 +59,44 @@ mox --help
 
 # Documentation
 
-The documentation roughly attempts to follow [Diátaxis](https://diataxis.fr/).
+You can view the documentation [here](https://cyfrin.github.io/moccasin/).
+
+# Contributing
+
+If you're interested in helping build moccasin, please see the [contributing guide](./CONTRIBUTING.md).
+
+# Help output
+
+```bash
+mox --help
+usage: Moccasin CLI [-h] [-d] [-q]
+                    {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect,deployments,utils,u,util}
+                    ...
+
+🐍 Pythonic Smart Contract Development Framework
+
+positional arguments:
+  {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect,deployments,utils,u,util}
+    init                Initialize a new project.
+    compile (build)     Compiles the project.
+    test                Runs all tests in the project.
+    run (script)        Runs a script with the project's context.
+    deploy              Deploys a contract named in the config with a deploy script.
+    wallet              Wallet management utilities.
+    console             BETA, USE AT YOUR OWN RISK: Interact with the network in a python shell.
+    install             Installs the project's dependencies.
+    purge               Purge a given dependency
+    config              View the Moccasin configuration.
+    explorer            Work with block explorers to get data.
+    inspect             Inspect compiler data of a contract.
+    deployments         View deployments of the project from your DB.
+    utils (u, util)     Helpful utilities - right now it's just the one.
+
+options:
+  -h, --help            show this help message and exit
+  -d, --debug           Run in debug mode
+  -q, --quiet           Suppress all output except errors
+```
 
 # Acknowledgements 
 
@@ -76,7 +113,7 @@ The documentation roughly attempts to follow [Diátaxis](https://diataxis.fr/).
 <p align="center">
     <br />
     <a href="https://cyfrin.io/">
-        <img src="./docs/source/_static/speed-comparisons.png" width="1000" alt=""/></a>
+        <img src="./docs/source/_static/speed-comparisons.png" width="70%" alt=""/></a>
     <br />
 </p>
 
