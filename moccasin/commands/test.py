@@ -5,7 +5,6 @@ from typing import List
 
 # We don't need to import it, pytest handles that below
 # from moccasin import plugin
-
 import pytest
 
 from moccasin._sys_path_and_config_setup import (
