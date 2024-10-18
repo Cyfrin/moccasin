@@ -662,7 +662,7 @@ class Network:
     def get_named_contract(self, contract_name: str) -> NamedContract | None:
         return self.contracts.get(contract_name, None)
 
-    def get_named_contracts(self) -> list[NamedContract]:
+    def get_named_contracts(self) -> dict:
         return self.contracts
 
     def set_boa_eoa(self, account: MoccasinAccount):

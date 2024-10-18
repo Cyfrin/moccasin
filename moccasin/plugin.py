@@ -1,5 +1,6 @@
-from moccasin.config import get_config
 import pytest
+
+from moccasin.config import get_config
 
 
 def pytest_configure(config):
