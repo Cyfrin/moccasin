@@ -16,6 +16,8 @@ A fast, pythonic, Vyper smart contract testing and development framework.
 [![license](https://img.shields.io/pypi/l/moccasin.svg)](https://pypi.python.org/pypi/moccasin)
 [![python-versions](https://img.shields.io/pypi/pyversions/moccasin.svg)](https://pypi.python.org/pypi/moccasin)
 
+> The smaller bar is better, it means it's faster
+
 <p align="center">
   <picture align="center">
     <source media="(prefers-color-scheme: dark)" srcset="./docs/source/_static/stats-dark.png" width=70%>
@@ -23,6 +25,7 @@ A fast, pythonic, Vyper smart contract testing and development framework.
     <img alt="Shows a bar chart with benchmark results." src="./docs/source/_static/stats-default.png" width=70%>
   </picture>
 </p>
+
 _You can see how we conducted these tests from the [benchmarking repo](https://github.com/PatrickAlphaC/benchmarking-frameworks)._
 
 Fast to install, test, and run python commands on your smart contracts.
