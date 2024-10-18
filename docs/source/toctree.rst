@@ -32,14 +32,14 @@ Moccasin
     :caption: How-to Guides
     :maxdepth: 3
 
-    coming_soon.rst
+    Contract Verification <how-tos/verify_contracts.rst>
     
 
 .. toctree::
     :caption: Tutorials
     :maxdepth: 3
 
-    coming_soon.rst
+    ZKsync <tutorials/zksync-getting-started.rst>
 
 .. toctree::
     :caption: Reference
@@ -48,5 +48,6 @@ Moccasin
     cli_commands.rst
     class_reference.rst
     all_moccasin_toml_parameters.rst
+    explorer_network_defaults.rst
     common_errors.rst
 

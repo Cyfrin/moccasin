@@ -25,6 +25,7 @@ from boa_zksync.contract import ZksyncContract
 from boa_zksync.deployer import ZksyncDeployer
 from dotenv import load_dotenv
 from eth_utils import to_hex
+from tomlkit.items import Table
 
 from moccasin.constants.vars import (
     BUILD_FOLDER,
@@ -37,7 +38,9 @@ from moccasin.constants.vars import (
     DOT_ENV_FILE,
     DOT_ENV_KEY,
     ERAVM,
+    FORK_NETWORK_DEFAULTS,
     GET_CONTRACT_SQL,
+    LOCAL_NETWORK_DEFAULTS,
     PYEVM,
     RESTRICTED_VALUES_FOR_LOCAL_NETWORK,
     SAVE_ABI_PATH,
@@ -912,23 +915,7 @@ class _Networks:
         if "networks" not in toml_data:
             toml_data["networks"] = {}
 
-        # Define default values for PYEVM and ERAVM
-        local_networks_defaults = {
-            PYEVM: {
-                "is_zksync": False,
-                "prompt_live": False,
-                SAVE_TO_DB: False,
-                "live_or_staging": False,
-            },
-            ERAVM: {
-                "is_zksync": True,
-                "prompt_live": False,
-                SAVE_TO_DB: False,
-                "live_or_staging": False,
-            },
-        }
-
-        for local_network, local_network_data in local_networks_defaults.items():
+        for local_network, local_network_data in LOCAL_NETWORK_DEFAULTS.items():
             if local_network not in toml_data["networks"]:
                 toml_data["networks"][local_network] = {}
 
@@ -939,9 +926,15 @@ class _Networks:
 
     @staticmethod
     def _add_fork_network_defaults(network_data: dict) -> dict:
-        network_data["prompt_live"] = network_data.get("prompt_live", False)
-        network_data[SAVE_TO_DB] = network_data.get(SAVE_TO_DB, False)
-        network_data["live_or_staging"] = network_data.get("live_or_staging", False)
+        network_data["prompt_live"] = network_data.get(
+            "prompt_live", FORK_NETWORK_DEFAULTS["prompt_live"]
+        )
+        network_data[SAVE_TO_DB] = network_data.get(
+            SAVE_TO_DB, FORK_NETWORK_DEFAULTS[SAVE_TO_DB]
+        )
+        network_data["live_or_staging"] = network_data.get(
+            "live_or_staging", FORK_NETWORK_DEFAULTS["live_or_staging"]
+        )
         return network_data
 
     @staticmethod
@@ -1001,15 +994,20 @@ class Config:
         if root_path is None:
             root_path = Config.find_project_root()
         root_path = cast(Path, root_path)
-
         self._project_root = root_path
         self._toml_data = {}
-        config_path: Path = root_path.joinpath(CONFIG_NAME)
+        self.project = {}
 
-        if config_path.exists():
-            self._load_config(config_path)
+        config_path: Path = root_path.joinpath(CONFIG_NAME)
+        pyproject_path: Path = root_path.joinpath("pyproject.toml")
+
+        if config_path.exists() or pyproject_path.exists():
+            self._load_config(config_path, pyproject_path=pyproject_path)
         else:
-            logger.warning(f"No {CONFIG_NAME} file found. Using default configuration.")
+            self._load_env_file()
+            logger.warning(
+                f"No {CONFIG_NAME} or pyproject.toml file found. Using default configuration."
+            )
         self._initialize_networks()
 
     def _initialize_networks(self):
@@ -1021,10 +1019,9 @@ class Config:
             db_path = self._project_root.joinpath(db_path)
         self.networks = _Networks(self._toml_data, db_path)
 
-    def _load_config(self, config_path: Path):
-        toml_data: dict = self.read_config(config_path)
+    def _load_config(self, config_path: Path, pyproject_path: Path | None = None):
+        toml_data = self.read_configs(config_path, pyproject_path)
         # Need to get the .env file before expanding env vars
-        self.project = {}
         self.project[DOT_ENV_KEY] = toml_data.get("project", {}).get(
             DOT_ENV_KEY, DOT_ENV_FILE
         )
@@ -1034,7 +1031,6 @@ class Config:
         self.project = toml_data.get("project", {})
         self.extra_data = toml_data.get("extra_data", {})
         self._toml_data = toml_data
-
         if TESTS_FOLDER in self.project:
             logger.warning(
                 f"Tests folder is set to {self.project[TESTS_FOLDER]}. This is not supported and will be ignored."
@@ -1046,15 +1042,43 @@ class Config:
     def get_config_path(self) -> Path:
         return self.config_path
 
-    def read_config_preserve_comments(self, config_path: Path | None = None) -> dict:
-        if config_path is None:
-            config_path = self.config_path
-        return self.read_moccasin_config_preserve_comments(config_path)
+    def read_configs_preserve_comments(
+        self,
+        moccasin_config_path: Path | None = None,
+        pyproject_config_path: Path | None = None,
+    ) -> tomlkit.TOMLDocument:
+        if moccasin_config_path is None:
+            moccasin_config_path = self.config_path
+        if pyproject_config_path is None:
+            pyproject_config_path = self.project_root.joinpath("pyproject.toml")
+        moccasin_config = self.read_moccasin_toml_preserve_comments(
+            moccasin_config_path
+        )
+        pyproject_config = self.read_pyproject_toml_preserve_comments(
+            pyproject_config_path
+        )
+        if moccasin_config == {}:
+            return pyproject_config
+        merged_config = self.merge_configs(moccasin_config, pyproject_config)
+        merged_config = cast(tomlkit.TOMLDocument, merged_config)
+        return merged_config
 
-    def read_config(self, config_path: Path | None = None) -> dict:
+    def read_configs(
+        self, moccasin_path: Path | None = None, pyproject_path: Path | None = None
+    ) -> dict:
+        moccasin_data = self.read_moccasin_config(moccasin_path)
+        pyproject_data = self.read_pyproject_config(pyproject_path)
+        return self.merge_configs(moccasin_data, pyproject_data)
+
+    def read_moccasin_config(self, config_path: Path | None = None) -> dict:
         if config_path is None:
             config_path = self.config_path
-        return self.read_moccasin_config(config_path)
+        return self.read_moccasin_toml(config_path)
+
+    def read_pyproject_config(self, pyproject_path: Path | None = None) -> dict:
+        if pyproject_path is None:
+            pyproject_path = self.project_root.joinpath("pyproject.toml")
+        return self.read_pyproject_toml(pyproject_path)
 
     def expand_env_vars(self, value):
         if isinstance(value, str):
@@ -1085,29 +1109,38 @@ class Config:
     def write_dependencies(self, dependencies: list):
         """Writes the dependencies to the config file.
 
+        If a moccasin.toml file exists, it will write there, otherwise, it'll write to pyproject.toml.
+
         This will overwrite the existing dependencies with the new ones. So if you wish to keep old ones,
         read from the dependencies first.
         """
-        toml_data = self.read_config_preserve_comments()
-        toml_data["project"]["dependencies"] = dependencies  # type: ignore
+        toml_data = self.read_configs_preserve_comments()
+        path_to_write = self.config_path
+        if not self.config_path.exists() and self.pyproject_path.exists():
+            self.nested_tomlkit_update(
+                toml_data, ["tool", "moccasin", "project", "dependencies"], dependencies
+            )
+            path_to_write = self.pyproject_path
+        else:
+            self.nested_tomlkit_update(
+                toml_data, ["project", "dependencies"], dependencies
+            )
 
         # Create a temporary file in the same directory as the target file
-        target_path = self._project_root / CONFIG_NAME
         temp_file = tempfile.NamedTemporaryFile(
             mode="w",
             delete=False,
-            dir=target_path.parent,
+            dir=path_to_write.parent,
             prefix=".tmp_",
             suffix=".toml",
         )
         try:
             temp_file.write(tomlkit.dumps(toml_data))
             temp_file.close()
-            shutil.move(temp_file.name, target_path)
+            shutil.move(temp_file.name, path_to_write)
         except Exception as e:
             os.unlink(temp_file.name)
             raise e
-
         self.dependencies = dependencies
 
     def get_base_dependencies_install_path(self) -> Path:
@@ -1146,6 +1179,10 @@ class Config:
     @property
     def config_path(self) -> Path:
         return self.project_root.joinpath(CONFIG_NAME)
+
+    @property
+    def pyproject_path(self) -> Path:
+        return self.project_root.joinpath("pyproject.toml")
 
     @property
     def project_root(self) -> Path:
@@ -1206,47 +1243,132 @@ class Config:
     def find_project_root(start_path: Path | str | None = None) -> Path:
         if start_path is None:
             start_path = Path.cwd()
-        current_path = Path(start_path).expanduser().resolve()
+        start_path = Path(start_path).expanduser().resolve()
+        current_path = start_path
+
+        # Look for moccasin.toml
+        while True:
+            # Move up to the parent directory
+            parent_path = current_path.parent
+            if parent_path == current_path:
+                # We've reached the root directory without finding moccasin.toml
+                # raise FileNotFoundError(
+                #     "Could not find moccasin.toml or src directory with Vyper contracts in any parent directory"
+                # )
+                break
+            if (current_path / CONFIG_NAME).exists():
+                return current_path
+            # Check for src directory with .vy files in current directory
+            src_path = current_path / "src"
+            if src_path.is_dir() and any(src_path.glob("*.vy")):
+                return current_path
+            current_path = parent_path
+
+        # Start over and look for pyproject.toml
+        current_path = start_path
         while True:
             # Move up to the parent directory
             parent_path = current_path.parent
             if parent_path == current_path:
                 # We've reached the root directory without finding moccasin.toml
                 raise FileNotFoundError(
-                    "Could not find moccasin.toml or src directory with Vyper contracts in any parent directory"
+                    "Could not find moccasin.toml, pyproject.toml, or src directory with Vyper contracts in any parent directory"
                 )
-
-            if (current_path / CONFIG_NAME).exists():
+            if (current_path / "pyproject.toml").exists():
                 return current_path
-
-            # Check for src directory with .vy files in current directory
-            src_path = current_path / "src"
-            if src_path.is_dir() and any(src_path.glob("*.vy")):
-                return current_path
-
             current_path = parent_path
 
     @staticmethod
-    def read_moccasin_config(config_path: Path) -> dict:
-        config_path = Config._validated_config_path(config_path)
+    def read_moccasin_toml(config_path: Path) -> dict:
+        if not config_path.exists():
+            return {}
         with open(config_path, "rb") as f:
             return tomllib.load(f)
 
     @staticmethod
-    def read_moccasin_config_preserve_comments(
-        config_path: Path,
-    ) -> tomlkit.TOMLDocument:
-        config_path = Config._validated_config_path(config_path)
+    def read_moccasin_toml_preserve_comments(config_path: Path) -> tomlkit.TOMLDocument:
+        config_path = Config._validated_moccasin_config_path(config_path)
+        if not config_path.exists():
+            return tomlkit.TOMLDocument()
         with open(config_path, "rb") as f:
             return tomlkit.load(f)
 
     @staticmethod
-    def _validated_config_path(config_path: Path):
-        if not str(config_path).endswith(f"/{CONFIG_NAME}"):
-            config_path = config_path.joinpath(CONFIG_NAME)
+    def read_pyproject_toml_preserve_comments(
+        config_path: Path,
+    ) -> tomlkit.TOMLDocument:
+        config_path = Config._validated_pyproject_config_path(config_path)
         if not config_path.exists():
-            raise FileNotFoundError(f"{CONFIG_NAME} not found: {config_path}")
+            return tomlkit.TOMLDocument()
+        with open(config_path, "rb") as f:
+            return tomlkit.load(f)
+
+    @staticmethod
+    def read_pyproject_toml(pyproject_path: Path) -> dict:
+        if not pyproject_path.exists():
+            return {}
+
+        with open(pyproject_path, "rb") as f:
+            pyproject_data = tomllib.load(f)
+
+        pyproject_config_toml = pyproject_data.get("tool", {}).get("moccasin", {})
+        return pyproject_config_toml
+
+    @staticmethod
+    def merge_configs(
+        moccasin_config_dict: Union[dict, tomlkit.TOMLDocument],
+        pyproject_config_dict: Union[dict, tomlkit.TOMLDocument],
+    ) -> Union[dict, tomlkit.TOMLDocument]:
+        merged = moccasin_config_dict.copy()
+
+        if (
+            pyproject_config_dict.get("tool", {})
+            .get("moccasin", {})
+            .get("project", {})
+            .get("dependencies", None)
+            is not None
+        ):
+            logger.warning(
+                "Dependencies in pyproject.toml will be overwritten by dependencies in moccasin.toml if the moccasin.toml has dependencies!"
+            )
+
+        def deep_update(d, u):
+            for k, v in u.items():
+                if isinstance(v, dict):
+                    if k not in d:
+                        d[k] = {}
+                    deep_update(d[k], v)
+                elif k not in d:
+                    d[k] = v
+            return d
+
+        return deep_update(merged, pyproject_config_dict)
+
+    @staticmethod
+    def _validated_pyproject_config_path(config_path: Path):
+        if not str(config_path).endswith("pyproject.toml"):
+            config_path = config_path.joinpath("pyproject.toml")
         return config_path
+
+    @staticmethod
+    def _validated_moccasin_config_path(config_path: Path):
+        if not str(config_path).endswith("moccasin.toml"):
+            config_path = config_path.joinpath("moccasin.toml")
+        return config_path
+
+    @staticmethod
+    def nested_tomlkit_update(
+        toml_data: tomlkit.TOMLDocument,
+        keys: list,
+        value: str | int | float | bool | list | dict,
+    ) -> tomlkit.TOMLDocument:
+        current: Union[tomlkit.TOMLDocument, Table] = toml_data
+        for key in keys[:-1]:
+            if key not in current:
+                current[key] = tomlkit.table()
+            current = current[key]  # type: ignore
+        current[keys[-1]] = value
+        return toml_data
 
     @staticmethod
     def _find_contract(

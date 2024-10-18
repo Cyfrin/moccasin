@@ -50,3 +50,25 @@ def test_live_or_staging_is_false_for_fork(complex_project_config):
     complex_project_config.set_active_network("fake_chain", activate_boa=False)
     active_network = complex_project_config.get_active_network()
     assert active_network.live_or_staging is False
+
+
+def test_pyproject_config_overriden_by_moccasin(complex_project_config):
+    assert complex_project_config.src_folder == "contracts"
+
+
+def test_pyproject_can_pull_in_config(complex_project_config):
+    silly_network = complex_project_config.networks.get_network("silly_network")
+    assert silly_network.name == "silly_network"
+    assert silly_network.chain_id == 7777
+
+
+def test_no_moccasin_toml_paths_exist(no_config_config):
+    assert no_config_config.config_path.exists() is False
+    assert no_config_config.pyproject_path.exists() is True
+    assert no_config_config.dot_env == ".hello"
+
+
+def test_no_moccasin_toml_can_set_network(no_config_config):
+    no_config_config.set_active_network("pyevm")
+    active_network = no_config_config.get_active_network()
+    assert active_network.name == "pyevm"

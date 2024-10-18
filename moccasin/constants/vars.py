@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 # File Names
-CONFIG_NAME = "moccasin.toml"
 README_PATH = "README.md"
 COUNTER_CONTRACT = "Counter.vy"
 
@@ -39,16 +38,39 @@ DEFAULT_PROJECT_FOLDERS = [
     DEPENDENCIES_FOLDER + "/" + PYPI,
 ]
 
+# Define default values for PYEVM and ERAVM
+LOCAL_NETWORK_DEFAULTS = {
+    PYEVM: {
+        "is_zksync": False,
+        "prompt_live": False,
+        SAVE_TO_DB: False,
+        "live_or_staging": False,
+    },
+    ERAVM: {
+        "is_zksync": True,
+        "prompt_live": False,
+        SAVE_TO_DB: False,
+        "live_or_staging": False,
+    },
+}
+
+FORK_NETWORK_DEFAULTS = {
+    "is_zksync": False,
+    "prompt_live": False,
+    SAVE_TO_DB: False,
+    "live_or_staging": False,
+}
+
 # Configurable Vars
 MOCCASIN_DEFAULT_FOLDER = Path(
     os.getenv("MOCCASIN_DEFAULT_FOLDER", Path.home().joinpath(".moccasin/"))
 )
 MOCCASIN_DEFAULT_FOLDER.mkdir(parents=True, exist_ok=True)
-
 MOCCASIN_KEYSTORE_PATH = Path(
     os.getenv("MOCCASIN_KEYSTORE_PATH", MOCCASIN_DEFAULT_FOLDER.joinpath("keystores/"))
 )
 MOCCASIN_KEYSTORE_PATH.mkdir(parents=True, exist_ok=True)
+CONFIG_NAME = "moccasin.toml"
 
 # Default Network Vars
 FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")

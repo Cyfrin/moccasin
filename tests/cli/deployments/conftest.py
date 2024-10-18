@@ -79,5 +79,8 @@ def deployments_contract_override(deployments_path):
 
 @pytest.fixture(scope="module")
 def blank_tempdir():
+    original_dir = Path.cwd()
     with TemporaryDirectory() as temp_dir:
+        os.chdir(temp_dir)
         yield temp_dir
+    os.chdir(original_dir)

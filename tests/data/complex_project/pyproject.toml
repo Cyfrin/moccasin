@@ -6,3 +6,16 @@ readme = "README.md"
 requires-python = ">=3.11, <3.13"
 dependencies = [
 ]
+
+[tool.moccasin.project]
+src = "src"
+dependencies = [
+    "moccasin==0.3.0",
+]
+
+[tool.moccasin.networks.contracts.pyproject_contract]
+abi = "BuyMeACoffee"
+force_deploy = false
+
+[tool.moccasin.networks.silly_network]
+chain_id = 7777
