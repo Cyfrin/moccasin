@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, Any, Iterator, Union, cast
 
 import boa
 import tomlkit
-from tomlkit.items import Table
 from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
 from boa.deployments import (
@@ -26,6 +25,7 @@ from boa_zksync.contract import ZksyncContract
 from boa_zksync.deployer import ZksyncDeployer
 from dotenv import load_dotenv
 from eth_utils import to_hex
+from tomlkit.items import Table
 
 from moccasin.constants.vars import (
     BUILD_FOLDER,
