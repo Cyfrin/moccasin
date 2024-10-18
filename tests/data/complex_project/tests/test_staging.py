@@ -1,9 +1,21 @@
 import pytest
 
 
-# TODO: Add a new pytest mark for staging tests, they should:
-# 1. Run when you're running on a live network (not forked or local)
-# 2. Any test that doesn't have this mark is skipped
 @pytest.mark.staging
 def test_staging_test():
-    pass
+    assert 1 == 1
+
+
+@pytest.mark.staging
+@pytest.mark.local
+def test_staging_local_test():
+    assert 1 == 1
+
+
+def test_staging_implicit_test():
+    assert 1 == 1
+
+
+@pytest.mark.local
+def test_staging_explicit_test():
+    assert 1 == 1

@@ -43,4 +43,5 @@ This is the most basic setup for testing.
     Fixtures <testing/fixtures.rst>
     Testing with boa <testing/titanoboa_testing.rst>
     How to prank <testing/pranking.rst>
+    Staging Markers <testing/staging_markers.rst>
     

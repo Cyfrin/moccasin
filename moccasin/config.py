@@ -80,6 +80,7 @@ class Network:
     contracts: dict[str, NamedContract] = field(default_factory=dict)
     prompt_live: bool = True
     save_to_db: bool = True
+    live_or_staging: bool = True
     db_path: str | Path = DB_PATH_LOCAL_DEFAULT
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
@@ -583,7 +584,7 @@ class Network:
         2. eravm
         3. A fork
         """
-        return self.name in [PYEVM, ERAVM] or self.is_fork
+        return self._is_local_or_forked_network(self.name, self.is_fork)
 
     def has_explorer(self) -> bool:
         return self.explorer_uri is not None
@@ -661,6 +662,9 @@ class Network:
     def get_named_contract(self, contract_name: str) -> NamedContract | None:
         return self.contracts.get(contract_name, None)
 
+    def get_named_contracts(self) -> list[NamedContract]:
+        return self.contracts
+
     def set_boa_eoa(self, account: MoccasinAccount):
         if self.is_local_or_forked_network:  # type: ignore[truthy-function]
             boa.env.eoa = Address(account.address)
@@ -683,6 +687,10 @@ class Network:
             deployment.contract_name + "_" + deployment.source_code["integrity"],
         )
         return contract_factory.at(deployment.contract_address)
+
+    @staticmethod
+    def _is_local_or_forked_network(name: str, fork: bool = False) -> bool:
+        return name in [PYEVM, ERAVM] or fork
 
 
 class _Networks:
@@ -762,6 +770,7 @@ class _Networks:
                     unsafe_password_file=network_data.get("unsafe_password_file", None),
                     prompt_live=network_data.get("prompt_live", True),
                     save_to_db=network_data.get(SAVE_TO_DB, True),
+                    live_or_staging=network_data.get("live_or_staging", True),
                     db_path=self.db_path,
                     contracts=final_network_contracts,
                     extra_data=network_data.get("extra_data", {}),
@@ -905,8 +914,18 @@ class _Networks:
 
         # Define default values for PYEVM and ERAVM
         local_networks_defaults = {
-            PYEVM: {"is_zksync": False, "prompt_live": False, SAVE_TO_DB: False},
-            ERAVM: {"is_zksync": True, "prompt_live": False, SAVE_TO_DB: False},
+            PYEVM: {
+                "is_zksync": False,
+                "prompt_live": False,
+                SAVE_TO_DB: False,
+                "live_or_staging": False,
+            },
+            ERAVM: {
+                "is_zksync": True,
+                "prompt_live": False,
+                SAVE_TO_DB: False,
+                "live_or_staging": False,
+            },
         }
 
         for local_network, local_network_data in local_networks_defaults.items():
@@ -922,6 +941,7 @@ class _Networks:
     def _add_fork_network_defaults(network_data: dict) -> dict:
         network_data["prompt_live"] = network_data.get("prompt_live", False)
         network_data[SAVE_TO_DB] = network_data.get(SAVE_TO_DB, False)
+        network_data["live_or_staging"] = network_data.get("live_or_staging", False)
         return network_data
 
     @staticmethod

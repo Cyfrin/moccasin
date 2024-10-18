@@ -17,6 +17,21 @@ def test_test_help(mox_path):
     assert result.returncode == 0
 
 
+def test_basic(mox_path, complex_temp_path, anvil):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(complex_temp_path))
+        result = subprocess.run([mox_path, "test"], capture_output=True, text=True)
+    finally:
+        os.chdir(current_dir)
+
+    assert result.returncode == 0
+
+    # Check for the error message in the output
+    assert "8 passed" in result.stdout
+    assert "1 skipped" in result.stdout
+
+
 def test_test_complex_project_has_no_warnings(complex_cleanup_out_folder, mox_path):
     current_dir = Path.cwd()
     try:
@@ -42,9 +57,8 @@ def test_test_complex_project_passes_pytest_flags(complex_cleanup_out_folder, mo
         )
     finally:
         os.chdir(current_dir)
-    assert "4 passed" not in result.stdout
     assert "1 passed" in result.stdout
-    assert "5 deselected" in result.stdout
+    assert "8 deselected" in result.stdout
     assert result.returncode == 0
 
 
@@ -92,3 +106,20 @@ def test_duplicate_fixtures(mox_path, complex_temp_path, complex_conftest_overri
     assert "DuplicateFixtureNameError" in result.stderr
     assert "Duplicate fixture name 'eth_usd' found in tuples" in result.stderr
     assert "('price_feed', 'eth_usd')" in result.stderr
+
+
+def test_staging_flag_live_networks(mox_path, complex_temp_path, anvil):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(complex_temp_path))
+        result = subprocess.run(
+            [mox_path, "test", "--network", "anvil"], capture_output=True, text=True
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert result.returncode == 0
+
+    # Check for the error message in the output
+    assert "2 passed" in result.stdout
+    assert "7 skipped" in result.stdout

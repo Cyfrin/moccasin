@@ -3,6 +3,9 @@ from argparse import Namespace
 from pathlib import Path
 from typing import List
 
+# We don't need to import it, pytest handles that below
+# from moccasin import plugin
+
 import pytest
 
 from moccasin._sys_path_and_config_setup import (
@@ -124,6 +127,7 @@ def _run_project_tests(
             save_to_db=save_to_db,
         )
 
+        pytest_args.extend(["-p", "moccasin.plugin"])
         pytest_args = [
             "--confcutdir",
             str(config_root),
