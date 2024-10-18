@@ -6,7 +6,7 @@ from moccasin.logging import logger
 
 def main(args: Namespace):
     config: Config = get_config()
-    configuration_file = config.read_config()
+    configuration_file = config.read_configs()
     logger.info(toml_like_pretty_print(configuration_file))
     return 0
 

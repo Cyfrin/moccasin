@@ -52,6 +52,7 @@ anvil:
 docs:
     rm -rf built_docs
     uv sync --extra docs
+    uv run python docs/source/_generate_vars.py
     uv run sphinx-build -M html docs/source built_docs -v
     @echo "\nDocumentation link:"
     @echo "http://127.0.0.1:5500/built_docs/html/index.html"

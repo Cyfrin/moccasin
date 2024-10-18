@@ -9,7 +9,7 @@ authors = [
 dependencies = [
     "titanoboa>=0.2.4",
     "python-dotenv>=1.0.1",
-    "titanoboa-zksync>=0.2.4",
+    "titanoboa-zksync>=0.2.5",
     "tqdm>=4.66.5",
     "tomlkit>=0.13.2",         # For preserving comments when writing to toml
     "tomli-w>=1.0.0",
@@ -58,7 +58,6 @@ dev-dependencies = [
     "pytest-xdist>=3.6.1",
     "moccasin",
 ]
-readme = "README.md"
 
 [project.urls]
 Repository = "https://github.com/cyfrin/moccasin"
@@ -67,6 +66,11 @@ Releases = "https://github.com/Cyfrin/moccasin/releases"
 
 [tool.uv.sources]
 moccasin = { workspace = true }
+
+[tool.uv.workspace]
+members = [
+    "tests/data/project_no_config",
+]
 
 [project.scripts]
 "mox" = "moccasin:main"

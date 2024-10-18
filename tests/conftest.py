@@ -18,6 +18,7 @@ COMPLEX_PROJECT_PATH = Path(__file__).parent.joinpath("data/complex_project/")
 INSTALL_PROJECT_PATH = Path(__file__).parent.joinpath("data/installation_project/")
 PURGE_PROJECT_PATH = Path(__file__).parent.joinpath("data/purge_project/")
 ZKSYNC_PROJECT_PATH = Path(__file__).parent.joinpath("data/zksync_project/")
+NO_CONFIG_PROJECT_PATH = Path(__file__).parent.joinpath("data/no_config_project/")
 ANVIL1_PRIVATE_KEY = (
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 )
@@ -198,6 +199,9 @@ def complex_conftest_override(complex_temp_path):
 @pytest.fixture(scope="module")
 def installation_temp_path() -> Generator[Path, None, None]:
     with tempfile.TemporaryDirectory() as temp_dir:
+        shutil.copytree(
+            INSTALL_PROJECT_PATH, os.path.join(temp_dir), dirs_exist_ok=True
+        )
         yield Path(temp_dir)
 
 
@@ -225,6 +229,7 @@ def installation_cleanup_dependencies(installation_temp_path):
 @pytest.fixture(scope="module")
 def purge_temp_path() -> Generator[Path, None, None]:
     with tempfile.TemporaryDirectory() as temp_dir:
+        shutil.copytree(PURGE_PROJECT_PATH, os.path.join(temp_dir), dirs_exist_ok=True)
         yield Path(temp_dir)
 
 
@@ -255,6 +260,26 @@ def purge_reset_dependencies(purge_temp_path):
 
         with open(purge_temp_path.joinpath("moccasin.toml"), "w") as f:
             f.write(PURGE_STARTING_TOML)
+
+
+# ------------------------------------------------------------------
+#                           NO CONFIG
+# ------------------------------------------------------------------
+@pytest.fixture(scope="module")
+def no_config_temp_path():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        shutil.copytree(
+            NO_CONFIG_PROJECT_PATH, os.path.join(temp_dir), dirs_exist_ok=True
+        )
+        yield Path(temp_dir)
+
+
+@pytest.fixture(scope="module")
+def no_config_config(no_config_temp_path) -> Config:
+    test_db_path = os.path.join(no_config_temp_path, ".deployments.db")
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+    return _set_global_config(no_config_temp_path)
 
 
 # ------------------------------------------------------------------

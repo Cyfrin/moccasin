@@ -727,7 +727,7 @@ requires-dist = [
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
     { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
     { name = "titanoboa", specifier = ">=0.2.4" },
-    { name = "titanoboa-zksync", specifier = ">=0.2.4" },
+    { name = "titanoboa-zksync", specifier = ">=0.2.5" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
@@ -1313,14 +1313,14 @@ wheels = [
 
 [[package]]
 name = "titanoboa-zksync"
-version = "0.2.4"
+version = "0.2.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "titanoboa" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/37/6b/f8ec86b5da6bdb1416cf6bad7e1606b1503a9d4dbb73cbf6284b247dd4e5/titanoboa_zksync-0.2.4.tar.gz", hash = "sha256:f3d4a646b37a389caf4c104977c6b8c13d91887df62efb4487da9474f081d2cc", size = 25806 }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/c2/e0f1d1077f1b60dc8b54816f648ec3524947088b2e6e3b3609a82220e818/titanoboa_zksync-0.2.5.tar.gz", hash = "sha256:a29a2afe260d6554e3216c381580e3d8988eeb47d09f20c375d8e0fa6d415722", size = 25858 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/36/0ce884df98bdd83d5e7b8d3da45f5fe86223efd2fe0d530221283872fc74/titanoboa_zksync-0.2.4-py3-none-any.whl", hash = "sha256:745b2dc682c5b3247315ac58ff7b8f5bdd09f5ab1a51d2dd7b5e0de8c7c7d2ca", size = 25211 },
+    { url = "https://files.pythonhosted.org/packages/1c/e8/b6aa5aab9f8fb485375e4a60e8fce2c52496282f7154b4d72f01d994ffe5/titanoboa_zksync-0.2.5-py3-none-any.whl", hash = "sha256:98600f76023207fe3aa90e59232655bc84e58aee4598c2a950cb66db1d60a0b3", size = 25251 },
 ]
 
 [[package]]
