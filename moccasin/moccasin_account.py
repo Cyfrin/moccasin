@@ -22,7 +22,7 @@ class MoccasinAccount(LocalAccount):
         keystore_path_or_account_name: Path | str | None = None,
         password: str = None,
         password_file_path: Path = None,
-        address: Address | None = None,
+        address: Address | ChecksumAddress | None = None,
         ignore_warning: bool = False,
     ):
         # We override the LocalAccount Type
@@ -31,7 +31,7 @@ class MoccasinAccount(LocalAccount):
         self._address: ChecksumAddress | None = None  # type: ignore
         self._publicapi = Account()
 
-        if address:
+        if address and isinstance(address, Address):
             self._address = to_checksum_address(address)
 
         if private_key:
@@ -81,8 +81,11 @@ class MoccasinAccount(LocalAccount):
             keystore_path = MOCCASIN_KEYSTORE_PATH.joinpath(Path(keystore_path))
         self.keystore_path = keystore_path
 
-    def unlocked(self) -> bool:
+    def is_unlocked(self) -> bool:
         return self.private_key is not None
+
+    def is_locked(self) -> bool:
+        return not self.is_unlocked()
 
     def unlock(
         self,
@@ -92,7 +95,7 @@ class MoccasinAccount(LocalAccount):
     ) -> HexBytes:
         if password_file_path:
             password_file_path = Path(password_file_path).expanduser().resolve()
-        if not self.unlocked() or prompt_even_if_unlocked:
+        if self.is_locked() or prompt_even_if_unlocked:
             if self.keystore_path is None:
                 raise Exception(
                     "No keystore path provided. Set it with set_keystore_path (path)"
@@ -108,4 +111,17 @@ class MoccasinAccount(LocalAccount):
 
     @classmethod
     def from_boa_address(cls, address: Address) -> "MoccasinAccount":
-        return cls()
+        return cls(address=address)
+
+    @classmethod
+    def load(
+        cls,
+        keystore_path_or_account_name: str | Path,
+        password: str = None,
+        password_file_path: Path = None,
+    ) -> "MoccasinAccount":
+        return cls(
+            keystore_path_or_account_name=keystore_path_or_account_name,
+            password=password,
+            password_file_path=password_file_path,
+        )
