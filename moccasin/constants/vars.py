@@ -38,29 +38,6 @@ DEFAULT_PROJECT_FOLDERS = [
     DEPENDENCIES_FOLDER + "/" + PYPI,
 ]
 
-# Define default values for PYEVM and ERAVM
-LOCAL_NETWORK_DEFAULTS = {
-    PYEVM: {
-        "is_zksync": False,
-        "prompt_live": False,
-        SAVE_TO_DB: False,
-        "live_or_staging": False,
-    },
-    ERAVM: {
-        "is_zksync": True,
-        "prompt_live": False,
-        SAVE_TO_DB: False,
-        "live_or_staging": False,
-    },
-}
-
-FORK_NETWORK_DEFAULTS = {
-    "is_zksync": False,
-    "prompt_live": False,
-    SAVE_TO_DB: False,
-    "live_or_staging": False,
-}
-
 # Configurable Vars
 MOCCASIN_DEFAULT_FOLDER = Path(
     os.getenv("MOCCASIN_DEFAULT_FOLDER", Path.home().joinpath(".moccasin/"))
@@ -87,7 +64,6 @@ RESTRICTED_VALUES_FOR_LOCAL_NETWORK = [
     "exploer_api_key",
 ]
 
-# Testing Vars
 ERA_DEFAULT_PRIVATE_KEY = (
     "0x3d3cbc973389cb26f657686445bcc75662b415b656078503592ac8c1abb8810e"
 )
@@ -97,6 +73,38 @@ DEFAULT_ANVIL_PRIVATE_KEY = (
 DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
 STARTING_BOA_BALANCE = 1000000000000000000000  # 1,000 Ether
+
+DEFAULT_ACCOUNT = "pyevm_account"
+DEFAULT_ACCOUNTS = [
+    {"name": DEFAULT_ACCOUNT, "unsafe_private_key": DEFAULT_ANVIL_PRIVATE_KEY}
+]
+
+# Define default values for PYEVM and ERAVM
+LOCAL_NETWORK_DEFAULTS = {
+    PYEVM: {
+        "is_zksync": False,
+        "prompt_live": False,
+        SAVE_TO_DB: False,
+        "live_or_staging": False,
+        "accounts": DEFAULT_ACCOUNTS,
+    },
+    ERAVM: {
+        "is_zksync": True,
+        "prompt_live": False,
+        SAVE_TO_DB: False,
+        "live_or_staging": False,
+        "accounts": [
+            {"name": "eravm_account", "unsafe_private_key": ERA_DEFAULT_PRIVATE_KEY}
+        ],
+    },
+}
+
+FORK_NETWORK_DEFAULTS = {
+    "is_zksync": False,
+    "prompt_live": False,
+    SAVE_TO_DB: False,
+    "live_or_staging": False,
+}
 
 # Database vars
 GET_CONTRACT_SQL = "SELECT {} FROM deployments {}ORDER BY broadcast_ts DESC {}"

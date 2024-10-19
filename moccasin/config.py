@@ -6,6 +6,7 @@ import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Iterator, Union, cast
+from collections import OrderedDict
 
 import boa
 import tomlkit
@@ -37,6 +38,8 @@ from moccasin.constants.vars import (
     DEPENDENCIES_FOLDER,
     DOT_ENV_FILE,
     DOT_ENV_KEY,
+    DEFAULT_ACCOUNTS,
+    DEFAULT_ACCOUNT,
     ERAVM,
     FORK_NETWORK_DEFAULTS,
     GET_CONTRACT_SQL,
@@ -86,6 +89,7 @@ class Network:
     live_or_staging: bool = True
     db_path: str | Path = DB_PATH_LOCAL_DEFAULT
     extra_data: dict[str, Any] = field(default_factory=dict)
+    accounts: OrderedDict[str, MoccasinAccount] = field(default_factory=OrderedDict)
     _network_env: _AnyEnv | None = None
 
     def _set_boa_env(self) -> _AnyEnv:
@@ -153,6 +157,28 @@ class Network:
         boa.env.nickname = self.name
         return boa.env
 
+    def set_account(self, account_or_name_index: MoccasinAccount | str | int):
+        if isinstance(account_or_name_index, MoccasinAccount):
+            if account_or_name_index.is_locked():
+                account_or_name_index.unlock()
+            self.set_boa_eoa(account_or_name_index)
+        else:
+            try:
+                account = self.accounts[account_or_name_index]
+                boa.env.add_account(account, force_eoa=True)
+            except (KeyError, TypeError):
+                raise ValueError(
+                    f"Account with name/index: {account_or_name_index} not found."
+                )
+
+    def get_account(self, account_name_or_index: str | int) -> MoccasinAccount:
+        try:
+            return self.accounts[account_name_or_index]
+        except (KeyError, TypeError):
+            raise ValueError(
+                f"Account with name/index: {account_name_or_index} not found."
+            )
+
     def moccasin_verify(
         self, contract: VyperContract | ZksyncContract
     ) -> "VerificationResult":
@@ -203,23 +229,22 @@ class Network:
             f"Verifier {verifier_string} is not supported. Please use 'blockscout' or 'zksyncexplorer'."
         )
 
-    def get_default_account(self) -> MoccasinAccount | Any:
+    def get_default_account(self) -> MoccasinAccount:
         """Returns an 'account-like' object."""
-        if hasattr(boa.env, "_accounts"):
-            if boa.env.eoa is not None:
-                return boa.env._accounts[boa.env.eoa]
-        else:
-            if boa.env.eoa is not None:
-                return MoccasinAccount(address=boa.env.eoa, ignore_warning=True)
-        if (
-            self.default_account_name is not None
-            and self.unsafe_password_file is not None
-        ):
-            return MoccasinAccount(
-                keystore_path_or_account_name=self.default_account_name,
-                password_file_path=self.unsafe_password_file,
+        default_account = None
+        if self.default_account_name is not None:
+            default_account = self.accounts.get(self.default_account_name, None)
+        if default_account is None:
+            if hasattr(boa.env, "eoa"):
+                if boa.env.eoa is not None:
+                    default_account = MoccasinAccount(
+                        address=boa.env.eoa, ignore_warning=True
+                    )
+        if default_account is None:
+            raise ValueError(
+                f"No default account found. Please set a default account in your moccasin.toml for {self.name}."
             )
-        return None
+        return default_account
 
     def set_kwargs(self, **kwargs):
         for key, value in kwargs.items():
@@ -669,7 +694,7 @@ class Network:
         return self.contracts
 
     def set_boa_eoa(self, account: MoccasinAccount):
-        if self.is_local_or_forked_network:  # type: ignore[truthy-function]
+        if self.is_local_or_forked_network():
             boa.env.eoa = Address(account.address)
         else:
             boa.env.add_account(account, force_eoa=True)
@@ -699,84 +724,57 @@ class Network:
 class _Networks:
     _networks: dict[str, Network]
     _default_named_contracts: dict[str, NamedContract]
+    _default_accounts: OrderedDict[str, MoccasinAccount]
     _overriden_active_network: Network | None
     db_path: Path
     default_network_name: str
+    default_account_name: str | None
 
     def __init__(self, toml_data: dict, db_path: Path):
         self._networks = {}
         self._default_named_contracts = {}
+        self._default_accounts = OrderedDict()
         self._overriden_active_network = None
         self.custom_networks_counter = 0
         self.db_path = db_path
         project_data = toml_data.get("project", {})
 
+        # Get networking defaults
+        ## REVIEW: Maybe we set these as attributes of the class so we don't have to pass them in later
         default_explorer_api_key = project_data.get("explorer_api_key", None)
         default_explorer_uri = project_data.get("explorer_uri", None)
         default_explorer_type = project_data.get("explorer_type", None)
         default_save_abi_path = project_data.get("save_abi_path", None)
         default_contracts = toml_data.get("networks", {}).get("contracts", {})
+        default_accounts_list = toml_data.get("networks", {}).get("accounts", [])
+
+        # Set networking defaults
+        self._set_default_contracts(default_contracts)
+        self._set_default_accounts(default_accounts_list)
         self.default_network_name = project_data.get(
             "default_network_name", DEFAULT_NETWORK
         )
-
-        self._validate_network_contracts_dict(default_contracts)
-        for contract_name, contract_data in default_contracts.items():
-            self._default_named_contracts[contract_name] = NamedContract(
-                contract_name,
-                force_deploy=contract_data.get("force_deploy", None),
-                abi=contract_data.get("abi", None),
-                abi_from_explorer=contract_data.get("abi_from_explorer", None),
-                deployer_script=contract_data.get("deployer_script", None),
-                address=contract_data.get("address", None),
-            )
-
+        self.default_account_name = project_data.get(
+            "default_account_name", DEFAULT_ACCOUNT
+        )
         toml_data = self._add_local_network_defaults(toml_data)
 
+        # Populate networks by merging the _Networks defaults with the Network
         for network_name, network_data in toml_data["networks"].items():
             # Check for restricted items for pyevm or eravm
             if network_name in [PYEVM, ERAVM]:
                 self._validate_local_network_data(network_data, network_name)
-            if network_name == "contracts":
+            if network_name == "contracts" or network_name == "accounts":
                 continue
             else:
-                starting_network_contracts_dict = network_data.get("contracts", {})
-                self._validate_network_contracts_dict(
-                    starting_network_contracts_dict, network_name=network_name
-                )
-                final_network_contracts = (
-                    self._generate_network_contracts_from_defaults(
-                        self._default_named_contracts.copy(),
-                        starting_network_contracts_dict,
-                    )
-                )
-                if network_data.get("fork", None) is True:
-                    network_data = self._add_fork_network_defaults(network_data)
-                    self._validate_fork_network_defaults(network_data)
-                network = Network(
-                    name=network_name,
-                    is_fork=network_data.get("fork", False),
-                    url=network_data.get("url", None),
-                    is_zksync=network_data.get("is_zksync", False),
-                    chain_id=network_data.get("chain_id", None),
-                    save_abi_path=network_data.get(
-                        SAVE_ABI_PATH, default_save_abi_path
-                    ),
-                    explorer_uri=network_data.get("explorer_uri", default_explorer_uri),
-                    explorer_api_key=network_data.get(
-                        "explorer_api_key", default_explorer_api_key
-                    ),
-                    explorer_type=network_data.get(
-                        "explorer_type", default_explorer_type
-                    ),
-                    default_account_name=network_data.get("default_account_name", None),
-                    unsafe_password_file=network_data.get("unsafe_password_file", None),
-                    prompt_live=network_data.get("prompt_live", True),
-                    save_to_db=network_data.get(SAVE_TO_DB, True),
-                    live_or_staging=network_data.get("live_or_staging", True),
-                    db_path=self.db_path,
-                    contracts=final_network_contracts,
-                    extra_data=network_data.get("extra_data", {}),
+                network = self._setup_network(
+                    network_data,
+                    network_name,
+                    default_save_abi_path,
+                    default_explorer_uri,
+                    default_explorer_api_key,
+                    default_explorer_type,
+                    self.default_account_name,
                 )
                 setattr(self, network_name, network)
                 self._networks[network_name] = network
@@ -787,9 +785,14 @@ class _Networks:
     def get_networks(self) -> dict[str, Network]:
         return self._networks
 
+    def set_account(self, account_or_name_or_index: MoccasinAccount | str | int):
+        active_network = self.get_active_network()
+        active_network.set_account(account_or_name_or_index)
+
     def _generate_network_contracts_from_defaults(
         self, starting_default_contracts: dict, starting_network_contracts_dict: dict
     ) -> dict:
+        final_default_contracts = starting_default_contracts
         for contract_name, contract_data in starting_network_contracts_dict.items():
             named_contract = NamedContract(
                 contract_name,
@@ -803,8 +806,21 @@ class _Networks:
                 named_contract.set_defaults(
                     self._default_named_contracts[contract_name]
                 )
-            starting_default_contracts[contract_name] = named_contract
-        return starting_default_contracts
+            final_default_contracts[contract_name] = named_contract
+        return final_default_contracts
+
+    def _generate_network_accounts_from_defaults(
+        self,
+        starting_default_accounts: OrderedDict[str, MoccasinAccount],
+        starting_network_accounts_list: list,
+    ) -> OrderedDict[str, MoccasinAccount]:
+        final_default_accounts = starting_default_accounts
+        for account_data in starting_network_accounts_list:
+            account = MoccasinAccount.from_config_data(account_data)
+            if self._default_accounts.get(account.name, None):
+                account.set_defaults(self._default_accounts[account.name])
+            final_default_accounts[account.name] = account
+        return final_default_accounts
 
     def get_active_network(self) -> Network:
         if self._overriden_active_network is not None:
@@ -828,6 +844,12 @@ class _Networks:
                 return self.get_network_by_chain_id(int(network_name_or_id))
         return self.get_network_by_name(network_name_or_id)
 
+    def get_account(self, account_name_or_index: str | int) -> MoccasinAccount:
+        account = self._default_accounts[account_name_or_index]
+        if not account:
+            raise ValueError(f"Account {account} not found.")
+        return account
+
     def get_network_by_chain_id(self, chain_id: int) -> Network:
         for network in self._networks.values():
             if network.chain_id == chain_id:
@@ -839,6 +861,12 @@ class _Networks:
         if not network:
             raise ValueError(f"Network {alias} not found.")
         return network
+
+    def get_default_network(self) -> Network:
+        return self.get_network(self.default_network_name)
+
+    def get_default_account(self) -> MoccasinAccount:
+        return self.get_account(self.default_account_name)
 
     def get_or_deploy_contract(
         self, *args, **kwargs
@@ -883,6 +911,18 @@ class _Networks:
         active_network = self.get_active_network()
         active_network._set_boa_db()
 
+    @property
+    def default_network(self) -> Network:
+        return self.get_default_network()
+
+    @property
+    def default_account(self) -> MoccasinAccount:
+        return self.get_default_account()
+
+    @property
+    def accounts(self) -> OrderedDict[str, MoccasinAccount]:
+        return self.get_active_network().accounts
+
     def _create_custom_network(self, url: str, is_fork: bool | None = False) -> Network:
         if is_fork is None:
             is_fork = False
@@ -893,6 +933,83 @@ class _Networks:
         self.custom_networks_counter += 1
         return new_network
 
+    def _set_default_contracts(self, default_contracts: dict):
+        self._validate_network_contracts_dict(default_contracts)
+        for contract_name, contract_data in default_contracts.items():
+            self._default_named_contracts[contract_name] = NamedContract(
+                contract_name,
+                force_deploy=contract_data.get("force_deploy", None),
+                abi=contract_data.get("abi", None),
+                abi_from_explorer=contract_data.get("abi_from_explorer", None),
+                deployer_script=contract_data.get("deployer_script", None),
+                address=contract_data.get("address", None),
+            )
+
+    def _set_default_accounts(self, default_accounts_list: list):
+        for account in default_accounts_list:
+            m_account = MoccasinAccount.from_config_data(account)
+            self._default_accounts[m_account.name] = m_account
+        for account in DEFAULT_ACCOUNTS:
+            if self._default_accounts.get(account["name"], None) is None:
+                self._default_accounts[account["name"]] = (
+                    MoccasinAccount.from_config_data(account)
+                )
+
+    def _setup_network(
+        self,
+        network_data: dict,
+        network_name: str,
+        default_save_abi_path: str | None,
+        default_explorer_uri: str | None,
+        default_explorer_api_key: str | None,
+        default_explorer_type: str | None,
+        default_account_name: str | None,
+    ) -> Network:
+        # Contracts
+        starting_network_contracts_dict = network_data.get("contracts", {})
+        self._validate_network_contracts_dict(
+            starting_network_contracts_dict, network_name=network_name
+        )
+        final_network_contracts = self._generate_network_contracts_from_defaults(
+            self._default_named_contracts.copy(), starting_network_contracts_dict
+        )
+
+        # Accounts
+        starting_network_accounts_list = network_data.get("accounts", [])
+        final_network_accounts_list: OrderedDict[str, MoccasinAccount] = (
+            self._generate_network_accounts_from_defaults(
+                self._default_accounts.copy(), starting_network_accounts_list
+            )
+        )
+
+        if network_data.get("fork", None) is True:
+            network_data = self._add_fork_network_defaults(network_data)
+            self._validate_fork_network_defaults(network_data)
+        return Network(
+            name=network_name,
+            is_fork=network_data.get("fork", False),
+            url=network_data.get("url", None),
+            is_zksync=network_data.get("is_zksync", False),
+            chain_id=network_data.get("chain_id", None),
+            save_abi_path=network_data.get(SAVE_ABI_PATH, default_save_abi_path),
+            explorer_uri=network_data.get("explorer_uri", default_explorer_uri),
+            explorer_api_key=network_data.get(
+                "explorer_api_key", default_explorer_api_key
+            ),
+            explorer_type=network_data.get("explorer_type", default_explorer_type),
+            default_account_name=network_data.get(
+                "default_account_name", default_account_name
+            ),
+            unsafe_password_file=network_data.get("unsafe_password_file", None),
+            prompt_live=network_data.get("prompt_live", True),
+            save_to_db=network_data.get(SAVE_TO_DB, True),
+            live_or_staging=network_data.get("live_or_staging", True),
+            db_path=self.db_path,
+            contracts=final_network_contracts,
+            accounts=final_network_accounts_list,
+            extra_data=network_data.get("extra_data", {}),
+        )
+
     @staticmethod
     def _validate_network_contracts_dict(
         contracts: Any, network_name: str | None = None
@@ -900,7 +1017,7 @@ class _Networks:
         network_name = f"{network_name}." if network_name else ""
 
         if not isinstance(contracts, dict):
-            logger.error(f"networks.{network_name}contracts")
+            logger.error(f"networks.{network_name}.contracts")
             raise ValueError(f"Contracts must be a dictionary in your {CONFIG_NAME}.")
 
         for contract in contracts:
@@ -1092,8 +1209,23 @@ class Config:
     def get_networks(self) -> dict[str, Network]:
         return self.networks.get_networks()
 
+    def get_network(self, network_name_or_id: str | int) -> Network:
+        return self.networks.get_network(network_name_or_id)
+
     def get_active_network(self) -> Network:
         return self.networks.get_active_network()
+
+    def get_default_account(self) -> MoccasinAccount:
+        return self.networks.get_default_account()
+
+    def get_default_network(self) -> Network:
+        return self.networks.get_default_network()
+
+    def set_account(self, account_or_name_or_index: MoccasinAccount | str | int):
+        self.networks.set_account(account_or_name_or_index)
+
+    def get_account(self, account_name_or_index: str | int) -> MoccasinAccount:
+        return self.networks.get_active_network().get_account(account_name_or_index)
 
     def get_db_path(self) -> Path:
         return self.networks.get_db_path()
@@ -1226,12 +1358,19 @@ class Config:
         return self.project.get(DEPENDENCIES_FOLDER, DEPENDENCIES_FOLDER)
 
     @property
-    def default_network(self) -> str:
-        return self.networks.default_network_name
+    def default_network(self) -> Network:
+        return self.networks.get_default_network()
 
     @property
     def default_network_name(self) -> str:
-        return self.default_network
+        return self.default_network.name
+
+    @property
+    def accounts(self) -> OrderedDict[str, MoccasinAccount]:
+        return self.networks.accounts
+
+    def get_accounts(self) -> OrderedDict[str, MoccasinAccount]:
+        return self.accounts
 
     @staticmethod
     def load_config_from_root(project_root: Path | None = None) -> "Config":

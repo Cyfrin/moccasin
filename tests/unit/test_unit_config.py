@@ -5,6 +5,7 @@ from pathlib import Path
 import boa
 
 from moccasin.config import Config
+from moccasin.constants.vars import DEFAULT_ACCOUNT
 
 
 # REVIEW: I guess this is cool? You can setup a project without a `moccasin.toml` file? Maybe this is a bug?
@@ -72,3 +73,24 @@ def test_no_moccasin_toml_can_set_network(no_config_config):
     no_config_config.set_active_network("pyevm")
     active_network = no_config_config.get_active_network()
     assert active_network.name == "pyevm"
+
+
+def test_get_default_accounts(complex_project_config):
+    default_project_account = complex_project_config.get_default_account()
+    default_network_account = (
+        complex_project_config.get_active_network().get_default_account()
+    )
+    default_network_account_op = complex_project_config.get_network(
+        "optimism"
+    ).get_default_account()
+    assert default_project_account.name is DEFAULT_ACCOUNT
+    assert default_network_account.name == "anvil1"
+    assert default_network_account_op.name == "anvil3"
+
+
+def test_many_accounts_in_config(complex_project_config):
+    accounts = complex_project_config.accounts
+    assert len(accounts) == 4
+
+    complex_project_config.set_active_network("optimism", activate_boa=False)
+    assert len(complex_project_config.accounts) == 3

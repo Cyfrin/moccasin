@@ -144,28 +144,28 @@ def _setup_network_and_account_from_config_and_cli(
                 logger.info("Operation cancelled.")
                 sys.exit(0)
 
-    if active_network.default_account_name and private_key is None:
-        # This will also attempt to unlock the account with a prompt
-        # If no password or password file is passed
+    account_name = account if account else active_network.default_account_name
+    mox_account = active_network.accounts.get(account_name, None)
+
+    if mox_account is None:
         mox_account = MoccasinAccount(
-            keystore_path_or_account_name=active_network.default_account_name,
+            keystore_path_or_account_name=account_name,
             password=password,
-            password_file_path=active_network.unsafe_password_file,
+            password_file_path=password_file_path,
         )
 
-    # Private key overrides the default account
+    if private_key is None and mox_account is not None and mox_account.is_locked():
+        mox_account.unlock(password=password, password_file_path=password_file_path)
+
     if private_key:
         mox_account = MoccasinAccount(
             private_key=private_key,
             password=password,
-            password_file_path=active_network.unsafe_password_file,
+            password_file_path=password_file_path,
         )
 
-    if mox_account:
-        if active_network.is_local_or_forked_network():
-            boa.env.eoa = mox_account.address
-        else:
-            boa.env.add_account(mox_account, force_eoa=True)
+    if mox_account is not None:
+        active_network.set_account(mox_account)
 
     if not mox_account and active_network.name is ERAVM:
         boa.env.add_account(MoccasinAccount(private_key=ERA_DEFAULT_PRIVATE_KEY))

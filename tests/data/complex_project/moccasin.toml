@@ -13,6 +13,11 @@ db_path = ".deployments.db"
 is_zksync = false
 save_to_db = false
 contracts = { BuyMeACoffee = { force_deploy = false, deployer_script = "deploy_coffee.py", fixture = true } }
+default_account_name = "anvil1"
+
+[[networks.pyevm.accounts]]
+name = "anvil1"
+unsafe_password_file = "$ANVIL1_PASSWORD_FILE"
 
 [networks.eravm]
 is_zksync = true
@@ -21,10 +26,19 @@ save_to_db = false
 [networks.contracts]
 price_feed = { abi = "MockV3Aggregator", force_deploy = false, deployer_script = "mock_deployer/deploy_feed.py", fixture = false }
 
+[[networks.accounts]]
+name = "anvil3"
+unsafe_password_file = "$ANVIL1_PASSWORD_FILE"
+
+[[networks.accounts]]
+name = "some_account"
+unsafe_password_file = "$ANVIL1_PASSWORD_FILE"
+
 [networks.optimism]
 explorer_api_key = "${OPTIMISTIC_ETHERSCAN_API_KEY}"
 chain_id = 10
 save_to_db = false
+default_account_name = "anvil3"
 
 [networks.zksync]
 url = "http://hi"
@@ -42,6 +56,20 @@ default_account_name = "anvil1"
 prompt_live = false
 save_to_db = true                              # The default is true for non-local networks
 chain_id = 31337
+
+[[networks.anvil.accounts]]
+name = "anvil1"
+unsafe_password_file = "$ANVIL1_PASSWORD_FILE"
+# unsafe_password = "password"
+# keystore_path = "/path/to/keystore"
+# address = address
+# unsafe_private_key = "0x1234"
+# ignore_warning = true
+
+
+[[networks.anvil.accounts]]
+name = "anvil2"
+unsafe_password_file = "$ANVIL1_PASSWORD_FILE"
 
 [networks.anvil-fork]
 url = "http://127.0.0.1:8546"
