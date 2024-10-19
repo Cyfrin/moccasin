@@ -183,6 +183,7 @@ lib/
 .deployments*
 .deployments.db
 era_test_node.log
+.DS_Store
 """
 
 COUNTER_VYPER_CONTRACT_SRC = """# SPDX-License-Identifier: MIT
