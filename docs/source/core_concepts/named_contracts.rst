@@ -68,7 +68,6 @@ There are a number of flags we can set for our ``NamedContract``:
         address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         abi = "ERC20.vy"
         abi_from_explorer = true
-        fixture = false
         deployment_script = "script/deploy_erc20.py"
         force_deploy = false
     
@@ -81,7 +80,6 @@ There are a number of flags we can set for our ``NamedContract``:
             address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
             abi = "ERC20.vy"
             abi_from_explorer = true
-            fixture = false
             deployment_script = "script/deploy_erc20.py"
             force_deploy = false
         }
@@ -95,7 +93,6 @@ Let's break these down:
     - *Coming soon* ``.vyi`` file path to a Vyper interface
     - A "raw" ABI string
 - ``abi_from_explorer``: If you want to get the ABI from an explorer. This is useful if you don't have the ABI and you want to get it from a public source. You'll need to set a ``explorer_api_key`` in your ``moccasin.toml``, or an ``EXPLORER_API_KEY`` environment variable.
-- ``fixture```: If you want to use this contract as a :doc:`fixture </core_concepts/testing/fixtures>`. 
 - ``deployment_script``: The path to the :doc:`deployment script </core_concepts/scripting/deploy>` for this named contract, this will be a shorthand for deploying in the future. 
 - ``force_deploy```: If you want to force deploy the contract when :ref:`manifesting <manifesting>` the contract.
 

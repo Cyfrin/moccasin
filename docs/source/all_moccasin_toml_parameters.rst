@@ -85,7 +85,7 @@ All possible options
 
     [networks.sepolia.contracts]
     # You can override the default named contract parameters
-    usdc = {"address" = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi = "ERC20.vy", force_deploy = false, fixture = false, deployer_script = "script/deploy.py"}
+    usdc = {"address" = "0x5fbdb2315678afecb367f032d93f642f64180aa3", abi = "ERC20.vy", force_deploy = false, deployer_script = "script/deploy.py"}
 
     # You can also format a contract like this, for example, this one is "dai"
     [networks.sepolia.contracts.dai]
