@@ -19,7 +19,7 @@ is_zksync = true
 save_to_db = false
 
 [networks.contracts]
-price_feed = { abi = "MockV3Aggregator", force_deploy = false, deployer_script = "mock_deployer/deploy_feed.py", fixture = false }
+price_feed = { abi = "MockV3Aggregator", force_deploy = false, deployer_script = "mock_deployer/deploy_feed.py" }
 
 [networks.optimism]
 explorer_api_key = "${OPTIMISTIC_ETHERSCAN_API_KEY}"
