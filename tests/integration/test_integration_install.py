@@ -191,8 +191,13 @@ def test_no_moccasin_toml_saves_dependencies_to_pyproject(
     finally:
         os.chdir(current_dir)
     assert no_config_config.read_pyproject_config() == {
-        "project": {"dependencies": ["patrickalphac/test_repo"]}
+        "project": {
+            "dot_env": ".hello",
+            "src": "contracts",
+            "dependencies": ["patrickalphac/test_repo"],
+        }
     }
+
     with open(no_config_temp_path.joinpath("pyproject.toml")) as f:
         assert "patrickalphac/test_repo" in f.read()
     assert "Done compiling project!" in result_compile.stderr

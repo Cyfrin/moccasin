@@ -14,6 +14,7 @@ def manifest_many_times():
         "price_feed"
     )
     print(price_feed_three.address)
+
     price_feed_different: VyperContract = active_network.get_or_deploy_contract(
         "price_feed", force_deploy=True
     )
