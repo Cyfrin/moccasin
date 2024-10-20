@@ -5,12 +5,16 @@ import tomllib
 import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Iterator, Union, cast
+from typing import TYPE_CHECKING, Any, Iterator, Tuple, Union, cast
 
 import boa
 import tomlkit
 from boa.contracts.abi.abi_contract import ABIContract, ABIContractFactory
-from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
+from boa.contracts.vyper.vyper_contract import (
+    VyperContract,
+    VyperDeployer,
+    build_abi_output,
+)
 from boa.deployments import (
     Deployment,
     DeploymentsDB,
@@ -490,18 +494,23 @@ class Network:
         named_contract: NamedContract = self.contracts.get(
             contract_name, NamedContract(contract_name)
         )
+        if not named_contract.is_active():
+            if self.contracts.get(contract_name) is not None:
+                self.contracts[contract_name]._reset()
 
         if abi_from_explorer and abi:
             raise ValueError(
                 "abi and abi_from_explorer are mutually exclusive. Please only provide one."
             )
+        abi_or_deployer = abi
 
-        if not abi and not abi_from_explorer:
-            abi = named_contract.get("abi", None)
+        # 0. Setup parameters based on defaults and the inputs to this func
+        if not abi_or_deployer and not abi_from_explorer:
+            abi_or_deployer = named_contract.get("abi", None)
             vyper_deployer = named_contract.get("vyper_deployer", None)
-            if vyper_deployer:
-                abi = vyper_deployer
-        if not abi_from_explorer and not abi:
+            if vyper_deployer is not None and abi_or_deployer is None:
+                abi_or_deployer = vyper_deployer
+        if not abi_from_explorer and not abi_or_deployer:
             abi_from_explorer = named_contract.get("abi_from_explorer", None)
         if not force_deploy:
             force_deploy = named_contract.get("force_deploy", False)
@@ -519,10 +528,11 @@ class Network:
             return self._deploy_named_contract(named_contract, deployer_script)
 
         # 2. Setup ABI based on parameters
-        abi = self._get_abi_or_deployer_from_params(
-            named_contract.contract_name, abi, abi_from_explorer, address
+        (abi, deployer) = self._get_abi_and_deployer_from_params(
+            named_contract.contract_name, abi_or_deployer, abi_from_explorer, address
         )
         abi = abi if abi else named_contract.abi
+        deployer = deployer if deployer else named_contract.vyper_deployer
 
         # ------------------------------------------------------------------
         #             CHECK TO SEE IF WE'VE ALREADY DEPLOYED
@@ -530,9 +540,9 @@ class Network:
         # 3. Happy path, check if the requested contract is what we've already deployed
         # We don't need to check the DB since we are checking the address on this network
         if (
-            named_contract.abi == abi
+            str(named_contract.abi) == str(abi)
             and named_contract.address == address
-            and named_contract.vyper_contract
+            and named_contract.vyper_contract is not None
         ):
             return named_contract.vyper_contract
 
@@ -552,8 +562,8 @@ class Network:
 
         # 5. Happy path, maybe we didn't deploy the contract, but we've been given an abi and address, which works
         if abi and address:
-            if isinstance(abi, VyperDeployer) or isinstance(abi, ZksyncDeployer):
-                return abi.at(address)
+            if deployer:
+                return deployer.at(address)
             else:
                 # Note, we are not putting this into the self.contracts dict, but maybe we should
                 return ABIContractFactory(named_contract.contract_name, abi).at(address)
@@ -561,7 +571,7 @@ class Network:
         # ------------------------------------------------------------------
         #                      WE DEPLOY AFTER HERE
         # ------------------------------------------------------------------
-        # 5. Check if there is an address, if no ABI, return a blank contract at an address
+        # 6. Check if there is an address, if no ABI, return a blank contract at an address
         if address and not abi:
             logger.info(
                 f"No abi_source or abi_path found for {named_contract.contract_name}, returning a blank contract at {address}"
@@ -573,7 +583,7 @@ class Network:
             self.contracts[named_contract.contract_name] = named_contract
             return vyper_contract
 
-        # 6. If no address, deploy the contract
+        # 7. If no address, deploy the contract
         if not deployer_script:
             raise ValueError(
                 f"Contract {named_contract.contract_name} has no address or deployer_script specified in the {CONFIG_NAME}."
@@ -604,7 +614,7 @@ class Network:
         self.contracts[named_contract.contract_name] = named_contract
         return deployed_named_contract
 
-    def _get_abi_or_deployer_from_params(
+    def _get_abi_and_deployer_from_params(
         self,
         logging_contract_name: str,
         abi: str
@@ -619,48 +629,62 @@ class Network:
         | None = None,
         abi_from_explorer: bool | None = None,
         address: str | None = None,
-    ) -> str | VyperDeployer | ZksyncDeployer | None:
+    ) -> Tuple[Union[str, None], Union[VyperDeployer, ZksyncDeployer, None]]:
         if abi_from_explorer and not address:
             raise ValueError(
                 f"Cannot get ABI from explorer without an address for contract {logging_contract_name}. Please provide an address."
             )
 
+        abi_like = abi
+        abi = None
+        deployer = None
+
         config = get_config()
-        # TODO, test these branches
-        if abi:
-            if isinstance(abi, str):
+        if abi_like:
+            if isinstance(abi_like, str):
                 # Check if it's a file path
-                if abi.endswith(".json") or abi.endswith(".vy") or abi.endswith(".vyi"):
-                    abi_path = config.find_contract(abi)
-                    if abi.endswith(".vy"):
-                        abi = boa.load_partial(str(abi_path))
+                if (
+                    abi_like.endswith(".json")
+                    or abi_like.endswith(".vy")
+                    or abi_like.endswith(".vyi")
+                ):
+                    abi_path = config.find_contract(abi_like)
+                    if abi_like.endswith(".vy"):
+                        deployer = boa.load_partial(str(abi_path))
+                        abi = str(build_abi_output(deployer.compiler_data))
+                        return abi, deployer
                     elif abi_path.suffix == ".json":
-                        abi = boa.load_abi(str(abi_path)).abi
+                        abi = str(boa.load_abi(str(abi_path)).abi)
+                        return abi, deployer
                     elif abi_path.suffix == ".vyi":
                         raise NotImplementedError(
                             f"Loading an ABI from Vyper Interface files is not yet supported for contract {logging_contract_name}. You can track the progress here:\nhttps://github.com/vyperlang/vyper/issues/4232"
                         )
-                # Else, it's just a contract name
                 else:
-                    contract_path = config.find_contract(abi)
-                    abi = boa.load_partial(str(contract_path))
-            if isinstance(abi, list):
+                    contract_path = config.find_contract(abi_like)
+                    deployer = boa.load_partial(str(contract_path))
+                    abi = str(build_abi_output(deployer.compiler_data))
+                    return abi, deployer
+            if isinstance(abi_like, list):
                 # If its an ABI, just take it
-                return str(abi)
-            if isinstance(abi, VyperDeployer) or isinstance(abi, ZksyncDeployer):
-                return abi
-            if isinstance(abi, VyperContract) or isinstance(abi, ZksyncContract):
-                return abi.deployer
-            if isinstance(abi, ABIContractFactory):
-                return abi.abi
-            if isinstance(abi, ABIContract):
-                return abi.abi
-
+                return str(abi_like), deployer
+            if isinstance(abi_like, VyperDeployer) or isinstance(
+                abi_like, ZksyncDeployer
+            ):
+                return str(build_abi_output(abi_like.compiler_data)), abi_like
+            if isinstance(abi_like, VyperContract) or isinstance(
+                abi_like, ZksyncContract
+            ):
+                return abi_like.abi, abi_like.deployer
+            if isinstance(abi_like, ABIContractFactory):
+                return abi_like.abi, deployer
+            if isinstance(abi_like, ABIContract):
+                return abi_like.abi, deployer
         if abi_from_explorer:
             from moccasin.commands.explorer import boa_get_abi_from_explorer
 
             abi = boa_get_abi_from_explorer(str(address), quiet=True)
-        return abi  # type: ignore
+        return abi, deployer  # type: ignore
 
     def get_named_contract(self, contract_name: str) -> NamedContract | None:
         return self.contracts.get(contract_name, None)

@@ -162,37 +162,6 @@ def complex_cleanup_dependencies_folder(complex_temp_path):
         shutil.rmtree(created_folder_path)
 
 
-CONFTEST_OVERRIDE_FILE = """import pytest
-from script.deploy import deploy
-from script.deploy_coffee import deploy as deploy_coffee
-
-from moccasin.fixture_tools import request_fixtures
-
-request_fixtures(["price_feed", ("price_feed", "eth_usd"), ("price_feed", "eth_usd")], scope="session")
-
-
-@pytest.fixture
-def counter_contract():
-    return deploy()
-
-
-@pytest.fixture
-def coffee():
-    return deploy_coffee()
-"""
-
-
-@pytest.fixture
-def complex_conftest_override(complex_temp_path):
-    conftest_path = complex_temp_path.joinpath("tests/conftest.py")
-    original_content = conftest_path.read_text()
-    with open(conftest_path, "w") as f:
-        f.write(CONFTEST_OVERRIDE_FILE)
-    yield
-    with open(conftest_path, "w") as f:
-        f.write(original_content)
-
-
 # ------------------------------------------------------------------
 #                     INSTALLATION PROJECT FIXTURES
 # ------------------------------------------------------------------

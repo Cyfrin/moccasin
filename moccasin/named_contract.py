@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import boa
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
+from boa.util.abi import Address
 from boa_zksync.contract import ZksyncContract
 
 from moccasin.logging import logger
@@ -18,6 +20,9 @@ class NamedContract:
     address: str | None = None
     vyper_contract: VyperContract | None = None
     vyper_deployer: VyperDeployer | None = None
+
+    def _reset(self):
+        self.vyper_contract = None
 
     def update_from_deployed_contract(self, deployed_contract: VyperContract):
         self.abi = deployed_contract.abi
@@ -44,6 +49,17 @@ class NamedContract:
 
     def get(self, key: str, otherwise: Any):
         return getattr(self, key, otherwise)
+
+    def is_active(self) -> bool:
+        if self.address is not None:
+            boa_contract = boa.env._contracts.get(
+                Address(self.address).canonical_address, None
+            )
+            if boa_contract is None:
+                return False
+            if boa_contract == self.vyper_contract:
+                return True
+        return False
 
     def _deploy(
         self,
@@ -87,3 +103,6 @@ class NamedContract:
         if update_from_deploy:
             self.update_from_deployed_contract(vyper_contract)
         return vyper_contract
+
+    def _from_deploy_script(self):
+        pass
