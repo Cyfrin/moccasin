@@ -50,8 +50,8 @@ def test_multiple_manifest_returns_the_same_or_different(mox_path, complex_temp_
         os.chdir(current_dir)
     print_statements = result.stdout.split("\n")
     assert print_statements[0] == print_statements[1] == print_statements[2]
-    # assert print_statements[3] != print_statements[0]
-    # assert_broadcast_count(print_statements, 0)
+    assert print_statements[3] != print_statements[0]
+    assert_broadcast_count(print_statements, 0)
 
 
 # ------------------------------------------------------------------
