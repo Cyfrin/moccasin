@@ -19,13 +19,13 @@ Let's look at a minimal ``moccasin.toml`` with a ETH mainnet network fork with a
     [project]
     src = "contracts"
 
-    [networks.mainnet]
+    [networks.mainnet-fork]
     url = "https://ethereum-rpc.publicnode.com"
     chain_id = 1 
     fork = true
 
     # Look here! We have a named contract named "usdc"
-    [networks.mainnet.contracts]
+    [networks.mainnet-fork.contracts]
     usdc = { address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
 
 The `NicknamedContract` in this case, is `usdc`. And it's this named contract that we can access our scripts!
@@ -46,7 +46,7 @@ We could run this script, and it would, print out the address from our config.
 
 .. code-block:: bash 
 
-    mox run print_contract_address --network mainnet
+    mox run print_contract_address --network mainnet-fork
 
     0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
 
