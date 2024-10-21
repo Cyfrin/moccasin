@@ -47,6 +47,7 @@ from moccasin.constants.vars import (
     LOCAL_NETWORK_DEFAULTS,
     PYEVM,
     RESTRICTED_VALUES_FOR_LOCAL_NETWORK,
+    SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS,
     SAVE_ABI_PATH,
     SAVE_TO_DB,
     SCRIPT_FOLDER,
@@ -84,7 +85,7 @@ class Network:
     explorer_uri: str | None = None
     explorer_api_key: str | None = None
     explorer_type: str | None = None
-    contracts: dict[str, NamedContract] = field(default_factory=dict)
+    named_contracts: dict[str, NamedContract] = field(default_factory=dict)
     prompt_live: bool = True
     save_to_db: bool = True
     live_or_staging: bool = True
@@ -306,37 +307,33 @@ class Network:
         contract_name: str | None = None,
         chain_id: int | str | None = None,
         limit: int | None = None,
-        config_or_db_path: Union["Config", Path, str, None] = None,
+        db_path: Union[Path, str, None] = None,
     ) -> Iterator[Deployment]:
         """Get deployments from the database without an initialized config."""
-        db_path = None
-        if isinstance(config_or_db_path, Config):
-            db_path = config_or_db_path._toml_data.get("db_path", ".deployments.db")
-        elif isinstance(db_path, str):
+        if isinstance(db_path, str):
             db_path = Path(db_path)
-        elif isinstance(config_or_db_path, Path):
-            db_path = config_or_db_path
-
+        db = None
         if not db_path:
             db = get_deployments_db()
         else:
             db = DeploymentsDB(db_path)
-        return self._fetch_deployments_from_db(
-            contract_name=contract_name, chain_id=chain_id, limit=limit, db=db
-        )
+        if db is None:
+            logger.warning("No deployments database found. Returning an empty list.")
+            return []
+        else:
+            return self._fetch_deployments_from_db(
+                contract_name=contract_name, chain_id=chain_id, limit=limit, db=db
+            )
 
     def get_deployments_unchecked(
         self,
         contract_name: str | None = None,
         limit: int | None = None,
         chain_id: int | str | None = None,
-        config_or_db_path: Union["Config", Path, str, None] = None,
+        db_path: Union[Path, str, None] = None,
     ) -> list[Deployment]:
         deployments_iter = self._get_deployments_iterator(
-            contract_name=contract_name,
-            chain_id=chain_id,
-            limit=limit,
-            config_or_db_path=config_or_db_path,
+            contract_name=contract_name, chain_id=chain_id, limit=limit, db_path=db_path
         )
         return list(deployments_iter)
 
@@ -442,7 +439,10 @@ class Network:
         checked: bool = False,
     ) -> VyperContract | ZksyncContract | ABIContract:
         """A wrapper around get_or_deploy_contract that is more explicit about the contract being deployed."""
-        return self.get_or_deploy_contract(
+        logger.warning(
+            "manifest_contract is deprecated and will be removed in a future version. Please use manifest_named."
+        )
+        return self.get_or_deploy_named(
             contract_name=contract_name,
             force_deploy=force_deploy,
             address=address,
@@ -453,9 +453,38 @@ class Network:
         self, *args, **kwargs
     ) -> VyperContract | ZksyncContract | ABIContract:
         """An alias for get_or_deploy_contract."""
-        return self.get_or_deploy_contract(*args, **kwargs)
+        logger.warning(
+            "instantiate_contract is deprecated and will be removed in a future version. Please use manifest_named."
+        )
+        return self.get_or_deploy_named(*args, **kwargs)
 
     def get_or_deploy_contract(
+        self, *args, **kwargs
+    ) -> VyperContract | ZksyncContract | ABIContract:
+        logger.warning(
+            "get_or_deploy_contract is deprecated and will be removed in a future version. Please use get_or_deploy_named."
+        )
+        return self.get_or_deploy_named(*args, **kwargs)
+
+    def manifest_named_contract(
+        self, *args, **kwargs
+    ) -> VyperContract | ZksyncContract | ABIContract:
+        """A wrapper around get_or_deploy_named that is more explicit about the contract being deployed."""
+        return self.get_or_deploy_named(*args, **kwargs)
+
+    def get_or_deploy_named_contract(
+        self, *args, **kwargs
+    ) -> VyperContract | ZksyncContract | ABIContract:
+        """A wrapper around get_or_deploy_named that is more explicit about the contract being deployed."""
+        return self.get_or_deploy_named(*args, **kwargs)
+
+    def manifest_named(
+        self, *args, **kwargs
+    ) -> VyperContract | ZksyncContract | ABIContract:
+        """A wrapper around get_or_deploy_named that is more explicit about the contract being deployed."""
+        return self.get_or_deploy_named(*args, **kwargs)
+
+    def get_or_deploy_named(
         self,
         contract_name: str,
         force_deploy: bool = False,
@@ -491,12 +520,11 @@ class Network:
         Returns:
             VyperContract | ZksyncContract | ABIContract: The deployed contract instance, or a blank contract if the contract is not found.
         """
-        named_contract: NamedContract = self.contracts.get(
+        # 0. Get args from config & input
+        # The NamedContract is a dataclass meant to hold data from the config
+        named_contract: NamedContract = self.named_contracts.get(
             contract_name, NamedContract(contract_name)
         )
-        if not named_contract.is_active():
-            if self.contracts.get(contract_name) is not None:
-                self.contracts[contract_name]._reset()
 
         if abi_from_explorer and abi:
             raise ValueError(
@@ -519,76 +547,61 @@ class Network:
         if not address:
             address = named_contract.get("address", None)
 
-        # 1. Check if force_deploy is true
-        if force_deploy:
-            if not deployer_script:
-                raise ValueError(
-                    f"Contract {named_contract.contract_name} has force_deploy=True but no deployer_script specified in their {CONFIG_NAME}."
-                )
-            return self._deploy_named_contract(named_contract, deployer_script)
+        if not force_deploy:
+            # 1. Check DB / Boa contracts
+            if address is None:
+                if not self.is_local_or_forked_network():
+                    vyper_contract: (
+                        ABIContract | VyperContract | ZksyncContract | None
+                    ) = None
+                    if checked:
+                        vyper_contract = self.get_latest_contract_checked(contract_name)
+                    else:
+                        vyper_contract = self.get_latest_contract_unchecked(
+                            contract_name
+                        )
+                    if vyper_contract is not None:
+                        return vyper_contract
+                else:
+                    if named_contract.is_active():
+                        return named_contract.recently_deployed_contract
+                    else:
+                        self.named_contracts[contract_name].reset()
 
-        # 2. Setup ABI based on parameters
-        (abi, deployer) = self._get_abi_and_deployer_from_params(
-            named_contract.contract_name, abi_or_deployer, abi_from_explorer, address
-        )
-        abi = abi if abi else named_contract.abi
-        deployer = deployer if deployer else named_contract.vyper_deployer
-
-        # ------------------------------------------------------------------
-        #             CHECK TO SEE IF WE'VE ALREADY DEPLOYED
-        # ------------------------------------------------------------------
-        # 3. Happy path, check if the requested contract is what we've already deployed
-        # We don't need to check the DB since we are checking the address on this network
-        if (
-            str(named_contract.abi) == str(abi)
-            and named_contract.address == address
-            and named_contract.vyper_contract is not None
-        ):
-            return named_contract.vyper_contract
-
-        # 4. Happy path, we check for this contract in the DB
-        if self.chain_id is not None and self.save_to_db is True:
-            vyper_contract: ABIContract | None = None
-            if checked:
-                vyper_contract = self.get_latest_contract_checked(
-                    named_contract.contract_name
-                )
+            # 2. Assign ABI if address, to see if we need to assign
             else:
-                vyper_contract = self.get_latest_contract_unchecked(
-                    named_contract.contract_name
+                (abi, deployer) = self._get_abi_and_deployer_from_params(
+                    named_contract.contract_name,
+                    abi_or_deployer,
+                    abi_from_explorer,
+                    address,
                 )
-            if vyper_contract is not None:
-                return vyper_contract
+                abi = abi if abi else named_contract.abi
+                deployer = deployer if deployer else named_contract.deployer
 
-        # 5. Happy path, maybe we didn't deploy the contract, but we've been given an abi and address, which works
-        if abi and address:
-            if deployer:
-                return deployer.at(address)
-            else:
-                # Note, we are not putting this into the self.contracts dict, but maybe we should
-                return ABIContractFactory(named_contract.contract_name, abi).at(address)
+                if abi:
+                    if deployer:
+                        return deployer.at(address)
+                    else:
+                        # Note, we are not putting this into the self.named_contracts dict, but maybe we should
+                        return ABIContractFactory(named_contract.contract_name, abi).at(
+                            address
+                        )
+                else:
+                    logger.info(
+                        f"No abi_source or abi_path found for {named_contract.contract_name}, returning a blank contract at {address}"
+                    )
+                    # We could probably put this into _deploy_named_contract with a conditional
+                    blank_contract: VyperDeployer | ZksyncDeployer = boa.loads_partial(
+                        ""
+                    )
+                    vyper_contract = blank_contract.at(address)
+                    return vyper_contract
 
-        # ------------------------------------------------------------------
-        #                      WE DEPLOY AFTER HERE
-        # ------------------------------------------------------------------
-        # 6. Check if there is an address, if no ABI, return a blank contract at an address
-        if address and not abi:
-            logger.info(
-                f"No abi_source or abi_path found for {named_contract.contract_name}, returning a blank contract at {address}"
-            )
-            # We could probably put this into _deploy_named_contract with a conditional
-            blank_contract: VyperDeployer | ZksyncDeployer = boa.loads_partial("")
-            vyper_contract = blank_contract.at(address)
-            named_contract.update_from_deployed_contract(vyper_contract)
-            self.contracts[named_contract.contract_name] = named_contract
-            return vyper_contract
-
-        # 7. If no address, deploy the contract
-        if not deployer_script:
+        if deployer_script is None:
             raise ValueError(
-                f"Contract {named_contract.contract_name} has no address or deployer_script specified in the {CONFIG_NAME}."
+                f"Contract {named_contract.contract_name} has force_deploy=True but no deployer_script specified in their {CONFIG_NAME}."
             )
-
         return self._deploy_named_contract(named_contract, deployer_script)
 
     def is_local_or_forked_network(self) -> bool:
@@ -607,11 +620,9 @@ class Network:
     ) -> VyperContract | ZksyncContract:
         config = get_config()
         deployed_named_contract: VyperContract | ZksyncContract = (
-            named_contract._deploy(
-                config.script_folder, deployer_script, update_from_deploy=True
-            )
+            named_contract._deploy(config.script_folder, deployer_script)
         )
-        self.contracts[named_contract.contract_name] = named_contract
+        self.named_contracts[named_contract.contract_name] = named_contract
         return deployed_named_contract
 
     def _get_abi_and_deployer_from_params(
@@ -687,10 +698,10 @@ class Network:
         return abi, deployer  # type: ignore
 
     def get_named_contract(self, contract_name: str) -> NamedContract | None:
-        return self.contracts.get(contract_name, None)
+        return self.named_contracts.get(contract_name, None)
 
     def get_named_contracts(self) -> dict:
-        return self.contracts
+        return self.named_contracts
 
     def set_boa_eoa(self, account: MoccasinAccount):
         if self.is_local_or_forked_network:  # type: ignore[truthy-function]
@@ -724,16 +735,21 @@ class _Networks:
     _networks: dict[str, Network]
     _default_named_contracts: dict[str, NamedContract]
     _overriden_active_network: Network | None
-    db_path: Path
+    default_db_path: Path
     default_network_name: str
 
-    def __init__(self, toml_data: dict, db_path: Path):
+    def __init__(self, toml_data: dict, project_root: Path):
         self._networks = {}
         self._default_named_contracts = {}
         self._overriden_active_network = None
         self.custom_networks_counter = 0
-        self.db_path = db_path
         project_data = toml_data.get("project", {})
+
+        db_path_str = project_data.get("db_path", DB_PATH_LIVE_DEFAULT)
+        db_path = Path(db_path_str).expanduser()
+        if not db_path.is_absolute():
+            db_path = project_root.joinpath(db_path)
+        self.default_db_path = db_path
 
         default_explorer_api_key = project_data.get("explorer_api_key", None)
         default_explorer_uri = project_data.get("explorer_uri", None)
@@ -754,7 +770,6 @@ class _Networks:
                 deployer_script=contract_data.get("deployer_script", None),
                 address=contract_data.get("address", None),
             )
-
         toml_data = self._add_local_network_defaults(toml_data)
 
         for network_name, network_data in toml_data["networks"].items():
@@ -798,8 +813,8 @@ class _Networks:
                     prompt_live=network_data.get("prompt_live", True),
                     save_to_db=network_data.get(SAVE_TO_DB, True),
                     live_or_staging=network_data.get("live_or_staging", True),
-                    db_path=self.db_path,
-                    contracts=final_network_contracts,
+                    db_path=network_data.get("db_path", self.default_db_path),
+                    named_contracts=final_network_contracts,
                     extra_data=network_data.get("extra_data", {}),
                 )
                 setattr(self, network_name, network)
@@ -841,8 +856,8 @@ class _Networks:
         self._networks[new_network.name] = new_network
         return new_network
 
-    def get_db_path(self) -> Path:
-        return self.db_path
+    def get_default_db_path(self) -> Path:
+        return self.default_db_path
 
     def get_network(self, network_name_or_id: str | int) -> Network:
         if isinstance(network_name_or_id, int):
@@ -870,11 +885,7 @@ class _Networks:
         return self.get_active_network().get_or_deploy_contract(*args, **kwargs)
 
     def set_active_network(
-        self,
-        name_of_network_or_network: str | Network,
-        activate_boa=True,
-        activate_db=True,
-        **kwargs,
+        self, name_of_network_or_network: str | Network, activate_boa=True, **kwargs
     ) -> Network:
         if not isinstance(name_of_network_or_network, str) and not isinstance(
             name_of_network_or_network, Network
@@ -893,8 +904,7 @@ class _Networks:
             self._overriden_active_network = None
         else:
             self._overriden_active_network = name_of_network_or_network
-        if activate_db:
-            name_of_network_or_network._set_boa_db()
+        name_of_network_or_network._set_boa_db()
         self._networks[name_of_network_or_network.name] = name_of_network_or_network
         return name_of_network_or_network
 
@@ -902,20 +912,6 @@ class _Networks:
         active_network = self.get_active_network()
         active_network.create_and_set_or_set_boa_env()
         self._overriden_active_network = None
-
-    def activate_db(self):
-        active_network = self.get_active_network()
-        active_network._set_boa_db()
-
-    def _create_custom_network(self, url: str, is_fork: bool | None = False) -> Network:
-        if is_fork is None:
-            is_fork = False
-        new_network = Network(
-            name=f"custom_{self.custom_networks_counter}", url=url, is_fork=is_fork
-        )
-        self._networks[new_network.name] = new_network
-        self.custom_networks_counter += 1
-        return new_network
 
     @staticmethod
     def _validate_network_contracts_dict(
@@ -983,9 +979,12 @@ class _Networks:
                     raise ValueError(
                         f"is_zksync for {network_name} must be True. Please adjust it in your config."
                     )
-            if network_data.get(SAVE_TO_DB) is True:
+        for key in SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS.keys():
+            if network_data.get(
+                key, None
+            ) != SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS.get(key, None):
                 raise ValueError(
-                    f"{SAVE_TO_DB} for {network_name} must be 'False' or left unset. Please adjust it in your config."
+                    f"{key} for {network_name} must be {SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS[key]} or left unset. Please adjust it in your config."
                 )
 
 
@@ -1032,16 +1031,7 @@ class Config:
             logger.warning(
                 f"No {CONFIG_NAME} or pyproject.toml file found. Using default configuration."
             )
-        self._initialize_networks()
-
-    def _initialize_networks(self):
-        db_path_str = self._toml_data.get("project", {}).get(
-            "db_path", DB_PATH_LIVE_DEFAULT
-        )
-        db_path = Path(db_path_str).expanduser()
-        if not db_path.is_absolute():
-            db_path = self._project_root.joinpath(db_path)
-        self.networks = _Networks(self._toml_data, db_path)
+        self.networks = _Networks(self._toml_data, self.project_root)
 
     def _load_config(self, config_path: Path, pyproject_path: Path | None = None):
         toml_data = self.read_configs(config_path, pyproject_path)
@@ -1119,8 +1109,8 @@ class Config:
     def get_active_network(self) -> Network:
         return self.networks.get_active_network()
 
-    def get_db_path(self) -> Path:
-        return self.networks.get_db_path()
+    def get_default_db_path(self) -> Path:
+        return self.networks.get_default_db_path()
 
     def get_or_deploy_contract(
         self, *args, **kwargs
@@ -1191,14 +1181,11 @@ class Config:
         **kwargs,
     ) -> Network:
         return self.networks.set_active_network(
-            name_url_or_id, activate_boa=activate_boa, activate_db=activate_db, **kwargs
+            name_url_or_id, activate_boa=activate_boa, **kwargs
         )
 
     def activate_boa(self):
         self.networks.activate_boa()
-
-    def activate_db(self):
-        self.networks.activate_db()
 
     @property
     def config_path(self) -> Path:

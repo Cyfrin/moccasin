@@ -38,28 +38,6 @@ DEFAULT_PROJECT_FOLDERS = [
     DEPENDENCIES_FOLDER + "/" + PYPI,
 ]
 
-# Define default values for PYEVM and ERAVM
-LOCAL_NETWORK_DEFAULTS = {
-    PYEVM: {
-        "is_zksync": False,
-        "prompt_live": False,
-        SAVE_TO_DB: False,
-        "live_or_staging": False,
-    },
-    ERAVM: {
-        "is_zksync": True,
-        "prompt_live": False,
-        SAVE_TO_DB: False,
-        "live_or_staging": False,
-    },
-}
-
-FORK_NETWORK_DEFAULTS = {
-    "is_zksync": False,
-    "prompt_live": False,
-    SAVE_TO_DB: False,
-    "live_or_staging": False,
-}
 
 # Configurable Vars
 MOCCASIN_DEFAULT_FOLDER = Path(
@@ -79,6 +57,31 @@ DOT_ENV_KEY = "dot_env"
 KEYSTORES_PATH_KEY = "keystores_path"
 CONSOLE_HISTORY_FILE = "moccasin_history"
 DEFAULT_API_KEY_ENV_VAR = "EXPLORER_API_KEY"
+# Define default values for PYEVM and ERAVM
+LOCAL_NETWORK_DEFAULTS = {
+    PYEVM: {
+        "is_zksync": False,
+        "prompt_live": False,
+        SAVE_TO_DB: False,
+        "live_or_staging": False,
+        "db_path": None,
+    },
+    ERAVM: {
+        "is_zksync": True,
+        "prompt_live": False,
+        SAVE_TO_DB: False,
+        "live_or_staging": False,
+        "db_path": None,
+    },
+}
+FORK_NETWORK_DEFAULTS = {
+    "is_zksync": False,
+    "prompt_live": False,
+    SAVE_TO_DB: False,
+    "live_or_staging": False,
+    "db_path": None,
+}
+SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS = {SAVE_TO_DB: False, "db_path": None}
 RESTRICTED_VALUES_FOR_LOCAL_NETWORK = [
     "url",
     "chain_id",
