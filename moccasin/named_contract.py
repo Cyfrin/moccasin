@@ -12,7 +12,7 @@ from moccasin.logging import logger
 
 
 @dataclass
-class NamedContract:
+class ContractStrategy:
     """
     A class to represent a named contract. These hold only data about NamedContracts from the config.
     """
@@ -49,19 +49,6 @@ class NamedContract:
     def reset(self):
         self.deployer = None
         self.recently_deployed_contract = None
-
-    def is_active(self):
-        if self.recently_deployed_contract is None:
-            return False
-        boa_contract = boa.env._contracts.get(
-            Address(self.recently_deployed_contract.address).canonical_address, None
-        )
-        boa_code = boa.env.get_code(boa_contract.address)
-        if boa_contract is None or boa_code is b'':
-            return False
-        if boa_contract == self.recently_deployed_contract:
-            return True
-        return False
 
     def get(self, key: str, otherwise: Any):
         return getattr(self, key, otherwise)

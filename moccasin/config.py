@@ -522,8 +522,8 @@ class Network:
         """
         # 0. Get args from config & input
         # The NamedContract is a dataclass meant to hold data from the config
-        named_contract: NamedContract = self.named_contracts.get(
-            contract_name, NamedContract(contract_name)
+        contract_strategy: ContractStrategy = self.contract_strategies.get(
+            contract_name, ContractStrategy(contract_name)
         )
 
         if abi_from_explorer and abi:
@@ -534,12 +534,12 @@ class Network:
 
         # 0. Setup parameters based on defaults and the inputs to this func
         if not abi_or_deployer and not abi_from_explorer:
-            abi_or_deployer = named_contract.get("abi", None)
-            vyper_deployer = named_contract.get("vyper_deployer", None)
+            abi_or_deployer = contract_strategy.get("abi", None)
+            vyper_deployer = contract_strategy.get("vyper_deployer", None)
             if vyper_deployer is not None and abi_or_deployer is None:
                 abi_or_deployer = vyper_deployer
         if not abi_from_explorer and not abi_or_deployer:
-            abi_from_explorer = named_contract.get("abi_from_explorer", None)
+            abi_from_explorer = contract_strategy.get("abi_from_explorer", None)
         if not force_deploy:
             force_deploy = named_contract.get("force_deploy", False)
         if not deployer_script:
@@ -563,7 +563,7 @@ class Network:
                     if vyper_contract is not None:
                         return vyper_contract
                 else:
-                    if named_contract.is_active():
+                    if _check_valid_deploy(named_contract):
                         return named_contract.recently_deployed_contract
                     else:
                         self.named_contracts[contract_name].reset()
@@ -729,6 +729,21 @@ class Network:
     @staticmethod
     def _is_local_or_forked_network(name: str, fork: bool = False) -> bool:
         return name in [PYEVM, ERAVM] or fork
+
+def _check_valid_deploy(contract_strategy: ContractStrategy):
+    # black magic! check if the contract we have is actually the
+    # same one that boa.env has. it could be invalidated in the case
+    # of e.g. rollbacks
+    deploy = contract_strategy.recently_deployed_contract
+    if deploy is None:
+        return False
+    boa_contract = boa.env.lookup_contract(deploy.address)
+    if boa_contract is not deploy:
+        return False
+    boa_code = boa.env.get_code(boa_contract.address)
+    if boa_code != boa_contract.bytecode:
+        return False
+    return True
 
 
 class _Networks:
