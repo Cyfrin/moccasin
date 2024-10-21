@@ -654,7 +654,7 @@ class Network:
 
         if deployer_script is None:
             raise ValueError(
-                f"Contract {nicknamed_contract.nickname} has force_deploy=True but no deployer_script specified in their {CONFIG_NAME}."
+                f"Contract {nicknamed_contract.nickname} must be deployed but no deployer_script specified in their {CONFIG_NAME}."
             )
         return self._deploy_nicknamed_contract(nicknamed_contract, deployer_script)
 
