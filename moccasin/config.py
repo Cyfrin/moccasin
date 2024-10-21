@@ -38,7 +38,6 @@ from moccasin.constants.vars import (
     DB_PATH_LIVE_DEFAULT,
     DB_PATH_LOCAL_DEFAULT,
     DEFAULT_NETWORK,
-    SQL_CONTRACT_NICKNAME,
     DEPENDENCIES_FOLDER,
     DOT_ENV_FILE,
     DOT_ENV_KEY,
@@ -48,13 +47,14 @@ from moccasin.constants.vars import (
     LOCAL_NETWORK_DEFAULTS,
     PYEVM,
     RESTRICTED_VALUES_FOR_LOCAL_NETWORK,
-    SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS,
     SAVE_ABI_PATH,
     SAVE_TO_DB,
     SCRIPT_FOLDER,
+    SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS,
     SQL_AND,
     SQL_CHAIN_ID,
     SQL_CONTRACT_NAME,
+    SQL_CONTRACT_NICKNAME,
     SQL_LIMIT,
     SQL_WHERE,
     TESTS_FOLDER,
@@ -337,8 +337,10 @@ class Network:
         else:
             db = DeploymentsDB(db_path)
         if db is None:
-            logger.warning("No deployments database found. Returning an empty list.")
-            return []
+            logger.warning(
+                "No deployments database found. Returning an empty iterator."
+            )
+            return iter([])
         else:
             return self._fetch_deployments_from_db(
                 contract_name=contract_name,
@@ -490,7 +492,7 @@ class Network:
 
     def manifest_contract(
         self,
-        contract_name: str,
+        contract_nickname: str,
         force_deploy: bool = False,
         address: str | None = None,
         checked: bool = False,
@@ -500,10 +502,9 @@ class Network:
             "manifest_contract is deprecated and will be removed in a future version. Please use manifest_named."
         )
         return self.get_or_deploy_named(
-            contract_name=contract_name,
+            contract_nickname=contract_nickname,
             force_deploy=force_deploy,
             address=address,
-            checked=checked,
         )
 
     def instantiate_contract(
@@ -695,9 +696,9 @@ class Network:
         cursor.execute(
             sql,
             (
-                nicknamed_contract.recently_deployed_contract.contract_name,
+                nicknamed_contract.recently_deployed_contract.contract_name,  # type: ignore
                 to_hex(self.chain_id),
-                nicknamed_contract.recently_deployed_contract.address,
+                nicknamed_contract.recently_deployed_contract.address,  # type: ignore
             ),
         )
         contract = cursor.fetchone()
@@ -953,7 +954,7 @@ class _Networks:
         if boa.env.nickname in self._networks:
             return self._networks[boa.env.nickname]
         new_network = Network(
-            name=boa.env.nickname, contracts=self._default_nicknamed_contracts
+            name=boa.env.nickname, nicknamed_contracts=self._default_nicknamed_contracts
         )
         self._networks[new_network.name] = new_network
         return new_network
