@@ -7,7 +7,7 @@ from moccasin.config import get_active_network
 def fund_coffee() -> ABIContract:
     active_network = get_active_network()
     # coffee = active_network.get_latest_contract_checked("BuyMeACoffee")
-    coffee = active_network.manifest_contract("BuyMeACoffee")
+    coffee = active_network.manifest_named("BuyMeACoffee")
 
     account = active_network.get_default_account()
     active_network.set_boa_eoa(account)
