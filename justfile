@@ -41,7 +41,7 @@ test-all:
 
 # Run tests, fail on first test failure, enter debugger on failure
 test-pdb:
-    uv run pytest -x -s --ignore=tests/data/ --pdb
+    uv run pytest -x -s --ignore=tests/integration/ --ignore=tests/zksync/ --pdb
 
 # For when you want to run the same anvil chain as what's used in the tests
 anvil:

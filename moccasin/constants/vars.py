@@ -107,6 +107,7 @@ SQL_WHERE = "WHERE "
 SQL_CONTRACT_NAME = "contract_name = ? "
 SQL_AND = "AND "
 SQL_CHAIN_ID = "json_extract(tx_dict, '$.chainId') = ? "
+SQL_CONTRACT_NICKNAME = "nickname = ? "
 SQL_LIMIT = "LIMIT ? "
 
 # Networking defaults

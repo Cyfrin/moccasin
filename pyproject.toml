@@ -7,11 +7,11 @@ authors = [
     { name = "charles-cooper", email = "3867501+charles-cooper@users.noreply.github.com" },
 ]
 dependencies = [
-    "titanoboa>=0.2.4",
+    "titanoboa @ git+https://github.com/PatrickAlphaC/titanoboa.git@feat/nicknamed-deployment",
     "python-dotenv>=1.0.1",
-    "titanoboa-zksync>=0.2.5",
+    "titanoboa-zksync @ git+https://github.com/PatrickAlphaC/titanoboa-zksync.git@feat/contract-nicknames ",
     "tqdm>=4.66.5",
-    "tomlkit>=0.13.2",         # For preserving comments when writing to toml
+    "tomlkit>=0.13.2",                                                                                       # For preserving comments when writing to toml
     "tomli-w>=1.0.0",
     "pytest-cov>=5.0.0",
     "uv>=0.4.15",
