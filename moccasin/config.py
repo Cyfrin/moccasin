@@ -1267,7 +1267,10 @@ class Config:
 
     def find_contract(self, contract_or_contract_path: str) -> Path:
         return self._find_contract(
-            self.project_root, self.contracts_folder, contract_or_contract_path
+            self.project_root,
+            self.contracts_folder,
+            self.lib_folder,
+            contract_or_contract_path,
         )
 
     def set_active_network(
@@ -1480,7 +1483,10 @@ class Config:
 
     @staticmethod
     def _find_contract(
-        project_root: str | Path, contracts_folder: str, contract_or_contract_path: str
+        project_root: str | Path,
+        contracts_folder: str,
+        lib_folder: str,
+        contract_or_contract_path: str,
     ) -> Path:
         project_root = Path(project_root)
         # If the path starts with '~', expand to the user's home directory
@@ -1503,6 +1509,11 @@ class Config:
         # Search for the contract in the contracts folder if not found by now
         contracts_location = project_root / contracts_folder
         contract_paths = list(contracts_location.rglob(contract_path.name))
+
+        if not contract_paths:
+            # We will try the lib folder
+            contracts_location = project_root / lib_folder
+            contract_paths = list(contracts_location.rglob(contract_path.name))
 
         if not contract_paths:
             raise FileNotFoundError(
