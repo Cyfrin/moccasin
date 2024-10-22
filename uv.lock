@@ -726,8 +726,8 @@ requires-dist = [
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
     { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
-    { name = "titanoboa", specifier = ">=0.2.4" },
-    { name = "titanoboa-zksync", specifier = ">=0.2.5" },
+    { name = "titanoboa", git = "https://github.com/PatrickAlphaC/titanoboa.git?rev=feat%2Fnicknamed-deployment" },
+    { name = "titanoboa-zksync", git = "https://github.com/PatrickAlphaC/titanoboa-zksync.git?rev=feat%2Fcontract-nicknames" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
@@ -1290,7 +1290,7 @@ wheels = [
 [[package]]
 name = "titanoboa"
 version = "0.2.4"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/PatrickAlphaC/titanoboa.git?rev=feat%2Fnicknamed-deployment#83bfb30e81f31b7a4f422d19b6774bd6b07b7be0" }
 dependencies = [
     { name = "eth-abi" },
     { name = "eth-account" },
@@ -1306,21 +1306,13 @@ dependencies = [
     { name = "vvm" },
     { name = "vyper" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/78/60/8d222ae15213541dabbaa49fc62eae875d963be70b83526af99579c3bb49/titanoboa-0.2.4.tar.gz", hash = "sha256:e2502b2eed47562adf8fbb92bf17671b7e50d10348a944e645427e76a792b568", size = 91802 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ba/46/01f7120379cfea847113a2ed86c7e9d8d8b83c1f02c2588e88a37c3854b4/titanoboa-0.2.4-py3-none-any.whl", hash = "sha256:8e2492c8f7d5e5f998f092a78f53202c28390a4657aedb3766c1f63911af0c63", size = 102797 },
-]
 
 [[package]]
 name = "titanoboa-zksync"
 version = "0.2.5"
-source = { registry = "https://pypi.org/simple" }
+source = { git = "https://github.com/PatrickAlphaC/titanoboa-zksync.git?rev=feat%2Fcontract-nicknames#c59121f65ede132a76e736a460e9c532a89ba7d3" }
 dependencies = [
     { name = "titanoboa" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/9b/c2/e0f1d1077f1b60dc8b54816f648ec3524947088b2e6e3b3609a82220e818/titanoboa_zksync-0.2.5.tar.gz", hash = "sha256:a29a2afe260d6554e3216c381580e3d8988eeb47d09f20c375d8e0fa6d415722", size = 25858 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1c/e8/b6aa5aab9f8fb485375e4a60e8fce2c52496282f7154b4d72f01d994ffe5/titanoboa_zksync-0.2.5-py3-none-any.whl", hash = "sha256:98600f76023207fe3aa90e59232655bc84e58aee4598c2a950cb66db1d60a0b3", size = 25251 },
 ]
 
 [[package]]

@@ -115,6 +115,8 @@ def mox_path():
 @pytest.fixture(scope="module")
 def complex_temp_path() -> Generator[Path, None, None]:
     with tempfile.TemporaryDirectory() as temp_dir:
+        if Path(COMPLEX_PROJECT_PATH.joinpath(".deployments.db")).exists():
+            os.remove(COMPLEX_PROJECT_PATH.joinpath(".deployments.db"))
         shutil.copytree(
             COMPLEX_PROJECT_PATH, os.path.join(temp_dir), dirs_exist_ok=True
         )
