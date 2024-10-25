@@ -15,6 +15,8 @@ from moccasin._sys_path_and_config_setup import (
 from moccasin.config import Config, get_config, initialize_global_config
 from moccasin.constants.vars import TESTS_FOLDER
 
+HYPOTHESIS_ARGS: list[str] = ["hypothesis-seed"]
+
 PYTEST_ARGS: list[str] = [
     "file_or_dir",
     "k",

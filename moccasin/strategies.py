@@ -1,0 +1,267 @@
+# Oringal source from iamdefinitelyahuman of the brownie project
+# Modified from:
+# https://github.com/eth-brownie/brownie/blob/master/brownie/test/strategies.py
+
+from typing import Any, Callable, Iterable, Literal, Optional, Tuple, Union
+import hypothesis.strategies as st
+from boa.util.abi import Address
+from eth_account import Account 
+from eth_abi.grammar import BasicType, TupleType, parse
+from hypothesis import strategies as st
+from hypothesis.strategies import SearchStrategy
+from hypothesis.strategies._internal.deferred import DeferredStrategy
+from moccasin.utils import get_int_bounds
+import boa
+
+
+TYPE_STR_TRANSLATIONS = {"byte": "bytes1", "decimal": "fixed168x10"}
+
+ArrayLengthType = Union[int, list, None]
+NumberType = Union[float, int, None]
+
+EvmIntType = Literal[
+    "int8",
+    "int16",
+    "int24",
+    "int32",
+    "int40",
+    "int48",
+    "int56",
+    "int64",
+    "int72",
+    "int80",
+    "int88",
+    "int96",
+    "int104",
+    "int112",
+    "int120",
+    "int128",
+    "int136",
+    "int144",
+    "int152",
+    "int160",
+    "int168",
+    "int176",
+    "int184",
+    "int192",
+    "int200",
+    "int208",
+    "int216",
+    "int224",
+    "int232",
+    "int240",
+    "int248",
+    "int256",
+]
+
+EvmUintType = Literal[
+    "uint8",
+    "uint16",
+    "uint24",
+    "uint32",
+    "uint40",
+    "uint48",
+    "uint56",
+    "uint64",
+    "uint72",
+    "uint80",
+    "uint88",
+    "uint96",
+    "uint104",
+    "uint112",
+    "uint120",
+    "uint128",
+    "uint136",
+    "uint144",
+    "uint152",
+    "uint160",
+    "uint168",
+    "uint176",
+    "uint184",
+    "uint192",
+    "uint200",
+    "uint208",
+    "uint216",
+    "uint224",
+    "uint232",
+    "uint240",
+    "uint248",
+    "uint256",
+]
+
+
+def _exclude_filter(fn: Callable) -> Callable:
+    def wrapper(*args: Tuple, exclude: Any = None, **kwargs: int) -> SearchStrategy:
+        strat = fn(*args, **kwargs)
+        if exclude is None:
+            return strat
+        if callable(exclude):
+            return strat.filter(exclude)
+        if not isinstance(exclude, Iterable) or isinstance(exclude, str):
+            exclude = (exclude,)
+        strat = strat.filter(lambda k: k not in exclude)
+        # make the filter repr more readable
+        repr_ = strat.__repr__().rsplit(").filter", maxsplit=1)[0]
+        strat._LazyStrategy__representation = f"{repr_}, exclude={exclude})"
+        return strat
+
+    return wrapper
+
+
+def _check_numeric_bounds(
+    type_str: str, min_value: NumberType, max_value: NumberType
+) -> Tuple:
+    lower, upper = get_int_bounds(type_str)
+    min_final = lower if min_value is None else min_value
+    max_final = upper if max_value is None else max_value
+    if min_final < lower:
+        raise ValueError(
+            f"min_value '{min_value}' is outside allowable range for {type_str}"
+        )
+    if max_final > upper:
+        raise ValueError(
+            f"max_value '{max_value}' is outside allowable range for {type_str}"
+        )
+    if min_final > max_final:
+        raise ValueError(
+            f"min_value '{min_final}' is greater than max_value '{max_final}'"
+        )
+    return min_final, max_final
+
+
+@_exclude_filter
+def _integer_strategy(
+    type_str: str, min_value: Optional[int] = None, max_value: Optional[int] = None
+) -> SearchStrategy:
+    min_value, max_value = _check_numeric_bounds(type_str, min_value, max_value)
+    return st.integers(min_value=min_value, max_value=max_value)
+
+
+@_exclude_filter
+def _decimal_strategy(
+    min_value: NumberType = None, max_value: NumberType = None, places: int = 10
+) -> SearchStrategy:
+    min_value, max_value = _check_numeric_bounds("int128", min_value, max_value)
+    return st.decimals(min_value=min_value, max_value=max_value, places=places)
+
+
+@_exclude_filter
+def _address_strategy() -> SearchStrategy:
+    common_addresses = [
+        Address("0x0000000000000000000000000000000000000000"),
+    ]
+    
+    # Generate random addresses and convert to Address objects
+    random_address = (
+        st.binary(min_size=20, max_size=20)
+        .map(lambda x: "0x" + x.hex())
+        .map(Address)  # Convert the hex string to Address object
+    )
+    
+    # 1 in 10 chance of getting the zero address
+    return st.one_of(
+        st.sampled_from(common_addresses),
+        random_address,
+        random_address,
+        random_address,
+        random_address,
+        random_address,
+        random_address,
+        random_address,
+        random_address,
+        random_address
+    )
+
+@_exclude_filter
+def _bytes_strategy(
+    abi_type: BasicType, min_size: Optional[int] = None, max_size: Optional[int] = None
+) -> SearchStrategy:
+    size = abi_type.sub
+    if not size:
+        return st.binary(min_size=min_size or 1, max_size=max_size or 64)
+    if size < 1 or size > 32:
+        raise ValueError(f"Invalid type: {abi_type.to_type_str()}")
+    if min_size is not None or max_size is not None:
+        raise TypeError("Cannot specify size for fixed length bytes strategy")
+    return st.binary(min_size=size, max_size=size)
+
+
+@_exclude_filter
+def _string_strategy(min_size: int = 0, max_size: int = 64) -> SearchStrategy:
+    return st.text(min_size=min_size, max_size=max_size)
+
+
+def _get_array_length(var_str: str, length: ArrayLengthType, dynamic_len: int) -> int:
+    if not isinstance(length, (list, int)):
+        raise TypeError(
+            f"{var_str} must be of type int or list, not '{type(length).__name__}''"
+        )
+    if not isinstance(length, list):
+        return length
+    if len(length) != dynamic_len:
+        raise ValueError(
+            f"Length of '{var_str}' must equal the number of dynamic "
+            f"dimensions for the given array ({dynamic_len})"
+        )
+    return length.pop()
+
+
+def _array_strategy(
+    abi_type: BasicType,
+    min_length: ArrayLengthType = 1,
+    max_length: ArrayLengthType = 8,
+    unique: bool = False,
+    **kwargs: Any,
+) -> SearchStrategy:
+    if abi_type.arrlist[-1]:
+        min_len = max_len = abi_type.arrlist[-1][0]
+    else:
+        dynamic_len = len([i for i in abi_type.arrlist if not i])
+        min_len = _get_array_length("min_length", min_length, dynamic_len)
+        max_len = _get_array_length("max_length", max_length, dynamic_len)
+    if abi_type.item_type.is_array:
+        kwargs.update(min_length=min_length, max_length=max_length, unique=unique)
+    base_strategy = strategy(abi_type.item_type.to_type_str(), **kwargs)
+    strat = st.lists(base_strategy, min_size=min_len, max_size=max_len, unique=unique)
+    # swap 'size' for 'length' in the repr
+    repr_ = "length".join(strat.__repr__().rsplit("size", maxsplit=2))
+    strat._LazyStrategy__representation = repr_  # type: ignore
+    return strat
+
+
+def _tuple_strategy(abi_type: TupleType) -> SearchStrategy:
+    strategies = [strategy(i.to_type_str()) for i in abi_type.components]
+    return st.tuples(*strategies)
+
+def strategy(type_str: str, **kwargs: Any) -> SearchStrategy:
+    type_str = TYPE_STR_TRANSLATIONS.get(type_str, type_str)
+    if type_str == "fixed168x10":
+        return _decimal_strategy(**kwargs)
+    if type_str == "address":
+        return _address_strategy(**kwargs)
+    if type_str == "bool":
+        return st.booleans(**kwargs)  # type: ignore
+    if type_str == "string":
+        return _string_strategy(**kwargs)
+
+    abi_type = parse(type_str)
+    if abi_type.is_array:
+        return _array_strategy(abi_type, **kwargs)
+    if isinstance(abi_type, TupleType):
+        return _tuple_strategy(abi_type, **kwargs)  # type: ignore
+
+    base = abi_type.base
+    if base in ("int", "uint"):
+        return _integer_strategy(type_str, **kwargs)
+    if base == "bytes":
+        return _bytes_strategy(abi_type, **kwargs)
+
+    raise ValueError(f"No strategy available for type: {type_str}")
+
+class _DeferredStrategyRepr(DeferredStrategy):
+    def __init__(self, fn: Callable, repr_target: str) -> None:
+        super().__init__(fn)
+        self._repr_target = repr_target
+
+    def __repr__(self):
+        return f"sampled_from({self._repr_target})"
