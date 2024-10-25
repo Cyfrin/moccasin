@@ -29,7 +29,7 @@ Deploy
     --password-file-path PASSWORD_FILE_PATH
                             Path to the file containing the password for the keystore account.
 
-The ``deploy`` command is very similar to the :doc:`run </core_concepts/script>` command, except it specifically works with :doc:`NicknamedContracts </core_concepts/nicknamed_contracts>` that have a ``deployer_script`` defined.
+The ``deploy`` command is very similar to the :doc:`run </core_concepts/script>` command, except it specifically works with :doc:`NamedContracts </core_concepts/named_contracts>` that have a ``deployer_script`` defined.
 
 In your ``moccasin.toml`` file, like this:
 

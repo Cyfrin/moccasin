@@ -22,7 +22,7 @@ Moccasin
     core_concepts/project.rst
     core_concepts/networks.rst
     core_concepts/dependencies.rst 
-    core_concepts/nicknamed_contracts.rst
+    core_concepts/named_contracts.rst
     core_concepts/testing.rst
     Wallet <core_concepts/wallet.rst>
     Scripting (run) <core_concepts/script.rst>

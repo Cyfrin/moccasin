@@ -27,11 +27,11 @@ def test_active_boa(complex_project_config):
     assert boa.env.nickname == "pyevm"
 
 
-def test_get_nicknamed_contracts(complex_project_config):
+def test_get_named_contracts(complex_project_config):
     active_network = complex_project_config.get_active_network()
-    nicknamed_contracts = active_network.get_nicknamed_contracts()
-    assert isinstance(nicknamed_contracts, dict)
-    assert nicknamed_contracts["price_feed"] is not None
+    named_contracts = active_network.get_named_contracts()
+    assert isinstance(named_contracts, dict)
+    assert named_contracts["price_feed"] is not None
 
 
 def test_live_or_staging_defaults_to_true(complex_project_config):

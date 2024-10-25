@@ -306,8 +306,8 @@ Use this command to prepare your contracts for deployment or testing.""",
         parents=[parent_parser],
     )
     deploy_parser.add_argument(
-        "nickname",
-        help=f"Name of your nicknamed contract in your {CONFIG_NAME} to deploy.",
+        "contract_name",
+        help=f"Name of your named contract in your {CONFIG_NAME} to deploy.",
         type=str,
     )
     add_network_args_to_parser(deploy_parser)

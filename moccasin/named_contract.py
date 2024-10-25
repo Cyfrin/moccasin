@@ -10,13 +10,13 @@ from moccasin.logging import logger
 
 
 @dataclass
-class NicknamedContract:
+class NamedContract:
     """
-    A class to represent a named contract. These hold only data about NicknamedContracts from the config.
+    A class to represent a named contract. These hold only data about NamedContracts from the config.
     """
 
     # From the config
-    nickname: str
+    contract_name: str
     force_deploy: bool | None = None
     abi: str | None = None
     abi_from_explorer: bool | None = None
@@ -27,7 +27,7 @@ class NicknamedContract:
     deployer: VyperDeployer | ZksyncDeployer | None = None
     recently_deployed_contract: VyperContract | ZksyncContract | None = None
 
-    def set_defaults(self, other: "NicknamedContract"):
+    def set_defaults(self, other: "NamedContract"):
         self.force_deploy = (
             self.force_deploy if self.force_deploy is not None else other.force_deploy
         )
@@ -55,7 +55,7 @@ class NicknamedContract:
         self, script_folder: str, deployer_script: str | Path | None = None
     ) -> VyperContract | ZksyncContract:
         """
-        This function will not save the nicknamed contract to the database with it's nickname!
+        This function will not save the named contract to the database with it's name!
         """
         if deployer_script:
             deployer_script = str(deployer_script)
@@ -88,7 +88,7 @@ class NicknamedContract:
             vyper_contract, ZksyncContract
         ):
             raise ValueError(
-                f"Your {deployer_module_path} script for {self.nickname} set in deployer path must return a VyperContract or ZksyncContract object"
+                f"Your {deployer_module_path} script for {self.contract_name} set in deployer path must return a VyperContract or ZksyncContract object"
             )
         self.recently_deployed_contract = vyper_contract
         self.deployer = vyper_contract.deployer

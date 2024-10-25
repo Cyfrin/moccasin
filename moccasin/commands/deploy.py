@@ -27,9 +27,9 @@ def main(args: Namespace) -> int:
         config = get_config()
         active_network = config.get_active_network()
         deployed_contract = active_network.get_or_deploy_named_contract(
-            args.nickname, force_deploy=True
+            args.contract_name, force_deploy=True
         )
         logger.info(
-            f"Deployed contract {args.nickname} on {active_network.name} to {deployed_contract.address}"
+            f"Deployed contract {args.contract_name} on {active_network.name} to {deployed_contract.address}"
         )
     return 0

@@ -1,6 +1,6 @@
 .. _manifesting:
 
-Manifest Nicknamed Contract (``get_or_deploy_named_contract``)
+Manifest Named Contract (``get_or_deploy_named_contract``)
 ==========================================================
 
 .. note::
@@ -13,7 +13,7 @@ An issue that developers run into when creating smart contracts, is knowing how 
 - How can you test to make sure your deploy scripts work exactly the way your tests run?
 - If I want to simulate a test with a `forked test <forked-networks.rst>`, will my scripts still work?
 
-This is where the ``manifest_named`` aka ``get_or_deploy_named_contract`` function comes in. Let's say you have a smart contract that has an address as a constructor parameter, because the address is different on different chains. This additionally is very helpful in testing, and ``NicknamedContract``\s have built-in ``pytest`` :doc:`fixtures </core_concepts/testing/fixtures>`.
+This is where the ``manifest_named`` aka ``get_or_deploy_named_contract`` function comes in. Let's say you have a smart contract that has an address as a constructor parameter, because the address is different on different chains. This additionally is very helpful in testing, and ``NamedContract``\s have built-in ``pytest`` :doc:`fixtures </core_concepts/testing/fixtures>`.
 
 Interacting with a contract on multiple networks with one script 
 ----------------------------------------------------------------

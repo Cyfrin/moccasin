@@ -1,7 +1,7 @@
-``NicknamedContract``
+``NamedContract``
 #####################
 
-.. autoclass:: moccasin.nicknamed_contract.NicknamedContract
+.. autoclass:: moccasin.named_contract.NamedContract
    :members:
    :undoc-members:
    :show-inheritance:

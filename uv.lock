@@ -726,7 +726,7 @@ requires-dist = [
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
     { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
-    { name = "titanoboa", git = "https://github.com/PatrickAlphaC/titanoboa.git?rev=feat%2Fnicknamed-deployment" },
+    { name = "titanoboa", git = "https://github.com/vyperlang/titanoboa.git?rev=master" },
     { name = "titanoboa-zksync", git = "https://github.com/PatrickAlphaC/titanoboa-zksync.git?rev=feat%2Fcontract-nicknames" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
@@ -1290,7 +1290,7 @@ wheels = [
 [[package]]
 name = "titanoboa"
 version = "0.2.4"
-source = { git = "https://github.com/PatrickAlphaC/titanoboa.git?rev=feat%2Fnicknamed-deployment#83bfb30e81f31b7a4f422d19b6774bd6b07b7be0" }
+source = { git = "https://github.com/vyperlang/titanoboa.git?rev=master#f58c33cde50f6deaaeefff1136b18f92ef747c6b" }
 dependencies = [
     { name = "eth-abi" },
     { name = "eth-account" },

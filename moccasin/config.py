@@ -54,14 +54,13 @@ from moccasin.constants.vars import (
     SQL_AND,
     SQL_CHAIN_ID,
     SQL_CONTRACT_NAME,
-    SQL_CONTRACT_NICKNAME,
     SQL_LIMIT,
     SQL_WHERE,
     TESTS_FOLDER,
 )
 from moccasin.logging import logger
 from moccasin.moccasin_account import MoccasinAccount
-from moccasin.nicknamed_contract import NicknamedContract
+from moccasin.named_contract import NamedContract
 
 if TYPE_CHECKING:
     from boa.network import NetworkEnv
@@ -86,7 +85,7 @@ class Network:
     explorer_uri: str | None = None
     explorer_api_key: str | None = None
     explorer_type: str | None = None
-    nicknamed_contracts: dict[str, NicknamedContract] = field(default_factory=dict)
+    named_contracts: dict[str, NamedContract] = field(default_factory=dict)
     prompt_live: bool = True
     save_to_db: bool = True
     live_or_staging: bool = True
@@ -249,7 +248,6 @@ class Network:
     def _generate_sql_from_args(
         self,
         contract_name: str | None = None,
-        nickname: str | None = None,
         chain_id: int | str | None = None,
         limit: int | None = None,
         db: DeploymentsDB | None = None,
@@ -274,13 +272,6 @@ class Network:
             where_clauses.append(where_clause)
             params.append(str(chain_id))
 
-        if nickname is not None:
-            where_clause = SQL_CONTRACT_NICKNAME
-            if where_clauses:
-                where_clause = SQL_AND + where_clause
-            where_clauses.append(where_clause)
-            params.append(nickname)
-
         where_part = ""
         if where_clauses:
             where_part = SQL_WHERE + "".join(where_clauses)
@@ -297,7 +288,6 @@ class Network:
     def _fetch_deployments_from_db(
         self,
         contract_name: str | None = None,
-        nickname: str | None = None,
         chain_id: int | str | None = None,
         limit: int | None = None,
         db: DeploymentsDB | None = None,
@@ -309,7 +299,6 @@ class Network:
             raise ValueError(f"Limit must be an integer, not {type(limit)}.")
         final_sql, params = self._generate_sql_from_args(
             contract_name=contract_name,
-            nickname=nickname,
             chain_id=chain_id,
             limit=limit,
             db=db,
@@ -319,7 +308,6 @@ class Network:
     def _get_deployments_iterator(
         self,
         contract_name: str | None = None,
-        nickname: str | None = None,
         chain_id: int | str | None = None,
         limit: int | None = None,
         config_or_db_path: Union["Config", Path, str, None] = None,
@@ -344,7 +332,6 @@ class Network:
         else:
             return self._fetch_deployments_from_db(
                 contract_name=contract_name,
-                nickname=nickname,
                 chain_id=chain_id,
                 limit=limit,
                 db=db,
@@ -353,14 +340,12 @@ class Network:
     def get_deployments_unchecked(
         self,
         contract_name: str | None = None,
-        nickname: str | None = None,
         limit: int | None = None,
         chain_id: int | str | None = None,
         config_or_db_path: Union["Config", Path, str, None] = None,
     ) -> list[Deployment]:
         deployments_iter = self._get_deployments_iterator(
             contract_name=contract_name,
-            nickname=nickname,
             chain_id=chain_id,
             limit=limit,
             config_or_db_path=config_or_db_path,
@@ -370,14 +355,12 @@ class Network:
     def get_deployments_checked(
         self,
         contract_name: str | None = None,
-        nickname: str | None = None,
         limit: int | None = None,
         chain_id: int | str | None = None,
         config_or_db_path: Union["Config", Path, str, None] = None,
     ) -> list[Deployment]:
         deployments_iter = self._get_deployments_iterator(
             contract_name=contract_name,
-            nickname=nickname,
             chain_id=chain_id,
             limit=limit,
             config_or_db_path=config_or_db_path,
@@ -427,11 +410,10 @@ class Network:
     def get_latest_deployment_unchecked(
         self,
         contract_name: str | None = None,
-        nickname: str | None = None,
         chain_id: int | str | None = None,
     ) -> Deployment | None:
         deployments = self.get_deployments_unchecked(
-            contract_name=contract_name, nickname=nickname, chain_id=chain_id, limit=1
+            contract_name=contract_name, chain_id=chain_id, limit=1
         )
         if len(deployments) > 0:
             return deployments[0]
@@ -450,11 +432,10 @@ class Network:
     def get_latest_deployment_checked(
         self,
         contract_name: str | None = None,
-        nickname: str | None = None,
         chain_id: int | str | None = None,
     ) -> Deployment | None:
         deployments = self.get_deployments_checked(
-            contract_name=contract_name, nickname=nickname, chain_id=chain_id, limit=1
+            contract_name=contract_name, chain_id=chain_id, limit=1
         )
         if len(deployments) > 0:
             return deployments[0]
@@ -470,29 +451,9 @@ class Network:
             return self.convert_deployment_to_contract(deployment)
         return None
 
-    def get_latest_nicknamed_contract_checked(
-        self, nickname: str | None = None, chain_id: int | str | None = None
-    ) -> ABIContract | None:
-        deployment = self.get_latest_deployment_checked(
-            nickname=nickname, chain_id=chain_id
-        )
-        if deployment is not None:
-            return self.convert_deployment_to_contract(deployment)
-        return None
-
-    def get_latest_nicknamed_contract_unchecked(
-        self, nickname: str | None = None, chain_id: int | str | None = None
-    ) -> ABIContract | None:
-        deployment = self.get_latest_deployment_unchecked(
-            nickname=nickname, chain_id=chain_id
-        )
-        if deployment is not None:
-            return self.convert_deployment_to_contract(deployment)
-        return None
-
     def manifest_contract(
         self,
-        contract_nickname: str,
+        contract_name: str,
         force_deploy: bool = False,
         address: str | None = None,
         checked: bool = False,
@@ -502,7 +463,7 @@ class Network:
             "manifest_contract is deprecated and will be removed in a future version. Please use manifest_named."
         )
         return self.get_or_deploy_named(
-            contract_nickname=contract_nickname,
+            contract_name=contract_name,
             force_deploy=force_deploy,
             address=address,
         )
@@ -544,7 +505,7 @@ class Network:
 
     def get_or_deploy_named(
         self,
-        contract_nickname: str,
+        contract_name: str,
         force_deploy: bool = False,
         abi: str
         | Path
@@ -578,9 +539,9 @@ class Network:
             VyperContract | ZksyncContract | ABIContract: The deployed contract instance, or a blank contract if the contract is not found.
         """
         # 0. Get args from config & input
-        # The NicknamedContract is a dataclass meant to hold data from the config
-        nicknamed_contract: NicknamedContract = self.nicknamed_contracts.get(
-            contract_nickname, NicknamedContract(contract_nickname)
+        # The NamedContract is a dataclass meant to hold data from the config
+        named_contract: NamedContract = self.named_contracts.get(
+            contract_name, NamedContract(contract_name)
         )
 
         if abi_from_explorer and abi:
@@ -591,18 +552,18 @@ class Network:
 
         # 0. Setup parameters based on defaults and the inputs to this func
         if not abi_or_deployer and not abi_from_explorer:
-            abi_or_deployer = nicknamed_contract.get("abi", None)
-            vyper_deployer = nicknamed_contract.get("vyper_deployer", None)
+            abi_or_deployer = named_contract.get("abi", None)
+            vyper_deployer = named_contract.get("vyper_deployer", None)
             if vyper_deployer is not None and abi_or_deployer is None:
                 abi_or_deployer = vyper_deployer
         if not abi_from_explorer and not abi_or_deployer:
-            abi_from_explorer = nicknamed_contract.get("abi_from_explorer", None)
+            abi_from_explorer = named_contract.get("abi_from_explorer", None)
         if not force_deploy:
-            force_deploy = nicknamed_contract.get("force_deploy", False)
+            force_deploy = named_contract.get("force_deploy", False)
         if not deployer_script:
-            deployer_script = nicknamed_contract.get("deployer_script", None)
+            deployer_script = named_contract.get("deployer_script", None)
         if not address:
-            address = nicknamed_contract.get("address", None)
+            address = named_contract.get("address", None)
 
         if not force_deploy:
             # 1. Check DB / Boa contracts
@@ -611,39 +572,39 @@ class Network:
                     vyper_contract: (
                         ABIContract | VyperContract | ZksyncContract | None
                     ) = None
-                    vyper_contract = self.get_latest_nicknamed_contract_unchecked(
-                        nickname=contract_nickname, chain_id=self.chain_id
+                    vyper_contract = self.get_latest_contract_unchecked(
+                        contract_name=contract_name, chain_id=self.chain_id
                     )
                     if vyper_contract is not None:
                         return vyper_contract
                 else:
-                    if self._check_valid_deploy(nicknamed_contract):
-                        return nicknamed_contract.recently_deployed_contract
+                    if self._check_valid_deploy(named_contract):
+                        return named_contract.recently_deployed_contract
                     else:
-                        self.nicknamed_contracts[nicknamed_contract.nickname].reset()
+                        self.named_contracts[named_contract.contract_name].reset()
 
             # 2. Assign ABI if address, to see if we need to assign
             else:
                 (abi, deployer) = self._get_abi_and_deployer_from_params(
-                    nicknamed_contract.nickname,
+                    named_contract.contract_name,
                     abi_or_deployer,
                     abi_from_explorer,
                     address,
                 )
-                abi = abi if abi else nicknamed_contract.abi
-                deployer = deployer if deployer else nicknamed_contract.deployer
+                abi = abi if abi else named_contract.abi
+                deployer = deployer if deployer else named_contract.deployer
 
                 if abi:
                     if deployer:
                         return deployer.at(address)
                     else:
-                        # Note, we are not putting this into the self.nicknamed_contracts dict, but maybe we should
-                        return ABIContractFactory(nicknamed_contract.nickname, abi).at(
+                        # Note, we are not putting this into the self.named_contract dict, but maybe we should
+                        return ABIContractFactory(named_contract.contract_name, abi).at(
                             address
                         )
                 else:
                     logger.info(
-                        f"No abi_source or abi_path found for {nicknamed_contract.nickname}, returning a blank contract at {address}"
+                        f"No abi_source or abi_path found for {named_contract.contract_name}, returning a blank contract at {address}"
                     )
                     # We could probably put this into _deploy_named_contract with a conditional
                     blank_contract: VyperDeployer | ZksyncDeployer = boa.loads_partial(
@@ -654,9 +615,9 @@ class Network:
 
         if deployer_script is None:
             raise ValueError(
-                f"Contract {nicknamed_contract.nickname} must be deployed but no deployer_script specified in their {CONFIG_NAME}."
+                f"Contract {named_contract.contract_name} must be deployed but no deployer_script specified in their {CONFIG_NAME}."
             )
-        return self._deploy_nicknamed_contract(nicknamed_contract, deployer_script)
+        return self._deploy_named_contract(named_contract, deployer_script)
 
     def is_local_or_forked_network(self) -> bool:
         """Returns True if network is:
@@ -669,44 +630,43 @@ class Network:
     def has_explorer(self) -> bool:
         return self.explorer_uri is not None
 
-    def _deploy_nicknamed_contract(
-        self, nicknamed_contract: NicknamedContract, deployer_script: str | Path
+    def _deploy_named_contract(
+        self, named_contract: NamedContract, deployer_script: str | Path
     ) -> VyperContract | ZksyncContract:
         config = get_config()
-        deployed_nicknamed_contract: VyperContract | ZksyncContract = (
-            nicknamed_contract._deploy(config.script_folder, deployer_script)
+        deployed_named_contract: VyperContract | ZksyncContract = (
+            named_contract._deploy(config.script_folder, deployer_script)
         )
-        self.nicknamed_contracts[nicknamed_contract.nickname] = nicknamed_contract
+        self.named_contracts[named_contract.contract_name] = named_contract
         if self.save_to_db:
             if not self.is_local_or_forked_network():
-                added = self._add_nickname_to_db(nicknamed_contract)
+                added = self._add_named_to_db(named_contract)
                 if not added:
                     logger.error(
-                        f"Could not add nickname to database for contract {nicknamed_contract.nickname}."
+                        f"Could not add contract_name to database for contract {named_contract.contract_name}."
                     )
-        return deployed_nicknamed_contract
+        return deployed_named_contract
 
-    def _add_nickname_to_db(self, nicknamed_contract: NicknamedContract) -> bool:
+    def _add_named_to_db(self, named_contract: NamedContract) -> bool:
         db = get_deployments_db()
         field_names = db._get_fieldnames_str()
-        sql = "SELECT {} FROM deployments WHERE contract_name = ? AND json_extract(tx_dict, '$.chainId') = ? AND contract_address = ? ORDER BY broadcast_ts DESC LIMIT 1".format(
+        sql = "SELECT {} FROM deployments WHERE json_extract(tx_dict, '$.chainId') = ? AND contract_address = ? ORDER BY broadcast_ts DESC LIMIT 1".format(
             field_names
         )
         cursor = db.db.cursor()
         cursor.execute(
             sql,
             (
-                nicknamed_contract.recently_deployed_contract.contract_name,  # type: ignore
                 to_hex(self.chain_id),
-                nicknamed_contract.recently_deployed_contract.address,  # type: ignore
+                named_contract.recently_deployed_contract.address,  # type: ignore
             ),
         )
         contract = cursor.fetchone()
         if contract:
-            deployment_id = contract[12]  # This is the deployment ID
+            deployment_id = contract[11]  # This is the deployment ID
             cursor.execute(
-                "UPDATE deployments SET nickname = ? WHERE deployment_id = ?",
-                (nicknamed_contract.nickname, deployment_id),
+                "UPDATE deployments SET contract_name = ? WHERE deployment_id = ?",
+                (named_contract.contract_name, deployment_id),
             )
             db.db.commit()
         cursor.close()
@@ -784,11 +744,11 @@ class Network:
             abi = boa_get_abi_from_explorer(str(address), quiet=True)
         return abi, deployer  # type: ignore
 
-    def get_named_contract(self, contract_name: str) -> NicknamedContract | None:
-        return self.nicknamed_contracts.get(contract_name, None)
+    def get_named_contract(self, contract_name: str) -> NamedContract | None:
+        return self.named_contracts.get(contract_name, None)
 
-    def get_nicknamed_contracts(self) -> dict:
-        return self.nicknamed_contracts
+    def get_named_contracts(self) -> dict:
+        return self.named_contracts
 
     def set_boa_eoa(self, account: MoccasinAccount):
         if self.is_local_or_forked_network:  # type: ignore[truthy-function]
@@ -818,7 +778,7 @@ class Network:
         return name in [PYEVM, ERAVM] or fork
 
     @staticmethod
-    def _check_valid_deploy(named_contract: NicknamedContract):
+    def _check_valid_deploy(named_contract: NamedContract):
         # black magic! check if the contract we have is actually the
         # same one that boa.env has. it could be invalidated in the case
         # of e.g. rollbacks
@@ -836,14 +796,14 @@ class Network:
 
 class _Networks:
     _networks: dict[str, Network]
-    _default_nicknamed_contracts: dict[str, NicknamedContract]
+    _default_named_contracts: dict[str, NamedContract]
     _overriden_active_network: Network | None
     default_db_path: Path
     default_network_name: str
 
     def __init__(self, toml_data: dict, project_root: Path):
         self._networks = {}
-        self._default_nicknamed_contracts = {}
+        self._default_named_contracts = {}
         self._overriden_active_network = None
         self.custom_networks_counter = 0
         project_data = toml_data.get("project", {})
@@ -865,7 +825,7 @@ class _Networks:
 
         self._validate_network_contracts_dict(default_contracts)
         for contract_name, contract_data in default_contracts.items():
-            self._default_nicknamed_contracts[contract_name] = NicknamedContract(
+            self._default_named_contracts[contract_name] = NamedContract(
                 contract_name,
                 force_deploy=contract_data.get("force_deploy", None),
                 abi=contract_data.get("abi", None),
@@ -888,10 +848,12 @@ class _Networks:
                 )
                 final_network_contracts = (
                     self._generate_network_contracts_from_defaults(
-                        self._default_nicknamed_contracts.copy(),
+                        self._default_named_contracts.copy(),
                         starting_network_contracts_dict,
                     )
                 )
+                # Review: We might need to validate the named contracts against the actual names of contracts
+                # So there is no collision
                 if network_data.get("fork", None) is True:
                     network_data = self._add_fork_network_defaults(network_data)
                     self._validate_fork_network_defaults(network_data)
@@ -917,7 +879,7 @@ class _Networks:
                     save_to_db=network_data.get(SAVE_TO_DB, True),
                     live_or_staging=network_data.get("live_or_staging", True),
                     db_path=network_data.get("db_path", self.default_db_path),
-                    nicknamed_contracts=final_network_contracts,
+                    named_contracts=final_network_contracts,
                     extra_data=network_data.get("extra_data", {}),
                 )
                 setattr(self, network_name, network)
@@ -933,7 +895,7 @@ class _Networks:
         self, starting_default_contracts: dict, starting_network_contracts_dict: dict
     ) -> dict:
         for contract_name, contract_data in starting_network_contracts_dict.items():
-            named_contract = NicknamedContract(
+            named_contract = NamedContract(
                 contract_name,
                 force_deploy=contract_data.get("force_deploy", None),
                 abi=contract_data.get("abi", None),
@@ -941,9 +903,9 @@ class _Networks:
                 deployer_script=contract_data.get("deployer_script", None),
                 address=contract_data.get("address", None),
             )
-            if self._default_nicknamed_contracts.get(contract_name, None):
+            if self._default_named_contracts.get(contract_name, None):
                 named_contract.set_defaults(
-                    self._default_nicknamed_contracts[contract_name]
+                    self._default_named_contracts[contract_name]
                 )
             starting_default_contracts[contract_name] = named_contract
         return starting_default_contracts
@@ -954,7 +916,7 @@ class _Networks:
         if boa.env.nickname in self._networks:
             return self._networks[boa.env.nickname]
         new_network = Network(
-            name=boa.env.nickname, nicknamed_contracts=self._default_nicknamed_contracts
+            name=boa.env.nickname, named_contracts=self._default_named_contracts
         )
         self._networks[new_network.name] = new_network
         return new_network
