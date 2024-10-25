@@ -6,7 +6,7 @@ from typing import cast
 
 import boa
 
-from moccasin.config import Network, get_config
+from moccasin.config import Network, get_or_initialize_config
 from moccasin.constants.vars import (
     DEFAULT_API_KEY_ENV_VAR,
     DEFAULT_NETWORKS_BY_CHAIN_ID,
@@ -55,7 +55,7 @@ def boa_get_abi_from_explorer(
     network: Network | None = None
     # 1. If not ignore_config, grab stuff from the config
     if not ignore_config:
-        config = get_config()
+        config = get_or_initialize_config()
         if network_name_or_id:
             network = config.networks.get_network(network_name_or_id)
             network = cast(Network, network)
