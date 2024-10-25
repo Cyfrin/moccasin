@@ -33,6 +33,8 @@ Moccasin
     :maxdepth: 3
 
     Contract Verification <how-tos/verify_contracts.rst>
+    Stateless Fuzzing <how-tos/stateless_fuzzing.rst>
+    Stateful Fuzzing <how-tos/stateful_fuzzing.rst>
     
 
 .. toctree::

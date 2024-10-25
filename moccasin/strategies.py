@@ -5,13 +5,9 @@
 from typing import Any, Callable, Iterable, Literal, Optional, Tuple, Union
 import hypothesis.strategies as st
 from boa.util.abi import Address
-from eth_account import Account 
 from eth_abi.grammar import BasicType, TupleType, parse
-from hypothesis import strategies as st
 from hypothesis.strategies import SearchStrategy
-from hypothesis.strategies._internal.deferred import DeferredStrategy
 from moccasin.utils import get_int_bounds
-import boa
 
 
 TYPE_STR_TRANSLATIONS = {"byte": "bytes1", "decimal": "fixed168x10"}
@@ -147,30 +143,14 @@ def _decimal_strategy(
 
 @_exclude_filter
 def _address_strategy() -> SearchStrategy:
-    common_addresses = [
-        Address("0x0000000000000000000000000000000000000000"),
-    ]
-    
-    # Generate random addresses and convert to Address objects
     random_address = (
         st.binary(min_size=20, max_size=20)
         .map(lambda x: "0x" + x.hex())
-        .map(Address)  # Convert the hex string to Address object
+        .map(Address)  
     )
-    
-    # 1 in 10 chance of getting the zero address
-    return st.one_of(
-        st.sampled_from(common_addresses),
-        random_address,
-        random_address,
-        random_address,
-        random_address,
-        random_address,
-        random_address,
-        random_address,
-        random_address,
-        random_address
-    )
+
+    return random_address
+
 
 @_exclude_filter
 def _bytes_strategy(
@@ -233,6 +213,7 @@ def _tuple_strategy(abi_type: TupleType) -> SearchStrategy:
     strategies = [strategy(i.to_type_str()) for i in abi_type.components]
     return st.tuples(*strategies)
 
+
 def strategy(type_str: str, **kwargs: Any) -> SearchStrategy:
     type_str = TYPE_STR_TRANSLATIONS.get(type_str, type_str)
     if type_str == "fixed168x10":
@@ -258,10 +239,3 @@ def strategy(type_str: str, **kwargs: Any) -> SearchStrategy:
 
     raise ValueError(f"No strategy available for type: {type_str}")
 
-class _DeferredStrategyRepr(DeferredStrategy):
-    def __init__(self, fn: Callable, repr_target: str) -> None:
-        super().__init__(fn)
-        self._repr_target = repr_target
-
-    def __repr__(self):
-        return f"sampled_from({self._repr_target})"
