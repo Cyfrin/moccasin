@@ -1,5 +1,7 @@
-from moccasin.utils import get_int_bounds
 from eth.constants import UINT_256_MAX
+
+from moccasin.utils import get_int_bounds
+
 # from moccasin.strategies import strategy # TODO: Test this 
 
 def test_get_int_bounds_uint256():

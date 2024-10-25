@@ -3,12 +3,13 @@
 # https://github.com/eth-brownie/brownie/blob/master/brownie/test/strategies.py
 
 from typing import Any, Callable, Iterable, Literal, Optional, Tuple, Union
+
 import hypothesis.strategies as st
 from boa.util.abi import Address
 from eth_abi.grammar import BasicType, TupleType, parse
 from hypothesis.strategies import SearchStrategy
-from moccasin.utils import get_int_bounds
 
+from moccasin.utils import get_int_bounds
 
 TYPE_STR_TRANSLATIONS = {"byte": "bytes1", "decimal": "fixed168x10"}
 
