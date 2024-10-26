@@ -298,10 +298,7 @@ class Network:
         if not isinstance(limit, int) and not isinstance(limit, type(None)):
             raise ValueError(f"Limit must be an integer, not {type(limit)}.")
         final_sql, params = self._generate_sql_from_args(
-            contract_name=contract_name,
-            chain_id=chain_id,
-            limit=limit,
-            db=db,
+            contract_name=contract_name, chain_id=chain_id, limit=limit, db=db
         )
         return db._get_deployments_from_sql(final_sql, params)
 
@@ -331,10 +328,7 @@ class Network:
             return iter([])
         else:
             return self._fetch_deployments_from_db(
-                contract_name=contract_name,
-                chain_id=chain_id,
-                limit=limit,
-                db=db,
+                contract_name=contract_name, chain_id=chain_id, limit=limit, db=db
             )
 
     def get_deployments_unchecked(
@@ -408,9 +402,7 @@ class Network:
         return boa.load_partial(str(contract_path.absolute()))
 
     def get_latest_deployment_unchecked(
-        self,
-        contract_name: str | None = None,
-        chain_id: int | str | None = None,
+        self, contract_name: str | None = None, chain_id: int | str | None = None
     ) -> Deployment | None:
         deployments = self.get_deployments_unchecked(
             contract_name=contract_name, chain_id=chain_id, limit=1
@@ -430,9 +422,7 @@ class Network:
         return None
 
     def get_latest_deployment_checked(
-        self,
-        contract_name: str | None = None,
-        chain_id: int | str | None = None,
+        self, contract_name: str | None = None, chain_id: int | str | None = None
     ) -> Deployment | None:
         deployments = self.get_deployments_checked(
             contract_name=contract_name, chain_id=chain_id, limit=1
@@ -463,9 +453,7 @@ class Network:
             "manifest_contract is deprecated and will be removed in a future version. Please use manifest_named."
         )
         return self.get_or_deploy_named(
-            contract_name=contract_name,
-            force_deploy=force_deploy,
-            address=address,
+            contract_name=contract_name, force_deploy=force_deploy, address=address
         )
 
     def instantiate_contract(
@@ -687,7 +675,7 @@ class Network:
         | None = None,
         abi_from_explorer: bool | None = None,
         address: str | None = None,
-    ) -> Tuple[Union[str, None], Union[VyperDeployer, ZksyncDeployer, None]]:
+    ) -> Tuple[Union[list, None], Union[VyperDeployer, ZksyncDeployer, None]]:
         if abi_from_explorer and not address:
             raise ValueError(
                 f"Cannot get ABI from explorer without an address for contract {logging_contract_name}. Please provide an address."
@@ -701,35 +689,29 @@ class Network:
         if abi_like:
             if isinstance(abi_like, str):
                 # Check if it's a file path
-                if (
-                    abi_like.endswith(".json")
-                    or abi_like.endswith(".vy")
-                    or abi_like.endswith(".vyi")
-                ):
-                    abi_path = config.find_contract(abi_like)
-                    if abi_like.endswith(".vy"):
-                        deployer = boa.load_partial(str(abi_path))
-                        abi = str(build_abi_output(deployer.compiler_data))
+                if abi_like.endswith(".json") or abi_like.endswith(".vyi"):
+                    if abi_like.endswith(".json"):
+                        abi_path = config.project_root.joinpath(abi_like)
+                        abi = boa.load_abi(str(abi_path)).abi
+                        abi = cast(list, abi)
                         return abi, deployer
-                    elif abi_path.suffix == ".json":
-                        abi = str(boa.load_abi(str(abi_path)).abi)
-                        return abi, deployer
-                    elif abi_path.suffix == ".vyi":
+                    elif abi_like.endswith(".vyi"):
                         raise NotImplementedError(
                             f"Loading an ABI from Vyper Interface files is not yet supported for contract {logging_contract_name}. You can track the progress here:\nhttps://github.com/vyperlang/vyper/issues/4232"
                         )
                 else:
                     contract_path = config.find_contract(abi_like)
                     deployer = boa.load_partial(str(contract_path))
-                    abi = str(build_abi_output(deployer.compiler_data))
+                    abi = build_abi_output(deployer.compiler_data)
+                    abi = cast(list, abi)
                     return abi, deployer
             if isinstance(abi_like, list):
                 # If its an ABI, just take it
-                return str(abi_like), deployer
+                return abi_like, deployer
             if isinstance(abi_like, VyperDeployer) or isinstance(
                 abi_like, ZksyncDeployer
             ):
-                return str(build_abi_output(abi_like.compiler_data)), abi_like
+                return build_abi_output(abi_like.compiler_data), abi_like
             if isinstance(abi_like, VyperContract) or isinstance(
                 abi_like, ZksyncContract
             ):
