@@ -59,6 +59,8 @@ def boa_get_abi_from_explorer(
     # 1. If not ignore_config, grab stuff from the config
     if not ignore_config:
         config = get_or_initialize_config()
+        if network_name_or_id is None:
+            network_name_or_id = config.default_network
         if network_name_or_id:
             network = config.networks.get_network(network_name_or_id)
             network = cast(Network, network)
