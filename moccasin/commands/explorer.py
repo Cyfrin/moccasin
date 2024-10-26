@@ -30,6 +30,7 @@ def main(args: Namespace) -> int:
             uri=args.uri,
             api_key=args.api_key,
             save_abi_path=args.save_abi_path,
+            save=args.save,
             ignore_config=args.ignore_config,
             network_name_or_id=args.network,
         )
@@ -68,6 +69,8 @@ def boa_get_abi_from_explorer(
                 api_key = network.explorer_api_key
             if not save_abi_path:
                 save_abi_path = network.save_abi_path
+        if not save_abi_path:
+            save_abi_path = config.project.get("save_abi_path", None)
 
     # 2. If you still don't have a uri, check the default networks
     if not uri:
@@ -85,7 +88,6 @@ def boa_get_abi_from_explorer(
         raise ValueError(
             f"No API key provided. Please provide one in the command line with --api-key or set the environment variable:\n{DEFAULT_API_KEY_ENV_VAR}"
         )
-
     if (save and save_abi_path and not name) or (save and not save_abi_path):
         raise ValueError(
             "If you wish to save the ABI, you must also provide both a --name and a --save-abi-path."
