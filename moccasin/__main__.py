@@ -514,7 +514,10 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
 
     network_uri_or_chain = get_parser.add_mutually_exclusive_group()
     network_uri_or_chain.add_argument(
-        "--uri", help="API URI endpoint for explorer.", type=str
+        "--explorer-uri", help="API URI endpoint for explorer.", type=str
+    )
+    network_uri_or_chain.add_argument(
+        "--explorer-type", help="blockscout, etherscan, or zksyncexplorer.", type=str
     )
     network_uri_or_chain.add_argument(
         "--network",
