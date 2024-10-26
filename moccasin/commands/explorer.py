@@ -88,7 +88,6 @@ def boa_get_abi_from_explorer(
         raise ValueError(
             f"No API key provided. Please provide one in the command line with --api-key or set the environment variable:\n{DEFAULT_API_KEY_ENV_VAR}"
         )
-    breakpoint()
     if (save and save_abi_path and not name) or (save and not save_abi_path):
         raise ValueError(
             "If you wish to save the ABI, you must also provide both a --name and a --save-abi-path."
