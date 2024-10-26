@@ -27,7 +27,8 @@ def main(args: Namespace) -> int:
         boa_get_abi_from_explorer(
             args.address,
             name=args.name,
-            uri=args.uri,
+            explorer_uri=args.explorer_uri,
+            explorer_type=args.explorer_type,
             api_key=args.api_key,
             save_abi_path=args.save_abi_path,
             save=args.save,
@@ -42,7 +43,8 @@ def main(args: Namespace) -> int:
 def boa_get_abi_from_explorer(
     address: str,
     name: str | None = None,
-    uri: str | None = None,
+    explorer_uri: str | None = None,
+    explorer_type: str | None = None,
     api_key: str | None = None,
     save_abi_path: str | None = None,
     save: bool = False,
@@ -63,8 +65,10 @@ def boa_get_abi_from_explorer(
             if network.chain_id:
                 network_name_or_id = str(network.chain_id)
         if network is not None:
-            if not uri:
-                uri = network.explorer_uri
+            if not explorer_uri:
+                explorer_uri = network.explorer_uri
+            if not explorer_type:
+                explorer_type = network.explorer_type
             if not api_key:
                 api_key = network.explorer_api_key
             if not save_abi_path:
@@ -72,13 +76,17 @@ def boa_get_abi_from_explorer(
         if not save_abi_path:
             save_abi_path = config.project.get("save_abi_path", None)
 
-    # 2. If you still don't have a uri, check the default networks
-    if not uri:
+    # 2. If you still don't have a explorer_uri, check the default networks
+    if not explorer_uri:
         if str(network_name_or_id).isdigit():
             chain_id = int(network_name_or_id)
-            uri = DEFAULT_NETWORKS_BY_CHAIN_ID.get(chain_id, {}).get("explorer")
+            explorer_uri = DEFAULT_NETWORKS_BY_CHAIN_ID.get(chain_id, {}).get(
+                "explorer_uri"
+            )
         else:
-            uri = DEFAULT_NETWORKS_BY_NAME.get(network_name_or_id, {}).get("explorer")
+            explorer_uri = DEFAULT_NETWORKS_BY_NAME.get(network_name_or_id, {}).get(
+                "explorer_uri"
+            )
 
     # 3. Only for api, finally, check ENV variable
     if not api_key:
@@ -94,7 +102,11 @@ def boa_get_abi_from_explorer(
         )
 
     abi: list = []
-    with boa.set_etherscan(uri, api_key=api_key):
+    if explorer_type != "etherscan":
+        logger.warning(
+            "As of today, fetching only works with Etherscan style explorers."
+        )
+    with boa.set_etherscan(explorer_uri, api_key=api_key):
         explorer = boa.explorer.get_etherscan()
         abi = explorer.fetch_abi(address)
         if len(abi) == 0:
