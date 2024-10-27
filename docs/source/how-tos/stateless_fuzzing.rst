@@ -44,7 +44,7 @@ To fuzz test this, in ``moccasin`` we'd create a new file in our ``tests`` direc
     # Assuming the contract is named `stateless_fuzz_solvable` in the `contracts.sub_lesson` folder
     from contracts.sub_lesson import stateless_fuzz_solvable
     from hypothesis import given, settings
-    from moccasin.strategies import strategy
+    from boa.test.strategies import strategy
 
     @settings(max_examples=1000)
     @given(input_number=strategy("uint256"))

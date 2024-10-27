@@ -48,7 +48,7 @@ To fuzz test this, in ``moccasin`` we'd create a new file in our ``tests`` direc
     from hypothesis.stateful import RuleBasedStateMachine, rule
     from hypothesis import settings
     from contracts.sub_lesson import stateful_fuzz_solvable
-    from moccasin.strategies import strategy
+    from boa.test.strategies import strategy
 
 
     class StatefulFuzzer(RuleBasedStateMachine):
