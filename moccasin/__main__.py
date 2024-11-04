@@ -276,6 +276,9 @@ Use this command to prepare your contracts for deployment or testing.""",
     test_parser.add_argument(
         "--cov-context", help="Coverage context to add to the coverage data."
     )
+    test_parser.add_argument(
+        "--hypothesis-seed", type=int, help="Random seed to get the same run as a prior run."
+    )
 
     # ------------------------------------------------------------------
     #                          RUN COMMAND

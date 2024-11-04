@@ -44,4 +44,5 @@ This is the most basic setup for testing.
     Testing with boa <testing/titanoboa_testing.rst>
     How to prank <testing/pranking.rst>
     Staging Markers <testing/staging_markers.rst>
+    Fuzzing <testing/fuzzing.rst>
     

@@ -99,7 +99,13 @@ def compile_project(
     contracts_location = project_path.joinpath(contracts_folder)
     contracts_to_compile = list(contracts_location.rglob("*.vy"))
 
-    logger.info(f"Compiling {len(contracts_to_compile)} contracts to {build_folder}...")
+    try:
+        build_folder_relpath: str = os.path.relpath(build_folder)
+    except ValueError:
+        build_folder_relpath = str(build_folder)
+    logger.info(
+        f"Compiling {len(contracts_to_compile)} contracts to {build_folder_relpath}/..."
+    )
 
     multiprocessing.set_start_method("fork", force=False)
 
