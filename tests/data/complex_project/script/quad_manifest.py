@@ -39,6 +39,9 @@ def manifest_many_times():
     price_feed_eight = active_network.get_or_deploy_named_contract("other_price_feed")
     print(price_feed_eight.address)
 
+    price_feed_four = deploy_mock()
+    print(price_feed_four.address)
+
 
 def moccasin_main():
     return manifest_many_times()

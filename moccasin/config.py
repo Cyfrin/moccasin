@@ -47,6 +47,7 @@ from moccasin.constants.vars import (
     LOCAL_NETWORK_DEFAULTS,
     PYEVM,
     RESTRICTED_VALUES_FOR_LOCAL_NETWORK,
+    SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS,
     SAVE_ABI_PATH,
     SAVE_TO_DB,
     SCRIPT_FOLDER,
@@ -307,16 +308,12 @@ class Network:
         contract_name: str | None = None,
         chain_id: int | str | None = None,
         limit: int | None = None,
-        config_or_db_path: Union["Config", Path, str, None] = None,
+        db_path: Union[Path, str, None] = None,
     ) -> Iterator[Deployment]:
         """Get deployments from the database without an initialized config."""
-        db_path = None
-        if isinstance(config_or_db_path, Config):
-            db_path = config_or_db_path._toml_data.get("db_path", ".deployments.db")
-        elif isinstance(db_path, str):
+        if isinstance(db_path, str):
             db_path = Path(db_path)
-        elif isinstance(config_or_db_path, Path):
-            db_path = config_or_db_path
+        db = None
         if not db_path:
             db = get_deployments_db()
         else:
@@ -336,13 +333,10 @@ class Network:
         contract_name: str | None = None,
         limit: int | None = None,
         chain_id: int | str | None = None,
-        config_or_db_path: Union["Config", Path, str, None] = None,
+        db_path: Union[Path, str, None] = None,
     ) -> list[Deployment]:
         deployments_iter = self._get_deployments_iterator(
-            contract_name=contract_name,
-            chain_id=chain_id,
-            limit=limit,
-            config_or_db_path=config_or_db_path,
+            contract_name=contract_name, chain_id=chain_id, limit=limit, db_path=db_path
         )
         return list(deployments_iter)
 
@@ -586,7 +580,7 @@ class Network:
                     if deployer:
                         return deployer.at(address)
                     else:
-                        # Note, we are not putting this into the self.named_contract dict, but maybe we should
+                        # Note, we are not putting this into the self.named_contracts dict, but maybe we should
                         return ABIContractFactory(named_contract.contract_name, abi).at(
                             address
                         )

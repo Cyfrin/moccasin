@@ -5,6 +5,8 @@ from typing import Any
 from boa.contracts.vyper.vyper_contract import VyperContract, VyperDeployer
 from boa_zksync.contract import ZksyncContract
 from boa_zksync.deployer import ZksyncDeployer
+import boa
+from boa.util.abi import Address
 
 from moccasin.logging import logger
 
@@ -23,7 +25,7 @@ class NamedContract:
     deployer_script: str | Path | None = None
     address: str | None = None
 
-    # If deployed these will not be None, they are for PyEVM, forked networks, or ERAVM only
+    # If deployed, for PyEVM or ERAVM only
     deployer: VyperDeployer | ZksyncDeployer | None = None
     recently_deployed_contract: VyperContract | ZksyncContract | None = None
 
@@ -47,6 +49,19 @@ class NamedContract:
     def reset(self):
         self.deployer = None
         self.recently_deployed_contract = None
+
+    def is_active(self):
+        if self.recently_deployed_contract is None:
+            return False
+        boa_contract = boa.env._contracts.get(
+            Address(self.recently_deployed_contract.address).canonical_address, None
+        )
+        boa_code = boa.env.get_code(boa_contract.address)
+        if boa_contract is None or boa_code is b"":
+            return False
+        if boa_contract == self.recently_deployed_contract:
+            return True
+        return False
 
     def get(self, key: str, otherwise: Any):
         return getattr(self, key, otherwise)
