@@ -49,8 +49,27 @@ def test_multiple_manifest_returns_the_same_or_different(mox_path, complex_temp_
     finally:
         os.chdir(current_dir)
     print_statements = result.stdout.split("\n")
-    assert print_statements[0] == print_statements[1] == print_statements[2]
-    assert print_statements[3] != print_statements[0]
+
+    # deploymocks vs manifest_named
+    assert print_statements[0] != print_statements[1]
+
+    # manifest_named, manifest_named, manifest_named
+    assert print_statements[1] == print_statements[2] == print_statements[3]
+
+    # force deploy named
+    assert print_statements[4] != print_statements[1] != print_statements[0]
+
+    # deploy mock
+    assert (
+        print_statements[5]
+        != print_statements[1]
+        != print_statements[0]
+        != print_statements[4]
+    )
+
+    assert print_statements[5] != print_statements[4] != print_statements[1]
+    assert print_statements[7] == print_statements[4]
+    assert print_statements[8] == print_statements[6]
     assert_broadcast_count(print_statements, 0)
 
 
@@ -148,9 +167,25 @@ def test_multiple_manifest_returns_the_same_or_different_on_real_network(
     finally:
         os.chdir(current_dir)
     print_statements = result.stdout.split("\n")
-    assert print_statements[0] == print_statements[1] == print_statements[2]
-    assert print_statements[3] != print_statements[0]
-    assert_broadcast_count(print_statements, 1)
+    # deploymocks vs manifest_named
+    mock_deploy = print_statements[3]
+    named_price_feed = print_statements[4]
+    named_price_feed_2 = print_statements[5]
+    named_price_feed_3 = print_statements[6]
+    redeploy_price_feed = print_statements[10]
+    mock_deploy_2 = print_statements[14]
+    other_price_feed = print_statements[18]
+    named_price_feed_5 = print_statements[19]
+    other_price_feed_2 = print_statements[20]
+
+    assert mock_deploy != named_price_feed
+    assert named_price_feed == named_price_feed_2 == named_price_feed_3
+    assert redeploy_price_feed != named_price_feed != mock_deploy
+    assert mock_deploy_2 != named_price_feed != mock_deploy
+    assert other_price_feed != mock_deploy_2 != named_price_feed != redeploy_price_feed
+    assert named_price_feed_5 == named_price_feed
+    assert other_price_feed == other_price_feed_2
+    assert_broadcast_count(print_statements, 4)
 
 
 def test_network_should_prompt_on_live(

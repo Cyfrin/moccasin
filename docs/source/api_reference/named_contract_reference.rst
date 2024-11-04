@@ -1,5 +1,5 @@
 ``NamedContract``
-#################
+#####################
 
 .. autoclass:: moccasin.named_contract.NamedContract
    :members:

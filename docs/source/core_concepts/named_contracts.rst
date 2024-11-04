@@ -1,5 +1,5 @@
 Named Contracts  
-###############
+###################
 
 One of the major differentiators between moccasin and other smart contract development tools is more flexible and powerful scripting. One of the such cabailities is built in :doc:`fixtures </core_concepts/testing/fixtures>` and :doc:`named contracts </core_concepts/named_contracts>`.
 
@@ -96,7 +96,7 @@ Let's break these down:
 - ``deployment_script``: The path to the :doc:`deployment script </core_concepts/scripting/deploy>` for this named contract, this will be a shorthand for deploying in the future. 
 - ``force_deploy```: If you want to force deploy the contract when :ref:`manifesting <manifesting>` the contract.
 
-As we know, to interact with a contract, one of the most important things is the ABI. For us to interact with any named contract, we give it an ABI, and we can start interacting with that named contract using the ``manifest_contract`` function. 
+As we know, to interact with a contract, one of the most important things is the ABI. For us to interact with any named contract, we give it an ABI, and we can start interacting with that named contract using the ``manifest_named`` function. 
 
 .. code-block:: python 
 
@@ -104,7 +104,7 @@ As we know, to interact with a contract, one of the most important things is the
 
     def print_contract_address():
         active_network = get_config().get_active_network()
-        usdc: VyperContract = active_network.manifest_contract("usdc")
+        usdc: VyperContract = active_network.manifest_named("usdc")
         decimals = usdc.decimals()
         print(decimals)
 
@@ -113,7 +113,7 @@ As we know, to interact with a contract, one of the most important things is the
 
 And running this on ``mainnet-fork`` will get the resulting output:
 
-.. code-block
+.. code-block:: bash
 
     # Run this 
     mox run print_contract_address --network mainnet-fork
@@ -134,5 +134,5 @@ And more! Let's read more about the power of ``NamedContract``\s and how they ca
 .. toctree::
     :maxdepth: 2
 
-    Manifest Contract <named_contracts/manifest_contract.rst>
+    Manifest Named Contract <named_contracts/manifest_named.rst>
     

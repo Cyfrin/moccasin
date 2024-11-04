@@ -1,7 +1,7 @@
 .. _manifesting:
 
-Manifest Contract (``get_or_deploy_contract``)
-==============================================
+Manifest Named Contract (``get_or_deploy_named_contract``)
+==========================================================
 
 .. note::
 
@@ -13,7 +13,7 @@ An issue that developers run into when creating smart contracts, is knowing how 
 - How can you test to make sure your deploy scripts work exactly the way your tests run?
 - If I want to simulate a test with a `forked test <forked-networks.rst>`, will my scripts still work?
 
-This is where the ``manifest_contract`` aka ``get_or_deploy_contract`` function comes in. Let's say you have a smart contract that has an address as a constructor parameter, because the address is different on different chains. This additionally is very helpful in testing, and ``NamedContract``\s have built-in ``pytest`` :doc:`fixtures </core_concepts/testing/fixtures>`.
+This is where the ``manifest_named`` aka ``get_or_deploy_named_contract`` function comes in. Let's say you have a smart contract that has an address as a constructor parameter, because the address is different on different chains. This additionally is very helpful in testing, and ``NamedContract``\s have built-in ``pytest`` :doc:`fixtures </core_concepts/testing/fixtures>`.
 
 Interacting with a contract on multiple networks with one script 
 ----------------------------------------------------------------
@@ -59,7 +59,7 @@ In order for us to do this traditionally, we'd have to write a separate script *
     elif network.name == "second_mainnet":
         # do something...
 
-And this is awful! So instead, what we can do, is setup **ALL** of the configuration in our ``moccasin.toml`` file and use the magic ``manifest_contract`` function to automatically deploy the contract on the correct network, with the correct parameters. Let's look at the ``moccasin.toml`` file:
+And this is awful! So instead, what we can do, is setup **ALL** of the configuration in our ``moccasin.toml`` file and use the magic ``manifest_named`` function to automatically deploy the contract on the correct network, with the correct parameters. Let's look at the ``moccasin.toml`` file:
 
 .. code-block:: toml 
 
@@ -96,7 +96,7 @@ And with this, we only need ONE script that works for all of these!
 
     def get_decimals():
         active_network = get_config().get_active_network()
-        usdc: VyperContract = active_network.manifest_contract("usdc")
+        usdc: VyperContract = active_network.manifest_named("usdc")
         decimals = usdc.decimals()
         print(decimals)
 
