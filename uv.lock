@@ -726,8 +726,13 @@ requires-dist = [
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
     { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
+<<<<<<< HEAD
     { name = "titanoboa", specifier = ">=0.2.5b1" },
     { name = "titanoboa-zksync", specifier = ">=0.2.6" },
+=======
+    { name = "titanoboa", git = "https://github.com/PatrickAlphaC/titanoboa.git?rev=feat%2Fnicknamed-deployment" },
+    { name = "titanoboa-zksync", git = "https://github.com/PatrickAlphaC/titanoboa-zksync.git?rev=feat%2Fcontract-nicknames" },
+>>>>>>> 3edced5 (feat: simplified manifest)
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
@@ -1289,8 +1294,13 @@ wheels = [
 
 [[package]]
 name = "titanoboa"
+<<<<<<< HEAD
 version = "0.2.5b1"
 source = { registry = "https://pypi.org/simple" }
+=======
+version = "0.2.4"
+source = { git = "https://github.com/PatrickAlphaC/titanoboa.git?rev=feat%2Fnicknamed-deployment#83bfb30e81f31b7a4f422d19b6774bd6b07b7be0" }
+>>>>>>> 3edced5 (feat: simplified manifest)
 dependencies = [
     { name = "eth-abi" },
     { name = "eth-account" },
@@ -1306,6 +1316,7 @@ dependencies = [
     { name = "vvm" },
     { name = "vyper" },
 ]
+<<<<<<< HEAD
 sdist = { url = "https://files.pythonhosted.org/packages/42/e0/c3749d2dcae01b0d1ddbd92ea55278610dca2551aed686d351df7c2cd84d/titanoboa-0.2.5b1.tar.gz", hash = "sha256:599ff6bed735f9e0a80ba160899486c144e51ce6d99c9f0dc51d91b0f50b0f09", size = 91748 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6c/87/db4f83859c53f150de07b1e9154ae8bbf4e382af81751c0b3d5e065130ee/titanoboa-0.2.5b1-py3-none-any.whl", hash = "sha256:752ab527182d0df95a80ce952d24b5b0149c23de7a991204399071ead587f0d3", size = 102804 },
@@ -1322,6 +1333,16 @@ sdist = { url = "https://files.pythonhosted.org/packages/a6/5d/0452ffabdc75602e2
 wheels = [
     { url = "https://files.pythonhosted.org/packages/69/8c/ce01a3cc97953301417213e6d62680bc53d7990b5c98b21664917184a17a/titanoboa_zksync-0.2.6-py3-none-any.whl", hash = "sha256:0c259c4346dffa4b477b2bedc708188cabe84f53f005fb5bc47f0bccbb7e73aa", size = 25288 },
 ]
+=======
+
+[[package]]
+name = "titanoboa-zksync"
+version = "0.2.5"
+source = { git = "https://github.com/PatrickAlphaC/titanoboa-zksync.git?rev=feat%2Fcontract-nicknames#c59121f65ede132a76e736a460e9c532a89ba7d3" }
+dependencies = [
+    { name = "titanoboa" },
+]
+>>>>>>> 3edced5 (feat: simplified manifest)
 
 [[package]]
 name = "tomli"

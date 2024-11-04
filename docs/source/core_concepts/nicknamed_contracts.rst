@@ -1,11 +1,15 @@
+<<<<<<< HEAD:docs/source/core_concepts/named_contracts.rst
 Named Contracts  
+=======
+Nicknamed Contracts  
+>>>>>>> 3edced5 (feat: simplified manifest):docs/source/core_concepts/nicknamed_contracts.rst
 ###################
 
-One of the major differentiators between moccasin and other smart contract development tools is more flexible and powerful scripting. One of the such cabailities is built in :doc:`fixtures </core_concepts/testing/fixtures>` and :doc:`named contracts </core_concepts/named_contracts>`.
+One of the major differentiators between moccasin and other smart contract development tools is more flexible and powerful scripting. One of the such cabailities is built in :doc:`fixtures </core_concepts/testing/fixtures>` and :doc:`named contracts </core_concepts/nicknamed_contracts>`.
 
-**Named contracts allow you to define deployment scripts, addresses by chain, fixtures settings for testing, and more.**
+**Nicknamed contracts allow you to define deployment scripts, addresses by chain, fixtures settings for testing, and more.**
 
-Named Contract Example - Minimal Example
+Nicknamed Contract Example - Minimal Example
 ========================================
 
 Let's look at a minimal ``moccasin.toml`` with a ETH mainnet network fork with a named contract:
@@ -15,16 +19,16 @@ Let's look at a minimal ``moccasin.toml`` with a ETH mainnet network fork with a
     [project]
     src = "contracts"
 
-    [networks.mainnet-fork]
+    [networks.mainnet]
     url = "https://ethereum-rpc.publicnode.com"
     chain_id = 1 
     fork = true
 
     # Look here! We have a named contract named "usdc"
-    [networks.mainnet-fork.contracts]
+    [networks.mainnet.contracts]
     usdc = { address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
 
-The `NamedContract` in this case, is `usdc`. And it's this named contract that we can access our scripts!
+The `NicknamedContract` in this case, is `usdc`. And it's this named contract that we can access our scripts!
 
 .. code-block:: python 
 
@@ -42,7 +46,7 @@ We could run this script, and it would, print out the address from our config.
 
 .. code-block:: bash 
 
-    mox run print_contract_address --network mainnet-fork
+    mox run print_contract_address --network mainnet
 
     0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
 
@@ -58,7 +62,7 @@ Now, just getting the address is pretty boring, typically you want to interact w
 
     You can learn more about what an ABI is from `Cyfrin Updraft <https://updraft.cyfrin.io/courses/solidity/storage-factory/interacting-with-smart-contracts-abi?lesson_format=video>`_ or the `Cyfrin Blog <https://www.cyfrin.io/blog/what-is-a-smart-contract-abi-and-how-to-get-it>`_.
 
-There are a number of flags we can set for our ``NamedContract``:
+There are a number of flags we can set for our ``NicknamedContract``:
 
 .. tabs:: 
     
@@ -125,14 +129,18 @@ The key here, was the ``mainifest_contract``, which does a lot of things under t
 
 - Deploys a contract if one doesn't exist
 - Allows us to get fixtures for testing 
-- Returns the named contract at it's address if it's on a chain we recognize 
+- Returns the nicknamed contract at it's address if it's on a chain we recognize 
 - Sets up local testing environments for us to test our contracts
 
-And more! Let's read more about the power of ``NamedContract``\s and how they can help you in your development process.
+And more! Let's read more about the power of ``NicknamedContract``\s and how they can help you in your development process.
 
 
 .. toctree::
     :maxdepth: 2
 
+<<<<<<< HEAD:docs/source/core_concepts/named_contracts.rst
     Manifest Named Contract <named_contracts/manifest_named.rst>
+=======
+    Manifest Named Contract <nicknamed_contracts/manifest_named.rst>
+>>>>>>> 3edced5 (feat: simplified manifest):docs/source/core_concepts/nicknamed_contracts.rst
     

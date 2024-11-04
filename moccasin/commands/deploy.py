@@ -30,6 +30,6 @@ def main(args: Namespace) -> int:
             args.contract_name, force_deploy=True
         )
         logger.info(
-            f"Deployed contract {args.contract_name} on {active_network.name} to {deployed_contract.address}"
+            f"Deployed contract {args.nickname} on {active_network.name} to {deployed_contract.address}"
         )
     return 0
