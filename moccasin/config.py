@@ -38,7 +38,6 @@ from moccasin.constants.vars import (
     DB_PATH_LIVE_DEFAULT,
     DB_PATH_LOCAL_DEFAULT,
     DEFAULT_NETWORK,
-    SQL_CONTRACT_NICKNAME,
     DEPENDENCIES_FOLDER,
     DOT_ENV_FILE,
     DOT_ENV_KEY,
@@ -48,7 +47,6 @@ from moccasin.constants.vars import (
     LOCAL_NETWORK_DEFAULTS,
     PYEVM,
     RESTRICTED_VALUES_FOR_LOCAL_NETWORK,
-    SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS,
     SAVE_ABI_PATH,
     SAVE_TO_DB,
     SCRIPT_FOLDER,
@@ -56,6 +54,7 @@ from moccasin.constants.vars import (
     SQL_AND,
     SQL_CHAIN_ID,
     SQL_CONTRACT_NAME,
+    SQL_CONTRACT_NICKNAME,
     SQL_LIMIT,
     SQL_WHERE,
     TESTS_FOLDER,
@@ -493,7 +492,7 @@ class Network:
 
     def manifest_contract(
         self,
-        contract_name: str,
+        contract_nickname: str,
         force_deploy: bool = False,
         address: str | None = None,
         checked: bool = False,
