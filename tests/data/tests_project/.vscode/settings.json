@@ -1,9 +1,9 @@
 {
-    "vyper.command": "$HOME/code/moccasin/.venv/bin/vyper",
     "files.exclude": {
         "**/__pycache__": true
     },
     "files.associations": {
         ".coveragerc": "toml"
-    }
+    },
+    "vyper.command": "vyper -p ./lib/github -p ./lib/pypi"
 }

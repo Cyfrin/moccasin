@@ -107,3 +107,46 @@ def test_staging_flag_live_networks(mox_path, complex_temp_path, anvil):
     # Check for the error message in the output
     assert "2 passed" in result.stdout
     assert "7 skipped" in result.stdout
+
+
+def test_xdist_auto(mox_path, test_config_temp_path):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(test_config_temp_path))
+        result = subprocess.run(
+            [mox_path, "test", "-nauto"], capture_output=True, text=True
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert result.returncode == 0
+    assert "workers" in result.stdout
+    assert ".." in result.stdout
+
+
+def test_xdist_num(mox_path, test_config_temp_path):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(test_config_temp_path))
+        result = subprocess.run(
+            [mox_path, "test", "-n", "5"], capture_output=True, text=True
+        )
+    finally:
+        os.chdir(current_dir)
+    assert result.returncode == 0
+    assert "5/5 workers" in result.stdout
+    assert ".." in result.stdout
+
+
+def test_test_v(mox_path, test_config_temp_path):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(test_config_temp_path))
+        result = subprocess.run(
+            [mox_path, "test", "-vvv"], capture_output=True, text=True
+        )
+    finally:
+        os.chdir(current_dir)
+    assert result.returncode == 0
+    assert "PASSED" in result.stdout
+    assert "tests/test_fuzz_counter.py::fuzzer::runTest" in result.stdout

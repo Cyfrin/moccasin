@@ -76,7 +76,7 @@ And you'll see an output like:
     >       assert result == input_number, f"Expected {input_number}, got {result}"
     E       AssertionError: Expected 2, got 0
     E       Falsifying example: f(
-    E           contract=</Users/patrick/code/vyper-full-course-cu-2/12-mox-erc20-cu/contracts/sub_lesson/stateless_fuzz_solvable.vy at 0xC6Acb7D16D51f72eAA659668F30A40d87E2E0551, compiled with vyper-0.4.0+e9db8d9>,
+    E           contract=<~/code/vyper-full-course-cu-2/12-mox-erc20-cu/contracts/sub_lesson/stateless_fuzz_solvable.vy at 0xC6Acb7D16D51f72eAA659668F30A40d87E2E0551, compiled with vyper-0.4.0+e9db8d9>,
     E           input_number=2,
     E       )
 

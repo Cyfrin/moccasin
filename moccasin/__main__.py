@@ -277,7 +277,33 @@ Use this command to prepare your contracts for deployment or testing.""",
         "--cov-context", help="Coverage context to add to the coverage data."
     )
     test_parser.add_argument(
-        "--hypothesis-seed", type=int, help="Random seed to get the same run as a prior run."
+        "--tb",
+        choices=["auto", "long", "short", "no", "line", "native"],
+        help="Traceback print mode",
+    )
+    test_parser.add_argument(
+        "-v", "--verbose", action="count", help="Verbosity level", default=None
+    )
+
+    # Hypothesis Options
+    test_parser.add_argument(
+        "--hypothesis-seed",
+        type=int,
+        help="Random seed to get the same run as a prior run.",
+    )
+
+    # Add pytest-xdist specific arguments
+    test_parser.add_argument(
+        "-n",
+        "--numprocesses",
+        help="Number of processes to use (auto/NUM)",
+        default=None,
+    )
+    test_parser.add_argument(
+        "--dist",
+        choices=["load", "loadscope", "loadfile", "loadgroup", "no"],
+        help="Load distribution mode",
+        default=None,
     )
 
     # ------------------------------------------------------------------
