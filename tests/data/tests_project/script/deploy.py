@@ -1,5 +1,7 @@
 from src import Counter
+
 from moccasin.boa_tools import VyperContract
+
 # from boa.contracts.vyper.vyper_contract import VyperContract
 
 def deploy() -> VyperContract:
