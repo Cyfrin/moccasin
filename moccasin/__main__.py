@@ -301,7 +301,7 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
     test_parser.add_argument(
         "--dist",
-        choices=["load", "loadscope", "loadfile", "loadgroup", "no"],
+        choices=["load", "loadscope", "loadfile", "loadgroup", "no", "worksteal"],
         help="Load distribution mode",
         default=None,
     )
