@@ -34,7 +34,7 @@ And run all your tests with ``mox test``, to get an output like:
 
 This is the most basic setup for testing. 
 
-You can additionally use [pytest-xdist](https://pytest-xdist.readthedocs.io/en/stable/) to run your tests in a multi-threaded environment.
+You can additionally use `pytest-xdist <https://pytest-xdist.readthedocs.io/en/stable/>`_ to run your tests in a multi-threaded environment.
 
 .. code-block:: console 
 
