@@ -1,9 +1,6 @@
-import boa
-from hypothesis import assume, settings
-from hypothesis import strategies as st
-from hypothesis.stateful import RuleBasedStateMachine, initialize, invariant, rule
 from boa.test.strategies import strategy
-
+from hypothesis import assume, settings
+from hypothesis.stateful import RuleBasedStateMachine, initialize, rule
 from script.deploy import deploy
 
 MAX_UINT256 = 2**256 - 1
