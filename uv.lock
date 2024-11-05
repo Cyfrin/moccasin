@@ -686,6 +686,7 @@ version = "0.3.2"
 source = { editable = "." }
 dependencies = [
     { name = "pytest-cov" },
+    { name = "pytest-xdist" },
     { name = "python-dotenv" },
     { name = "titanoboa" },
     { name = "titanoboa-zksync" },
@@ -710,7 +711,6 @@ docs = [
 dev = [
     { name = "mypy" },
     { name = "pytest" },
-    { name = "pytest-xdist" },
     { name = "ruff" },
     { name = "snekmate" },
     { name = "vyper" },
@@ -719,6 +719,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pytest-cov", specifier = ">=5.0.0" },
+    { name = "pytest-xdist", specifier = ">=3.6.1" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "shibuya", marker = "extra == 'docs'", specifier = ">=2024.8.30" },
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=8.0.2" },
@@ -740,7 +741,6 @@ dev = [
     { name = "moccasin", editable = "." },
     { name = "mypy", specifier = ">=1.11.0" },
     { name = "pytest", specifier = ">=8.3.2" },
-    { name = "pytest-xdist", specifier = ">=3.6.1" },
     { name = "ruff", specifier = ">=0.6.3" },
     { name = "snekmate", specifier = ">=0.1.0" },
     { name = "vyper", specifier = ">=0.4.0" },

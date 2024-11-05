@@ -1225,11 +1225,7 @@ class Config:
         )
 
     def set_active_network(
-        self,
-        name_url_or_id: str | Network,
-        activate_boa=True,
-        activate_db=True,
-        **kwargs,
+        self, name_url_or_id: str | Network, activate_boa=True, **kwargs
     ) -> Network:
         return self.networks.set_active_network(
             name_url_or_id, activate_boa=activate_boa, **kwargs

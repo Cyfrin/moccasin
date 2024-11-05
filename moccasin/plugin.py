@@ -1,6 +1,6 @@
 import pytest
 
-from moccasin.config import get_config
+from moccasin.config import get_or_initialize_config
 
 
 def pytest_configure(config):
@@ -16,7 +16,7 @@ def pytest_configure(config):
 
 
 def pytest_collection_modifyitems(config, items):
-    moccasin_config = get_config()
+    moccasin_config = get_or_initialize_config()
     active_network = moccasin_config.get_active_network()
     if active_network.live_or_staging:
         skip_non_staging = pytest.mark.skip(reason="Not a staging test")

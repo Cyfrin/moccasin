@@ -44,6 +44,7 @@ PYTEST_ARGS: list[str] = [
     "cov-append",
     "cov-branch",
     "cov-context",
+    "tb",
 ]
 
 
@@ -54,6 +55,14 @@ def main(args: Namespace) -> int:
     # This is not in PYTEST_ARGS
     if "coverage" in args and args.coverage:
         pytest_args.extend(["--cov=.", "--cov-branch"])
+
+    # Handle xdist arguments
+    if args.numprocesses is not None:
+        pytest_args.extend(["-n", args.numprocesses])
+    if args.dist is not None:
+        pytest_args.extend(["--dist", args.dist])
+    if args.verbose is not None:
+        pytest_args.extend(["-" + "v" * args.verbose])
 
     for arg in PYTEST_ARGS:
         attr_name = arg.replace("-", "_")
