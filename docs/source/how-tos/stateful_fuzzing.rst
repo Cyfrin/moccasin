@@ -3,7 +3,7 @@ Stateful Fuzzing
 
 .. important:: 
 
-    Be sure to read the :doc:`fuzzing </core_concepts/testing/fuzzing>` guide before reading this one.
+    Before reading this one, read the doc:`fuzzing </core_concepts/testing/fuzzing>` guide.
 
 
 Example Contract 
@@ -76,11 +76,11 @@ To fuzz test this, in ``moccasin`` we'd create a new file in our ``tests`` direc
 Essentially, what this will try to do will be:
 
 1. Start a "fuzz run"
-    a. It will deploy a our contract 
+    a. It will deploy our contract 
     b. It will randomly call either ``input_number_returns_itself`` or ``change_number`` with random inputs `on the same contract`
     c. The ``input_number_returns_itself`` function always checks our invariant 
-2. After ``stateful_step_count`` "fuzz runs" (50, in this case) it will stop, and "delete" our contract 
-3. It will repeat step 1 in this list until it finds an issue, or runs through these steps ``max_examples`` (10,000 in our example) times!
+2. After ``stateful_step_count`` "fuzz runs" (50, in this case), it will stop and "delete" our contract 
+3. It will repeat step 1 in this list until it finds an issue or runs through these steps ``max_examples`` (10,000 in our example) times!
 
 You can then test it with:
 
@@ -101,4 +101,4 @@ And you'll see an output like:
     E       state.input_number_returns_itself(input_number=1)
     E       state.teardown()
 
-This means, it found a bug! It first called ``change_number`` and set it to 2, and then called ``input_number_returns_itself`` with 1, but it returned 0 instead of 1!
+This means it found a bug! It first called ``change_number`` and set it to 2, and then called ``input_number_returns_itself`` with 1, but it returned 0 instead of 1!
