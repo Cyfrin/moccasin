@@ -4,7 +4,7 @@ Getting started with ZKsync
 Installation
 ============
 
-To get started with ZKsync on moccasin, you'll need the following:
+To get started with ZKsync on Moccasin, you'll need the following:
 
 - `era_test_node <https://github.com/matter-labs/era-test-node>`_
 
@@ -23,11 +23,11 @@ To test on a local zksync network, run the following:
 
     mox test --network eravm 
 
-And you'll spin up a local zksync network, and run your tests on it! You can then deploy, test, and verify contracts as you would any other network. 
+And you'll spin up a local Zksync network and run your tests on it! You can then deploy, test, and verify contracts as you would any other network. 
 
 .. note::
 
-    As of today, ``moccasin`` does not support "system contracts" or "simulations", therefore, testing things like native account abstraction are not yet supported. You can "do" them, but they will require custom scaffolding.
+    As of today, ``moccasin`` does not support "system contracts" or "simulations"; therefore, testing things like native account abstraction is not yet supported. You can "do" them, but they will require custom scaffolding.
 
 Deployment 
 ==========
@@ -49,4 +49,4 @@ To deploy to a zksync network, you have to do a lot of work.
 
     mox run deploy.py --network sepolia-zksync
 
-That's it! ``moccasin`` can handle ZKsync networks just like any other network.
+That's it! ``moccasin`` can handle ZKsync networks like any other.
