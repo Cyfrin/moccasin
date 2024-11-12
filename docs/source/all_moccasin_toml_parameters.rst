@@ -1,10 +1,10 @@
-All moccasin toml parameters
+All moccasin TOML Parameters
 ============================
 
 TOML Formatting
 ---------------
 
-In TOML you can think of each section as a giant JSON object. Each of these are essentially identical:
+In TOML, you can think of each section as a giant JSON object. Each of these are essentially identical:
 
 +----------------------------------+----------------------------------+----------------------------------+
 | TOML (Expanded)                  | TOML (Compact)                   | JSON                             |
@@ -103,7 +103,7 @@ All possible options
 Environment Variables 
 ---------------------
 
-Additionally, there are a few environment variables that ``moccasin`` will look for, but it's also ok if they are not set. It's important to note, that the `.env` file you set in the config will be ignored for these values. 
+Additionally, there are a few environment variables that ``moccasin`` will look for, but it's also okay if they are not set. It's important to note, that the `.env` file you set in the config will be ignored for these values. 
 
 .. code-block:: bash 
 

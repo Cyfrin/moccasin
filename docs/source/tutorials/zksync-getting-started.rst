@@ -17,7 +17,7 @@ To get started with ZKsync on ``moccasin``, you'll need the following:
 Testing 
 =======
 
-To test on a local zksync network, run the following:
+To test on a local ZKsync network, run the following:
 
 .. code-block:: bash
 
@@ -32,7 +32,7 @@ And you'll spin up a local ZKsync network and run your tests on it! You can then
 Deployment 
 ==========
 
-To deploy to a zksync network, you have to do a lot of work.
+To deploy to a ZKsync network, you have to do a lot of work.
 
 1. Setup your network
 =====================
