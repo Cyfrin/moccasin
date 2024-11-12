@@ -4,7 +4,7 @@ Getting started with ZKsync
 Installation
 ============
 
-To get started with ZKsync on Moccasin, you'll need the following:
+To get started with ZKsync on ``moccasin``, you'll need the following:
 
 - `era_test_node <https://github.com/matter-labs/era-test-node>`_
 
