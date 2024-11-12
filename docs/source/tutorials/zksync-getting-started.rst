@@ -23,7 +23,7 @@ To test on a local zksync network, run the following:
 
     mox test --network eravm 
 
-And you'll spin up a local Zksync network and run your tests on it! You can then deploy, test, and verify contracts as you would any other network. 
+And you'll spin up a local ZKsync network and run your tests on it! You can then deploy, test, and verify contracts as you would any other network. 
 
 .. note::
 
