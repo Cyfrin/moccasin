@@ -1,6 +1,6 @@
 [project]
 name = "moccasin"
-version = "0.3.3"
+version = "0.3.4b1"
 description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },
@@ -16,6 +16,7 @@ dependencies = [
     "pytest-cov>=5.0.0",
     "uv>=0.4.15",
     "pytest-xdist>=3.6.1",
+    "vyper==0.4.0",            # We will want to get rid of this hard-coded dependency in 0.3.4 of moccasin
 ]
 readme = "README.md"
 requires-python = ">= 3.11, <= 3.13"

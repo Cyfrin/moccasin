@@ -682,7 +682,7 @@ wheels = [
 
 [[package]]
 name = "moccasin"
-version = "0.3.3"
+version = "0.3.4b1"
 source = { editable = "." }
 dependencies = [
     { name = "pytest-cov" },
@@ -694,6 +694,7 @@ dependencies = [
     { name = "tomlkit" },
     { name = "tqdm" },
     { name = "uv" },
+    { name = "vyper" },
 ]
 
 [package.optional-dependencies]
@@ -733,6 +734,7 @@ requires-dist = [
     { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
     { name = "uv", specifier = ">=0.4.15" },
+    { name = "vyper", specifier = "==0.4.0" },
     { name = "watchdog", marker = "extra == 'docs'", specifier = ">=5.0.2" },
 ]
 
