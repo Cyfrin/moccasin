@@ -1,7 +1,7 @@
 Wallet
 ######
 
-By default, you don't want to ever expose your private key in your scripts. You can use the `wallet` commands to manage your private keys and accounts.
+By default, you don't want to ever expose your private key in your scripts. You can use the ``wallet`` commands to manage your private keys and accounts.
 
 .. code-block:: bash
 
@@ -28,7 +28,7 @@ By default, you don't want to ever expose your private key in your scripts. You 
 Encrypting a private key
 ========================
 
-You can encrypt a private key using the `wallet import ACCOUNT_NAME` command. This will create a keystore file in the default keystore directory. It will prompt you to enter your private key and password.
+You can encrypt a private key using the ``wallet import ACCOUNT_NAME`` command. This will create a keystore file in the default keystore directory. It will prompt you to enter your private key and password.
 
 .. code-block:: bash
 
@@ -38,7 +38,7 @@ You can encrypt a private key using the `wallet import ACCOUNT_NAME` command. Th
     Importing private key...
     Enter your private key:  ...
 
-Once you have an account, you can view it with the `wallet list` command.
+Once you have an account, you can view it with the ``wallet list`` command.
 
 .. code-block:: bash
 
@@ -48,11 +48,11 @@ Once you have an account, you can view it with the `wallet list` command.
     Found 1 accounts:
     my_account 
 
-This will encrypt your key and store it at `~/.moccasin/keystore/my_account.json`. You can view the contents of the keystore file with the `wallet inspect` command.
+This will encrypt your key and store it at ``~/.moccasin/keystore/my_account.json``. You can view the contents of the keystore file with the ``wallet view`` command.
 
 .. code-block:: bash 
 
-    $ mox wallet inspect my_account
+    $ mox wallet view my_account
     Running wallet command...
     Keystore JSON for account my_account:
     {
