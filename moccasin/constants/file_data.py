@@ -185,8 +185,8 @@ lib/
 era_test_node.log
 """
 
-COUNTER_VYPER_CONTRACT_SRC = """# SPDX-License-Identifier: MIT
-# pragma version 0.4.0
+COUNTER_VYPER_CONTRACT_SRC = """# pragma version 0.4.0
+# @license MIT
 
 number: public(uint256)
 
