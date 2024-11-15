@@ -47,7 +47,7 @@ All possible options
     save_abi_path = "abis" # location to save ABIs from the explorer
     cov_config = ".coveragerc" # coverage configuration file
     dot_env = ".env"  # environment variables file
-    default_network = "pyevm" # default network to use. `pyevm` is the local network. "eravm" is the local ZKSync network
+    default_network_name = "pyevm" # default network to use. `pyevm` is the local network. "eravm" is the local ZKSync network
     db_path = ".deployments.db" # path to the deployments database
 
     [networks.pyevm]
