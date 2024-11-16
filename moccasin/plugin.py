@@ -18,7 +18,7 @@ def pytest_configure(config):
 def pytest_collection_modifyitems(config, items):
     moccasin_config = get_or_initialize_config()
     active_network = moccasin_config.get_active_network()
-    if active_network.live_or_staging:
+    if active_network.live_or_staging and not active_network.is_fork:
         skip_non_staging = pytest.mark.skip(reason="Not a staging test")
         for item in items:
             if "staging" not in item.keywords:
