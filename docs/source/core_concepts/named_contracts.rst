@@ -1,7 +1,7 @@
 Named Contracts  
 ###################
 
-One of the major differentiators between moccasin and other smart contract development tools is more flexible and powerful scripting. One of the such cabailities is built in :doc:`fixtures </core_concepts/testing/fixtures>` and :doc:`named contracts </core_concepts/named_contracts>`.
+One of the major differentiators between moccasin and other smart contract development tools is more flexible and powerful scripting. One of the such cabailities :doc:`named contracts </core_concepts/named_contracts>`.
 
 **Named contracts allow you to define deployment scripts, addresses by chain, fixtures settings for testing, and more.**
 
@@ -124,7 +124,6 @@ And running this on ``mainnet-fork`` will get the resulting output:
 The key here, was the ``mainifest_contract``, which does a lot of things under the hood, including:
 
 - Deploys a contract if one doesn't exist
-- Allows us to get fixtures for testing 
 - Returns the named contract at it's address if it's on a chain we recognize 
 - Sets up local testing environments for us to test our contracts
 
