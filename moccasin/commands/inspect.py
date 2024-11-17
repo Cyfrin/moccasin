@@ -4,6 +4,7 @@ from typing import Any
 
 from moccasin.commands.compile import compile_
 from moccasin.config import Config, get_config, initialize_global_config
+from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
 
 FUNCTION_SIGNATURES_ALTS = [
     "methods",
@@ -31,9 +32,17 @@ def inspect_contract(
         config = get_config()
 
     contract_path = config.find_contract(contract)
-    vyper_deployer = compile_(
-        contract_path, config.get_root().joinpath(config.build_folder)
-    )
+
+    # We should probably refactor this so that `_patch_sys_path` is auto called on stuff like "compile"
+    # I keep forgetting to add it and it screws stuff up
+    with _patch_sys_path(get_sys_paths_list(config)):
+        contract_path = config.find_contract(contract)
+        vyper_deployer = compile_(
+            contract_path,
+            config.get_root().joinpath(config.out_folder),
+            is_zksync=False,
+            write_data=False,
+        )
 
     if inspect_type in FUNCTION_SIGNATURES_ALTS:
         inspect_type = "function_signatures"
