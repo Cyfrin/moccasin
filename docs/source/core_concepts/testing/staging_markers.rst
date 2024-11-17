@@ -14,12 +14,17 @@ A lot of developers `should` run some sanity checks on a live network, for examp
 
 Maybe after you deploy your contracts, you want to run a quick test suite to make sure everything is ok, this is where "staging" tests come into play.
 
+.. note::
+
+    At this time, you also have to use ``@pytest.mark.ignore_isolation`` to work with titanoboa. 
+
 How to use staging markers
 ==========================
 
 .. code-block:: python
     
     @pytest.mark.staging 
+    @pytest.mark.ignore_isolation
     def test_staging_test(counter_contract):
         counter_contract.increment()
         assert counter_contract.number() == 2
@@ -70,6 +75,7 @@ To have a staging test also run on local and forked networks, you can do:
 .. code-block:: python
     
     @pytest.mark.staging
+    @pytest.mark.ignore_isolation
     @pytest.mark.local # See this!
     def test_staging_test(counter_contract):
         counter_contract.increment()
