@@ -2,9 +2,9 @@ import pprint
 from argparse import Namespace
 from typing import Any
 
+from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
 from moccasin.commands.compile import compile_
 from moccasin.config import Config, get_config, initialize_global_config
-from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
 
 FUNCTION_SIGNATURES_ALTS = [
     "methods",
