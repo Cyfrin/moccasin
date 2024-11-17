@@ -682,7 +682,7 @@ wheels = [
 
 [[package]]
 name = "moccasin"
-version = "0.3.4b3"
+version = "0.3.4b4"
 source = { editable = "." }
 dependencies = [
     { name = "pytest-cov" },
