@@ -144,7 +144,7 @@ def compile_(
     compiler_args: dict | None = None,
     is_zksync: bool = False,
     write_data: bool = False,
-) -> VyperDeployer | None:
+) -> None:
     logger.debug(f"Compiling contract {contract_path}")
 
     # Getting the compiler Data
