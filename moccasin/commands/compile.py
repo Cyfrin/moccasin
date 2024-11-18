@@ -201,5 +201,3 @@ def compile_(
         logger.debug(f"Compilation data saved to {build_file}")
 
     logger.debug(f"Done compiling {contract_name}")
-
-    return deployer
