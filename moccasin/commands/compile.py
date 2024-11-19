@@ -115,7 +115,7 @@ def compile_project(
     with multiprocessing.Pool(n_cpus) as pool:
         for contract_path in contracts_to_compile:
             res = pool.apply_async(
-                compile_,
+                compile_noret,
                 (contract_path, build_folder),
                 dict(is_zksync=is_zksync, write_data=write_data),
             )
@@ -150,7 +150,7 @@ def compile_(
     compiler_args: dict | None = None,
     is_zksync: bool = False,
     write_data: bool = False,
-) -> VyperDeployer | None:
+) -> VyperDeployer | VVMDeployer:
     logger.debug(f"Compiling contract {contract_path}")
 
     # Getting the compiler Data
@@ -209,3 +209,8 @@ def compile_(
     logger.debug(f"Done compiling {contract_name}")
 
     return deployer
+
+# discard the result of the compilation so that we don't need to pickle it
+# between processes
+def compile_noret(*args, **kwargs) -> None:
+    compile_(*args, **kwargs)
