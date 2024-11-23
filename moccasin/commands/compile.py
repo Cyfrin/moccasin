@@ -210,6 +210,7 @@ def compile_(
 
     return deployer
 
+
 # discard the result of the compilation so that we don't need to pickle it
 # between processes
 def compile_noret(*args, **kwargs) -> None:

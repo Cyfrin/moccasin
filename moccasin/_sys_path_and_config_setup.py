@@ -2,6 +2,7 @@ import contextlib
 import sys
 from pathlib import Path
 from typing import Iterator, List
+import os
 
 import boa
 from boa.util.abi import Address
@@ -42,12 +43,23 @@ def get_sys_paths_list(config: Config) -> List[Path]:
 def _patch_sys_path(paths: List[Path]) -> Iterator[None]:
     str_paths = [str(p) for p in paths]
     anchor = sys.path
+    anchor2 = os.environ.get("PYTHONPATH")
+    python_path = anchor2
+    if python_path is None:
+        python_path = ":".join(str_paths)
+    else:
+        python_path = ":".join([*str_paths, python_path])
+    os.environ["PYTHONPATH"] = python_path
     try:
         # add these with highest precedence -- conflicts should prefer user modules/code
         sys.path = str_paths + sys.path
         yield
     finally:
         sys.path = anchor
+        if anchor2 is None:
+            del os.environ["PYTHONPATH"]
+        else:
+            os.environ["PYTHONPATH"] = anchor2
 
 
 # REVIEW: Might be best to just set this as **kwargs

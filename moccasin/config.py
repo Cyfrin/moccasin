@@ -702,7 +702,10 @@ class Network:
                 else:
                     contract_path = config.find_contract(abi_like)
                     deployer = boa.load_partial(str(contract_path))
-                    abi = build_abi_output(deployer.compiler_data)
+                    if isinstance(deployer, VyperDeployer):
+                        abi = build_abi_output(deployer.compiler_data)
+                    elif isinstance(deployer, ZksyncDeployer):
+                        abi = deployer.zkvyper_data
                     abi = cast(list, abi)
                     return abi, deployer
             if isinstance(abi_like, list):
@@ -816,7 +819,6 @@ class _Networks:
                 address=contract_data.get("address", None),
             )
         toml_data = self._add_local_network_defaults(toml_data)
-
         for network_name, network_data in toml_data["networks"].items():
             # Check for restricted items for pyevm or eravm
             if network_name in [PYEVM, ERAVM]:

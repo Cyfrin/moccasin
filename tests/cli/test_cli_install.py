@@ -2,13 +2,11 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.conftest import INSTALL_PROJECT_PATH
 
-
-def test_run_help(mox_path, installation_cleanup_dependencies):
+def test_run_help(mox_path, installation_cleanup_dependencies, installation_temp_path):
     current_dir = Path.cwd()
     try:
-        os.chdir(INSTALL_PROJECT_PATH)
+        os.chdir(installation_temp_path)
         result = subprocess.run(
             [mox_path, "install", "-h"], check=True, capture_output=True, text=True
         )
