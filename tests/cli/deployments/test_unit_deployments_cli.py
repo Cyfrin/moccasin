@@ -21,7 +21,7 @@ def test_generate_sql_from_args_with_where(blank_tempdir):
     sql_query, params = active_network._generate_sql_from_args(
         contract_name=contract_name, chain_id=chain_id, limit=limit, db=db
     )
-    expected_sql = "SELECT contract_address,contract_name,rpc,deployer,tx_hash,broadcast_ts,tx_dict,receipt_dict,source_code,abi,session_id,deployment_id FROM deployments WHERE contract_name = ? AND json_extract(tx_dict, '$.chainId') = ? ORDER BY broadcast_ts DESC LIMIT ? "
+    expected_sql = "SELECT contract_address,contract_name,filename,rpc,deployer,tx_hash,broadcast_ts,tx_dict,receipt_dict,source_code,abi,session_id,deployment_id FROM deployments WHERE contract_name = ? AND json_extract(tx_dict, '$.chainId') = ? ORDER BY broadcast_ts DESC LIMIT ? "
     expected_parametrs = ("MockV3Aggregator", "31337", 1)
 
     # Assert
@@ -39,7 +39,7 @@ def test_generate_sql_from_args_without_where(blank_tempdir):
 
     # Act
     sql_query, params = active_network._generate_sql_from_args(db=db)
-    expected_sql = "SELECT contract_address,contract_name,rpc,deployer,tx_hash,broadcast_ts,tx_dict,receipt_dict,source_code,abi,session_id,deployment_id FROM deployments ORDER BY broadcast_ts DESC "
+    expected_sql = "SELECT contract_address,contract_name,filename,rpc,deployer,tx_hash,broadcast_ts,tx_dict,receipt_dict,source_code,abi,session_id,deployment_id FROM deployments ORDER BY broadcast_ts DESC "
     expected_parametrs = ()
 
     # Assert
@@ -61,7 +61,7 @@ def test_generate_sql_from_args_without_and(blank_tempdir):
     sql_query, params = active_network._generate_sql_from_args(
         contract_name=contract_name, limit=limit, db=db
     )
-    expected_sql = "SELECT contract_address,contract_name,rpc,deployer,tx_hash,broadcast_ts,tx_dict,receipt_dict,source_code,abi,session_id,deployment_id FROM deployments WHERE contract_name = ? ORDER BY broadcast_ts DESC LIMIT ? "
+    expected_sql = "SELECT contract_address,contract_name,filename,rpc,deployer,tx_hash,broadcast_ts,tx_dict,receipt_dict,source_code,abi,session_id,deployment_id FROM deployments WHERE contract_name = ? ORDER BY broadcast_ts DESC LIMIT ? "
     expected_parametrs = ("MockV3Aggregator", 1)
 
     # Assert

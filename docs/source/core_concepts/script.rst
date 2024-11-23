@@ -90,7 +90,7 @@ You can directly import contracts from the ``src`` folder into your scripts, and
 Networking 
 ==========
 
-If you have :doc:`networks <networks>` defined in your :doc:`moccasin.toml <moccasin_toml>`, you can directly work with the network in your scripts. For example, if you have a `sepolia` network defined in your ``moccasin.toml``:
+If you have :doc:`networks <networks>` defined in your :doc:`moccasin.toml <moccasin_toml>`, you can directly work with the network in your scripts. For example, if you have a ``sepolia`` network defined in your ``moccasin.toml``:
 
 .. code-block:: bash
 
@@ -102,7 +102,7 @@ You can learn more about networks in the :doc:`networks documentation <networks>
 moccasin_main
 =============
 
-In your scripts, the `moccasin_main` function is special, if you have a function with this name in your script, `moccasin` will run this function by default after running the script like a regular python file. For example, you could also do this:
+In your scripts, the ``moccasin_main`` function is special, if you have a function with this name in your script, ``moccasin`` will run this function by default after running the script like a regular python file. For example, you could also do this:
 
 .. code-block:: python
 

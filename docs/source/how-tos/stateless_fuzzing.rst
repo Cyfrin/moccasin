@@ -30,7 +30,7 @@ Let's say you have a contract as such:
             return 0
         return input_number
 
-The `invariant` in this contract is that the function `always_returns_input_number` should always return the input number. But as we can see from looking at the function, we notice that if the input number is 2, the function will return 0. 
+The `invariant` in this contract is that the function ``always_returns_input_number`` should always return the input number. But as we can see from looking at the function, we notice that if the input number is 2, the function will return 0. 
 
 This is easy for us to "see", but when contracts get sufficiently complicated, spotting these kinds of bugs becomes harder and harder, and this is where our tests come in. 
 
@@ -59,7 +59,7 @@ To fuzz test this, in ``moccasin`` we'd create a new file in our ``tests`` direc
 Essentially, what this will try to do will be:
 
 1. It will deploy a our contract 
-2. It will call the `always_returns_input_number` function with a random `uint256` input
+2. It will call the ``always_returns_input_number`` function with a random ``uint256`` input
 3. It will check if the result is the same as the input number
 
 It will continue to do this for 1,000 "fuzz runs", which means 1,000 different random numbers. You can then test it with:

@@ -560,9 +560,15 @@ class Network:
                     vyper_contract: (
                         ABIContract | VyperContract | ZksyncContract | None
                     ) = None
+                    # REVIEW: This is a bit confusing.
+                    # Right now, if the contract is in the DB, that takes precedence over
+                    # a recently deployed contract. This is because the DB is the source of truth.
                     vyper_contract = self.get_latest_contract_unchecked(
                         contract_name=contract_name, chain_id=self.chain_id
                     )
+                    if vyper_contract is None:
+                        if self._check_valid_deploy(named_contract):
+                            vyper_contract = named_contract.recently_deployed_contract
                     if vyper_contract is not None:
                         return vyper_contract
                 else:

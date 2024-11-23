@@ -3,7 +3,7 @@ Gas Profiling
 
 .. note:: See the `titanoboa gas-profiling documentation for more information. <https://titanoboa.readthedocs.io/en/latest/testing.html#gas-profiling>`_
 
-`moccasin` has a built in gas profiler that can be used to profile your contracts gas usage. It uses `titanoboa's <https://titanoboa.readthedocs.io/en/latest/testing.html#gas-profiling>`_ gas profiling under the hood. 
+``moccasin`` has a built in gas profiler that can be used to profile your contracts gas usage. It uses `titanoboa's <https://titanoboa.readthedocs.io/en/latest/testing.html#gas-profiling>`_ gas profiling under the hood. 
 
 To use the gas profiler, you can run:
 

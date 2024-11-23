@@ -55,10 +55,10 @@ You'll get an output like:
         ├── conftest.py
         └── test_counter.py
 
-This is a minimal project structure that `moccasin` creates. 
+This is a minimal project structure that ``moccasin`` creates. 
 
 - ``README.md`` is a markdown file that you can use to describe your project.
-- ``moccasin.toml`` is a configuration file that `moccasin` uses to manage the project.
+- ``moccasin.toml`` is a configuration file that ``moccasin`` uses to manage the project.
 - ``script`` is a directory that contains scripts that you can use to deploy your project.
 - ``src`` is a directory that contains your vyper smart contracts.
 - ``tests``` is a directory that contains your tests.
@@ -67,7 +67,7 @@ If you run ``tree . -a``, you'll also see the "hidden" files.
 
 - ``.gitignore`` is a file that tells git which files to ignore.
 - ``.gitattributes`` is a file that tells git how to handle line endings.
-- ``.coveragerc`` is a file that tells `pytest` how to handle coverage.
+- ``.coveragerc`` is a file that tells ``pytest`` how to handle coverage.
 
 
 Deploying a contract 
@@ -91,7 +91,7 @@ Now, unlike other frameworks, with ``moccasin``, we never need to compile! Mocca
 
 We can see a python script that will:
 
-1. Deploy our `Counter` contract.
+1. Deploy our ``Counter`` contract.
 2. Print the starting count inside the contract.
 3. Increment the count.
 4. Print the ending count inside the contract.

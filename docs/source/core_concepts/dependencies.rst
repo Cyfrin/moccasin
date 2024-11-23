@@ -41,7 +41,7 @@ This will create an entry in your ``moccasin.toml`` file that looks like this:
         "pcaversaccio/snekmate@0.1.0",
     ]
 
-Which follows the same syntax that `pip` and `uv` to do installs from GitHub repositories. This will also download the GitHub repository into your `lib` folder.
+Which follows the same syntax that ``pip`` and ``uv`` to do installs from GitHub repositories. This will also download the GitHub repository into your ``lib`` folder.
 
 You can then use these packages in your vyper contracts, for example in an miniaml ERC20 vyper contract:
 
@@ -60,7 +60,7 @@ You can then use these packages in your vyper contracts, for example in an minia
         erc20.__init__("my_token", "MT", 18, "my_token_dapp", "0x02")
         ow.__init__()
 
-``moccasin`` is smart enough to know that the `lib/github` and `lib/pypi` folders are part of the search path, but you can also explicitly add your dependencies.
+``moccasin`` is smart enough to know that the ``lib/github`` and ``lib/pypi`` folders are part of the search path, but you can also explicitly add your dependencies.
 
 .. code-block:: python
 
