@@ -63,9 +63,9 @@ And this is awful! So instead, what we can do, is setup **ALL** of the configura
 
 .. code-block:: toml 
 
-    # At the top, we can set some default parameters for the `usdc` named contract 
+    # At the top, we can set some default parameters for the ``usdc``` named contract 
     # Every named contract will use the ERC20.vy contract in the project as it's ABI 
-    # If the contract doesn't exist, it'll deploy with the `deploy_feed.py` script (for example, on a locally running network)
+    # If the contract doesn't exist, it'll deploy with the ``deploy_feed.py``` script (for example, on a locally running network)
     [networks.contracts]
     usdc = { abi = "ERC20", deployer_script = "mock_deployer/deploy_feed.py"}
 
@@ -104,7 +104,7 @@ And with this, we only need ONE script that works for all of these!
     def moccasin_main():
         get_decimals()
 
-Then, we just need to adjust the `--network` flag and everything else will work automatically.
+Then, we just need to adjust the ``--network`` flag and everything else will work automatically.
 
 .. code-block:: bash
 

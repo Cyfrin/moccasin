@@ -24,11 +24,11 @@ In testing, forking is an essential part of the development process. **Any scrip
     chain_id = 11155111
     is_fork = true 
 
-Running a script with this setup will run your script locally, but pretending to be on the `sepolia` network, with contracts and everything! 
+Running a script with this setup will run your script locally, but pretending to be on the ``sepolia`` network, with contracts and everything! 
 
 It essentially does some "lazy loading", where it'll only download information from the blockchain if/when you need. For example, if you want to get the balance of an account, it'll only download the balance of that account when your script calls for it.
 
-You can also take any non-forked network and run a forked test just by adding the `--fork` flag to the command line. 
+You can also take any non-forked network and run a forked test just by adding the ``--fork`` flag to the command line. 
 
 .. code-block:: toml
 

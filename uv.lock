@@ -682,7 +682,7 @@ wheels = [
 
 [[package]]
 name = "moccasin"
-version = "0.3.4b4"
+version = "0.3.4b5"
 source = { editable = "." }
 dependencies = [
     { name = "pytest-cov" },
@@ -728,8 +728,8 @@ requires-dist = [
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
     { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
-    { name = "titanoboa", specifier = ">=0.2.5b1" },
-    { name = "titanoboa-zksync", specifier = ">=0.2.7" },
+    { name = "titanoboa", specifier = ">=0.2.5" },
+    { name = "titanoboa-zksync", specifier = ">=0.2.8" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
@@ -1291,7 +1291,7 @@ wheels = [
 
 [[package]]
 name = "titanoboa"
-version = "0.2.5b1"
+version = "0.2.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "eth-abi" },
@@ -1308,21 +1308,21 @@ dependencies = [
     { name = "vvm" },
     { name = "vyper" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/e0/c3749d2dcae01b0d1ddbd92ea55278610dca2551aed686d351df7c2cd84d/titanoboa-0.2.5b1.tar.gz", hash = "sha256:599ff6bed735f9e0a80ba160899486c144e51ce6d99c9f0dc51d91b0f50b0f09", size = 91748 }
+sdist = { url = "https://files.pythonhosted.org/packages/72/b9/dd934b73f02fe802e3cb00f103e91e75e66f2d96271033b101212bcae4c0/titanoboa-0.2.5.tar.gz", hash = "sha256:734830569296e851255ddc4925359a9a25f040a4a41f88fe3682a456faa3c662", size = 91978 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/87/db4f83859c53f150de07b1e9154ae8bbf4e382af81751c0b3d5e065130ee/titanoboa-0.2.5b1-py3-none-any.whl", hash = "sha256:752ab527182d0df95a80ce952d24b5b0149c23de7a991204399071ead587f0d3", size = 102804 },
+    { url = "https://files.pythonhosted.org/packages/ce/c5/315e398f5209e300cde62291f196485fee720269d953f65bdb9114d78fc3/titanoboa-0.2.5-py3-none-any.whl", hash = "sha256:e678aad87408ae5a664a9cb71b886cb23b95e6204141044ccd8fe3bc97b4e14f", size = 103011 },
 ]
 
 [[package]]
 name = "titanoboa-zksync"
-version = "0.2.7"
+version = "0.2.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "titanoboa" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/30/b4/a9f8287270297eeb85ab290387323c0900c441c8d99b7cc534f77479d3cf/titanoboa_zksync-0.2.7.tar.gz", hash = "sha256:9bba3bae2e002818a3af8a52e55732da9fb96eed743b262488bb0fb35665cfa3", size = 25867 }
+sdist = { url = "https://files.pythonhosted.org/packages/4f/88/6abf3125f15475ac1640ffbea737c84a714d6fd9ad4c8bc0f5e98b982545/titanoboa_zksync-0.2.8.tar.gz", hash = "sha256:c59ad609427e53ac04f210482cee9aac205d73af8594a8e800bc7a5a71cc477d", size = 25904 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2e/8a/e872de7df5abca5ad1348365a6da47c7d22947c10396d96977f7e3001d21/titanoboa_zksync-0.2.7-py3-none-any.whl", hash = "sha256:a12f3d84b1033f8bbc949c067c9dd6418b701bc84d73b7f8a8c98f4f11e44b5a", size = 25281 },
+    { url = "https://files.pythonhosted.org/packages/f4/88/cf5c261091a4c87a91f3d4962566d936056203e0614c0a9a242c05369fdd/titanoboa_zksync-0.2.8-py3-none-any.whl", hash = "sha256:631f3ed892183564223822a29bb2a4ee2642de5344de1d7f4e106bab3cc6715f", size = 25327 },
 ]
 
 [[package]]
@@ -1434,15 +1434,15 @@ wheels = [
 
 [[package]]
 name = "vvm"
-version = "0.3.1"
+version = "0.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ff/da/7847c6a06e665381b41ef4cd05ed1a9d737c4abbe3a49136f65fb9a9b6d2/vvm-0.3.1.tar.gz", hash = "sha256:c6d9c82efda144400b4e2944c1988ab2a60461f1d5535139c9652b73172e0098", size = 13675 }
+sdist = { url = "https://files.pythonhosted.org/packages/94/1c/3004928eaf560ed7164514cf66cdea6e84415e2a592b95bc466b568661b1/vvm-0.3.2.tar.gz", hash = "sha256:939838e6417923ef20c48d1a5f9d9fcb39e963c7e0152aaf99c966a6c332e770", size = 14164 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/d3/dc8111eda61078db5559b3aadf2e2471a21c9c1f4bdb3ca92577c4b68a91/vvm-0.3.1-py3-none-any.whl", hash = "sha256:2aa753e5452ada83f5a3a68b065de12d01231f4e9db4be085fea50f7bd22dcc4", size = 13048 },
+    { url = "https://files.pythonhosted.org/packages/98/38/a180481ac2369696f966cfb776c71569d7c0cc2676a03daedd83b21f5617/vvm-0.3.2-py3-none-any.whl", hash = "sha256:f9f4ccad6c9a8ff6978285f005fbb086777baa160e6132d454c35d66bc94d017", size = 13385 },
 ]
 
 [[package]]

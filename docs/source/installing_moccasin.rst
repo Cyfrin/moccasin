@@ -33,7 +33,7 @@ Prerequisites
 Installation with uv
 ====================
 
-For those unfamiliar, `uv <https://docs.astral.sh/uv/>`_ is a fast python package manager that helps us install moccasin into it's own isolated virtual environment, so we don't get any weird dependency conflicts with other python packages. It's similar to `pip` and `pipx` if you've used them before. It even comes with some `pip` compatibility, will tools like `uv pip install`.
+For those unfamiliar, `uv <https://docs.astral.sh/uv/>`_ is a fast python package manager that helps us install moccasin into it's own isolated virtual environment, so we don't get any weird dependency conflicts with other python packages. It's similar to ``pip`` and ``pipx`` if you've used them before. It even comes with some ``pip`` compatibility, will tools like ``uv pip install``.
 
 It's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work as well. 
 
@@ -133,9 +133,9 @@ To install ``pipx``:
 
 .. note::
     
-    You may need to restart your terminal after installing `pipx`.
+    You may need to restart your terminal after installing ``pipx``.
 
-To install moccasin then with `pipx`:
+To install moccasin then with ``pipx``:
 
 .. code-block:: bash
 
@@ -153,7 +153,7 @@ Installation with pip
 
 You can install with ``pip``, and if you do so, it's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work. 
 
-To install with `pip`:
+To install with ``pip``:
 
 .. code-block:: bash
 

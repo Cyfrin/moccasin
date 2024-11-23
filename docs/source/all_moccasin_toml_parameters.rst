@@ -103,7 +103,7 @@ All possible options
 Environment Variables 
 ---------------------
 
-Additionally, there are a few environment variables that ``moccasin`` will look for, but it's also okay if they are not set. It's important to note, that the `.env` file you set in the config will be ignored for these values. 
+Additionally, there are a few environment variables that ``moccasin`` will look for, but it's also okay if they are not set. It's important to note, that the ``.env`` file you set in the config will be ignored for these values. 
 
 .. code-block:: bash 
 

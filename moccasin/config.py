@@ -560,9 +560,15 @@ class Network:
                     vyper_contract: (
                         ABIContract | VyperContract | ZksyncContract | None
                     ) = None
+                    # REVIEW: This is a bit confusing.
+                    # Right now, if the contract is in the DB, that takes precedence over
+                    # a recently deployed contract. This is because the DB is the source of truth.
                     vyper_contract = self.get_latest_contract_unchecked(
                         contract_name=contract_name, chain_id=self.chain_id
                     )
+                    if vyper_contract is None:
+                        if self._check_valid_deploy(named_contract):
+                            vyper_contract = named_contract.recently_deployed_contract
                     if vyper_contract is not None:
                         return vyper_contract
                 else:
@@ -702,7 +708,10 @@ class Network:
                 else:
                     contract_path = config.find_contract(abi_like)
                     deployer = boa.load_partial(str(contract_path))
-                    abi = build_abi_output(deployer.compiler_data)
+                    if isinstance(deployer, VyperDeployer):
+                        abi = build_abi_output(deployer.compiler_data)
+                    elif isinstance(deployer, ZksyncDeployer):
+                        abi = deployer.zkvyper_data
                     abi = cast(list, abi)
                     return abi, deployer
             if isinstance(abi_like, list):
@@ -816,7 +825,6 @@ class _Networks:
                 address=contract_data.get("address", None),
             )
         toml_data = self._add_local_network_defaults(toml_data)
-
         for network_name, network_data in toml_data["networks"].items():
             # Check for restricted items for pyevm or eravm
             if network_name in [PYEVM, ERAVM]:

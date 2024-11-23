@@ -24,7 +24,7 @@ Let's look at a minimal ``moccasin.toml`` with a ETH mainnet network fork with a
     [networks.mainnet-fork.contracts]
     usdc = { address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
 
-The `NamedContract` in this case, is `usdc`. And it's this named contract that we can access our scripts!
+The ``NamedContract`` in this case, is ``usdc``. And it's this named contract that we can access our scripts!
 
 .. code-block:: python 
 

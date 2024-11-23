@@ -34,7 +34,7 @@ Let's say we have the following contract:
     def change_number(new_number: uint256):
         self.some_number = new_number
 
-The `invariant` in this contract is that the function `always_returns_input_number` should always return the input number. But as we can see from looking at the function, we notice that if someone were to call ``change_number`` with an input of ``2``, the ``always_returns_input_number`` function will return 0 no matter what. 
+The `invariant` in this contract is that the function ``always_returns_input_number`` should always return the input number. But as we can see from looking at the function, we notice that if someone were to call ``change_number`` with an input of ``2``, the ``always_returns_input_number`` function will return 0 no matter what. 
 
 This is easy for us to "see", but when contracts get sufficiently complicated, spotting these kinds of bugs becomes harder and harder, and this is where our tests come in. 
 
