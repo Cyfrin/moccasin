@@ -1,6 +1,7 @@
-from pathlib import Path
 import os
 import subprocess
+from pathlib import Path
+
 from moccasin.commands.inspect import inspect_contract
 
 

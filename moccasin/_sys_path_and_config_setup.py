@@ -1,8 +1,8 @@
 import contextlib
+import os
 import sys
 from pathlib import Path
 from typing import Iterator, List
-import os
 
 import boa
 from boa.util.abi import Address
