@@ -39,6 +39,19 @@ def get_sys_paths_list(config: Config) -> List[Path]:
     ]
 
 
+def _set_sys_path(paths: List[Path]):
+    str_paths = [str(p) for p in paths]
+    anchor2 = os.environ.get("PYTHONPATH")
+    python_path = anchor2
+    if python_path is None:
+        python_path = ":".join(str_paths)
+    else:
+        python_path = ":".join([*str_paths, python_path])
+    os.environ["PYTHONPATH"] = python_path
+    # add these with highest precedence -- conflicts should prefer user modules/code
+    sys.path = str_paths + sys.path
+
+
 @contextlib.contextmanager
 def _patch_sys_path(paths: List[Path]) -> Iterator[None]:
     str_paths = [str(p) for p in paths]
