@@ -1109,6 +1109,9 @@ class Config:
     def _load_env_file(self):
         load_dotenv(dotenv_path=self.project_root.joinpath(self.dot_env))
 
+    def reload(self):
+        self.__init__(self.project_root)
+
     def get_config_path(self) -> Path:
         return self.config_path
 
