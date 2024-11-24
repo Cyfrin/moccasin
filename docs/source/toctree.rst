@@ -35,6 +35,7 @@ Moccasin
     Contract Verification <how-tos/verify_contracts.rst>
     Stateless Fuzzing <how-tos/stateless_fuzzing.rst>
     Stateful Fuzzing <how-tos/stateful_fuzzing.rst>
+    how-tos/juypter_notebooks.rst
     
 
 .. toctree::
