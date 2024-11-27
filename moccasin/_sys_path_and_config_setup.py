@@ -92,6 +92,10 @@ def _get_set_active_network_from_cli_and_config(
     if network is None:
         network = config.default_network
 
+    if fork is not None and isinstance(fork, str):
+        if fork.lower().strip() == "false":
+            fork = False
+
     config.set_active_network(
         network,
         is_fork=fork,
@@ -192,6 +196,7 @@ def _setup_network_and_account_from_config_and_cli(
         else:
             boa.env.add_account(mox_account, force_eoa=True)
 
+    # Once the era_test_node gets pranking support, we'll have to update this.
     if not mox_account and active_network.name is ERAVM:
         boa.env.add_account(MoccasinAccount(private_key=ERA_DEFAULT_PRIVATE_KEY))
 
