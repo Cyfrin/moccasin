@@ -23,6 +23,7 @@ secrets/
 secret/
 .DS_Store
 era_test_node.log
+anvil-zksync.log
 tests/data/complex_project/.deployments.db
 # All deployments, except the one in the deployment test project
 .deployments.db

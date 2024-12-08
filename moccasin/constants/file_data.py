@@ -183,6 +183,7 @@ lib/
 .deployments*
 .deployments.db
 era_test_node.log
+anvil-zksync.log
 .DS_Store
 """
 

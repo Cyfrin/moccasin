@@ -196,7 +196,7 @@ def _setup_network_and_account_from_config_and_cli(
         else:
             boa.env.add_account(mox_account, force_eoa=True)
 
-    # Once the era_test_node gets pranking support, we'll have to update this.
+    # Once the anvil-zksync gets pranking support, we'll have to update this.
     if not mox_account and active_network.name is ERAVM:
         boa.env.add_account(MoccasinAccount(private_key=ERA_DEFAULT_PRIVATE_KEY))
 

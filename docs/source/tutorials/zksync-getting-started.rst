@@ -6,9 +6,9 @@ Installation
 
 To get started with ZKsync on ``moccasin``, you'll need the following:
 
-- `era_test_node <https://github.com/matter-labs/era-test-node>`_
+- `anvil-zksync <https://github.com/matter-labs/anvil-zksync>`_
 
-  - You'll know you did it right if you can run ``era_test_node --version`` and you see a response like ``era_test_node 0.1.0 (a178051e8 2024-09-07)``
+  - You'll know you did it right if you can run ``anvil-zksync --version`` and you see a response like ``anvil-zksync 0.1.0 (a178051e8 2024-09-07)``
 
 - `era-compiler-vyper <https://github.com/matter-labs/era-compiler-vyper>`_
 
