@@ -1,3 +1,2 @@
-
 [run]
 plugins = boa.coverage
