@@ -44,8 +44,8 @@ You must have the following installed to proceed with contributing to this proje
 ### ZKync requirements
 If you wish to run the ZKync tests, you'll need these as well (ran with `just test-z`)
 
-- [era_test_node](https://github.com/matter-labs/era-test-node)
-  - You'll know you did it right if you can run `era_test_node --version` and you see a response like `era_test_node 0.1.0 (a178051e8 2024-09-07)`
+- [anvil-zksync](https://github.com/matter-labs/anvil-zksync)
+  - You'll know you did it right if you can run `anvil-zksync --version` and you see a response like `anvil-zksync 0.2.1`
 - [era-compiler-vyper](https://github.com/matter-labs/era-compiler-vyper)
   - You'll know you did it right if you can run `zkvyper --version` and you see a response like `Vyper compiler for ZKync v1.5.4 (LLVM build f9f732c8ebdb88fb8cd4528482a00e4f65bcb8b7)`
 

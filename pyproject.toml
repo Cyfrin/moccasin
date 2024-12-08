@@ -1,6 +1,6 @@
 [project]
 name = "moccasin"
-version = "0.3.5"
+version = "0.3.6"
 description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },
@@ -9,7 +9,7 @@ authors = [
 dependencies = [
     "titanoboa>=v0.2.5",
     "python-dotenv>=1.0.1",
-    "titanoboa-zksync>=0.2.8",
+    "titanoboa-zksync>=0.2.9",
     "tqdm>=4.66.5",
     "tomlkit>=0.13.2",
     # For preserving comments when writing to toml
