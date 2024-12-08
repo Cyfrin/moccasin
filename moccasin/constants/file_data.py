@@ -1,10 +1,8 @@
-GITATTRIBUTES = """
-*.sol linguist-language=Solidity
-*.vy linguist-language=Python
+GITATTRIBUTES = """*.sol linguist-language=Solidity
+*.vy linguist-language=Vyper
 """
 
-GITIGNORE = """
-# Byte-compiled / optimized / DLL files
+GITIGNORE = """# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -203,7 +201,6 @@ def increment():
 
 DEPLOY_SCRIPT_DEFAULT = """from src import Counter
 from moccasin.boa_tools import VyperContract
-# from boa.contracts.vyper.vyper_contract import VyperContract
 
 def deploy() -> VyperContract:
     counter: VyperContract = Counter.deploy()
@@ -223,8 +220,7 @@ from script.deploy import deploy
 def counter_contract():
     return deploy()"""
 
-COVERAGERC = """
-[run]
+COVERAGERC = """[run]
 plugins = boa.coverage
 """
 
@@ -238,9 +234,16 @@ README_MD_SRC = """# Moccasin Project
 
 ## Quickstart
 
+1. Deploy to a fake local network that titanoboa automatically spins up!
+
 ```bash
-mox init
 mox run deploy
+```
+
+2. Run tests
+
+```
+mox test
 ```
 
 _For documentation, please run `mox --help` or visit [the Moccasin documentation](https://cyfrin.github.io/moccasin)_
