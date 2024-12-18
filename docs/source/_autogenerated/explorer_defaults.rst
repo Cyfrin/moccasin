@@ -146,7 +146,7 @@ multicall2 = "None"
 chain_id = 324
 
 [sepolia-zksync-era]
-explorer_uri = "https://explorer.sepolia.era.zksync.dev"
+explorer_uri = "https://explorer.sepolia.era.zksync.io"
 explorer_type = "zksyncexplorer"
 multicall2 = "None"
 chain_id = 300
