@@ -140,7 +140,7 @@ multicall2 = "None"
 chain_id = 321
 
 [zksync-era]
-explorer_uri = "https://zksync2-mainnet-explorer.zksync.io"
+explorer_uri = "https://explorer.zksync.io/"
 explorer_type = "zksyncexplorer"
 multicall2 = "None"
 chain_id = 324
