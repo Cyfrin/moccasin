@@ -1,6 +1,6 @@
 # pragma version ^0.4.0
 
-import auth
+import Auth as auth
 import UninitializedAuth
 
 initializes: auth
