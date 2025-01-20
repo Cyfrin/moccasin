@@ -47,7 +47,7 @@ _AnyEnv = Union["NetworkEnv", "Env", "ZksyncEnv"]
 class BaseNetwork(ABC):
     """
     Base implemention for Network class.
-    
+
     @dev We are using abstraction to allow the Network class
         implementation in Config, since there are dependencies in
         some methods. The goal is to avoid circular imports.
@@ -322,7 +322,7 @@ class BaseNetwork(ABC):
 
     @abstractmethod
     def get_deployer_from_contract_name(
-        self, contract_name: str, *args, **kwargs
+        self, *args, **kwargs
     ) -> VyperDeployer | ZksyncDeployer:
         raise NotImplementedError
 
