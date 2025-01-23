@@ -1045,21 +1045,13 @@ class _Networks:
 
 
 class Config:
-    """A wrapper around the moccasin.toml file, it is also the main entry point for doing
-    almost anything with moccasin.
+    """A wrapper around the `moccasin.toml` file, serving as the main entry point for
+    performing almost any action with Moccasin.
 
-    This class reads the moccasin.toml file and sets up project configuration.
+    This class reads the `moccasin.toml` file and sets up project configuration.
 
-    Attributes:
-        _project_root (Path): The root directory of the project.
-        _toml_data (dict): The raw data from moccasin.toml.
-        dependencies (list[str]): Project dependencies from moccasin.toml.
-        project (dict[str, str]): Project data from moccasin.toml.
-        extra_data (dict[str, Any]): Any additional data from moccasin.toml.
-        networks (_Networks): Network configurations.
-
-    Args:
-        root_path (Path, optional): The root directory of the project. Defaults to None.
+    :param root_path: The root directory of the project. Defaults to None.
+    :type root_path: Path, optional
     """
 
     _project_root: Path
@@ -1090,6 +1082,13 @@ class Config:
         self.networks = _Networks(self._toml_data, self.project_root)
 
     def _load_config(self, config_path: Path, pyproject_path: Path | None = None):
+        """Load configuration from moccasin.toml or pyproject.toml files.
+
+        :param config_path: Path to the moccasin.toml file.
+        :type config_path: Path
+        :param pyproject_path: Path to the pyproject.toml file. Defaults to None.
+        :type pyproject_path: Path or None
+        """
         toml_data = self.read_configs(config_path, pyproject_path)
         # Need to get the .env file before expanding env vars
         self.project[DOT_ENV_KEY] = toml_data.get("project", {}).get(
@@ -1107,12 +1106,19 @@ class Config:
             )
 
     def _load_env_file(self):
+        """Load environment variables from the .env file specified in the configuration."""
         load_dotenv(dotenv_path=self.project_root.joinpath(self.dot_env))
 
     def reload(self):
+        """Reload the configuration by reinitializing the Config object."""
         self.__init__(self.project_root)
 
     def get_config_path(self) -> Path:
+        """Get the path to the moccasin.toml configuration file.
+
+        :return: The path to the moccasin.toml file.
+        :rtype: Path
+        """
         return self.config_path
 
     def read_configs_preserve_comments(
@@ -1120,6 +1126,15 @@ class Config:
         moccasin_config_path: Path | None = None,
         pyproject_config_path: Path | None = None,
     ) -> tomlkit.TOMLDocument:
+        """Read configuration files while preserving comments.
+
+        :param moccasin_config_path: Path to the moccasin.toml file. Defaults to None.
+        :type moccasin_config_path: Path or None
+        :param pyproject_config_path: Path to the pyproject.toml file. Defaults to None.
+        :type pyproject_config_path: Path or None
+        :return: Merged configuration as a TOMLDocument.
+        :rtype: tomlkit.TOMLDocument
+        """
         if moccasin_config_path is None:
             moccasin_config_path = self.config_path
         if pyproject_config_path is None:
@@ -1139,21 +1154,53 @@ class Config:
     def read_configs(
         self, moccasin_path: Path | None = None, pyproject_path: Path | None = None
     ) -> dict:
+        """Read and merge configuration data from moccasin.toml and pyproject.toml.
+
+        :param moccasin_path: Path to the moccasin.toml file. Defaults to None.
+        :type moccasin_path: Path or None
+        :param pyproject_path: Path to the pyproject.toml file. Defaults to None.
+        :type pyproject_path: Path or None
+        :return: Merged configuration data.
+        :rtype: dict
+        """
         moccasin_data = self.read_moccasin_config(moccasin_path)
         pyproject_data = self.read_pyproject_config(pyproject_path)
         return self.merge_configs(moccasin_data, pyproject_data)
 
     def read_moccasin_config(self, config_path: Path | None = None) -> dict:
+        """Read the moccasin.toml configuration file.
+
+        :param config_path: Path to the moccasin.toml file. Defaults to None.
+        :type config_path: Path or None
+        :return: Configuration data from moccasin.toml.
+        :rtype: dict
+        """
         if config_path is None:
             config_path = self.config_path
         return self.read_moccasin_toml(config_path)
 
     def read_pyproject_config(self, pyproject_path: Path | None = None) -> dict:
+        """
+        Read the pyproject.toml configuration file.
+
+        :param pyproject_path: Path to the pyproject.toml file. Defaults to None.
+        :type pyproject_path: Path or None
+        :return: Configuration data from pyproject.toml.
+        :rtype: dict
+        """
         if pyproject_path is None:
             pyproject_path = self.project_root.joinpath("pyproject.toml")
         return self.read_pyproject_toml(pyproject_path)
 
     def expand_env_vars(self, value):
+        """
+        Expand environment variables in the given value.
+
+        :param value: The value to process. Can be a string, list, or dictionary.
+        :type value: str, list, or dict
+        :return: The value with expanded environment variables.
+        :rtype: Same as input type
+        """
         if isinstance(value, str):
             return os.path.expandvars(value)
         elif isinstance(value, dict):
@@ -1163,20 +1210,50 @@ class Config:
         return value
 
     def get_networks(self) -> dict[str, Network]:
+        """
+        Get all network configurations.
+
+        :return: A dictionary of network configurations.
+        :rtype: dict[str, Network]
+        """
         return self.networks.get_networks()
 
     def get_active_network(self) -> Network:
+        """
+        Get the currently active network configuration.
+
+        :return: The active network.
+        :rtype: Network
+        """
         return self.networks.get_active_network()
 
     def get_default_db_path(self) -> Path:
+        """
+        Get the default database path for the active network.
+
+        :return: The path to the default database.
+        :rtype: Path
+        """
         return self.networks.get_default_db_path()
 
     def get_or_deploy_named_contract(
         self, *args, **kwargs
     ) -> VyperContract | ZksyncContract | ABIContract:
+        """
+        Retrieve or deploy a named contract.
+
+        :return: The deployed contract.
+        :rtype: VyperContract, ZksyncContract, or ABIContract
+        """
         return self.get_active_network().get_or_deploy_named_contract(*args, **kwargs)
 
     def get_dependencies(self) -> list[str]:
+        """
+        Get the list of project dependencies.
+
+        :return: A list of dependency names.
+        :rtype: list[str]
+        """
         return self.dependencies
 
     def write_dependencies(self, dependencies: list):
@@ -1186,6 +1263,9 @@ class Config:
 
         This will overwrite the existing dependencies with the new ones. So if you wish to keep old ones,
         read from the dependencies first.
+
+        :param dependencies: A list of dependencies to write.
+        :type dependencies: list
         """
         toml_data = self.read_configs_preserve_comments()
         path_to_write = self.config_path
@@ -1217,6 +1297,11 @@ class Config:
         self.dependencies = dependencies
 
     def get_base_dependencies_install_path(self) -> Path:
+        """Get the base path for installing dependencies.
+
+        :return: The path for dependency installation.
+        :rtype: Path
+        """
         project_root = self._project_root
         base_install_path = project_root / self.project.get(
             DEPENDENCIES_FOLDER, DEPENDENCIES_FOLDER
@@ -1225,9 +1310,21 @@ class Config:
         return base_install_path
 
     def get_root(self) -> Path:
+        """Get the project root path.
+
+        :return: The project root directory.
+        :rtype: Path
+        """
         return self._project_root
 
     def find_contract(self, contract_or_contract_path: str) -> Path:
+        """Find a contract by its name or path.
+
+        :param contract_or_contract_path: The name or path of the contract.
+        :type contract_or_contract_path: str
+        :return: The path to the contract.
+        :rtype: Path
+        """
         return self._find_contract(
             self.project_root,
             self.contracts_folder,
@@ -1238,11 +1335,21 @@ class Config:
     def set_active_network(
         self, name_url_or_id: str | Network, activate_boa=True, **kwargs
     ) -> Network:
+        """Set the active network.
+
+        :param name_url_or_id: The name, URL, or ID of the network.
+        :type name_url_or_id: str or Network
+        :param activate_boa: Whether to activate Boa. Defaults to True.
+        :type activate_boa: bool
+        :return: The active network.
+        :rtype: Network
+        """
         return self.networks.set_active_network(
             name_url_or_id, activate_boa=activate_boa, **kwargs
         )
 
     def activate_boa(self):
+        """Activate the boa env for the active network."""
         self.networks.activate_boa()
 
     @property
@@ -1304,12 +1411,26 @@ class Config:
 
     @staticmethod
     def load_config_from_root(project_root: Path | None = None) -> "Config":
+        """Load configuration from the project root.
+
+        :param project_root: The project root directory. Defaults to None.
+        :type project_root: Path or None
+        :return: The Config instance.
+        :rtype: Config
+        """
         if project_root is None:
             project_root = Config.find_project_root()
         return Config(project_root)
 
     @staticmethod
     def find_project_root(start_path: Path | str | None = None) -> Path:
+        """Find the root directory of the project.
+
+        :param start_path: The starting path to search from. Defaults to None.
+        :type start_path: Path, str, or None
+        :return: The project root directory.
+        :rtype: Path
+        """
         if start_path is None:
             start_path = Path.cwd()
         start_path = Path(start_path).expanduser().resolve()
@@ -1349,6 +1470,13 @@ class Config:
 
     @staticmethod
     def read_moccasin_toml(config_path: Path) -> dict:
+        """Read the moccasin.toml configuration file.
+
+        :param config_path: Path to the moccasin.toml file.
+        :type config_path: Path
+        :return: Configuration data from the file.
+        :rtype: dict
+        """
         if not config_path.exists():
             return {}
         with open(config_path, "rb") as f:
@@ -1356,6 +1484,13 @@ class Config:
 
     @staticmethod
     def read_moccasin_toml_preserve_comments(config_path: Path) -> tomlkit.TOMLDocument:
+        """Reads the `moccasin.toml` file at the given path, preserving TOMLDocument comments.
+
+        :param config_path: The path to the configuration file.
+        :type config_path: Path
+        :return: The TOML document with preserved comments, or an empty document if the file does not exist.
+        :rtype: tomlkit.TOMLDocument
+        """
         config_path = Config._validated_moccasin_config_path(config_path)
         if not config_path.exists():
             return tomlkit.TOMLDocument()
@@ -1366,6 +1501,13 @@ class Config:
     def read_pyproject_toml_preserve_comments(
         config_path: Path,
     ) -> tomlkit.TOMLDocument:
+        """Reads the `pyproject.toml` file at the given path, preserving TOMLDocument comments.
+
+        :param config_path: The path to the configuration file.
+        :type config_path: Path
+        :return: The TOML document with preserved comments, or an empty document if the file does not exist.
+        :rtype: tomlkit.TOMLDocument
+        """
         config_path = Config._validated_pyproject_config_path(config_path)
         if not config_path.exists():
             return tomlkit.TOMLDocument()
@@ -1374,6 +1516,13 @@ class Config:
 
     @staticmethod
     def read_pyproject_toml(pyproject_path: Path) -> dict:
+        """Reads the `pyproject.toml` file and extracts the `moccasin` configuration.
+
+        :param pyproject_path: The path to the `pyproject.toml` file.
+        :type pyproject_path: Path
+        :return: The `moccasin` configuration dictionary, or an empty dictionary if the config does not exist.
+        :rtype: dict
+        """
         if not pyproject_path.exists():
             return {}
 
@@ -1388,6 +1537,17 @@ class Config:
         moccasin_config_dict: Union[dict, tomlkit.TOMLDocument],
         pyproject_config_dict: Union[dict, tomlkit.TOMLDocument],
     ) -> Union[dict, tomlkit.TOMLDocument]:
+        """Merges the `moccasin` and `pyproject` configuration dictionaries.
+
+        If `dependencies` are defined in both files, `moccasin.toml` takes precedence.
+
+        :param moccasin_config_dict: Configuration from `moccasin.toml`.
+        :type moccasin_config_dict: Union[dict, tomlkit.TOMLDocument]
+        :param pyproject_config_dict: Configuration from `pyproject.toml`.
+        :type pyproject_config_dict: Union[dict, tomlkit.TOMLDocument]
+        :return: The merged configuration dictionary.
+        :rtype: Union[dict, tomlkit.TOMLDocument]
+        """
         merged = moccasin_config_dict.copy()
 
         if (
@@ -1415,12 +1575,26 @@ class Config:
 
     @staticmethod
     def _validated_pyproject_config_path(config_path: Path):
+        """Validates the path to `pyproject.toml`, appending the file name if necessary.
+
+        :param config_path: The input configuration path.
+        :type config_path: Path
+        :return: The validated path to `pyproject.toml`.
+        :rtype: Path
+        """
         if not str(config_path).endswith("pyproject.toml"):
             config_path = config_path.joinpath("pyproject.toml")
         return config_path
 
     @staticmethod
     def _validated_moccasin_config_path(config_path: Path):
+        """Validates the path to `moccasin.toml`, appending the file name if necessary.
+
+        :param config_path: The input configuration path.
+        :type config_path: Path
+        :return: The validated path to `moccasin.toml`.
+        :rtype: Path
+        """
         if not str(config_path).endswith("moccasin.toml"):
             config_path = config_path.joinpath("moccasin.toml")
         return config_path
@@ -1431,6 +1605,17 @@ class Config:
         keys: list,
         value: str | int | float | bool | list | dict,
     ) -> tomlkit.TOMLDocument:
+        """Updates a nested key-value pair in a TOML document.
+
+        :param toml_data: The TOML document to update.
+        :type toml_data: tomlkit.TOMLDocument
+        :param keys: A list of keys representing the nested path.
+        :type keys: list
+        :param value: The value to set.
+        :type value: str | int | float | bool | list | dict
+        :return: The updated TOML document.
+        :rtype: tomlkit.TOMLDocument
+        """
         current: Union[tomlkit.TOMLDocument, Table] = toml_data
         for key in keys[:-1]:
             if key not in current:
@@ -1446,6 +1631,21 @@ class Config:
         lib_folder: str,
         contract_or_contract_path: str,
     ) -> Path:
+        """Finds the specified contract file within the project.
+
+        :param project_root: The root directory of the project.
+        :type project_root: str | Path
+        :param contracts_folder: The folder containing contract files.
+        :type contracts_folder: str
+        :param lib_folder: The folder containing library contract files.
+        :type lib_folder: str
+        :param contract_or_contract_path: The name or path of the contract file.
+        :type contract_or_contract_path: str
+        :return: The path to the contract file.
+        :rtype: Path
+        :raises FileNotFoundError: If the contract file is not found.
+        :raises FileExistsError: If multiple files with the same name are found.
+        """
         project_root = Path(project_root)
         # If the path starts with '~', expand to the user's home directory
         contract_path = Path(contract_or_contract_path).expanduser()
