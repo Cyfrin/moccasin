@@ -148,6 +148,93 @@ To install moccasin then with ``pipx``:
 
 Then, go to :ref:`after installation <after_install>`.
 
+Installation with poetry
+========================
+
+Poetry is depedency management tool in Python. It allows to install/update libraries from your project, and also handle Python packaging.
+
+``poetry`` installs dependencies into its default virtual environment ``{cache-dir}/virtualenvs`` related to the intialized project. See how `poetry virtual environment <https://python-poetry.org/docs/basic-usage/#using-your-virtual-environment>`_ works.
+
+You can install Moccasin with ``poetry``, and if you do so, it's highly recommended you understand how `virtual environments <https://docs.python.org/3/library/venv.html>`_ work. 
+
+You can either head over to the `poetry installation instructions <https://python-poetry.org/docs/#installation>`_ or follow along below.
+
+To install ``poetry``, you'll need `pipx <https://github.com/pipxproject/pipx>`_:
+
+.. code-block:: bash
+
+    pipx install poetry
+
+.. note::
+    
+    You may need to restart your terminal after installing ``poetry``.
+
+Ensure ``poetry`` is available:
+
+.. code-block:: bash
+
+    poetry --version 
+    # Poetry (version 2.0.1)
+
+We'll need to initialize a ``poetry`` project to use its dedicated virtual enviroment to add Moccasin:
+
+.. code-block:: bash
+
+    poetry new mox-project
+    cd mox-project
+
+This will create the following directory structure for the ``mox-project`` dir:
+
+.. code-block:: console
+
+    .
+    ├── mox-project
+    │   ├── mox_project
+    │   │   └── __init__.py
+    │   ├── poetry.lock
+    │   ├── pyproject.toml
+    │   ├── README.md
+    │   └── tests
+    │       └── __init__.py
+
+You can now navigate to the ``mox-project`` folder and install Moccasin:
+
+.. code-block:: bash
+
+    cd mox-project
+    poetry add moccasin
+
+.. caution::
+    
+    You may run into an issue where the default Python version registered in the ``pyproject.toml`` is not compatible with ``moccasin``. 
+    
+    .. code-block:: console 
+
+        The current project's supported Python range (>=3.12) is not compatible with some of the required packages Python requirement:
+        - moccasin requires Python <=3.13,>=3.11, so it will not be satisfied for Python >3.13
+
+        Because no versions of moccasin match >0.3.6,<0.4.0
+        and moccasin (0.3.6) requires Python <=3.13,>=3.11, moccasin is forbidden.
+        So, because mox-project depends on moccasin (^0.3.6), version solving failed.
+
+
+    To fix this you'll have to change manually the param ``requires-python``. For example: 
+
+    .. code-block:: toml 
+
+        [project]
+        requires-python = ">=3.12,<=3.13"
+    
+    Adapt the python version at your convinience. You might need to redo ``poetry add moccasin`` until the error message from ``poetry is gone``
+
+You can then activate your ``poetry`` env:
+
+.. code-block:: bash
+    
+    eval $(poetry env activate)
+
+Then, go to :ref:`after installation <after_install>`.
+
 Installation with pip
 =====================
 

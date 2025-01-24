@@ -18,6 +18,16 @@ And this will create a new project in a new ``my_project`` directory. If you wan
 
     mox init my_project --force
 
+.. hint::
+    
+    For ``poetry``, it is recommanded to use ``--force`` inside the subfolder of your project to get the moccasin architecture. For example, here it will be ``mox_project`` and not ``mox-project``
+
+    .. code-block:: console
+        
+        .
+        ├── mox-project
+        │   ├── mox_project
+
 If you use VSCode, you can also use:
 
 .. code-block:: bash
