@@ -1045,7 +1045,7 @@ class _Networks:
 
 
 class Config:
-    """A wrapper around the `moccasin.toml` file, serving as the main entry point for
+    """A wrapper around the ``moccasin.toml`` file, serving as the main entry point for
     performing almost any action with Moccasin.
 
     This class reads the `moccasin.toml` file and sets up project configuration.
