@@ -22,7 +22,7 @@ In testing, forking is an essential part of the development process. **Any scrip
     [networks.sepolia]
     url = "https://ethereum-sepolia-rpc.publicnode.com"
     chain_id = 11155111
-    is_fork = true 
+    fork = true 
 
 Running a script with this setup will run your script locally, but pretending to be on the ``sepolia`` network, with contracts and everything! 
 
@@ -35,7 +35,7 @@ You can also take any non-forked network and run a forked test just by adding th
     [networks.sepolia]
     url = "https://ethereum-sepolia-rpc.publicnode.com"
     chain_id = 11155111
-    is_fork = false 
+    fork = false 
 
  
 Forked network defaults 
