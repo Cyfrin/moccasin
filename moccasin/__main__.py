@@ -61,9 +61,9 @@ def main(argv: list) -> int:
     return 0
 
 
-def generate_main_parser_and_sub_parsers() -> (
-    Tuple[argparse.ArgumentParser, argparse.Action]
-):
+def generate_main_parser_and_sub_parsers() -> Tuple[
+    argparse.ArgumentParser, argparse.Action
+]:
     parent_parser = create_parent_parser()
     main_parser = argparse.ArgumentParser(
         prog="Moccasin CLI",
@@ -650,17 +650,21 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
     # ------------------------------------------------------------------
     #                         UTILS COMMAND
     # ------------------------------------------------------------------
-    utils_paraser = sub_parsers.add_parser(
+    utils_parser = sub_parsers.add_parser(
         "utils",
         aliases=["u", "util"],
         help="Helpful utilities - right now it's just the one.",
         description="Helpful utilities.\n",
         parents=[parent_parser],
     )
-    utils_subparaser = utils_paraser.add_subparsers(dest="utils_command")
+    utils_parser.add_argument(
+        "utils_command", help="Name of the utility command to get."
+    )
+
+    utils_subparser = utils_parser.add_subparsers(dest="utils_command")
 
     # Zero
-    utils_subparaser.add_parser(
+    utils_subparser.add_parser(
         "zero",
         aliases=["zero-address", "zero_address", "address-zero", "address_zero"],
         help="Get the zero address.",

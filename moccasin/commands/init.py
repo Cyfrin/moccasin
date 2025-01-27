@@ -100,5 +100,5 @@ def _create_files(
 
 def _write_file(path: Path, contents: str, overwrite: bool = False) -> None:
     if not path.exists() or overwrite:
-        with path.open("w") as fp:
+        with path.open("w", encoding="utf-8") as fp:
             fp.write(contents)

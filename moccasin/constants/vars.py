@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import platform
 
 # File Names
 README_PATH = "README.md"
@@ -28,6 +29,9 @@ REQUEST_HEADERS = {"User-Agent": "Moccasin"}
 PACKAGE_VERSION_FILE = "versions.toml"
 PYPI = "pypi"
 GITHUB = "github"
+
+# OS specific
+IS_WINDOWS = platform.system() == "Windows"
 
 # Complex Vars
 DEFAULT_PROJECT_FOLDERS = [

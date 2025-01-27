@@ -20,6 +20,7 @@ from moccasin.constants.vars import (
     BUILD_FOLDER,
     CONTRACTS_FOLDER,
     ERAVM,
+    IS_WINDOWS,
     MOCCASIN_GITHUB,
 )
 from moccasin.logging import logger
@@ -107,7 +108,12 @@ def compile_project(
         f"Compiling {len(contracts_to_compile)} contracts to {build_folder_relpath}/..."
     )
 
-    multiprocessing.set_start_method("fork", force=False)
+    # @dev check if OS is Windows since fork
+    # is not supported on Windows, change it to spawn method
+    start_method = "fork"
+    if IS_WINDOWS:
+        start_method = "spawn"
+    multiprocessing.set_start_method(start_method, force=False)
 
     n_cpus = max(1, _get_cpu_count() - 2)
     jobs = []
