@@ -52,12 +52,12 @@ All possible options
 
     [networks.pyevm]
     # The basic EVM local network
-    # cannot set URL, chain_id, is_fork, is_zksync, prompt_live, explorer_uri, explorer_api_key
+    # cannot set URL, chain_id, fork, is_zksync, prompt_live, explorer_uri, explorer_api_key
     default_account_name = "anvil"
 
     [networks.eravm]
     # The special ZKSync Era local network
-    # cannot set URL, chain_id, is_fork, is_zksync, prompt_live, explorer_uri, explorer_api_key
+    # cannot set URL, chain_id, fork, is_zksync, prompt_live, explorer_uri, explorer_api_key
     default_account_name = "anvil"
 
     [networks.contracts]
@@ -68,7 +68,7 @@ All possible options
     [networks.sepolia]
     url = "https://ethereum-sepolia-rpc.publicnode.com"
     chain_id = 11155111
-    is_fork = false
+    fork = false
     is_zksync = false
     # This is the name of the account that will be unlocked when running on this network
     default_account_name = "anvil"
