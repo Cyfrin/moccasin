@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 import platform
+from pathlib import Path
 
 # File Names
 README_PATH = "README.md"
