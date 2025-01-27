@@ -78,6 +78,7 @@ class Network:
     url: str | None = None
     chain_id: int | None = None
     is_fork: bool = False
+    block_identifier: int | str = "safe"
     is_zksync: bool = False
     default_account_name: str | None = None
     unsafe_password_file: Path | None = None
@@ -103,9 +104,9 @@ class Network:
         # 1. Check for forking, and set (You cannot fork from a NetworkEnv, only a "new" Env!)
         if self.is_fork:
             if self.is_zksync:
-                set_zksync_fork(url=self.url)
+                set_zksync_fork(url=self.url, block_identifier=self.block_identifier)
             else:
-                boa.fork(self.url)
+                boa.fork(self.url, block_identifier=self.block_identifier)
 
         # 2. Non-forked local networks
         elif self.name == PYEVM:
@@ -850,6 +851,7 @@ class _Networks:
                 network = Network(
                     name=network_name,
                     is_fork=network_data.get("fork", False),
+                    block_identifier=network_data.get("block_identifier", "safe"),
                     url=network_data.get("url", None),
                     is_zksync=network_data.get("is_zksync", False),
                     chain_id=network_data.get("chain_id", None),

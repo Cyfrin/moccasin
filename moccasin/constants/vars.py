@@ -86,6 +86,7 @@ RESTRICTED_VALUES_FOR_LOCAL_NETWORK = [
     "url",
     "chain_id",
     "is_fork",
+    "block_identifier",
     "explorer_uri",
     "exploer_api_key",
 ]
