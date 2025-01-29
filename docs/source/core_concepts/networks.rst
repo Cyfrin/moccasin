@@ -8,7 +8,7 @@ Networks in ``moccasin`` are identified in your ``moccasin.toml``. The complete 
     [networks.sepolia]
     url = "https://ethereum-sepolia-rpc.publicnode.com"
     chain_id = 11155111
-    is_fork = false
+    fork = false
     is_zksync = false
     default_account_name = "anvil"
     unsafe_password_file = "~/.moccasin/password"
@@ -24,7 +24,7 @@ Let's walk through some of the options here.
 
 - ``url``: The URL of the network you are connecting to.
 - ``chain_id``: The chain ID of the network you are connecting to.
-- ``is_fork``: If you are forking a network, set this to ``true``.
+- ``fork``: If you are forking a network, set this to ``true``.
 - ``is_zksync``: If you are connecting to a zkSync network, set this to ``true``.
 - ``default_account_name``: The default account name to use when deploying contracts. This will be the name of your account you created with your :doc:`wallet <wallet>` command.
 - ``unsafe_password_file``: The location of the password file for your account. This is a file that contains the password for your account. BE SURE TO NEVER PUSH THIS PASSWORD TO GITHUB IF YOU USE THIS. 
