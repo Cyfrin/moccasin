@@ -16,8 +16,13 @@ DEPLOYMENTS_PROJECT_PATH = Path(__file__).parent.parent.parent.joinpath(
 # ------------------------------------------------------------------
 #                      DEPLOYMENTS PROJECT FIXTURES
 # ------------------------------------------------------------------
+@pytest.fixture(scope="session")
+def original_deployment_path():
+    return DEPLOYMENTS_PROJECT_PATH
+
+
 @pytest.fixture(scope="function")
-def deployments_path() -> Generator[Path, None, None]:
+def deployments_path(original_deployment_path) -> Generator[Path, None, None]:
     """
     Create a fresh copy of the entire project directory for each deployment test.
     Initialize the config file from moccasin.toml.
@@ -29,7 +34,7 @@ def deployments_path() -> Generator[Path, None, None]:
 
         # Copy the entire project directory to the temporary directory
         temp_project_path = Path(temp_dir) / "project"
-        shutil.copytree(DEPLOYMENTS_PROJECT_PATH, temp_project_path)
+        shutil.copytree(original_deployment_path, temp_project_path)
 
         # Update paths
         starting_db_path = temp_project_path / ".starting_deployments.db"

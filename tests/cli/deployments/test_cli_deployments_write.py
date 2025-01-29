@@ -5,6 +5,8 @@ from pathlib import Path
 
 from moccasin.commands.run import run_script
 
+from tests.utils.path_utils import restore_original_path_in_error
+
 MOCK_AGGREGATOR = "MockV3Aggregator"
 COUNTER = "Counter"
 
@@ -13,13 +15,15 @@ COUNTER = "Counter"
 #                READING AND WRITING DEPLOYMENTS
 # ------------------------------------------------------------------
 def test_local_networks_dont_have_data_saved_to_db(
-    deployments_config, deployments_path, anvil
+    original_deployment_path, deployments_config, deployments_path, anvil
 ):
     current_dir = Path.cwd()
     starting_deployments_number = 0
     try:
         os.chdir(deployments_path)
         run_script("deploy")
+    except Exception as e:
+        restore_original_path_in_error(e, deployments_path, original_deployment_path)
     finally:
         os.chdir(current_dir)
     assert starting_deployments_number == 0
@@ -31,7 +35,12 @@ def test_local_networks_dont_have_data_saved_to_db(
 
 
 def test_checks_integrity_of_contracts(
-    mox_path, deployments_config, deployments_path, deployments_contract_override, anvil
+    mox_path,
+    original_deployment_path,
+    deployments_config,
+    deployments_path,
+    deployments_contract_override,
+    anvil,
 ):
     current_dir = Path.cwd()
     try:
@@ -57,6 +66,8 @@ def test_checks_integrity_of_contracts(
             text=True,
             capture_output=True,
         )
+    except Exception as e:
+        restore_original_path_in_error(e, deployments_path, original_deployment_path)
     finally:
         os.chdir(current_dir)
 
@@ -83,7 +94,7 @@ def test_checks_integrity_of_contracts(
 
 
 def test_records_deployment_on_deployment(
-    mox_path, deployments_config, deployments_path, anvil
+    mox_path, original_deployment_path, deployments_config, deployments_path, anvil
 ):
     current_dir = Path.cwd()
     starting_deployments_number = 0
@@ -100,6 +111,8 @@ def test_records_deployment_on_deployment(
             text=True,
             capture_output=True,
         )
+    except Exception as e:
+        restore_original_path_in_error(e, deployments_path, original_deployment_path)
     finally:
         os.chdir(current_dir)
     assert starting_deployments_number == 2
