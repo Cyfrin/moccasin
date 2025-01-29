@@ -4,7 +4,6 @@ import warnings
 from pathlib import Path
 
 from moccasin.commands.run import run_script
-
 from tests.utils.path_utils import restore_original_path_in_error
 
 MOCK_AGGREGATOR = "MockV3Aggregator"

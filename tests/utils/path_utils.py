@@ -1,8 +1,7 @@
 import traceback
-import sys
+from pathlib import Path
 
 from moccasin.logging import logger
-from pathlib import Path
 
 
 def restore_original_path_in_error(
