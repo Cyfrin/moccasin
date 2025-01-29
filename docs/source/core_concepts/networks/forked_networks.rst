@@ -37,7 +37,17 @@ You can also take any non-forked network and run a forked test just by adding th
     chain_id = 11155111
     fork = false 
 
- 
+
+You can fork at a specific block by specifying a ``block_identifier``, which can be either an integer or one of the preset options:  ``safe`` (default), ``latest``, ``earliest``, ``pending``, ``finalized``
+
+.. code-block:: toml
+
+    [networks.sepolia]
+    url = "https://ethereum-sepolia-rpc.publicnode.com"
+    chain_id = 11155111
+    is_fork = false
+    block_identifier = 7582167
+
 Forked network defaults 
 ========================
 

@@ -85,6 +85,7 @@ SPECIFIC_VALUES_FOR_ALL_LOCAL_NETWORKS = {SAVE_TO_DB: False, "db_path": None}
 RESTRICTED_VALUES_FOR_LOCAL_NETWORK = [
     "url",
     "chain_id",
+    "block_identifier",
     "fork",
     "explorer_uri",
     "exploer_api_key",
