@@ -25,7 +25,7 @@ def restore_original_path_in_error(
     tb_modified = [line.replace(str(temp_path), str(original_path)) for line in tb_list]
 
     # Log the modified traceback
-    logger.error("".join(tb_modified), stack_info=False)
+    logger.error("".join(tb_modified))
 
     # Exit the program to suppress the default traceback output
     raise error.with_traceback(error.__traceback__)
