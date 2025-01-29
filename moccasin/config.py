@@ -733,7 +733,9 @@ class Network:
         if abi_from_explorer:
             from moccasin.commands.explorer import boa_get_abi_from_explorer
 
-            abi = boa_get_abi_from_explorer(str(address), quiet=True)
+            abi = boa_get_abi_from_explorer(str(address),
+                                            network_name_or_id=self.alias,
+                                            quiet=True)
         return abi, deployer  # type: ignore
 
     def get_named_contract(self, contract_name: str) -> NamedContract | None:
