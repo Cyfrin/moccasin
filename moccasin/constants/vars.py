@@ -1,4 +1,5 @@
 import os
+import platform
 from pathlib import Path
 
 # File Names
@@ -28,6 +29,9 @@ REQUEST_HEADERS = {"User-Agent": "Moccasin"}
 PACKAGE_VERSION_FILE = "versions.toml"
 PYPI = "pypi"
 GITHUB = "github"
+
+# OS specific
+IS_WINDOWS = platform.system() == "Windows"
 
 # Complex Vars
 DEFAULT_PROJECT_FOLDERS = [
