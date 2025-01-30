@@ -1,6 +1,6 @@
 import traceback
-from subprocess import CalledProcessError
 from pathlib import Path
+from subprocess import CalledProcessError
 
 
 def restore_original_path_in_error(

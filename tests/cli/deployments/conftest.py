@@ -7,7 +7,6 @@ from typing import Generator
 import pytest
 
 from moccasin.config import Config, _set_global_config
-
 from tests.constants import DEPLOYMENTS_PROJECT_PATH
 
 

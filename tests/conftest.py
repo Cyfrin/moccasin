@@ -12,13 +12,11 @@ import moccasin.constants.vars as vars
 from moccasin.commands.wallet import save_to_keystores
 from moccasin.config import Config, _set_global_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
-
-from tests.utils.anvil import ANVIL_URL, AnvilProcess
 from tests.constants import (
-    ANVIL_STORED_STATE_PATH,
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
     ANVIL1_PRIVATE_KEY,
+    ANVIL_STORED_STATE_PATH,
     COMPLEX_PROJECT_PATH,
     INSTALL_PROJECT_PATH,
     INSTALLATION_STARTING_TOML,
@@ -27,6 +25,7 @@ from tests.constants import (
     PURGE_STARTING_TOML,
     TESTS_CONFIG_PROJECT_PATH,
 )
+from tests.utils.anvil import ANVIL_URL, AnvilProcess
 
 
 # ------------------------------------------------------------------

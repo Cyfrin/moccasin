@@ -5,7 +5,6 @@ from pathlib import Path
 from moccasin.commands.install import GITHUB, PYPI
 from moccasin.config import Config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
-
 from tests.constants import (
     COMMENT_CONTENT,
     GITHUB_PACKAGE_NAME,

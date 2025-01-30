@@ -9,7 +9,6 @@ from moccasin.constants.vars import (
     PACKAGE_VERSION_FILE,
     PYPI,
 )
-
 from tests.constants import (
     PATRICK_ORG_NAME,
     PATRICK_PACKAGE_NAME,
