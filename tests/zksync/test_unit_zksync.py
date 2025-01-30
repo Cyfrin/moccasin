@@ -7,7 +7,7 @@ import pytest
 
 from moccasin.commands.compile import compile_
 from moccasin.commands.run import run_script
-from tests.conftest import ZKSYNC_PROJECT_PATH
+from tests.constants import ZKSYNC_PROJECT_PATH
 
 
 def test_compile_zksync_pyevm(zksync_cleanup_out_folder, zksync_out_folder, mox_path):
