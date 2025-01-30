@@ -1,16 +1,17 @@
 import traceback
+from subprocess import CalledProcessError
 from pathlib import Path
-
-from moccasin.logging import logger
 
 
 def restore_original_path_in_error(
     error: Exception, temp_path: Path, original_path: Path
 ) -> None:
-    """
-    Replace occurrences of a temporary path in an exception's traceback with the original path.
+    """Replace occurrences of a temporary path in an exception's traceback with the original path.
 
-    This ensures that error messages and traceback outputs display the correct path.
+    This function takes an exception, a temporary path, and an original path as input.
+    It will replace all occurrences of the temporary path in the exception's traceback with the original path.
+    It will then print the modified traceback and re-raise the original exception.
+    Also handles `subprocess.CalledProcessError` by modifying its stdout and stderr.
 
     :param error: The original exception raised.
     :type error: Exception
@@ -18,14 +19,28 @@ def restore_original_path_in_error(
     :type temp_path: str
     :param original_path: The original path to replace it with.
     :type original_path: str
-    :raises Exception: The original exception with an adjusted traceback (printed separately).
+    :return Exception: The original exception with an adjusted traceback (printed separately).
     """
-    # Format and modify the traceback
-    tb_list = traceback.format_exception(type(error), error, error.__traceback__)
-    tb_modified = [line.replace(str(temp_path), str(original_path)) for line in tb_list]
+    if isinstance(error, CalledProcessError):
+        # Modify stdout and stderr in CalledProcessError
+        if error.stdout:
+            error.stdout = error.stdout.replace(str(temp_path), str(original_path))
+        if error.stderr:
+            error.stderr = error.stderr.replace(str(temp_path), str(original_path))
+        # Print the modified error output
+        if error.stdout:
+            print(error.stdout)
+        if error.stderr:
+            print(error.stderr)
+    else:
+        # Format and modify the traceback
+        tb_list = traceback.format_exception(type(error), error, error.__traceback__)
+        tb_modified = [
+            line.replace(str(temp_path), str(original_path)) for line in tb_list
+        ]
 
-    # Log the modified traceback
-    logger.error("".join(tb_modified))
+        # Print the modified traceback
+        print("".join(tb_modified))
 
     # Exit the program to suppress the default traceback output
-    raise error.with_traceback(error.__traceback__)
+    return error.with_traceback(error.__traceback__)

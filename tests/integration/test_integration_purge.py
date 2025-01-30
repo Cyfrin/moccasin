@@ -9,12 +9,15 @@ from moccasin.constants.vars import (
     PACKAGE_VERSION_FILE,
     PYPI,
 )
-from tests.conftest import (
-    patrick_org_name,
-    patrick_package_name,
-    pip_package_name,
-    version,
+
+from tests.constants import (
+    PATRICK_ORG_NAME,
+    PATRICK_PACKAGE_NAME,
+    PIP_PACKAGE_NAME,
+    PURGE_PROJECT_PATH,
+    VERSION,
 )
+from tests.utils.path_utils import restore_original_path_in_error
 
 
 def test_can_purge_github_no_version(
@@ -24,20 +27,22 @@ def test_can_purge_github_no_version(
     try:
         os.chdir(purge_temp_path)
         result = subprocess.run(
-            [mox_path, "purge", f"{patrick_package_name}"],
+            [mox_path, "purge", f"{PATRICK_PACKAGE_NAME}"],
             check=True,
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, purge_temp_path, PURGE_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
-    assert f"Removed {patrick_package_name}" in result.stderr
+    assert f"Removed {PATRICK_PACKAGE_NAME}" in result.stderr
     project_root: Path = Config.find_project_root(Path(purge_temp_path))
     config = Config(project_root)
-    assert f"{patrick_package_name}@{version}" not in config.dependencies
+    assert f"{PATRICK_PACKAGE_NAME}@{VERSION}" not in config.dependencies
     assert (
         not Path(purge_temp_path)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{patrick_org_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{PATRICK_ORG_NAME}")
         .exists()
     )
     versions_file = (
@@ -56,20 +61,22 @@ def test_can_purge_github_with_version(
     try:
         os.chdir(purge_temp_path)
         result = subprocess.run(
-            [mox_path, "purge", f"{patrick_package_name}@{version}"],
+            [mox_path, "purge", f"{PATRICK_PACKAGE_NAME}@{VERSION}"],
             check=True,
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, purge_temp_path, PURGE_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
-    assert f"Removed {patrick_package_name}" in result.stderr
+    assert f"Removed {PATRICK_PACKAGE_NAME}" in result.stderr
     project_root: Path = Config.find_project_root(Path(purge_temp_path))
     config = Config(project_root)
-    assert f"{patrick_package_name}@{version}" not in config.dependencies
+    assert f"{PATRICK_PACKAGE_NAME}@{VERSION}" not in config.dependencies
     assert (
         not Path(purge_temp_path)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{patrick_org_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{PATRICK_ORG_NAME}")
         .exists()
     )
     versions_file = (
@@ -86,19 +93,21 @@ def test_can_purge_pip(purge_temp_path, purge_reset_dependencies, mox_path):
     try:
         os.chdir(purge_temp_path)
         result = subprocess.run(
-            [mox_path, "purge", pip_package_name],
+            [mox_path, "purge", PIP_PACKAGE_NAME],
             check=True,
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, purge_temp_path, PURGE_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
-    assert f"Removed {pip_package_name}" in result.stderr
+    assert f"Removed {PIP_PACKAGE_NAME}" in result.stderr
     project_root: Path = Config.find_project_root(Path(purge_temp_path))
     config = Config(project_root)
-    assert pip_package_name not in config.dependencies
+    assert PIP_PACKAGE_NAME not in config.dependencies
     assert (
         not Path(purge_temp_path)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{PYPI}/{pip_package_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{PYPI}/{PIP_PACKAGE_NAME}")
         .exists()
     )

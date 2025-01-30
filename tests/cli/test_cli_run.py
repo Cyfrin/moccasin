@@ -2,11 +2,13 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.conftest import (
+from tests.constants import (
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
     ANVIL1_PRIVATE_KEY,
+    COMPLEX_PROJECT_PATH,
 )
+from tests.utils.path_utils import restore_original_path_in_error
 
 
 # --------------------------------------------------------------
@@ -31,6 +33,8 @@ def test_run_default(mox_path, complex_temp_path):
         result = subprocess.run(
             [mox_path, "run", "deploy"], check=True, capture_output=True, text=True
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, complex_temp_path, COMPLEX_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
@@ -46,6 +50,8 @@ def test_multiple_manifest_returns_the_same_or_different(mox_path, complex_temp_
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, complex_temp_path, COMPLEX_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
     print_statements = result.stdout.split("\n")
@@ -94,6 +100,8 @@ def test_run_with_network(mox_path, complex_temp_path, anvil):
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, complex_temp_path, COMPLEX_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
@@ -121,6 +129,8 @@ def test_run_with_keystore_account(mox_path, complex_temp_path, anvil):
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, complex_temp_path, COMPLEX_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
@@ -145,6 +155,8 @@ def test_run_fork_should_not_send_transactions(
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, complex_temp_path, COMPLEX_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
@@ -164,6 +176,8 @@ def test_multiple_manifest_returns_the_same_or_different_on_real_network(
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, complex_temp_path, COMPLEX_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
     print_statements = result.stdout.split("\n")
@@ -201,6 +215,8 @@ def test_network_should_prompt_on_live(
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, complex_temp_path, COMPLEX_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
     assert "Ending count:  1" in result.stdout
@@ -222,6 +238,8 @@ def test_network_operation_cancelled_on_no_input(
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, complex_temp_path, COMPLEX_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
     assert "Are you sure you wish to continue?" in result.stdout
@@ -242,6 +260,8 @@ def test_prompt_live_on_non_test_networks(
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(e, complex_temp_path, COMPLEX_PROJECT_PATH)
     finally:
         os.chdir(current_dir)
     assert (

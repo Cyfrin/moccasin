@@ -5,15 +5,19 @@ from pathlib import Path
 from moccasin.commands.install import GITHUB, PYPI
 from moccasin.config import Config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
-from tests.conftest import (
-    comment_content,
-    github_package_name,
-    new_version,
-    org_name,
-    patrick_package_name,
-    pip_package_name,
-    version,
+
+from tests.constants import (
+    COMMENT_CONTENT,
+    GITHUB_PACKAGE_NAME,
+    INSTALL_PROJECT_PATH,
+    NEW_VERSION,
+    NO_CONFIG_PROJECT_PATH,
+    ORG_NAME,
+    PATRICK_PACKAGE_NAME,
+    PIP_PACKAGE_NAME,
+    VERSION,
 )
+from tests.utils.path_utils import restore_original_path_in_error
 
 
 def test_install_without_parameters_installs_packages_in_toml(
@@ -25,12 +29,16 @@ def test_install_without_parameters_installs_packages_in_toml(
         result = subprocess.run(
             [mox_path, "install"], check=True, capture_output=True, text=True
         )
+    except Exception as e:
+        raise restore_original_path_in_error(
+            e, installation_temp_path, INSTALL_PROJECT_PATH
+        )
     finally:
         os.chdir(current_dir)
-    assert f"+ {pip_package_name}=={version}" in result.stderr
+    assert f"+ {PIP_PACKAGE_NAME}=={VERSION}" in result.stderr
     assert (
         Path(installation_temp_path)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{PYPI}/{pip_package_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{PYPI}/{PIP_PACKAGE_NAME}")
         .exists()
     )
 
@@ -42,16 +50,20 @@ def test_double_install_snekmate(
     try:
         os.chdir(installation_temp_path)
         result_one = subprocess.run(
-            [mox_path, "install", github_package_name],
+            [mox_path, "install", GITHUB_PACKAGE_NAME],
             check=True,
             capture_output=True,
             text=True,
         )
         result_two = subprocess.run(
-            [mox_path, "install", github_package_name],
+            [mox_path, "install", GITHUB_PACKAGE_NAME],
             check=True,
             capture_output=True,
             text=True,
+        )
+    except Exception as e:
+        raise restore_original_path_in_error(
+            e, installation_temp_path, INSTALL_PROJECT_PATH
         )
     finally:
         os.chdir(current_dir)
@@ -59,7 +71,7 @@ def test_double_install_snekmate(
     assert result_two.returncode == 0
     assert (
         Path(installation_temp_path)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{org_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{ORG_NAME}")
         .exists()
     )
 
@@ -70,7 +82,7 @@ def test_write_to_config_after_install(
     project_root: Path = Config.find_project_root(Path(installation_temp_path))
     config = Config(project_root)
     starting_dependencies = config.dependencies
-    assert github_package_name not in config.dependencies
+    assert GITHUB_PACKAGE_NAME not in config.dependencies
 
     # Arrange
     current_dir = Path.cwd()
@@ -78,20 +90,24 @@ def test_write_to_config_after_install(
     try:
         os.chdir(installation_temp_path)
         subprocess.run(
-            [mox_path, "install", github_package_name],
+            [mox_path, "install", GITHUB_PACKAGE_NAME],
             check=True,
             capture_output=True,
             text=True,
+        )
+    except Exception as e:
+        raise restore_original_path_in_error(
+            e, installation_temp_path, INSTALL_PROJECT_PATH
         )
     finally:
         os.chdir(current_dir)
     # Assert
     project_root: Path = Config.find_project_root(Path(installation_temp_path))
     config = Config(project_root)
-    assert github_package_name in config.dependencies
+    assert GITHUB_PACKAGE_NAME in config.dependencies
     for dep in starting_dependencies:
         assert dep in config.dependencies
-    assert comment_content in config.read_configs_preserve_comments().as_string()
+    assert COMMENT_CONTENT in config.read_configs_preserve_comments().as_string()
 
 
 def test_can_install_with_version(
@@ -101,20 +117,24 @@ def test_can_install_with_version(
     try:
         os.chdir(installation_temp_path)
         result = subprocess.run(
-            [mox_path, "install", f"{github_package_name}@{version}"],
+            [mox_path, "install", f"{GITHUB_PACKAGE_NAME}@{VERSION}"],
             check=True,
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(
+            e, installation_temp_path, INSTALL_PROJECT_PATH
+        )
     finally:
         os.chdir(current_dir)
-    assert f"Installed {github_package_name}" in result.stderr
+    assert f"Installed {GITHUB_PACKAGE_NAME}" in result.stderr
     project_root: Path = Config.find_project_root(Path(installation_temp_path))
     config = Config(project_root)
-    assert f"{github_package_name}@{version}" in config.dependencies
+    assert f"{GITHUB_PACKAGE_NAME}@{VERSION}" in config.dependencies
     assert (
         Path(installation_temp_path)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{org_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{ORG_NAME}")
         .exists()
     )
 
@@ -126,27 +146,31 @@ def test_can_change_versions(
     try:
         os.chdir(installation_temp_path)
         result_one = subprocess.run(
-            [mox_path, "install", f"{github_package_name}@{version}"],
+            [mox_path, "install", f"{GITHUB_PACKAGE_NAME}@{VERSION}"],
             check=True,
             capture_output=True,
             text=True,
         )
         result_two = subprocess.run(
-            [mox_path, "install", f"{github_package_name}@{new_version}"],
+            [mox_path, "install", f"{GITHUB_PACKAGE_NAME}@{NEW_VERSION}"],
             check=True,
             capture_output=True,
             text=True,
         )
+    except Exception as e:
+        raise restore_original_path_in_error(
+            e, installation_temp_path, INSTALL_PROJECT_PATH
+        )
     finally:
         os.chdir(current_dir)
-    assert f"Installed {github_package_name}" in result_one.stderr
-    assert f"Updating {github_package_name}" in result_two.stderr
+    assert f"Installed {GITHUB_PACKAGE_NAME}" in result_one.stderr
+    assert f"Updating {GITHUB_PACKAGE_NAME}" in result_two.stderr
     project_root: Path = Config.find_project_root(Path(installation_temp_path))
     config = Config(project_root)
-    assert f"{github_package_name}@{new_version}" in config.dependencies
+    assert f"{GITHUB_PACKAGE_NAME}@{NEW_VERSION}" in config.dependencies
     assert (
         Path(installation_temp_path)
-        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{org_name}")
+        .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{ORG_NAME}")
         .exists()
     )
 
@@ -158,13 +182,17 @@ def test_can_compile_with_github_search_path(
     try:
         os.chdir(installation_temp_path)
         result_install = subprocess.run(
-            [mox_path, "install", patrick_package_name],
+            [mox_path, "install", PATRICK_PACKAGE_NAME],
             check=True,
             capture_output=True,
             text=True,
         )
         result_compile = subprocess.run(
             [mox_path, "compile"], check=True, capture_output=True, text=True
+        )
+    except Exception as e:
+        raise restore_original_path_in_error(
+            e, installation_temp_path, INSTALL_PROJECT_PATH
         )
     finally:
         os.chdir(current_dir)
@@ -180,13 +208,17 @@ def test_no_moccasin_toml_saves_dependencies_to_pyproject(
     try:
         os.chdir(no_config_temp_path)
         result_install = subprocess.run(
-            [mox_path, "install", patrick_package_name],
+            [mox_path, "install", PATRICK_PACKAGE_NAME],
             check=True,
             capture_output=True,
             text=True,
         )
         result_compile = subprocess.run(
             [mox_path, "compile"], check=True, capture_output=True, text=True
+        )
+    except Exception as e:
+        raise restore_original_path_in_error(
+            e, no_config_temp_path, NO_CONFIG_PROJECT_PATH
         )
     finally:
         os.chdir(current_dir)
@@ -206,4 +238,4 @@ def test_no_moccasin_toml_saves_dependencies_to_pyproject(
 
     project_root: Path = Config.find_project_root(Path(no_config_temp_path))
     config = Config(project_root)
-    assert patrick_package_name in config.dependencies
+    assert PATRICK_PACKAGE_NAME in config.dependencies
