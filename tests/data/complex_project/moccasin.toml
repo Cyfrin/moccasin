@@ -68,6 +68,8 @@ prompt_live = false
 is_zksync = true
 default_account_name = "smalltestnet"
 unsafe_password_file = "~/.moccasin/unsafe-passwords/smalltestnet"
+explorer_uri = 'https://explorer.sepolia.era.zksync.dev'
+explorer_type = 'zksyncexplorer'
 
 [networks.fake_chain]
 url = "${FAKE_CHAIN_RPC_URL}"
