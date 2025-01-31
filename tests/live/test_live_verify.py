@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import COMPLEX_PROJECT_PATH
+from tests.constants import COMPLEX_PROJECT_PATH
 
 
 @pytest.mark.skip

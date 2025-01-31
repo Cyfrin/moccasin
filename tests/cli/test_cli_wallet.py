@@ -2,7 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.conftest import COMPLEX_PROJECT_PATH
+from tests.constants import COMPLEX_PROJECT_PATH
 
 
 def test_run_help(mox_path):

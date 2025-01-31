@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import List
 
 from moccasin.commands.wallet import list_accounts, view_wallet
-from tests.conftest import ANVIL1_KEYSTORE_NAME
+from tests.constants import ANVIL1_KEYSTORE_NAME
 
 ANVIL1_KEYSTORE = {
     "address": "f39Fd6e51aad88F6F4ce6aB8827279cffFb92266",

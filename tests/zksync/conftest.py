@@ -10,7 +10,7 @@ from boa_zksync import set_zksync_test_env
 from moccasin.commands.wallet import save_to_keystores
 from moccasin.config import Config, initialize_global_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
-from tests.conftest import ZKSYNC_PROJECT_PATH
+from tests.constants import ZKSYNC_PROJECT_PATH
 
 ZK_RICH_KEYSTORE_NAME = "zk-rich1"
 ZK_RICH_PRIVATE_KEY = (
