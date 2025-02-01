@@ -74,6 +74,52 @@ VERIFIERS = Union["Blockscout", "ZksyncExplorer"]
 
 @dataclass
 class Network:
+    """
+    Represents a Moccasin network configuration from the ``moccasin.toml`` file settings.
+
+    This class allows for flexible network configuration across different blockchain environments,
+    supporting both local and remote networks, including special cases like forked networks.
+
+    :param name: Unique identifier for the network
+    :type name: str
+    :param url: Network endpoint URL
+    :type url: str | None
+    :param chain_id: Unique identifier for the blockchain network
+    :type chain_id: int | None
+    :param is_fork: Indicates if the network is a forked instance
+    :type is_fork: bool
+    :param block_identifier: Block identifier for the network
+    :type block_identifier: int | str
+    :param is_zksync: Indicates if the network is a zkSync network
+    :type is_zksync: bool
+    :param default_account_name: Default mox wallet account name to use for the network
+    :type default_account_name: str | None
+    :param unsafe_password_file: Path to the unsafe password file related to ``default_account_name``
+    :type unsafe_password_file: Path | None
+    :param save_abi_path: Path to save the ABI
+    :type save_abi_path: str | None
+    :param explorer_uri: URI of the explorer
+    :type explorer_uri: str | None
+    :param explorer_api_key: API key for the explorer
+    :type explorer_api_key: str | None
+    :param explorer_type: Type of the explorer ("blockscout", "etherscan", "zksyncexplorer")
+    :type explorer_type: str | None
+    :param named_contracts: Dictionary of named contracts
+    :type named_contracts: dict[str, NamedContract]
+    :param prompt_live: A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks
+    :type prompt_live: bool
+    :param save_to_db: Indicates if the network should save the deployment to the database, it defaults to true for "non-testing" networks
+    :type save_to_db: bool
+    :param live_or_staging: Indicates if the network is live or staging, defaults to true for non-local, non-forked networks
+    :type live_or_staging: bool
+    :param db_path: Path to the database
+    :type db_path: str | Path
+    :param extra_data: Extra data for the network
+    :type extra_data: dict[str, Any]
+    :param _network_env: Network environment
+    :type _network_env: _AnyEnv | None
+    """
+
     name: str
     url: str | None = None
     chain_id: int | None = None
@@ -95,7 +141,10 @@ class Network:
     _network_env: _AnyEnv | None = None
 
     def _set_boa_env(self) -> _AnyEnv:
-        """Sets the boa.env to the current network, this additionally sets up the database."""
+        """Sets the boa.env to the current network, this additionally sets up the database.
+
+        :return: The boa.env
+        """
         # perf: save time on imports in the (common) case where
         # we just import config for its utils but don't actually need
         # to switch networks
@@ -162,7 +211,13 @@ class Network:
     def moccasin_verify(
         self, contract: VyperContract | ZksyncContract
     ) -> "VerificationResult":
-        """Verifies a contract using your moccasin.toml config."""
+        """Verifies a contract using your moccasin.toml config.
+
+        :param contract: The contract to verify
+        :type contract: VyperContract | ZksyncContract
+        :return: The verification result of the contract
+        :rtype: VerificationResult
+        """
         verifier_class = self.get_verifier_class()
         verifier_instance = verifier_class(self.explorer_uri, self.explorer_api_key)
         if self.is_zksync:
@@ -172,12 +227,21 @@ class Network:
         return boa.verify(contract, verifier_instance)
 
     def is_matching_boa(self) -> bool:
-        """Returns True if the current network is the active network in boa.
+        """Checks if the current network is the active network in boa.
+
         This is a good way to test if you've overriden boa as the "active" network.
+
+        :return: True if the current network is the active network in boa
+        :rtype: bool
         """
         return boa.env.nickname == self.name
 
     def get_verifier_class(self) -> Any:
+        """Returns the verifier class based on the explorer type.
+
+        :return: The verifier class
+        :rtype: Any
+        """
         if self.explorer_type is None:
             if self.explorer_uri is not None:
                 if "blockscout" in self.explorer_uri:
@@ -201,6 +265,13 @@ class Network:
         return getattr(module, verifier_name)
 
     def _to_verifier_name(self, verifier_string: str) -> str:
+        """Converts a verifier string to a verifier name.
+
+        :param verifier_string: The verifier string
+        :type verifier_string: str
+        :return: The verifier name
+        :rtype: str
+        """
         if verifier_string.lower().strip() == "blockscout":
             return "Blockscout"
         if verifier_string.lower().strip() == "zksyncexplorer":
@@ -210,7 +281,11 @@ class Network:
         )
 
     def get_default_account(self) -> MoccasinAccount | Any:
-        """Returns an 'account-like' object."""
+        """Returns an 'account-like' object.
+
+        :return: An 'account-like' object
+        :rtype: MoccasinAccount | Any
+        """
         if hasattr(boa.env, "_accounts"):
             if boa.env.eoa is not None:
                 return boa.env._accounts[boa.env.eoa]
@@ -228,11 +303,17 @@ class Network:
         return None
 
     def set_kwargs(self, **kwargs):
+        """Sets the kwargs.
+
+        :param kwargs: The kwargs
+        :type kwargs: dict
+        """
         for key, value in kwargs.items():
             if value is not None:
                 setattr(self, key, value)
 
     def _set_boa_db(self) -> None:
+        """Sets the boa deployments db."""
         db: DeploymentsDB
         if self.save_to_db:
             db = DeploymentsDB(path=self.db_path)
@@ -241,6 +322,13 @@ class Network:
         set_deployments_db(db)
 
     def create_and_set_or_set_boa_env(self, **kwargs) -> _AnyEnv:
+        """Creates and sets the boa environment.
+
+        :param kwargs: The kwargs
+        :type kwargs: dict
+        :return: The boa environment
+        :rtype: _AnyEnv
+        """
         self.set_kwargs(**kwargs)
         self._set_boa_env()
         self._network_env = boa.env
@@ -253,6 +341,19 @@ class Network:
         limit: int | None = None,
         db: DeploymentsDB | None = None,
     ) -> tuple[str, tuple]:
+        """Generates the SQL query from the args to fetch deployments from the db.
+
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param chain_id: The chain ID
+        :type chain_id: int | str | None
+        :param limit: The limit
+        :type limit: int | None
+        :param db: The db
+        :type db: DeploymentsDB | None
+        :return: The SQL query
+        :rtype: str
+        """
         if db is None:
             db = get_deployments_db()
 
@@ -293,6 +394,19 @@ class Network:
         limit: int | None = None,
         db: DeploymentsDB | None = None,
     ) -> Iterator[Deployment]:
+        """Fetches deployments from the db with the given args.
+
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param chain_id: The chain ID
+        :type chain_id: int | str | None
+        :param limit: The limit
+        :type limit: int | None
+        :param db: The db
+        :type db: DeploymentsDB | None
+        :return: The deployments requested from the db
+        :rtype: Iterator[Deployment]
+        """
         if db is None:
             db = get_deployments_db()
         chain_id = to_hex(chain_id) if chain_id is not None else None
@@ -310,7 +424,19 @@ class Network:
         limit: int | None = None,
         config_or_db_path: Union["Config", Path, str, None] = None,
     ) -> Iterator[Deployment]:
-        """Get deployments from the database without an initialized config."""
+        """Private method to get deployments from the database without an initialized config.
+
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param chain_id: The chain ID
+        :type chain_id: int | str | None
+        :param limit: The limit
+        :type limit: int | None
+        :param config_or_db_path: The config or db path
+        :type config_or_db_path: Union[Config, Path, str, None]
+        :return: The deployments iterator without an initialized config
+        :rtype: Iterator[Deployment]
+        """
         db_path = None
         if isinstance(config_or_db_path, Config):
             db_path = config_or_db_path._toml_data.get("db_path", ".deployments.db")
@@ -339,6 +465,22 @@ class Network:
         chain_id: int | str | None = None,
         config_or_db_path: Union["Config", Path, str, None] = None,
     ) -> list[Deployment]:
+        """Get deployments from the database without an initialized config.
+
+        This method does not check if the deployments integrity is valid.
+        It is the responsibility of the caller to ensure that the deployments are valid.
+
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param chain_id: The chain ID
+        :type chain_id: int | str | None
+        :param limit: The limit
+        :type limit: int | None
+        :param config_or_db_path: The config or db path
+        :type config_or_db_path: Union[Config, Path, str, None]
+        :return: The deployments
+        :rtype: list[Deployment]
+        """
         deployments_iter = self._get_deployments_iterator(
             contract_name=contract_name,
             chain_id=chain_id,
@@ -354,6 +496,21 @@ class Network:
         chain_id: int | str | None = None,
         config_or_db_path: Union["Config", Path, str, None] = None,
     ) -> list[Deployment]:
+        """Get deployments from the database without an initialized config.
+
+        This method does check if the deployments integrity is valid. If not, it won't be returned.
+
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param chain_id: The chain ID
+        :type chain_id: int | str | None
+        :param limit: The limit
+        :type limit: int | None
+        :param config_or_db_path: The config or db path
+        :type config_or_db_path: Union[Config, Path, str, None]
+        :return: The deployments
+        :rtype: list[Deployment]
+        """
         deployments_iter = self._get_deployments_iterator(
             contract_name=contract_name,
             chain_id=chain_id,
@@ -378,6 +535,17 @@ class Network:
         contract_name: str | None,
         config: Union["Config", None] = None,
     ) -> bool:
+        """Check if the deployment has a matching integrity with the config and contract name.
+
+        :param deployment: The deployment
+        :type deployment: Deployment
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param config: The config
+        :type config: Union[Config, None]
+        :return: True if the deployment has a matching integrity, False otherwise
+        :rtype: bool
+        """
         if config is None:
             config = get_config()
         if contract_name is None:
@@ -399,12 +567,32 @@ class Network:
     def get_deployer_from_contract_name(
         self, config: "Config", contract_name: str
     ) -> VyperDeployer | ZksyncDeployer:
+        """Returns the Vyper deployer for the contract name.
+
+        :param config: The config
+        :type config: Config
+        :param contract_name: The contract name
+        :type contract_name: str
+        :return: The corresponding Vyper deployer
+        :rtype: VyperDeployer | ZksyncDeployer
+        """
         contract_path = config.find_contract(contract_name)
         return boa.load_partial(str(contract_path.absolute()))
 
     def get_latest_deployment_unchecked(
         self, contract_name: str | None = None, chain_id: int | str | None = None
     ) -> Deployment | None:
+        """Returns the latest deployment of the contract.
+
+        It does not check if the deployment is valid.
+
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param chain_id: The chain ID
+        :type chain_id: int | str | None
+        :return: The deployment or nothing
+        :rtype: Deployment | None
+        """
         deployments = self.get_deployments_unchecked(
             contract_name=contract_name, chain_id=chain_id, limit=1
         )
@@ -415,6 +603,17 @@ class Network:
     def get_latest_contract_unchecked(
         self, contract_name: str | None = None, chain_id: int | str | None = None
     ) -> ABIContract | None:
+        """Returns the latest contract of the contract.
+
+        It does not check if the deployment is valid.
+
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param chain_id: The chain ID
+        :type chain_id: int | str | None
+        :return: The contract or nothing
+        :rtype: ABIContract | None
+        """
         deployment = self.get_latest_deployment_unchecked(
             contract_name=contract_name, chain_id=chain_id
         )
@@ -425,6 +624,17 @@ class Network:
     def get_latest_deployment_checked(
         self, contract_name: str | None = None, chain_id: int | str | None = None
     ) -> Deployment | None:
+        """Returns the latest deployment of the contract.
+
+        It does check if the deployment is valid.
+
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param chain_id: The chain ID
+        :type chain_id: int | str | None
+        :return: The deployment or nothing
+        :rtype: Deployment | None
+        """
         deployments = self.get_deployments_checked(
             contract_name=contract_name, chain_id=chain_id, limit=1
         )
@@ -435,6 +645,17 @@ class Network:
     def get_latest_contract_checked(
         self, contract_name: str | None = None, chain_id: int | str | None = None
     ) -> ABIContract | None:
+        """Returns the latest contract of the contract.
+
+        It does check if the deployment is valid.
+
+        :param contract_name: The contract name
+        :type contract_name: str | None
+        :param chain_id: The chain ID
+        :type chain_id: int | str | None
+        :return: The contract or nothing
+        :rtype: ABIContract | None
+        """
         deployment = self.get_latest_deployment_checked(
             contract_name=contract_name, chain_id=chain_id
         )
@@ -449,7 +670,19 @@ class Network:
         address: str | None = None,
         checked: bool = False,
     ) -> VyperContract | ZksyncContract | ABIContract:
-        """A wrapper around get_or_deploy_named_contract that is more explicit about the contract being deployed."""
+        """A wrapper around ``get_or_deploy_named`` that is more explicit about the contract being deployed.
+
+        :param contract_name: The contract name
+        :type contract_name: str
+        :param force_deploy: If True, will deploy the contract even if the contract has an address in the config file.
+        :type force_deploy: bool
+        :param address: The address of the contract
+        :type address: str | None
+        :param checked: If True, will check if the deployment is valid
+        :type checked: bool
+        :return: The contract
+        :rtype: VyperContract | ZksyncContract | ABIContract
+        """
         logger.warning(
             "manifest_contract is deprecated and will be removed in a future version. Please use manifest_named."
         )
@@ -460,7 +693,10 @@ class Network:
     def instantiate_contract(
         self, *args, **kwargs
     ) -> VyperContract | ZksyncContract | ABIContract:
-        """An alias for get_or_deploy_named_contract."""
+        """An alias for ``get_or_deploy_named``.
+
+        Deprecated and will be removed in a future version, please use ``get_or_deploy_named``.
+        """
         logger.warning(
             "instantiate_contract is deprecated and will be removed in a future version. Please use manifest_named."
         )
@@ -469,8 +705,12 @@ class Network:
     def get_or_deploy_contract(
         self, *args, **kwargs
     ) -> VyperContract | ZksyncContract | ABIContract:
+        """A wrapper around ``get_or_deploy_named``.
+
+        Deprecated and will be removed in a future version, please use ``get_or_deploy_named``.
+        """
         logger.warning(
-            "get_or_deploy_named_contract is deprecated and will be removed in a future version. Please use get_or_deploy_named."
+            "get_or_deploy_contract is deprecated and will be removed in a future version. Please use get_or_deploy_named."
         )
         return self.get_or_deploy_named(*args, **kwargs)
 
@@ -483,7 +723,13 @@ class Network:
     def get_or_deploy_named_contract(
         self, *args, **kwargs
     ) -> VyperContract | ZksyncContract | ABIContract:
-        """A wrapper around get_or_deploy_named that is more explicit about the contract being deployed."""
+        """A wrapper around get_or_deploy_named that is more explicit about the contract being deployed.
+
+        Deprecated and will be removed in a future version, please use ``get_or_deploy_named``.
+        """
+        logger.warning(
+            "get_or_deploy_named_contract is deprecated and will be removed in a future version. Please use get_or_deploy_named."
+        )
         return self.get_or_deploy_named(*args, **kwargs)
 
     def manifest_named(
@@ -516,16 +762,20 @@ class Network:
             - abi
             - abi_from_explorer
 
-        Args:
-            - contract_name: the contract name or deployer for the contract.
-            - force_deploy: if True, will deploy the contract even if the contract has an address in the config file.
-            - abi: the ABI of the contract. Can be a list, string path to file, string of the ABI, VyperDeployer, VyperContract, ZksyncDeployer, ZksyncContract, ABIContractFactory, or ABIContract.
-            - abi_from_explorer: if True, will fetch the ABI from the explorer.
-            - deployer_script: If no address is given, this is the path to deploy the contract.
-            - address: The address of the contract.
-
-        Returns:
-            VyperContract | ZksyncContract | ABIContract: The deployed contract instance, or a blank contract if the contract is not found.
+        :param contract_name: the contract name.
+        :type contract_name: str
+        :param force_deploy: if True, will deploy the contract even if the contract has an address in the config file.
+        :type force_deploy: bool
+        :param abi: the ABI of the contract. Can be a list, string path to file, string of the ABI, VyperDeployer, VyperContract, ZksyncDeployer, ZksyncContract, ABIContractFactory, or ABIContract.
+        :type abi: str | Path | list | VyperDeployer | VyperContract | ZksyncDeployer | ZksyncContract | ABIContractFactory | ABIContract | None
+        :param abi_from_explorer: if True, will fetch the ABI from the explorer.
+        :type abi_from_explorer: bool | None
+        :param deployer_script: If no address is given, this is the path to deploy the contract.
+        :type deployer_script: str | Path | None
+        :param address: If no address is given, this is the address to deploy the contract.
+        :type address: str | None
+        :return: The deployed contract instance, or a blank contract if the contract is not found.
+        :rtype: VyperContract | ZksyncContract | ABIContract
         """
         # 0. Get args from config & input
         # The NamedContract is a dataclass meant to hold data from the config
@@ -615,19 +865,38 @@ class Network:
         return self._deploy_named_contract(named_contract, deployer_script)
 
     def is_local_or_forked_network(self) -> bool:
-        """Returns True if network is:
+        """Checks if the network is:
+
         1. pyevm
         2. eravm
         3. A fork
+
+        :return: True if the network is local or forked, False otherwise.
+        :rtype: bool
         """
         return self._is_local_or_forked_network(self.name, self.is_fork)
 
     def has_explorer(self) -> bool:
+        """Check if explorer is set in network config.
+
+        :return: True if explorer is set, False otherwise
+        :rtype: bool
+        """
         return self.explorer_uri is not None
 
     def _deploy_named_contract(
         self, named_contract: NamedContract, deployer_script: str | Path
     ) -> VyperContract | ZksyncContract:
+        """
+        Deploys a named contract from the config and deploys it from the deployer script.
+
+        :param named_contract: the named contract.
+        :type named_contract: NamedContract
+        :param deployer_script: the path to the deployer script.
+        :type deployer_script: str | Path
+        :return: the deployed contract.
+        :rtype: VyperContract | ZksyncContract
+        """
         config = get_config()
         deployed_named_contract: VyperContract | ZksyncContract = (
             named_contract._deploy(config.script_folder, deployer_script)
@@ -643,6 +912,14 @@ class Network:
         return deployed_named_contract
 
     def _add_named_to_db(self, named_contract: NamedContract) -> bool:
+        """
+        Adds a named contract to the database.
+
+        :param named_contract: the named contract.
+        :type named_contract: NamedContract
+        :return: True if the contract was added, False otherwise.
+        :rtype: bool
+        """
         db = get_deployments_db()
         field_names = db._get_fieldnames_str()
         sql = "SELECT {} FROM deployments WHERE json_extract(tx_dict, '$.chainId') = ? AND contract_address = ? ORDER BY broadcast_ts DESC LIMIT 1".format(
@@ -683,6 +960,20 @@ class Network:
         abi_from_explorer: bool | None = None,
         address: str | None = None,
     ) -> Tuple[Union[list, None], Union[VyperDeployer, ZksyncDeployer, None]]:
+        """
+        Returns the ABI and deployer from the input parameters.
+
+        :param logging_contract_name: the name of the contract.
+        :type logging_contract_name: str
+        :param abi: the ABI of the contract.
+        :type abi: str | Path | list | VyperDeployer | VyperContract | ZksyncContract | ZksyncDeployer | ABIContractFactory | ABIContract | None
+        :param abi_from_explorer: whether to get the ABI from explorer.
+        :type abi_from_explorer: bool | None
+        :param address: the address of the contract.
+        :type address: str | None
+        :return: the ABI and deployer of the contract.
+        :rtype: Tuple[Union[list, None], Union[VyperDeployer, ZksyncDeployer, None]]
+        """
         if abi_from_explorer and not address:
             raise ValueError(
                 f"Cannot get ABI from explorer without an address for contract {logging_contract_name}. Please provide an address."
@@ -737,12 +1028,29 @@ class Network:
         return abi, deployer  # type: ignore
 
     def get_named_contract(self, contract_name: str) -> NamedContract | None:
+        """Returns the named contract with the given name.
+
+        :param contract_name: the name of the contract.
+        :type contract_name: str
+        :return: the named contract.
+        :rtype: NamedContract | None
+        """
         return self.named_contracts.get(contract_name, None)
 
     def get_named_contracts(self) -> dict:
+        """Returns a dictionary of named contracts.
+
+        :return: a dictionary of named contracts.
+        :rtype: dict
+        """
         return self.named_contracts
 
     def set_boa_eoa(self, account: MoccasinAccount):
+        """Sets the boa.env.eoa to the given Moccasin account.
+
+        :param account: the account to set the ``boa.env.eoa`` to.
+        :type account: MoccasinAccount
+        """
         if self.is_local_or_forked_network:  # type: ignore[truthy-function]
             boa.env.eoa = Address(account.address)
         else:
@@ -758,6 +1066,14 @@ class Network:
 
     @staticmethod
     def convert_deployment_to_contract(deployment: Deployment) -> ABIContract:
+        """
+        Returns the ABIContract from the given deployment.
+
+        :param deployment: the deployment to convert
+        :type deployment: Deployment
+        :return: the ABIContract at the given address
+        :rtype: ABIContract
+        """
         contract_factory = ABIContractFactory(
             deployment.contract_name,
             deployment.abi,
@@ -767,10 +1083,28 @@ class Network:
 
     @staticmethod
     def _is_local_or_forked_network(name: str, fork: bool = False) -> bool:
+        """
+        Returns True if the network is local or forked.
+
+        :param name: the name of the network
+        :type name: str
+        :param fork: whether to consider forked networks
+        :type fork: bool
+        :return: True if the network is local or forked, False otherwise
+        :rtype: bool
+        """
         return name in [PYEVM, ERAVM] or fork
 
     @staticmethod
     def _check_valid_deploy(named_contract: NamedContract):
+        """
+        Returns True if the deployed contract is valid, i.e. the contract is actually the same one that boa.env has.
+
+        :param named_contract: the contract to check
+        :type named_contract: NamedContract
+        :return: True if the contract is valid, False otherwise
+        :rtype: bool
+        """
         # black magic! check if the contract we have is actually the
         # same one that boa.env has. it could be invalidated in the case
         # of e.g. rollbacks
