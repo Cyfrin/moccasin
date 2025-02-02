@@ -2,7 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.conftest import (
+from tests.constants import (
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
     ANVIL1_PRIVATE_KEY,

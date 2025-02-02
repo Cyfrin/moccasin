@@ -3,7 +3,7 @@ import subprocess
 from pathlib import Path
 
 from moccasin.commands.explorer import boa_get_abi_from_explorer
-from tests.conftest import COMPLEX_PROJECT_PATH
+from tests.constants import COMPLEX_PROJECT_PATH
 
 CURVE_ADDRESS_ETH_MAINNET = "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
 LINK_ADDRESS_OPT_MAINNET = "0x350a791Bfc2C21F9Ed5d10980Dad2e2638ffa7f6"

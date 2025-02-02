@@ -7,10 +7,7 @@ from typing import Generator
 import pytest
 
 from moccasin.config import Config, _set_global_config
-
-DEPLOYMENTS_PROJECT_PATH = Path(__file__).parent.parent.parent.joinpath(
-    "data/deployments_project/"
-)
+from tests.constants import DEPLOYMENTS_PROJECT_PATH
 
 
 # ------------------------------------------------------------------

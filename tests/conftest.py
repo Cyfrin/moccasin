@@ -12,54 +12,20 @@ import moccasin.constants.vars as vars
 from moccasin.commands.wallet import save_to_keystores
 from moccasin.config import Config, _set_global_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
+from tests.constants import (
+    ANVIL1_KEYSTORE_NAME,
+    ANVIL1_KEYSTORE_PASSWORD,
+    ANVIL1_PRIVATE_KEY,
+    ANVIL_STORED_STATE_PATH,
+    COMPLEX_PROJECT_PATH,
+    INSTALL_PROJECT_PATH,
+    INSTALLATION_STARTING_TOML,
+    NO_CONFIG_PROJECT_PATH,
+    PURGE_PROJECT_PATH,
+    PURGE_STARTING_TOML,
+    TESTS_CONFIG_PROJECT_PATH,
+)
 from tests.utils.anvil import ANVIL_URL, AnvilProcess
-
-COMPLEX_PROJECT_PATH = Path(__file__).parent.joinpath("data/complex_project/")
-INSTALL_PROJECT_PATH = Path(__file__).parent.joinpath("data/installation_project/")
-PURGE_PROJECT_PATH = Path(__file__).parent.joinpath("data/purge_project/")
-ZKSYNC_PROJECT_PATH = Path(__file__).parent.joinpath("data/zksync_project/")
-NO_CONFIG_PROJECT_PATH = Path(__file__).parent.joinpath("data/no_config_project/")
-TESTS_CONFIG_PROJECT_PATH = Path(__file__).parent.joinpath("data/tests_project/")
-ANVIL1_PRIVATE_KEY = (
-    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-)
-ANVIL1_KEYSTORE_NAME = "anvil1"
-ANVIL1_KEYSTORE_PASSWORD = "password"
-ANVIL_STORED_STATE_PATH = Path(__file__).parent.joinpath("data/anvil_data/state.json")
-ANVIL_STORED_KEYSTORE_PATH = Path(__file__).parent.joinpath(
-    "data/anvil_data/anvil1.json"
-)
-
-INSTALLATION_STARTING_TOML = """[project]
-dependencies = ["snekmate", "moccasin"]
-
-# PRESERVE COMMENTS
-
-[networks.sepolia]
-url = "https://ethereum-sepolia-rpc.publicnode.com"
-chain_id = 11155111
-save_to_db = false
-"""
-
-PURGE_STARTING_TOML = """[project]
-dependencies = ["snekmate", "patrickalphac/test_repo"]
-
-# PRESERVE COMMENTS
-
-[networks.sepolia]
-url = "https://ethereum-sepolia-rpc.publicnode.com"
-chain_id = 11155111
-"""
-
-pip_package_name = "snekmate"
-org_name = "pcaversaccio"
-github_package_name = f"{org_name}/{pip_package_name}"
-version = "0.1.0"
-new_version = "0.0.5"
-comment_content = "PRESERVE COMMENTS"
-patrick_org_name = "patrickalphac"
-patrick_repo_name = "test_repo"
-patrick_package_name = f"{patrick_org_name}/{patrick_repo_name}"
 
 
 # ------------------------------------------------------------------
@@ -238,7 +204,7 @@ def purge_reset_dependencies(purge_temp_path):
 #                           NO CONFIG
 # ------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def no_config_temp_path():
+def no_config_temp_path() -> Generator[Path, None, None]:
     with tempfile.TemporaryDirectory() as temp_dir:
         shutil.copytree(
             NO_CONFIG_PROJECT_PATH, os.path.join(temp_dir), dirs_exist_ok=True
@@ -258,7 +224,7 @@ def no_config_config(no_config_temp_path) -> Config:
 #                           TEST TEST
 # ------------------------------------------------------------------
 @pytest.fixture(scope="module")
-def test_config_temp_path():
+def test_config_temp_path() -> Generator[Path, None, None]:
     with tempfile.TemporaryDirectory() as temp_dir:
         shutil.copytree(
             TESTS_CONFIG_PROJECT_PATH, os.path.join(temp_dir), dirs_exist_ok=True
