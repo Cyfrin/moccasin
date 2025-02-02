@@ -74,50 +74,49 @@ VERIFIERS = Union["Blockscout", "ZksyncExplorer"]
 
 @dataclass
 class Network:
-    """
-    Represents a Moccasin network configuration from the ``moccasin.toml`` file settings.
+    """Represents a Moccasin network configuration from the ``moccasin.toml`` file settings.
 
     This class allows for flexible network configuration across different blockchain environments,
     supporting both local and remote networks, including special cases like forked networks.
 
-    :param name: Unique identifier for the network
-    :type name: str
-    :param url: Network endpoint URL
-    :type url: str | None
-    :param chain_id: Unique identifier for the blockchain network
-    :type chain_id: int | None
-    :param is_fork: Indicates if the network is a forked instance
-    :type is_fork: bool
-    :param block_identifier: Block identifier for the network
-    :type block_identifier: int | str
-    :param is_zksync: Indicates if the network is a zkSync network
-    :type is_zksync: bool
-    :param default_account_name: Default mox wallet account name to use for the network
-    :type default_account_name: str | None
-    :param unsafe_password_file: Path to the unsafe password file related to ``default_account_name``
-    :type unsafe_password_file: Path | None
-    :param save_abi_path: Path to save the ABI
-    :type save_abi_path: str | None
-    :param explorer_uri: URI of the explorer
-    :type explorer_uri: str | None
-    :param explorer_api_key: API key for the explorer
-    :type explorer_api_key: str | None
-    :param explorer_type: Type of the explorer ("blockscout", "etherscan", "zksyncexplorer")
-    :type explorer_type: str | None
-    :param named_contracts: Dictionary of named contracts
-    :type named_contracts: dict[str, NamedContract]
-    :param prompt_live: A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks
-    :type prompt_live: bool
-    :param save_to_db: Indicates if the network should save the deployment to the database, it defaults to true for "non-testing" networks
-    :type save_to_db: bool
-    :param live_or_staging: Indicates if the network is live or staging, defaults to true for non-local, non-forked networks
-    :type live_or_staging: bool
-    :param db_path: Path to the database
-    :type db_path: str | Path
-    :param extra_data: Extra data for the network
-    :type extra_data: dict[str, Any]
-    :param _network_env: Network environment
-    :type _network_env: _AnyEnv | None
+    :ivar name: Unique identifier for the network
+    :vartype name: str
+    :ivar url: Network endpoint URL
+    :vartype url: str | None
+    :ivar chain_id: Unique identifier for the blockchain network
+    :vartype chain_id: int | None
+    :ivar is_fork: Indicates if the network is a forked instance
+    :vartype is_fork: bool
+    :ivar block_identifier: Block identifier for the network
+    :vartype block_identifier: int | str
+    :ivar is_zksync: Indicates if the network is a zkSync network
+    :vartype is_zksync: bool
+    :ivar default_account_name: Default mox wallet account name to use for the network
+    :vartype default_account_name: str | None
+    :ivar unsafe_password_file: Path to the unsafe password file related to ``default_account_name``
+    :vartype unsafe_password_file: Path | None
+    :ivar save_abi_path: Path to save the ABI
+    :vartype save_abi_path: str | None
+    :ivar explorer_uri: URI of the explorer
+    :vartype explorer_uri: str | None
+    :ivar explorer_api_key: API key for the explorer
+    :vartype explorer_api_key: str | None
+    :ivar explorer_type: Type of the explorer ("blockscout", "etherscan", "zksyncexplorer")
+    :vartype explorer_type: str | None
+    :ivar named_contracts: Dictionary of named contracts
+    :vartype named_contracts: dict[str, NamedContract]
+    :ivar prompt_live: A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks
+    :vartype prompt_live: bool
+    :ivar save_to_db: Indicates if the network should save the deployment to the database, it defaults to true for "non-testing" networks
+    :vartype save_to_db: bool
+    :ivar live_or_staging: Indicates if the network is live or staging, defaults to true for non-local, non-forked networks
+    :vartype live_or_staging: bool
+    :ivar db_path: Path to the database
+    :vartype db_path: str | Path
+    :ivar extra_data: Extra data for the network
+    :vartype extra_data: dict[str, Any]
+    :ivar _network_env: Network environment
+    :vartype _network_env: _AnyEnv | None
     """
 
     name: str
@@ -1024,9 +1023,9 @@ class Network:
         if abi_from_explorer:
             from moccasin.commands.explorer import boa_get_abi_from_explorer
 
-            abi = boa_get_abi_from_explorer(str(address),
-                                            network_name_or_id=self.alias,
-                                            quiet=True)
+            abi = boa_get_abi_from_explorer(
+                str(address), network_name_or_id=self.alias, quiet=True
+            )
         return abi, deployer  # type: ignore
 
     def get_named_contract(self, contract_name: str) -> NamedContract | None:
@@ -1123,6 +1122,24 @@ class Network:
 
 
 class _Networks:
+    """A container class that manages network configurations defined in the ``moccasin.toml`` file.
+
+    This class parses and validates network-related settings from the configuration file,
+    handling both default network settings and network-specific overrides. It manages
+    contract deployments, network connections, and explorer configurations for each network.
+
+    :ivar _networks: Dictionary mapping network names to their Network objects
+    :vartype _networks: dict[str, Network]
+    :ivar _default_named_contracts: Default contract configurations that apply across all networks
+    :vartype _default_named_contracts: dict[str, NamedContract]
+    :ivar _overriden_active_network: Currently active network if manually overridden
+    :vartype _overriden_active_network: Network | None
+    :ivar default_db_path: Default path for the database storage
+    :vartype default_db_path: Path
+    :ivar default_network_name: Name of the default network to use
+    :vartype default_network_name: str
+    """
+
     _networks: dict[str, Network]
     _default_named_contracts: dict[str, NamedContract]
     _overriden_active_network: Network | None
@@ -1130,6 +1147,13 @@ class _Networks:
     default_network_name: str
 
     def __init__(self, toml_data: dict, project_root: Path):
+        """Initialize the _Networks class.
+
+        :param toml_data: The configuration data from the ``moccasin.toml`` file
+        :type toml_data: dict
+        :param project_root: The root directory of the project
+        :type project_root: Path
+        """
         self._networks = {}
         self._default_named_contracts = {}
         self._overriden_active_network = None
@@ -1214,14 +1238,39 @@ class _Networks:
                 self._networks[network_name] = network
 
     def __len__(self):
+        """Return the number of networks.
+
+        :return: The number of networks
+        :rtype: int
+        """
         return len(self._networks)
 
     def get_networks(self) -> dict[str, Network]:
+        """Return the networks.
+
+        :return: The networks
+        :rtype: dict[str, Network]
+        """
         return self._networks
 
     def _generate_network_contracts_from_defaults(
         self, starting_default_contracts: dict, starting_network_contracts_dict: dict
     ) -> dict:
+        """Merge default contracts with network-specific contract overrides.
+
+        This method creates a new dictionary of contracts by:
+
+        1. Creating NamedContract instances for network-specific contracts
+        2. Applying default contract settings if a default contract exists
+        3. Overriding or adding these contracts to the default contracts dictionary
+
+        :param starting_default_contracts: Initial dictionary of default contracts
+        :type starting_default_contracts: dict
+        :param starting_network_contracts_dict: Dictionary of network-specific contract overrides
+        :type starting_network_contracts_dict: dict
+        :return: Updated dictionary of contracts with network-specific overrides
+        :rtype: dict
+        """
         for contract_name, contract_data in starting_network_contracts_dict.items():
             named_contract = NamedContract(
                 contract_name,
@@ -1239,6 +1288,11 @@ class _Networks:
         return starting_default_contracts
 
     def get_active_network(self) -> Network:
+        """Return the active network.
+
+        :return: The active network
+        :rtype: Network
+        """
         if self._overriden_active_network is not None:
             return self._overriden_active_network
         if boa.env.nickname in self._networks:
@@ -1250,9 +1304,21 @@ class _Networks:
         return new_network
 
     def get_default_db_path(self) -> Path:
+        """Return the default database path.
+
+        :return: The default database path
+        :rtype: Path
+        """
         return self.default_db_path
 
     def get_network(self, network_name_or_id: str | int) -> Network:
+        """Return a network by name or chain ID.
+
+        :param network_name_or_id: The name or chain ID of the network
+        :type network_name_or_id: str | int
+        :return: The network
+        :rtype: Network
+        """
         if isinstance(network_name_or_id, int):
             return self.get_network_by_chain_id(network_name_or_id)
         else:
@@ -1261,12 +1327,26 @@ class _Networks:
         return self.get_network_by_name(network_name_or_id)
 
     def get_network_by_chain_id(self, chain_id: int) -> Network:
+        """Return a network by chain ID.
+
+        :param chain_id: The chain ID of the network
+        :type chain_id: int
+        :return: The network
+        :rtype: Network
+        """
         for network in self._networks.values():
             if network.chain_id == chain_id:
                 return network
         raise ValueError(f"Network with chain_id {chain_id} not found.")
 
     def get_network_by_name(self, alias: str) -> Network:
+        """Return a network by name.
+
+        :param alias: The name of the network
+        :type alias: str
+        :return: The network
+        :rtype: Network
+        """
         network = self._networks.get(alias, None)
         if not network:
             raise ValueError(f"Network {alias} not found.")
@@ -1275,11 +1355,31 @@ class _Networks:
     def get_or_deploy_named_contract(
         self, *args, **kwargs
     ) -> VyperContract | ZksyncContract | ABIContract:
+        """Return a contract by name or deploy it if it's not found.
+
+        :param args: The arguments to pass to the get_or_deploy_named_contract method
+        :type args: tuple
+        :param kwargs: The keyword arguments to pass to the get_or_deploy_named_contract method
+        :type kwargs: dict
+        :return: The contract
+        :rtype: VyperContract | ZksyncContract | ABIContract
+        """
         return self.get_active_network().get_or_deploy_named_contract(*args, **kwargs)
 
     def set_active_network(
         self, name_of_network_or_network: str | Network, activate_boa=True, **kwargs
     ) -> Network:
+        """Set the active network.
+
+        :param name_of_network_or_network: The name or network object of the network
+        :type name_of_network_or_network: str | Network
+        :param activate_boa: Whether to activate boa on the network
+        :type activate_boa: bool
+        :param kwargs: The keyword arguments for the Network constructor
+        :type kwargs: dict
+        :return: The network
+        :rtype: Network
+        """
         if not isinstance(name_of_network_or_network, str) and not isinstance(
             name_of_network_or_network, Network
         ):
@@ -1303,6 +1403,7 @@ class _Networks:
         return name_of_network_or_network
 
     def activate_boa(self):
+        """Activate boa on the active network by creating and setting the boa env."""
         active_network = self.get_active_network()
         active_network.create_and_set_or_set_boa_env()
         self._overriden_active_network = None
@@ -1311,6 +1412,19 @@ class _Networks:
     def _validate_network_contracts_dict(
         contracts: Any, network_name: str | None = None
     ):
+        """Validate the structure of network contracts dictionary.
+
+        This method performs two key validations:
+
+        1. Ensures that the contracts parameter is a dictionary
+        2. Verifies that each contract entry is also a dictionary
+
+        :param contracts: The contracts dictionary to validate
+        :type contracts: Any
+        :param network_name: Optional name of the network for more specific error messaging
+        :type network_name: str | None, optional
+        :raises ValueError: If contracts is not a dictionary or contains non-dictionary entries
+        """
         network_name = f"{network_name}." if network_name else ""
 
         if not isinstance(contracts, dict):
@@ -1326,6 +1440,13 @@ class _Networks:
 
     @staticmethod
     def _add_local_network_defaults(toml_data: dict) -> dict:
+        """Check and init local network defaults if not already present by adding them to the toml data.
+
+        :param toml_data: The toml data to add defaults to
+        :type toml_data: dict
+        :return: The toml data with defaults added
+        :rtype: dict
+        """
         if "networks" not in toml_data:
             toml_data["networks"] = {}
 
@@ -1340,6 +1461,13 @@ class _Networks:
 
     @staticmethod
     def _add_fork_network_defaults(network_data: dict) -> dict:
+        """Add fork network defaults options to the network data.
+
+        :param network_data: The fork network data to add defaults to
+        :type network_data: dict
+        :return: The fork network data with defaults added
+        :rtype: dict
+        """
         network_data["prompt_live"] = network_data.get(
             "prompt_live", FORK_NETWORK_DEFAULTS["prompt_live"]
         )
@@ -1353,6 +1481,12 @@ class _Networks:
 
     @staticmethod
     def _validate_fork_network_defaults(network_data: dict):
+        """Validate the fork network data.
+
+        :param network_data: The fork network data to validate
+        :type network_data: dict
+        :raises ValueError: If the fork network data is invalid
+        """
         if network_data.get(SAVE_TO_DB, False) is True:
             raise ValueError(
                 "You cannot save forked network data to a live database. Please set 'save_to_db' to 'False' or leave it unset."
@@ -1360,6 +1494,20 @@ class _Networks:
 
     @staticmethod
     def _validate_local_network_data(network_data: dict, network_name: str):
+        """Validate configuration for local network types.
+
+        Performs multiple validation checks on local network configurations:
+
+        1. Prevents setting restricted keys for local networks
+        2. Enforces specific ``is_zksync`` settings for PYEVM and ERAVM networks
+        3. Ensures predefined configuration constraints are met
+
+        :param network_data: Configuration dictionary for the local network
+        :type network_data: dict
+        :param network_name: Name of the local network being validated
+        :type network_name: str
+        :raises ValueError: If any network configuration violates the validation rules
+        """
         for key in network_data.keys():
             if key in RESTRICTED_VALUES_FOR_LOCAL_NETWORK:
                 raise ValueError(f"Cannot set {key} for network {network_name}.")
@@ -1388,8 +1536,18 @@ class Config:
 
     This class reads the `moccasin.toml` file and sets up project configuration.
 
-    :param root_path: The root directory of the project. Defaults to None.
-    :type root_path: Path, optional
+    :ivar _project_root: The root directory of the project.
+    :vartype _project_root: Path
+    :ivar _toml_data: The parsed TOML data from the `moccasin.toml` file.
+    :vartype _toml_data: dict
+    :ivar dependencies: A list of dependencies specified in the `moccasin.toml` file.
+    :vartype dependencies: list[str]
+    :ivar project: A dictionary containing project details from the `moccasin.toml` file.
+    :vartype project: dict[str, str]
+    :ivar extra_data: A dictionary containing extra data from the `moccasin.toml` file.
+    :vartype extra_data: dict[str, Any]
+    :ivar networks: A dictionary containing network data from the `moccasin.toml` file.
+    :vartype networks: _Networks
     """
 
     _project_root: Path
@@ -1400,6 +1558,11 @@ class Config:
     networks: _Networks
 
     def __init__(self, root_path: Path | None):
+        """Initialize the Config object.
+
+        :param root_path: The root directory of the project. Defaults to None.
+        :type root_path: Path, optional
+        """
         if root_path is None:
             root_path = Config.find_project_root()
         root_path = cast(Path, root_path)
