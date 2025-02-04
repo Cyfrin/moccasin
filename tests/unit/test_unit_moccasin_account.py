@@ -1,7 +1,8 @@
-from moccasin.moccasin_account import MoccasinAccount
-from tests.constants import ANVIL1_PRIVATE_KEY
 import boa
 from boa import Env
+
+from moccasin.moccasin_account import MoccasinAccount
+from tests.constants import ANVIL1_PRIVATE_KEY
 
 STARTING_ANVIL1_BALANCE = 10000000000000000000000
 
