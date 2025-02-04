@@ -254,7 +254,7 @@ def anvil(anvil_process, anvil_keystore):
     yield
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def anvil_two_no_state():
     with AnvilProcess(args=["-p", "8546"], port=8546):
         yield
