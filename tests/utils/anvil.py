@@ -56,11 +56,20 @@ class AnvilProcess:
         if self.process:
             self.process.terminate()
             try:
-                self.process.wait(timeout=0.5)
+                self.process.wait(timeout=0.75)
             except subprocess.TimeoutExpired:
                 self.process.kill()
-            self.process = None
+            max_retries = 5
+            for _ in range(max_retries):
+                if not self.is_running():
+                    break
+                self.process.wait(timeout=0.5)
+            if self.is_running():
+                raise RuntimeError("Anvil process failed to terminate")
         atexit.unregister(self.terminate)
+
+    def is_running(self):
+        return self.process is not None and self.process.poll() is None
 
     @property
     def pid(self):

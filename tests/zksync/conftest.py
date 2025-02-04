@@ -8,7 +8,7 @@ import pytest
 from boa_zksync import set_zksync_test_env
 
 from moccasin.commands.wallet import save_to_keystores
-from moccasin.config import Config, initialize_global_config
+from moccasin.config import Config, get_or_initialize_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
 from tests.constants import ZKSYNC_PROJECT_PATH
 
@@ -53,7 +53,7 @@ def zk_temp_path() -> Generator[Path, None, None]:
 
 @pytest.fixture(scope="module")
 def zksync_project_config(zk_temp_path) -> Config:
-    return initialize_global_config(zk_temp_path)
+    return get_or_initialize_config(zk_temp_path)
 
 
 @pytest.fixture(scope="module")

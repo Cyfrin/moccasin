@@ -106,6 +106,12 @@ class MoccasinAccount(LocalAccount):
             self._init_key(decrypted_key)
         return cast(HexBytes, self.private_key)
 
+    def get_balance(self) -> int:
+        # This might be dumb? Idk
+        import boa
+
+        return boa.env.get_balance(self.address)
+
     @classmethod
     def from_boa_address(cls, address: Address) -> "MoccasinAccount":
         return cls()
