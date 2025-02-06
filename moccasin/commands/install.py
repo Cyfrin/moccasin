@@ -26,7 +26,18 @@ from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_
 from moccasin.logging import logger
 
 
-def main(args: Namespace):
+def main(args: Namespace) -> int:
+    return mox_install(args)
+
+
+def mox_install(args: Namespace) -> int:
+    """Install the given requirements from PyPI and GitHub.
+
+    :param args: Namespace Requirements to install
+    :type args: Namespace
+    :return: int 0 at the end of the function
+    :rtype: int
+    """
     requirements = args.requirements
     config = get_or_initialize_config()
     if len(requirements) == 0:
