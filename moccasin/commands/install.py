@@ -19,7 +19,7 @@ from tqdm import tqdm
 from moccasin._dependency_utils import (
     DependencyType,
     _write_new_dependencies,
-    classify_dependency,
+    get_typed_dependencies,
 )
 from moccasin.config import get_or_initialize_config
 from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
@@ -27,37 +27,33 @@ from moccasin.logging import logger
 
 
 def main(args: Namespace) -> int:
-    return mox_install(args)
+    requirements = args.requirements
+    pip_requirements, github_requirements = get_typed_dependencies(
+        requirements
+    ).values()
+
+    return mox_install(pip_requirements, github_requirements, args.quiet)
 
 
-def mox_install(args: Namespace) -> int:
+def mox_install(
+    pip_requirements: list[str], github_requirements: list[str], quiet: bool
+) -> int:
     """Install the given requirements from PyPI and GitHub.
 
-    :param args: Namespace Requirements to install
-    :type args: Namespace
+    :param pip_requirements: List of pip requirements to install
+    :type pip_requirements: list[str]
+    :param github_requirements: List of GitHub requirements to install
+    :type github_requirements: list[str]
+    :param quiet: Whether to suppress output
+    :type quiet: bool
     :return: int 0 at the end of the function
     :rtype: int
     """
-    requirements = args.requirements
-    config = get_or_initialize_config()
-    if len(requirements) == 0:
-        requirements = config.get_dependencies()
-    if len(requirements) == 0:
-        logger.info("No dependencies to install.")
-        return 0
-
-    pip_requirements = []
-    github_requirements = []
-    for requirement in requirements:
-        if classify_dependency(requirement) == DependencyType.GITHUB:
-            github_requirements.append(requirement)
-        else:
-            pip_requirements.append(requirement)
-    install_path: Path = config.get_base_dependencies_install_path()
+    install_path: Path = get_or_initialize_config().get_base_dependencies_install_path()
     if len(pip_requirements) > 0:
-        _pip_installs(pip_requirements, install_path.joinpath(PYPI), args.quiet)
+        _pip_installs(pip_requirements, install_path.joinpath(PYPI), quiet)
     if len(github_requirements) > 0:
-        _github_installs(github_requirements, install_path.joinpath(GITHUB), args.quiet)
+        _github_installs(github_requirements, install_path.joinpath(GITHUB), quiet)
     return 0
 
 
