@@ -1,25 +1,26 @@
-import os
 import re
 import shutil
 import subprocess
 import sys
-import tomllib
 import traceback
 import zipfile
 from argparse import Namespace
-from base64 import b64encode
 from io import BytesIO
+from packaging.requirements import Requirement
 from pathlib import Path
 from urllib.parse import quote
 
 import requests  # type: ignore
-import tomli_w
 from tqdm import tqdm
 
 from moccasin._dependency_utils import (
     DependencyType,
-    _write_new_dependencies,
-    get_typed_dependencies,
+    GitHubDependency,
+    add_dependency_to_versions_file,
+    write_new_config_dependencies,
+    get_dependencies,
+    get_new_or_updated_github_dependencies,
+    get_new_or_updated_pip_dependencies,
 )
 from moccasin.config import get_or_initialize_config
 from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
@@ -27,89 +28,111 @@ from moccasin.logging import logger
 
 
 def main(args: Namespace) -> int:
-    requirements = args.requirements
-    pip_requirements, github_requirements = get_typed_dependencies(
-        requirements
-    ).values()
-
-    return mox_install(pip_requirements, github_requirements, args.quiet)
+    return mox_install(args)
 
 
-def mox_install(
-    pip_requirements: list[str], github_requirements: list[str], quiet: bool
-) -> int:
+def mox_install(args: Namespace) -> int:
     """Install the given requirements from PyPI and GitHub.
 
-    :param pip_requirements: List of pip requirements to install
-    :type pip_requirements: list[str]
-    :param github_requirements: List of GitHub requirements to install
-    :type github_requirements: list[str]
-    :param quiet: Whether to suppress output
-    :type quiet: bool
+    :param args: Namespace containing the requirements to install
+    :type args: Namespace
     :return: int 0 at the end of the function
     :rtype: int
     """
+    config_dependencies = get_or_initialize_config().get_dependencies()
+    project_requirements = (
+        list(set(args.requirements + config_dependencies))
+        if args.requirements
+        else config_dependencies
+    )
+
+    pip_requirements, github_requirements = get_dependencies(project_requirements)
     install_path: Path = get_or_initialize_config().get_base_dependencies_install_path()
+
+    # Pip installs
     if len(pip_requirements) > 0:
-        _pip_installs(pip_requirements, install_path.joinpath(PYPI), quiet)
+        logger.info("Checking for new or to update pip packages...")
+        new_pip_packages = get_new_or_updated_pip_dependencies(
+            pip_requirements, install_path.joinpath(PYPI)
+        )
+        if len(new_pip_packages) > 0:
+            _pip_installs(new_pip_packages, install_path.joinpath(PYPI), args.quiet)
+        else:
+            logger.info("No new or updated pip packages to install")
+    else:
+        logger.info("No pip packages to install")
+
+    # Github installs
     if len(github_requirements) > 0:
-        _github_installs(github_requirements, install_path.joinpath(GITHUB), quiet)
+        logger.info("Checking for new or to update GitHub packages...")
+        new_github_packages = get_new_or_updated_github_dependencies(
+            github_requirements, install_path.joinpath(GITHUB)
+        )
+        if len(new_github_packages) > 0:
+            _github_installs(new_github_packages, install_path.joinpath(GITHUB))
+        else:
+            logger.info("No new or updated GitHub packages to install")
+    else:
+        logger.info("No GitHub packages to install")
     return 0
 
 
-# Much of this code thanks to brownie
-# https://github.com/eth-brownie/brownie/blob/master/brownie/_config.py
-def _github_installs(
-    github_ids: list[str], base_install_path: Path, quiet: bool = False
+# ------------------------------------------------------------------
+#                           PIP INSTALL
+# ------------------------------------------------------------------
+def _pip_installs(
+    new_pip_packages: list[Requirement], base_install_path: Path, quiet: bool = False
 ):
-    logger.info(f"Installing {len(github_ids)} GitHub packages...")
-    for package_id in github_ids:
-        try:
-            if "@" in package_id:
-                path, version = package_id.split("@", 1)
-            else:
-                path = package_id
-                version = None  # We'll fetch the latest version later
-            org, repo = path.split("/")
-            org = org.strip().lower()
-            repo = repo.strip().lower()
-        except ValueError:
-            raise ValueError(
-                "Invalid package ID. Must be given as ORG/REPO[@VERSION]"
-                "\ne.g. 'pcaversaccio/snekmate@v2.5.0'"
-            ) from None
+    logger.info(f"Installing {len(new_pip_packages)} pip packages...")
+    cmd = [
+        "uv",
+        "pip",
+        "install",
+        *[str(req) for req in new_pip_packages],  # @dev could be better
+        "--target",
+        str(base_install_path),
+    ]
 
-        headers = REQUEST_HEADERS.copy()
-        headers.update(_maybe_retrieve_github_auth())
+    capture_output = quiet
+    try:
+        subprocess.run(cmd, capture_output=capture_output, check=True)
+    except FileNotFoundError as e:
+        logger.info(
+            f"Stack trace:\n{''.join(traceback.format_exception(type(e), e, e.__traceback__))}"
+        )
+        sys.exit(1)
 
-        if version is None:
-            version = _get_latest_version(org, repo, headers)
-            logger.info(f"Using latest version for {org}/{repo}: {version}")
+    versions_install_path = base_install_path.joinpath(PACKAGE_VERSION_FILE)
+    # @dev Could be better here maybe
+    for package in new_pip_packages:
+        add_dependency_to_versions_file(versions_install_path, package)
 
-        org_install_path = base_install_path.joinpath(f"{org}")
+    write_new_config_dependencies(new_pip_packages, DependencyType.PIP)
+
+
+# ------------------------------------------------------------------
+#                            GH INSTALL
+# ------------------------------------------------------------------
+def _github_installs(
+    github_new_or_updated: list[GitHubDependency], base_install_path: Path
+):
+    logger.info(f"Installing {len(github_new_or_updated)} GitHub packages...")
+    for github_dependency in github_new_or_updated:
+        if re.match(r"^[0-9a-f]+$", github_dependency.version):
+            download_url = f"https://api.github.com/repos/{github_dependency.org}/{github_dependency.repo}/zipball/{github_dependency.version}"
+        else:
+            download_url = _get_download_url_from_tag(
+                github_dependency.org,
+                github_dependency.repo,
+                github_dependency.version,
+                github_dependency.headers,
+            )
+
+        org_install_path = base_install_path.joinpath(f"{github_dependency.org}")
         org_install_path.mkdir(exist_ok=True, parents=True)
-        repo_install_path = org_install_path.joinpath(f"{repo}")
+        repo_install_path = org_install_path.joinpath(f"{github_dependency.repo}")
         versions_install_path = base_install_path.joinpath(PACKAGE_VERSION_FILE)
 
-        if repo_install_path.exists():
-            with open(versions_install_path, "rb") as f:
-                versions = tomllib.load(f)
-                versions = {k.lower(): v for k, v in versions.items()}
-                installed_version = versions.get(f"{org}/{repo}", None)
-            if installed_version == version:
-                logger.info(f"{org}/{repo} already installed at version {version}")
-                return f"{org}/{repo}@{version}"
-            else:
-                logger.info(
-                    f"Updating {org}/{repo} from {installed_version} to {version}"
-                )
-
-        if re.match(r"^[0-9a-f]+$", version):
-            download_url = (
-                f"https://api.github.com/repos/{org}/{repo}/zipball/{version}"
-            )
-        else:
-            download_url = _get_download_url_from_tag(org, repo, version, headers)
         existing = list(repo_install_path.parent.iterdir())
 
         # Some versions contain special characters and github api seems to display url without
@@ -117,10 +140,14 @@ def _github_installs(
         # It results in a ConnectionError exception because the actual download url is encoded.
         # In this case we try to sanitize the version in url and download again.
         try:
-            _stream_download(download_url, str(repo_install_path.parent), headers)
+            _stream_download(
+                download_url, str(repo_install_path.parent), github_dependency.headers
+            )
         except ConnectionError:
-            download_url = f"https://api.github.com/repos/{org}/{repo}/zipball/refs/tags/{quote(version)}"
-            _stream_download(download_url, str(repo_install_path.parent), headers)
+            download_url = f"https://api.github.com/repos/{github_dependency.org}/{github_dependency.repo}/zipball/refs/tags/{quote(github_dependency.version)}"
+            _stream_download(
+                download_url, str(repo_install_path.parent), github_dependency.headers
+            )
 
         try:
             installed = next(
@@ -135,35 +162,9 @@ def _github_installs(
             shutil.move(installed, repo_install_path)
 
         # Update versions file
-        if versions_install_path.exists():
-            with open(versions_install_path, "rb") as f:
-                versions_data = tomllib.load(f)
-            versions_data[f"{org}/{repo}"] = version
-            with open(versions_install_path, "wb") as f:
-                tomli_w.dump(versions_data, f)
-        else:
-            with open(versions_install_path, "w", encoding="utf-8") as f:
-                toml_string = tomli_w.dumps({f"{org}/{repo}": version})
-                f.write(toml_string)
-        _write_new_dependencies(github_ids, DependencyType.GITHUB)
+        add_dependency_to_versions_file(versions_install_path, github_dependency)
 
-
-def _get_latest_version(org: str, repo: str, headers: dict) -> str:
-    response = requests.get(
-        f"https://api.github.com/repos/{org}/{repo}/releases/latest", headers=headers
-    )
-    if response.status_code == 200:
-        return response.json()["tag_name"].lstrip("v")
-
-    response = requests.get(
-        f"https://api.github.com/repos/{org}/{repo}/tags?per_page=1", headers=headers
-    )
-    if response.status_code == 200:
-        data = response.json()
-        if data:
-            return data[0]["name"].lstrip("v")
-
-    raise ValueError(f"Unable to determine latest version for {org}/{repo}")
+    write_new_config_dependencies(github_new_or_updated, DependencyType.GITHUB)
 
 
 def _stream_download(
@@ -184,18 +185,6 @@ def _stream_download(
 
     with zipfile.ZipFile(BytesIO(content)) as zf:
         zf.extractall(target_path)
-
-
-def _maybe_retrieve_github_auth() -> dict[str, str]:
-    """Returns appropriate github authorization headers.
-
-    Otherwise returns an empty dict if no auth token is present.
-    """
-    token = os.getenv("GITHUB_TOKEN")
-    if token is not None:
-        auth = b64encode(token.encode()).decode()
-        return {"Authorization": f"Basic {auth}"}
-    return {}
 
 
 def _get_download_url_from_tag(org: str, repo: str, version: str, headers: dict) -> str:
@@ -220,20 +209,3 @@ def _get_download_url_from_tag(org: str, repo: str, version: str, headers: dict)
         f"Invalid version '{version}' for this package. Available versions are:\n"
         + ", ".join(available_versions)
     )
-
-
-def _pip_installs(package_ids: list[str], base_install_path: Path, quiet: bool = False):
-    logger.info(f"Installing {len(package_ids)} pip packages...")
-    cmd = []
-    cmd = ["uv", "pip", "install", *package_ids, "--target", str(base_install_path)]
-
-    capture_output = quiet
-    try:
-        subprocess.run(cmd, capture_output=capture_output, check=True)
-    except FileNotFoundError as e:
-        logger.info(
-            f"Stack trace:\n{''.join(traceback.format_exception(type(e), e, e.__traceback__))}"
-        )
-        sys.exit(1)
-
-    _write_new_dependencies(package_ids, DependencyType.PIP)

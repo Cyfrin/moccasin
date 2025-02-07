@@ -29,7 +29,12 @@ ANVIL_STORED_KEYSTORE_PATH = Path(__file__).parent.joinpath(
 #                            TEST TOML
 # ------------------------------------------------------------------
 INSTALLATION_STARTING_TOML = """[project]
-dependencies = ["snekmate", "moccasin"]
+dependencies = [
+    "snekmate", 
+    "moccasin", 
+    "PatrickAlphaC/test_repo@0.1.1",
+    "pcaversaccio/snekmate",
+]
 
 # PRESERVE COMMENTS
 
@@ -51,8 +56,11 @@ chain_id = 11155111
 
 
 # ------------------------------------------------------------------
-#                           TEST GITHUB
+#                           TEST LIB
 # ------------------------------------------------------------------
+LIB_GH_PATH = "lib/github"
+LIB_PIP_PATH = "lib/pypi"
+MOCCASIN_LIB_NAME = "moccasin"
 PIP_PACKAGE_NAME = "snekmate"
 ORG_NAME = "pcaversaccio"
 GITHUB_PACKAGE_NAME = f"{ORG_NAME}/{PIP_PACKAGE_NAME}"
