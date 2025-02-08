@@ -31,21 +31,37 @@ def main(args: Namespace) -> int:
     return mox_install(args)
 
 
-def mox_install(args: Namespace) -> int:
+def mox_install(args: Namespace | None = None) -> int:
     """Install the given requirements from PyPI and GitHub.
+
+    If no requirements are given, install all requirements in the config file.
+
+    @dev This command is used for install, compile and deploy commands.
 
     :param args: Namespace containing the requirements to install
     :type args: Namespace
     :return: int 0 at the end of the function
     :rtype: int
     """
+    # Get config dependencies and requirements
     config_dependencies = get_or_initialize_config().get_dependencies()
-    project_requirements = (
-        list(set(args.requirements + config_dependencies))
-        if args.requirements
-        else config_dependencies
-    )
+    if (
+        args is not None
+        and hasattr(args, "requirements")
+        and len(args.requirements) > 0
+    ):
+        project_requirements = (
+            list(set(args.requirements + config_dependencies))
+            if args.requirements
+            else config_dependencies
+        )
+    else:
+        project_requirements = config_dependencies
 
+    # Get quiet flag
+    quiet = args.quiet if hasattr(args, "quiet") else False
+
+    # Get pip and github requirements
     pip_requirements, github_requirements = get_dependencies(project_requirements)
     install_path: Path = get_or_initialize_config().get_base_dependencies_install_path()
 
@@ -56,7 +72,7 @@ def mox_install(args: Namespace) -> int:
             pip_requirements, install_path.joinpath(PYPI)
         )
         if len(new_pip_packages) > 0:
-            _pip_installs(new_pip_packages, install_path.joinpath(PYPI), args.quiet)
+            _pip_installs(new_pip_packages, install_path.joinpath(PYPI), quiet)
         else:
             logger.info("No new or updated pip packages to install")
     else:
@@ -83,6 +99,15 @@ def mox_install(args: Namespace) -> int:
 def _pip_installs(
     new_pip_packages: list[Requirement], base_install_path: Path, quiet: bool = False
 ):
+    """Install the given pip packages.
+
+    :param new_pip_packages: list of pip packages to install
+    :type new_pip_packages: list[Requirement]
+    :param base_install_path: path to install the packages
+    :type base_install_path: Path
+    :param quiet: flag to install packages quietly
+    :type quiet: bool
+    """
     logger.info(f"Installing {len(new_pip_packages)} pip packages...")
     cmd = [
         "uv",
@@ -116,6 +141,13 @@ def _pip_installs(
 def _github_installs(
     github_new_or_updated: list[GitHubDependency], base_install_path: Path
 ):
+    """Install the given GitHub packages.
+
+    :param github_new_or_updated: list of GitHub packages to install
+    :type github_new_or_updated: list[GitHubDependency]
+    :param base_install_path: path to install the packages
+    :type base_install_path: Path
+    """
     logger.info(f"Installing {len(github_new_or_updated)} GitHub packages...")
     for github_dependency in github_new_or_updated:
         if re.match(r"^[0-9a-f]+$", github_dependency.version):

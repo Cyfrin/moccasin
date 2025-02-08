@@ -6,6 +6,7 @@ from tests.constants import (
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
     ANVIL1_PRIVATE_KEY,
+    LIB_PIP_PATH,
 )
 
 
@@ -24,7 +25,7 @@ def test_run_help(mox_path, complex_temp_path):
     assert "Moccasin CLI run" in result.stdout
 
 
-def test_run_default(mox_path, complex_temp_path):
+def test_run_default(mox_path, complex_cleanup_dependencies_folder, complex_temp_path):
     current_dir = Path.cwd()
     try:
         os.chdir(complex_temp_path)
@@ -33,6 +34,9 @@ def test_run_default(mox_path, complex_temp_path):
         )
     finally:
         os.chdir(current_dir)
+
+    assert "Installing 1 pip packages..." in result.stderr
+    assert complex_temp_path.joinpath(LIB_PIP_PATH).exists()
     assert "Ending count:  1" in result.stdout
 
 
@@ -41,7 +45,7 @@ def test_multiple_manifest_returns_the_same_or_different(mox_path, complex_temp_
     os.chdir(complex_temp_path)
     try:
         result = subprocess.run(
-            [mox_path, "run", "quad_manifest"],
+            [mox_path, "run", "quad_manifest", "--no-install"],
             check=True,
             capture_output=True,
             text=True,

@@ -20,6 +20,8 @@ from tests.constants import (
     COMPLEX_PROJECT_PATH,
     INSTALL_PROJECT_PATH,
     INSTALLATION_STARTING_TOML,
+    INSTALLATION_WITH_GH_TOML,
+    INSTALLATION_WITH_PIP_TOML,
     NO_CONFIG_PROJECT_PATH,
     PURGE_PROJECT_PATH,
     PURGE_STARTING_TOML,
@@ -157,6 +159,26 @@ def installation_cleanup_dependencies(installation_temp_path):
     created_folder_path = installation_temp_path.joinpath(DEPENDENCIES_FOLDER)
     with open(installation_temp_path.joinpath("moccasin.toml"), "w") as f:
         f.write(INSTALLATION_STARTING_TOML)
+    if os.path.exists(created_folder_path):
+        shutil.rmtree(created_folder_path)
+
+
+@pytest.fixture
+def installation_cleanup_keep_pip_dependencies(installation_temp_path):
+    yield
+    created_folder_path = installation_temp_path.joinpath(DEPENDENCIES_FOLDER)
+    with open(installation_temp_path.joinpath("moccasin.toml"), "w") as f:
+        f.write(INSTALLATION_WITH_PIP_TOML)
+    if os.path.exists(created_folder_path):
+        shutil.rmtree(created_folder_path)
+
+
+@pytest.fixture
+def installation_cleanup_keep_gh_dependencies(installation_temp_path):
+    yield
+    created_folder_path = installation_temp_path.joinpath(DEPENDENCIES_FOLDER)
+    with open(installation_temp_path.joinpath("moccasin.toml"), "w") as f:
+        f.write(INSTALLATION_WITH_GH_TOML)
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)
 

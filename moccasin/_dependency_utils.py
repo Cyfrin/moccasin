@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Tuple
-from packaging.requirements import InvalidRequirement, Requirement
+from packaging.requirements import InvalidRequirement, Requirement, SpecifierSet
 
 from moccasin.constants.vars import PACKAGE_VERSION_FILE, REQUEST_HEADERS
 from moccasin.config import get_or_initialize_config
@@ -85,8 +85,18 @@ def get_new_or_updated_pip_dependencies(
     versions_install_path = base_install_path.joinpath(PACKAGE_VERSION_FILE)
     if not versions_install_path.exists():
         # If versions file doesn't exist, all packages need to be installed
-        return [Requirement(package) for package in pip_packages]
+        for package in pip_packages:
+            try:
+                # Preprocess package name
+                processed_package = preprocess_requirement(package)
+                package_req = Requirement(processed_package)
+            except InvalidRequirement:
+                logger.warning(f"Invalid requirement format for package: {package}")
+                continue
+            new_or_updated.append(package_req)
+        return new_or_updated
 
+    # If versions file exists, check if packages need to be updated
     with open(versions_install_path, "rb") as f:
         versions = tomllib.load(f)
         versions = {k.lower(): v for k, v in versions.items()}
@@ -110,12 +120,20 @@ def get_new_or_updated_pip_dependencies(
         # Extract version number
         version_pattern = re.compile(r"^([\w.-]+)(?:(==|>=|<=|!=|~=|>|<)(.+))?$")
         match = version_pattern.match(installed_version)
+        version_operator = match.group(2)
         version_number = match.group(3)
 
         # If version number doesn't match requirement, package needs to be updated
-        if version_number is not None and version_number != package_req.specifier:
-            new_or_updated.append(package_req)
-            logger.info(f"Package {package_name} needs to be updated")
+        if version_number is not None:
+            # Convert version number to a SpecifierSet and compare with requirement
+            installed_specifier = f"{version_operator}{version_number}"
+            if SpecifierSet(installed_specifier) != package_req.specifier:
+                new_or_updated.append(package_req)
+                logger.info(f"Package {package_name} needs to be updated")
+        else:
+            if package_req.specifier is not None:
+                new_or_updated.append(package_req)
+                logger.info(f"Package {package_name} needs to be updated")
 
     return new_or_updated
 

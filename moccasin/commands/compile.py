@@ -15,7 +15,7 @@ from vyper.compiler.phases import CompilerData
 from vyper.exceptions import VersionException, _BaseVyperException
 
 from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
-from moccasin.config import Config, get_config, initialize_global_config
+from moccasin.config import Config, get_config, get_or_initialize_config
 from moccasin.constants.vars import (
     BUILD_FOLDER,
     CONTRACTS_FOLDER,
@@ -25,9 +25,14 @@ from moccasin.constants.vars import (
 )
 from moccasin.logging import logger
 
+from .install import mox_install
+
 
 def main(args: Namespace) -> int:
-    config = initialize_global_config()
+    if not args.no_install:
+        mox_install(args)
+
+    config = get_or_initialize_config()
     project_path: Path = config.get_root()
 
     is_zksync: bool = _set_zksync_test_env_if_applicable(args, config)
