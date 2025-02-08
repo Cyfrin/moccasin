@@ -58,15 +58,17 @@ chain_id = 11155111
 # ------------------------------------------------------------------
 #                           TEST LIB
 # ------------------------------------------------------------------
+COMMENT_CONTENT = "PRESERVE COMMENTS"
+NEW_VERSION = "0.0.5"
+ORG_NAME = "pcaversaccio"
+PIP_PACKAGE_NAME = "snekmate"
+VERSION = "0.1.0"
+GITHUB_PACKAGE_NAME = f"{ORG_NAME}/{PIP_PACKAGE_NAME}"
 LIB_GH_PATH = "lib/github"
 LIB_PIP_PATH = "lib/pypi"
 MOCCASIN_LIB_NAME = "moccasin"
-PIP_PACKAGE_NAME = "snekmate"
-ORG_NAME = "pcaversaccio"
-GITHUB_PACKAGE_NAME = f"{ORG_NAME}/{PIP_PACKAGE_NAME}"
-VERSION = "0.1.0"
-NEW_VERSION = "0.0.5"
-COMMENT_CONTENT = "PRESERVE COMMENTS"
+MOCCASIN_TOML = "moccasin.toml"
 PATRICK_ORG_NAME = "patrickalphac"
 PATRICK_REPO_NAME = "test_repo"
 PATRICK_PACKAGE_NAME = f"{PATRICK_ORG_NAME}/{PATRICK_REPO_NAME}"
+VERSIONS_TOML = "versions.toml"

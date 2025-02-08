@@ -53,7 +53,7 @@ def get_dependencies(requirements: list[str]) -> Tuple[list[str], list[str]]:
         requirements = get_or_initialize_config().get_dependencies()
     if len(requirements) == 0:
         # If we have no requirements, return dict with empty lists
-        return {DependencyType.PIP: [], DependencyType.GITHUB: []}
+        return (pip_dependencies, github_dependencies)
 
     # Populate requirements lists
     for requirement in requirements:
