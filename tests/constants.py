@@ -32,8 +32,7 @@ INSTALLATION_STARTING_TOML = """[project]
 dependencies = [
     "snekmate", 
     "moccasin", 
-    "PatrickAlphaC/test_repo@0.1.1",
-    "pcaversaccio/snekmate",
+    "PatrickAlphaC/test_repo",
 ]
 
 # PRESERVE COMMENTS
@@ -43,6 +42,18 @@ url = "https://ethereum-sepolia-rpc.publicnode.com"
 chain_id = 11155111
 save_to_db = false
 """
+
+INSTALLATION_NO_DEPENDENCIES_TOML = """[project]
+dependencies = []
+
+# PRESERVE COMMENTS
+
+[networks.sepolia]
+url = "https://ethereum-sepolia-rpc.publicnode.com"
+chain_id = 11155111
+save_to_db = false
+"""
+
 
 INSTALLATION_WITH_PIP_TOML = """[project]
 dependencies = [
@@ -60,6 +71,22 @@ save_to_db = false
 
 INSTALLATION_WITH_GH_TOML = """[project]
 dependencies = [
+    "PatrickAlphaC/test_repo@0.1.1",
+    "pcaversaccio/snekmate",
+]
+
+# PRESERVE COMMENTS
+
+[networks.sepolia]
+url = "https://ethereum-sepolia-rpc.publicnode.com"
+chain_id = 11155111
+save_to_db = false
+"""
+
+INSTALLATION_FULL_DEPENDENCIES_TOML = """[project]
+dependencies = [
+    "snekmate", 
+    "moccasin",
     "PatrickAlphaC/test_repo@0.1.1",
     "pcaversaccio/snekmate",
 ]

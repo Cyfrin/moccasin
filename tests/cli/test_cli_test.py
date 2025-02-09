@@ -2,8 +2,6 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.constants import COMPLEX_PROJECT_PATH
-
 EXPECTED_HELP_TEXT = "Runs pytest"
 
 
@@ -11,9 +9,9 @@ def test_test_help(mox_path):
     result = subprocess.run(
         [mox_path, "test", "-h"], check=True, capture_output=True, text=True
     )
-    assert (
-        EXPECTED_HELP_TEXT in result.stdout
-    ), "Help output does not contain expected text"
+    assert EXPECTED_HELP_TEXT in result.stdout, (
+        "Help output does not contain expected text"
+    )
     assert result.returncode == 0
 
 
@@ -32,10 +30,12 @@ def test_basic(mox_path, complex_temp_path, anvil):
     assert "1 skipped" in result.stdout
 
 
-def test_test_complex_project_has_no_warnings(complex_cleanup_out_folder, mox_path):
+def test_test_complex_project_has_no_warnings(
+    complex_cleanup_out_folder, complex_temp_path, mox_path
+):
     current_dir = Path.cwd()
     try:
-        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        os.chdir(current_dir.joinpath(complex_temp_path))
         result = subprocess.run(
             [mox_path, "test"], check=True, capture_output=True, text=True
         )
@@ -45,10 +45,12 @@ def test_test_complex_project_has_no_warnings(complex_cleanup_out_folder, mox_pa
     assert result.returncode == 0
 
 
-def test_test_complex_project_passes_pytest_flags(complex_cleanup_out_folder, mox_path):
+def test_test_complex_project_passes_pytest_flags(
+    complex_cleanup_out_folder, complex_temp_path, mox_path
+):
     current_dir = Path.cwd()
     try:
-        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        os.chdir(current_dir.joinpath(complex_temp_path))
         result = subprocess.run(
             [mox_path, "test", "-k", "test_increment_two"],
             check=True,
@@ -62,10 +64,12 @@ def test_test_complex_project_passes_pytest_flags(complex_cleanup_out_folder, mo
     assert result.returncode == 0
 
 
-def test_test_coverage(complex_cleanup_out_folder, complex_cleanup_coverage, mox_path):
+def test_test_coverage(
+    complex_cleanup_out_folder, complex_cleanup_coverage, complex_temp_path, mox_path
+):
     current_dir = Path.cwd()
     try:
-        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        os.chdir(current_dir.joinpath(complex_temp_path))
         result = subprocess.run(
             [mox_path, "test", "--coverage"], check=True, capture_output=True, text=True
         )
@@ -73,13 +77,15 @@ def test_test_coverage(complex_cleanup_out_folder, complex_cleanup_coverage, mox
         os.chdir(current_dir)
     assert "coverage:" in result.stdout
     assert "Computation" not in result.stdout
-    assert current_dir.joinpath(COMPLEX_PROJECT_PATH).joinpath(".coverage").exists()
+    assert current_dir.joinpath(complex_temp_path).joinpath(".coverage").exists()
 
 
-def test_test_gas(complex_cleanup_out_folder, complex_cleanup_coverage, mox_path):
+def test_test_gas(
+    complex_cleanup_out_folder, complex_cleanup_coverage, complex_temp_path, mox_path
+):
     current_dir = Path.cwd()
     try:
-        os.chdir(current_dir.joinpath(COMPLEX_PROJECT_PATH))
+        os.chdir(current_dir.joinpath(complex_temp_path))
         result = subprocess.run(
             [mox_path, "test", "--gas-profile"],
             check=True,

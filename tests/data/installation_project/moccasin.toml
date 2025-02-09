@@ -1,5 +1,5 @@
 [project]
-dependencies = []
+dependencies = ["snekmate", "moccasin", "PatrickAlphaC/test_repo"]
 
 # PRESERVE COMMENTS
 

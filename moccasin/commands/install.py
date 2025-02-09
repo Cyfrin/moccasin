@@ -18,9 +18,7 @@ from moccasin._dependency_utils import (
     GitHubDependency,
     add_dependency_to_versions_file,
     write_new_config_dependencies,
-    get_dependencies,
-    get_new_or_updated_github_dependencies,
-    get_new_or_updated_pip_dependencies,
+    get_new_or_updated_dependencies,
 )
 from moccasin.config import get_or_initialize_config
 from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
@@ -43,51 +41,39 @@ def mox_install(args: Namespace | None = None) -> int:
     :return: int 0 at the end of the function
     :rtype: int
     """
-    # Get config dependencies and requirements
-    config_dependencies = get_or_initialize_config().get_dependencies()
-    if (
-        args is not None
-        and hasattr(args, "requirements")
-        and len(args.requirements) > 0
-    ):
-        project_requirements = (
-            list(set(args.requirements + config_dependencies))
-            if args.requirements
-            else config_dependencies
-        )
-    else:
-        project_requirements = config_dependencies
+    # Get config base install path
+    config = get_or_initialize_config()
+    config_dependencies = config.get_dependencies()
+    base_install_path: Path = config.get_base_dependencies_install_path()
+
+    # Get pip and github paths
+    pip_install_path = base_install_path.joinpath(PYPI)
+    github_install_path = base_install_path.joinpath(GITHUB)
+
+    # Get requirements
+    requirements: list[str] = (
+        args.requirements if args is not None and hasattr(args, "requirements") else []
+    )
 
     # Get quiet flag
     quiet = args.quiet if hasattr(args, "quiet") else False
 
     # Get pip and github requirements
-    pip_requirements, github_requirements = get_dependencies(project_requirements)
-    install_path: Path = get_or_initialize_config().get_base_dependencies_install_path()
+    logger.info("Checking for new or to update packages...")
+    pip_new_or_updated, github_new_or_updated = get_new_or_updated_dependencies(
+        requirements, config_dependencies, base_install_path
+    )
 
     # Pip installs
-    if len(pip_requirements) > 0:
-        logger.info("Checking for new or to update pip packages...")
-        new_pip_packages = get_new_or_updated_pip_dependencies(
-            pip_requirements, install_path.joinpath(PYPI)
-        )
-        if len(new_pip_packages) > 0:
-            _pip_installs(new_pip_packages, install_path.joinpath(PYPI), quiet)
-        else:
-            logger.info("No new or updated pip packages to install")
+    if len(pip_new_or_updated) > 0:
+        _pip_installs(pip_new_or_updated, pip_install_path, quiet)
     else:
         logger.info("No pip packages to install")
 
     # Github installs
-    if len(github_requirements) > 0:
+    if len(github_new_or_updated) > 0:
         logger.info("Checking for new or to update GitHub packages...")
-        new_github_packages = get_new_or_updated_github_dependencies(
-            github_requirements, install_path.joinpath(GITHUB)
-        )
-        if len(new_github_packages) > 0:
-            _github_installs(new_github_packages, install_path.joinpath(GITHUB))
-        else:
-            logger.info("No new or updated GitHub packages to install")
+        _github_installs(github_new_or_updated, github_install_path)
     else:
         logger.info("No GitHub packages to install")
     return 0

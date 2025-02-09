@@ -90,7 +90,7 @@ def test_write_to_config_after_install(
     config = Config(project_root)
     assert GITHUB_PACKAGE_NAME in config.dependencies
     for dep in starting_dependencies:
-        assert dep in config.dependencies
+        assert dep.lower() in config.dependencies
     assert COMMENT_CONTENT in config.read_configs_preserve_comments().as_string()
 
 

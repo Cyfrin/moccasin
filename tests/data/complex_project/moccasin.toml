@@ -87,3 +87,14 @@ usdc = { address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", abi_from_explor
 
 [networks.mainnet_fork.extra_data]
 usdc = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+
+[tool.moccasin.project]
+src = "src"
+dependencies = ["moccasin==0.3.0"]
+
+[tool.moccasin.networks.contracts.pyproject_contract]
+abi = "BuyMeACoffee"
+force_deploy = false
+
+[tool.moccasin.networks.silly_network]
+chain_id = 7777
