@@ -1,18 +1,18 @@
 import os
 import re
-import requests  # type: ignore
 import tomllib
-import tomli_w
-
 from base64 import b64encode
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Tuple
+
+import requests  # type: ignore
+import tomli_w
 from packaging.requirements import InvalidRequirement, Requirement, SpecifierSet
 
-from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
 from moccasin.config import get_or_initialize_config
+from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
 from moccasin.logging import logger
 
 
@@ -195,6 +195,8 @@ class GitHubDependency:
                 "Invalid package ID. Must be given as ORG/REPO[@VERSION]"
                 "\ne.g. 'pcaversaccio/snekmate@v2.5.0'"
             ) from None
+        # @dev org and username in github are case insensitive
+        # BUT repo is case sensitive
         org = org.strip().lower()
         repo = repo.strip().lower()
         version = version.strip() if version else None
@@ -308,7 +310,7 @@ def add_dependency_to_versions_file(
         if isinstance(dependency, GitHubDependency):
             versions_data[f"{dependency.org}/{dependency.repo}"] = dependency.version
         else:
-            versions_data[f"{dependency.requirement.name}"] = str(
+            versions_data[f"{dependency.requirement.name.lower()}"] = str(
                 dependency.requirement.specifier
             )
 
@@ -322,7 +324,11 @@ def add_dependency_to_versions_file(
                 )
             else:
                 toml_string = tomli_w.dumps(
-                    {dependency.requirement.name: str(dependency.requirement.specifier)}
+                    {
+                        dependency.requirement.name.lower(): str(
+                            dependency.requirement.specifier
+                        )
+                    }
                 )
             f.write(toml_string)
 
@@ -352,9 +358,13 @@ def write_new_config_dependencies(
                     updated_packages.add(pip_dependency.requirement.name)
 
             if pip_dependency.requirement.name not in updated_packages:
-                logger.info(f"Installed new package: {str(pip_dependency.requirement)}")
+                logger.info(
+                    f"Installed new package: {str(pip_dependency.requirement.name.lower())}"
+                )
             else:
-                logger.info(f"Updated package: {str(pip_dependency.requirement)}")
+                logger.info(
+                    f"Updated package: {str(pip_dependency.requirement.name.lower())}"
+                )
     else:  # GIT dependencies
         for package_dep in new_packages:
             for dep in typed_dependencies:
@@ -364,9 +374,9 @@ def write_new_config_dependencies(
                     updated_packages.add(package_dep.format_no_version())
 
             if f"{package_dep.org}/{package_dep.repo}" not in updated_packages:
-                logger.info(f"Installed {str(package_dep)}")
+                logger.info(f"Installed {str(package_dep.format_no_version())}")
             else:
-                logger.info(f"Updated {str(package_dep)}")
+                logger.info(f"Updated {str(package_dep.format_no_version())}")
 
     # Remove old versions of updated packages
     dependencies = [dep for dep in dependencies if dep not in to_delete]
@@ -386,7 +396,7 @@ def write_new_config_dependencies(
     new_deps = []
     for dep in dependencies + formated_new_packages:
         if dep not in new_deps:
-            new_deps.append(dep.lower())
+            new_deps.append(dep)
 
     if len(new_deps) > 0:
         config.write_dependencies(new_deps)

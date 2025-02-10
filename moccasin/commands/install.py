@@ -6,19 +6,19 @@ import traceback
 import zipfile
 from argparse import Namespace
 from io import BytesIO
-from packaging.requirements import Requirement
 from pathlib import Path
 from urllib.parse import quote
 
 import requests  # type: ignore
+from packaging.requirements import Requirement
 from tqdm import tqdm
 
 from moccasin._dependency_utils import (
     DependencyType,
     GitHubDependency,
     add_dependency_to_versions_file,
-    write_new_config_dependencies,
     get_new_or_updated_dependencies,
+    write_new_config_dependencies,
 )
 from moccasin.config import get_or_initialize_config
 from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS

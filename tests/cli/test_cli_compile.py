@@ -2,7 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.constants import LIB_PIP_PATH, LIB_GH_PATH
+from tests.constants import LIB_GH_PATH, LIB_PIP_PATH
 
 EXPECTED_HELP_TEXT = "Vyper compiler"
 
