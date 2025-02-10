@@ -17,6 +17,15 @@ from moccasin.logging import logger
 
 
 class DependencyType(Enum):
+    """Enumeration of supported dependency types.
+
+    .. attribute:: GITHUB
+        Dependencies from GitHub repositories (format: 'owner/repo[@version]' or GitHub URL)
+
+    .. attribute:: PIP
+        Dependencies from PyPI (Python Package Index)
+    """
+
     GITHUB = "github"
     PIP = "pip"
 
@@ -25,6 +34,23 @@ class DependencyType(Enum):
 #                       HANDLE DEPENDENCIES
 # ------------------------------------------------------------------
 def classify_dependency(dependency: str) -> DependencyType:
+    """Classify a dependency string as either a GitHub or PyPI dependency.
+
+    :param dependency: The dependency string to classify
+    :type dependency: str
+    :return: GITHUB if the dependency matches GitHub patterns, PIP otherwise
+    :rtype: DependencyType
+
+    The dependency string can be in the following formats:
+        * PyPI: ``package_name[==version]``
+        * GitHub: ``owner/repo[@version]`` or ``https://github.com/owner/repo``
+
+    Example:
+        >>> classify_dependency("numpy>=1.20.0")
+        DependencyType.PIP
+        >>> classify_dependency("owner/repo@v1.0.0")
+        DependencyType.GITHUB
+    """
     dependency = dependency.strip().strip("'\"")
 
     github_shorthand = r"^([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)(@[a-zA-Z0-9_.-]+)?$"
@@ -41,8 +67,14 @@ def get_new_or_updated_dependencies(
 ) -> Tuple[list["PipDependency"], list["GitHubDependency"]]:
     """Return a tuple with the pip and github dependencies.
 
+    If no requirements are given, return empty lists for both dependencies.
+
     :param requirements: List of requirements to parse
     :type requirements: list[str]
+    :param config_dependencies: List of dependencies from mox config
+    :type config_dependencies: list[str]
+    :param base_install_path: Path to the base install path
+    :type base_install_path: Path
     :return: Tuple with the pip and github dependencies
     :rtype: Tuple[list["PipDependency"], list["GitHubDependency"]]
     """
@@ -82,13 +114,21 @@ def get_new_or_updated_dependencies(
 
 
 def _get_install_path_versions_toml(lib_install_path: Path) -> dict[str, str]:
-    # Get install path and check if versions file exists
+    """Read and return the versions from a TOML file in the installation path.
+
+    :param lib_install_path: Path to the library installation directory
+    :type lib_install_path: Path
+    :return: Dictionary mapping package names (lowercase) to their versions
+    :rtype: dict[str, str]
+
+    :note: Returns empty dict if versions file doesn't exist
+    """
     versions_toml: dict[str, str] = {}
     versions_install_path = lib_install_path.joinpath(PACKAGE_VERSION_FILE)
     if not versions_install_path.exists():
         return versions_toml
 
-    # If versions file exists, check if packages need to be updated
+    # If versions file exists, load and normalize package names to lowercase
     with open(versions_install_path, "rb") as f:
         versions = tomllib.load(f)
         versions_toml = {k.lower(): v for k, v in versions.items()}
@@ -101,6 +141,14 @@ def _get_install_path_versions_toml(lib_install_path: Path) -> dict[str, str]:
 # ------------------------------------------------------------------
 @dataclass
 class PipDependency:
+    """Helper class for managing PyPI dependencies.
+
+    :ivar requirement: Parsed package requirement (name and version specifiers)
+    :type requirement: Requirement
+    :ivar no_version: Flag indicating if original requirement had no version specified
+    :type no_version: bool
+    """
+
     requirement: Requirement
     no_version: bool = False
 
@@ -111,14 +159,21 @@ class PipDependency:
 def _get_new_or_updated_pip_dependency(
     package: str, pip_versions_toml: dict[str, str]
 ) -> PipDependency | None:
-    """Return a new or updated pip packages.
+    """Process a pip package and determine if it needs to be installed or updated.
 
-    :param package: Pip package with optional version specifier
+    :param package: Package specification (e.g., "numpy>=1.20.0")
     :type package: str
-    :param pip_install_path: Pip install path
-    :type pip_install_path: Path
-    :return: List of new or updated pip packages
-    :rtype: list[Requirement]
+    :param pip_versions_toml: Current installed versions from versions.toml
+    :type pip_versions_toml: dict[str, str]
+    :return: A PipDependency instance if package needs installation/update, None if current version satisfies requirements
+    :rtype: PipDependency | None
+    :raises InvalidRequirement: If package string is not a valid pip requirement
+    :raises ValueError: If unable to determine latest version from PyPI
+
+    This function handles several cases:
+        1. New packages not in versions.toml
+        2. Existing packages that need version updates
+        3. Packages with no version specified (uses latest from PyPI)
     """
     no_version = False
     # Try to parse the package as a pip requirement
@@ -162,6 +217,14 @@ def _get_new_or_updated_pip_dependency(
 
 
 def _get_latest_pip_version(package_name: str) -> str:
+    """Fetch the latest version of a package from PyPI.
+
+    :param package_name: Name of the package
+    :type package_name: str
+    :return: Latest version of the package
+    :rtype: str
+    :raises ValueError: If unable to determine latest version
+    """
     url = f"https://pypi.org/pypi/{package_name}/json"
     response = requests.get(url)
     if response.status_code == 200:
@@ -175,6 +238,24 @@ def _get_latest_pip_version(package_name: str) -> str:
 # ------------------------------------------------------------------
 @dataclass
 class GitHubDependency:
+    """Helper class for managing GitHub dependencies.
+
+    :ivar org: GitHub organization/owner name
+    :type org: str
+    :ivar repo: Repository name
+    :type repo: str
+    :ivar version: Version tag/branch/commit (optional)
+    :type version: str | None
+    :ivar headers: GitHub API request headers (for authentication)
+    :type headers: dict | None
+    :ivar no_version: Flag indicating if original requirement had no version
+    :type no_version: bool
+
+    The dependency can be specified in formats:
+        * ``owner/repo[@version]``
+        * ``https://github.com/owner/repo[@version]``
+    """
+
     org: str
     repo: str
     version: str | None = None
@@ -183,6 +264,14 @@ class GitHubDependency:
 
     @classmethod
     def from_string(cls, dep_string: str) -> "GitHubDependency":
+        """Create a GitHubDependency instance from a string.
+
+        :param dep_string: Dependency string in the format 'owner/repo[@version]'
+        :type dep_string: str
+        :return: GitHubDependency instance
+        :rtype: GitHubDependency
+        :raises ValueError: If invalid dependency string
+        """
         try:
             if "@" in dep_string:
                 path, version = dep_string.split("@")
@@ -195,8 +284,7 @@ class GitHubDependency:
                 "Invalid package ID. Must be given as ORG/REPO[@VERSION]"
                 "\ne.g. 'pcaversaccio/snekmate@v2.5.0'"
             ) from None
-        # @dev org and username in github are case insensitive
-        # BUT repo is case sensitive
+        # @dev GitHub repository URLs are case-insensitive
         org = org.strip().lower()
         repo = repo.strip().lower()
         version = version.strip() if version else None
@@ -214,14 +302,14 @@ class GitHubDependency:
 def _get_new_or_updated_github_dependency(
     package: str, github_versions_toml: dict[str, str]
 ) -> GitHubDependency | None:
-    """Return a list of new or updated GitHub dependencies.
+    """Process a GitHub dependency and determine if it needs to be installed or updated.
 
-    :param package: Package ID
+    :param package: Package specification (e.g., "owner/repo@v1.0.0")
     :type package: str
-    :param github_versions_toml: Dictionary of GitHub versions
+    :param github_versions_toml: Current installed versions from versions.toml
     :type github_versions_toml: dict[str, str]
-    :return: List of new or updated GitHub dependencies
-    :rtype: list[str]
+    :return: A GitHubDependency instance if package needs installation/update, None if current version satisfies requirements
+    :rtype: GitHubDependency | None
     """
     github_dependency = GitHubDependency.from_string(package)
 
@@ -280,6 +368,18 @@ def _maybe_retrieve_github_auth() -> dict[str, str]:
 
 
 def _get_latest_github_version(org: str, repo: str, headers: dict) -> str:
+    """Fetch the latest release version from a GitHub repository.
+
+    :param org: GitHub organization/owner name
+    :type org: str
+    :param repo: Repository name
+    :type repo: str
+    :param headers: GitHub API request headers (for authentication)
+    :type headers: dict
+    :return: Latest release version tag
+    :rtype: str
+    :raises ValueError: If unable to fetch or determine latest version
+    """
     response = requests.get(
         f"https://api.github.com/repos/{org}/{repo}/releases/latest", headers=headers
     )
@@ -303,6 +403,13 @@ def _get_latest_github_version(org: str, repo: str, headers: dict) -> str:
 def add_dependency_to_versions_file(
     versions_install_path: Path, dependency: GitHubDependency | PipDependency
 ):
+    """Update the versions file with a new or updated dependency.
+
+    :param versions_install_path: Path to the versions file
+    :type versions_install_path: Path
+    :param dependency: Dependency to add or update
+    :type dependency: GitHubDependency | PipDependency
+    """
     # Update versions file
     if versions_install_path.exists():
         with open(versions_install_path, "rb") as f:
@@ -337,6 +444,13 @@ def write_new_config_dependencies(
     new_packages: list[GitHubDependency | PipDependency],
     dependency_type: DependencyType,
 ):
+    """Update the configuration with new or updated dependencies.
+
+    :param new_packages: List of new or updated dependencies
+    :type new_packages: list[GitHubDependency | PipDependency]
+    :param dependency_type: Type of dependencies (GitHub or PyPI)
+    :type dependency_type: DependencyType
+    """
     config = get_or_initialize_config()
     dependencies = config.get_dependencies()
 
@@ -403,6 +517,13 @@ def write_new_config_dependencies(
 
 
 def preprocess_requirement(package: str) -> str:
+    """Preprocess a package string to remove any unnecessary characters.
+
+    :param package: Package string
+    :type package: str
+    :return: Preprocessed package string
+    :rtype: str
+    """
     package = package.strip().strip("'\"")
     git_url_pattern = r"^git\+https?://.*"
     if re.match(git_url_pattern, package):

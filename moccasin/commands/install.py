@@ -26,20 +26,34 @@ from moccasin.logging import logger
 
 
 def main(args: Namespace) -> int:
+    """
+    Main entry point for the install command.
+
+    :param args: Command line arguments
+    :type args: Namespace
+    :return: Exit code (0 for success)
+    :rtype: int
+    """
     return mox_install(args)
 
 
 def mox_install(args: Namespace | None = None) -> int:
-    """Install the given requirements from PyPI and GitHub.
+    """
+    Install the given requirements from PyPI and GitHub.
 
     If no requirements are given, install all requirements in the config file.
-
-    @dev This command is used for install, compile and deploy commands.
+    This command is used for install, compile and deploy commands.
 
     :param args: Namespace containing the requirements to install
-    :type args: Namespace
-    :return: int 0 at the end of the function
+    :type args: Namespace | None
+    :return: Exit code (0 for success)
     :rtype: int
+
+    .. note::
+        The function will:
+        * Install new packages that are not in versions.toml
+        * Update existing packages that need version updates
+        * Handle both PyPI and GitHub dependencies
     """
     # Get config base install path
     config = get_or_initialize_config()
@@ -85,14 +99,23 @@ def mox_install(args: Namespace | None = None) -> int:
 def _pip_installs(
     new_pip_packages: list[Requirement], base_install_path: Path, quiet: bool = False
 ):
-    """Install the given pip packages.
+    """
+    Install the given pip packages using uv package manager.
 
-    :param new_pip_packages: list of pip packages to install
+    :param new_pip_packages: List of pip packages to install
     :type new_pip_packages: list[Requirement]
-    :param base_install_path: path to install the packages
+    :param base_install_path: Path to install the packages
     :type base_install_path: Path
-    :param quiet: flag to install packages quietly
+    :param quiet: Flag to suppress installation output
     :type quiet: bool
+    :raises FileNotFoundError: If uv package manager is not found
+    :raises subprocess.CalledProcessError: If package installation fails
+
+    .. note::
+        This function will:
+        * Install packages using uv package manager
+        * Update the versions file with new package versions
+        * Update the configuration with new dependencies
     """
     logger.info(f"Installing {len(new_pip_packages)} pip packages...")
     cmd = [
@@ -127,12 +150,22 @@ def _pip_installs(
 def _github_installs(
     github_new_or_updated: list[GitHubDependency], base_install_path: Path
 ):
-    """Install the given GitHub packages.
+    """
+    Install the given GitHub packages by downloading and extracting zip archives.
 
-    :param github_new_or_updated: list of GitHub packages to install
+    :param github_new_or_updated: List of GitHub packages to install
     :type github_new_or_updated: list[GitHubDependency]
-    :param base_install_path: path to install the packages
+    :param base_install_path: Path to install the packages
     :type base_install_path: Path
+    :raises ConnectionError: If download URL is invalid or inaccessible
+    :raises requests.exceptions.HTTPError: If GitHub API request fails
+
+    .. note::
+        This function will:
+        * Download repository as zip from GitHub
+        * Extract to the specified installation path
+        * Handle special characters in version tags
+        * Update the versions file and configuration
     """
     logger.info(f"Installing {len(github_new_or_updated)} GitHub packages...")
     for github_dependency in github_new_or_updated:
@@ -188,6 +221,20 @@ def _github_installs(
 def _stream_download(
     download_url: str, target_path: str, headers: dict[str, str] = REQUEST_HEADERS
 ) -> None:
+    """
+    Download a file from URL with progress bar.
+
+    :param download_url: URL to download from
+    :type download_url: str
+    :param target_path: Path to save the downloaded file
+    :type target_path: str
+    :param headers: Request headers (default: REQUEST_HEADERS)
+    :type headers: dict[str, str]
+    :raises requests.exceptions.HTTPError: If download fails
+
+    .. note::
+        Uses tqdm to show download progress with size in bytes
+    """
     response = requests.get(download_url, stream=True, headers=headers)
 
     response.raise_for_status()
@@ -206,6 +253,25 @@ def _stream_download(
 
 
 def _get_download_url_from_tag(org: str, repo: str, version: str, headers: dict) -> str:
+    """
+    Get the download URL for a GitHub repository tag.
+
+    :param org: GitHub organization/owner name
+    :type org: str
+    :param repo: Repository name
+    :type repo: str
+    :param version: Version tag to download
+    :type version: str
+    :param headers: GitHub API request headers
+    :type headers: dict
+    :return: Download URL for the repository zip
+    :rtype: str
+    :raises requests.exceptions.HTTPError: If GitHub API request fails
+    :raises ValueError: If version tag is not found
+
+    .. note::
+        Uses GitHub API to get the download URL for a specific tag
+    """
     response = requests.get(
         f"https://api.github.com/repos/{org}/{repo}/tags?per_page=100", headers=headers
     )
