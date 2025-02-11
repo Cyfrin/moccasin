@@ -16,7 +16,7 @@ from tqdm import tqdm
 from moccasin._dependency_utils import (
     DependencyType,
     GitHubDependency,
-    add_dependency_to_versions_file,
+    write_dependency_to_versions_file,
     get_new_or_updated_dependencies,
     write_new_config_dependencies,
 )
@@ -139,7 +139,7 @@ def _pip_installs(
     versions_install_path = base_install_path.joinpath(PACKAGE_VERSION_FILE)
     # @dev Could be better here maybe
     for package in new_pip_packages:
-        add_dependency_to_versions_file(versions_install_path, package)
+        write_dependency_to_versions_file(versions_install_path, package)
 
     write_new_config_dependencies(new_pip_packages, DependencyType.PIP)
 
@@ -213,7 +213,7 @@ def _github_installs(
             shutil.move(installed, repo_install_path)
 
         # Update versions file
-        add_dependency_to_versions_file(versions_install_path, github_dependency)
+        write_dependency_to_versions_file(versions_install_path, github_dependency)
 
     write_new_config_dependencies(github_new_or_updated, DependencyType.GITHUB)
 

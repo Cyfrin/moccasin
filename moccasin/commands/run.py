@@ -10,7 +10,7 @@ from moccasin._sys_path_and_config_setup import (
 from moccasin.config import get_config, get_or_initialize_config
 from moccasin.logging import logger
 
-from .install import mox_install
+from moccasin.commands.install import mox_install
 
 
 def main(args: Namespace) -> int:

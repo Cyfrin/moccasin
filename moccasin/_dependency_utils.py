@@ -400,7 +400,7 @@ def _get_latest_github_version(org: str, repo: str, headers: dict) -> str:
 # ------------------------------------------------------------------
 #                        WRITE DEPENDENCIES
 # ------------------------------------------------------------------
-def add_dependency_to_versions_file(
+def write_dependency_to_versions_file(
     versions_install_path: Path, dependency: GitHubDependency | PipDependency
 ):
     """Update the versions file with a new or updated dependency.
@@ -410,7 +410,6 @@ def add_dependency_to_versions_file(
     :param dependency: Dependency to add or update
     :type dependency: GitHubDependency | PipDependency
     """
-    # Update versions file
     if versions_install_path.exists():
         with open(versions_install_path, "rb") as f:
             versions_data = tomllib.load(f)

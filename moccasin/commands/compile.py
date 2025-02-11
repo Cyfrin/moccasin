@@ -24,8 +24,7 @@ from moccasin.constants.vars import (
     MOCCASIN_GITHUB,
 )
 from moccasin.logging import logger
-
-from .install import mox_install
+from moccasin.commands.install import mox_install
 
 
 def main(args: Namespace) -> int:
