@@ -36,6 +36,7 @@ Moccasin
     Stateless Fuzzing <how-tos/stateless_fuzzing.rst>
     Stateful Fuzzing <how-tos/stateful_fuzzing.rst>
     how-tos/juypter_notebooks.rst
+    Pass Compiler Args through the CLI <how-tos/compiler_args_to_cli.rst>
     
 
 .. toctree::
