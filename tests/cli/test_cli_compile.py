@@ -2,7 +2,15 @@ import os
 import subprocess
 from pathlib import Path
 
-from tests.constants import LIB_GH_PATH, LIB_PIP_PATH
+from moccasin.config import Config
+from tests.constants import (
+    COMPLEX_UPDATE_PACKAGES_TOML,
+    LIB_GH_PATH,
+    LIB_PIP_PATH,
+    NEW_VERSION,
+    PATRICK_PACKAGE_NAME,
+    PIP_PACKAGE_NAME,
+)
 
 EXPECTED_HELP_TEXT = "Vyper compiler"
 
@@ -76,3 +84,47 @@ def test_compile_one(complex_temp_path, complex_cleanup_out_folder, mox_path):
 
     assert "Done compiling BuyMeACoffee" in result.stderr
     assert result.returncode == 0
+
+
+def test_compile_and_update(complex_temp_path, complex_cleanup_out_folder, mox_path):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(complex_temp_path))
+        result = subprocess.run(
+            [mox_path, "build", "BuyMeACoffee.vy"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert not complex_temp_path.joinpath(LIB_GH_PATH).exists()
+    assert complex_temp_path.joinpath(LIB_PIP_PATH).exists()
+    assert "Done compiling BuyMeACoffee" in result.stderr
+    assert result.returncode == 0
+
+    # Second run should update the version in the config
+    with open(complex_temp_path.joinpath("moccasin.toml"), "w") as f:
+        f.write(COMPLEX_UPDATE_PACKAGES_TOML)
+
+    try:
+        os.chdir(current_dir.joinpath(complex_temp_path))
+        result_two = subprocess.run(
+            [mox_path, "build", "BuyMeACoffee.vy", "--update-packages"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+
+    project_root: Path = Config.find_project_root(complex_temp_path)
+    config = Config(project_root)
+
+    assert f"{PIP_PACKAGE_NAME}=={NEW_VERSION}" in config.dependencies
+    assert f"{PATRICK_PACKAGE_NAME}" in config.dependencies
+    assert complex_temp_path.joinpath(LIB_GH_PATH).exists()
+    assert complex_temp_path.joinpath(LIB_PIP_PATH).exists()
+    assert "Done compiling BuyMeACoffee" in result_two.stderr
+    assert result_two.returncode == 0

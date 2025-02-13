@@ -9,7 +9,7 @@ from io import BytesIO
 from pathlib import Path
 from urllib.parse import quote
 
-import requests  # type: ignore
+import requests
 from packaging.requirements import Requirement
 from tqdm import tqdm
 
@@ -17,6 +17,7 @@ from moccasin._dependency_utils import (
     DependencyType,
     GitHubDependency,
     get_new_or_updated_dependencies,
+    parse_and_convert_dependencies,
     write_dependency_to_versions_file,
     write_new_config_dependencies,
 )
@@ -34,6 +35,10 @@ def main(args: Namespace) -> int:
     :return: Exit code (0 for success)
     :rtype: int
     """
+    # Force quiet and update-packages flags for install
+    # @dev see if we want them to be set by default or not
+    args.quiet = False
+    args.update_packages = True
     return mox_install(args)
 
 
@@ -65,19 +70,37 @@ def mox_install(args: Namespace | None = None) -> int:
     github_install_path = base_install_path.joinpath(GITHUB)
 
     # Get requirements
-    requirements: list[str] = (
+    requested_dependencies: list[str] = (
         args.requirements if args is not None and hasattr(args, "requirements") else []
     )
+
+    # Return early if no requirements are given
+    if len(requested_dependencies) == 0 and len(config_dependencies) == 0:
+        logger.info("No packages to install.")
+        return 0
 
     # Get quiet flag and set log level
     quiet = args.quiet if hasattr(args, "quiet") else False
     set_log_level(quiet=quiet)
+    # Get update-packages flag
+    update_packages = (
+        args.update_packages if hasattr(args, "update_packages") else False
+    )
+
+    # Parse dependencies and convert to pip and github requirements
+    logger.info("Parsing requirements...")
+    requirements_dict = parse_and_convert_dependencies(
+        config_dependencies, requested_dependencies
+    )
 
     # Get pip and github requirements
     logger.info("Checking for new or to update packages...")
     pip_new_or_updated, github_new_or_updated = get_new_or_updated_dependencies(
-        requirements, config_dependencies, base_install_path
+        requirements_dict, pip_install_path, github_install_path, update_packages
     )
+
+    logger.info(f"Pip new or updated: {pip_new_or_updated}")
+    logger.info(f"Github new or updated: {github_new_or_updated}")
 
     # Pip installs
     if len(pip_new_or_updated) > 0:

@@ -43,8 +43,7 @@ def test_run_install_no_dependencies(
     finally:
         os.chdir(current_dir)
 
-    assert "No pip packages to install" in result.stderr
-    assert "No GitHub packages to install" in result.stderr
+    assert "No packages to install." in result.stderr
 
     assert installation_temp_path.joinpath(MOCCASIN_TOML).exists()
     assert not installation_temp_path.joinpath(LIB_GH_PATH).exists()

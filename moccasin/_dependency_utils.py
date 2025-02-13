@@ -5,14 +5,15 @@ from base64 import b64encode
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Tuple
+from typing import Literal, Tuple, Union
 
-import requests  # type: ignore
+import requests
 import tomli_w
-from packaging.requirements import InvalidRequirement, Requirement, SpecifierSet
+from packaging.requirements import InvalidRequirement, Requirement
+from packaging.specifiers import SpecifierSet
 
 from moccasin.config import get_or_initialize_config
-from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
+from moccasin.constants.vars import PACKAGE_VERSION_FILE, REQUEST_HEADERS
 from moccasin.logging import logger
 
 
@@ -33,6 +34,90 @@ class DependencyType(Enum):
 # ------------------------------------------------------------------
 #                       HANDLE DEPENDENCIES
 # ------------------------------------------------------------------
+def parse_and_convert_dependencies(
+    config_dependencies: list[str], requested_dependencies: list[str]
+) -> dict[Literal["pip", "github"], list[Union["PipDependency", "GitHubDependency"]]]:
+    """Return a tuple with the pip and github dependencies.
+
+    If no requirements are given, return empty lists for both dependencies.
+
+    :param config_dependencies: List of config dependencies
+    :type config_dependencies: list[str]
+    :param requested_dependencies: List of requested dependencies
+    :type requested_dependencies: list[str]
+    :return: Tuple of pip and github dependencies
+    :rtype: dict[Literal["pip", "github"], list["PipDependency" | "GitHubDependency"]]
+    """
+    # Init parsed dependencies and added dependencies
+    # @dev added_dependencies allows to avoid duplicates when parsing dependencies.
+    parsed_dependencies = {"pip": [], "github": []}
+    added_dependency: list[str] = []
+
+    # Concatenate config and requested dependencies
+    # @dev placing requested dependencies first allows to prioritize them
+    dependencies = (
+        requested_dependencies + config_dependencies
+        if len(requested_dependencies) > 0
+        else config_dependencies
+    )
+
+    for dependency in dependencies:
+        dependency_type = classify_dependency(dependency)
+        if dependency_type == DependencyType.PIP:
+            # Initialize variables
+            package_req = None
+            no_version = False
+            try:
+                # Preprocess package name
+                processed_package = preprocess_requirement(dependency)
+                package_req = Requirement(processed_package)
+                if package_req.specifier is None:
+                    no_version = True
+                    package_req.specifier = SpecifierSet(
+                        f"=={_get_latest_pip_version(package_req.name)}"
+                    )
+            except InvalidRequirement:
+                logger.warning(f"Invalid requirement format for package: {dependency}")
+                continue
+
+            # Check if package has already been added
+            if package_req.name in added_dependency:
+                continue
+            # Add parsed dependency to the list
+            added_dependency.append(package_req.name)
+            parsed_dependencies["pip"].append(
+                PipDependency(requirement=package_req, no_version=no_version)
+            )
+        elif dependency_type == DependencyType.GITHUB:
+            # Convert GitHub dependency
+            github_dependency = GitHubDependency.from_string(dependency)
+            # Get headers for authentication
+            headers = REQUEST_HEADERS.copy()
+            headers.update(_maybe_retrieve_github_auth())
+            if github_dependency.headers is None:
+                github_dependency.headers = headers
+            # Get version if not specified
+            if github_dependency.version is None:
+                github_dependency.no_version = True
+                github_dependency.version = _get_latest_github_version(
+                    github_dependency.org,
+                    github_dependency.repo,
+                    github_dependency.headers,
+                )
+                logger.info(
+                    f"Using latest version for {github_dependency.org}/{github_dependency.repo}: {github_dependency.version}"
+                )
+
+            # Check if dependency has already been added
+            if github_dependency.format_no_version() in added_dependency:
+                continue
+            # Add parsed dependency to the list
+            added_dependency.append(github_dependency.format_no_version())
+            parsed_dependencies["github"].append(github_dependency)
+
+    return parsed_dependencies
+
+
 def classify_dependency(dependency: str) -> DependencyType:
     """Classify a dependency string as either a GitHub or PyPI dependency.
 
@@ -63,26 +148,29 @@ def classify_dependency(dependency: str) -> DependencyType:
 
 
 def get_new_or_updated_dependencies(
-    requirements: list[str], config_dependencies: list[str], base_install_path: Path
+    project_requirements: dict[
+        Literal["pip", "github"], list[Union["PipDependency", "GitHubDependency"]]
+    ],
+    pip_install_path: Path,
+    github_install_path: Path,
+    update_packages: bool,
 ) -> Tuple[list["PipDependency"], list["GitHubDependency"]]:
     """Return a tuple with the pip and github dependencies.
 
     If no requirements are given, return empty lists for both dependencies.
 
-    :param requirements: List of requirements to parse
-    :type requirements: list[str]
-    :param config_dependencies: List of dependencies from mox config
-    :type config_dependencies: list[str]
-    :param base_install_path: Path to the base install path
-    :type base_install_path: Path
+    :param project_requirements: Dictionary of requirements to parse
+        with config dependencies and requested requirements
+    :type project_requirements: dict[
+        Literal["pip", "github"], list[Requirement | "GitHubDependency"]
+    ]
+    :param pip_install_path: Path to the pip install path
+    :type pip_install_path: Path
+    :param github_install_path: Path to the github install path
+    :type github_install_path: Path
     :return: Tuple with the pip and github dependencies
     :rtype: Tuple[list["PipDependency"], list["GitHubDependency"]]
     """
-
-    # Get pip and github paths
-    pip_install_path = base_install_path.joinpath(PYPI)
-    github_install_path = base_install_path.joinpath(GITHUB)
-
     # Get versions toml files
     pip_versions_toml = _get_install_path_versions_toml(pip_install_path)
     github_versions_toml = _get_install_path_versions_toml(github_install_path)
@@ -90,25 +178,34 @@ def get_new_or_updated_dependencies(
     # Init dependencies lists
     pip_new_or_updated: list["PipDependency"] = []
     github_new_or_updated: list["GitHubDependency"] = []
-    project_requirements = config_dependencies + requirements
 
     # # Check if we have any requirements to parse
-    if len(project_requirements) == 0:
+    if (
+        len(project_requirements["pip"]) == 0
+        and len(project_requirements["github"]) == 0
+    ):
         # If we have no requirements, return dict with empty lists
         return (pip_new_or_updated, github_new_or_updated)
 
-    # Populate requirements lists
-    for package in project_requirements:
-        if classify_dependency(package) == DependencyType.PIP:
-            pip_req = _get_new_or_updated_pip_dependency(package, pip_versions_toml)
-            if pip_req is not None:
-                pip_new_or_updated.append(pip_req)
-        else:
-            github_req = _get_new_or_updated_github_dependency(
-                package, github_versions_toml
-            )
-            if github_req is not None:
-                github_new_or_updated.append(github_req)
+    # Setup requirements
+    pip_requirements = project_requirements["pip"]
+    github_requirements = project_requirements["github"]
+
+    # Get new or updated dependencies for pip
+    for package in pip_requirements:
+        pip_req = _get_new_or_updated_pip_dependency(
+            package, pip_versions_toml, update_packages
+        )
+        if pip_req is not None:
+            pip_new_or_updated.append(pip_req)
+
+    # Get new or updated dependencies for github
+    for package in github_requirements:
+        github_req = _get_new_or_updated_github_dependency(
+            package, github_versions_toml, update_packages
+        )
+        if github_req is not None:
+            github_new_or_updated.append(github_req)
 
     return (pip_new_or_updated, github_new_or_updated)
 
@@ -157,14 +254,18 @@ class PipDependency:
 
 
 def _get_new_or_updated_pip_dependency(
-    package: str, pip_versions_toml: dict[str, str]
+    pip_dependency: PipDependency,
+    pip_versions_toml: dict[str, str],
+    update_packages: bool = True,
 ) -> PipDependency | None:
     """Process a pip package and determine if it needs to be installed or updated.
 
-    :param package: Package specification (e.g., "numpy>=1.20.0")
-    :type package: str
+    :param pip_dependency: Package specification (e.g., "numpy>=1.20.0")
+    :type pip_dependency: PipDependency
     :param pip_versions_toml: Current installed versions from versions.toml
     :type pip_versions_toml: dict[str, str]
+    :param update_packages: Flag indicating if update is allowed
+    :type update_packages: bool
     :return: A PipDependency instance if package needs installation/update, None if current version satisfies requirements
     :rtype: PipDependency | None
     :raises InvalidRequirement: If package string is not a valid pip requirement
@@ -175,45 +276,38 @@ def _get_new_or_updated_pip_dependency(
         2. Existing packages that need version updates
         3. Packages with no version specified (uses latest from PyPI)
     """
-    no_version = False
-    # Try to parse the package as a pip requirement
-    try:
-        # Preprocess package name
-        processed_package = preprocess_requirement(package)
-        package_req = Requirement(processed_package)
-        if package_req.specifier is None:
-            no_version = True
-            package_req.specifier = SpecifierSet(
-                f"=={_get_latest_pip_version(package_req.name)}"
-            )
-    except InvalidRequirement:
-        logger.warning(f"Invalid requirement format for package: {package}")
-        return None
-
     # If no version toml file, add new package
     if not bool(pip_versions_toml):
-        return PipDependency(requirement=package_req, no_version=no_version)
+        return pip_dependency
 
     # Get installed version
-    installed_version = SpecifierSet(pip_versions_toml.get(package_req.name.lower()))
-    if installed_version is None:
-        installed_version = SpecifierSet(
-            f"=={_get_latest_pip_version(package_req.name)}"
+    installed_pip_specifier = SpecifierSet(
+        pip_versions_toml.get(pip_dependency.requirement.name.lower(), None)
+    )
+
+    # If not update mode, return None if a version is installed
+    if not update_packages:
+        return pip_dependency if installed_pip_specifier is None else None
+
+    # Else continue to check version to determine if update is needed
+    if installed_pip_specifier is None:
+        installed_pip_specifier = SpecifierSet(
+            f"=={_get_latest_pip_version(pip_dependency.requirement.name)}"
         )
         logger.info(
-            f"Using latest version for {package_req.name}: {str(installed_version)}"
+            f"Using latest version for {pip_dependency.requirement.name}: {str(installed_pip_specifier)}"
         )
 
     # If version number match requirement, package doesn't need to be updated
-    if installed_version == package_req.specifier:
+    if installed_pip_specifier == pip_dependency.requirement.specifier:
         logger.info(
-            f"Package {package_req.name} is already installed at version {installed_version}"
+            f"Package {pip_dependency.requirement.name} is already installed at version {str(installed_pip_specifier)}"
         )
         return None
 
     # If version number doesn't match requirement, package needs to be updated
-    logger.info(f"Package {package_req.name} needs to be updated")
-    return PipDependency(requirement=package_req, no_version=no_version)
+    logger.info(f"Package {pip_dependency.requirement.name} needs to be updated")
+    return pip_dependency
 
 
 def _get_latest_pip_version(package_name: str) -> str:
@@ -300,40 +394,31 @@ class GitHubDependency:
 
 
 def _get_new_or_updated_github_dependency(
-    package: str, github_versions_toml: dict[str, str]
+    github_dependency: GitHubDependency,
+    github_versions_toml: dict[str, str],
+    update_packages: bool,
 ) -> GitHubDependency | None:
     """Process a GitHub dependency and determine if it needs to be installed or updated.
 
-    :param package: Package specification (e.g., "owner/repo@v1.0.0")
-    :type package: str
+    :param github_dependency: GitHubDependency instance
+    :type github_dependency: GitHubDependency
     :param github_versions_toml: Current installed versions from versions.toml
     :type github_versions_toml: dict[str, str]
+    :param update_packages: Whether to skip update checks
+    :type update_packages: bool
     :return: A GitHubDependency instance if package needs installation/update, None if current version satisfies requirements
     :rtype: GitHubDependency | None
     """
-    github_dependency = GitHubDependency.from_string(package)
-
-    headers = REQUEST_HEADERS.copy()
-    headers.update(_maybe_retrieve_github_auth())
-
-    if github_dependency.headers is None:
-        github_dependency.headers = headers
-
-    if github_dependency.version is None:
-        github_dependency.no_version = True
-        github_dependency.version = _get_latest_github_version(
-            github_dependency.org, github_dependency.repo, github_dependency.headers
-        )
-        logger.info(
-            f"Using latest version for {github_dependency.org}/{github_dependency.repo}: {github_dependency.version}"
-        )
-
     if not bool(github_versions_toml):
         return github_dependency
 
     installed_version = github_versions_toml.get(
         f"{github_dependency.org}/{github_dependency.repo}", None
     )
+
+    # Skip update check if no_update is True
+    if not update_packages:
+        return github_dependency if installed_version is None else None
 
     if installed_version is None:
         installed_version = _get_latest_github_version(

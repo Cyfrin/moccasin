@@ -110,6 +110,24 @@ chain_id = 11155111
 """
 
 
+COMPLEX_UPDATE_PACKAGES_TOML = """[project]
+dependencies = [
+    "snekmate==0.0.5", 
+    "PatrickAlphaC/test_repo",
+]
+src = "contracts"
+out = "build"
+save_abi_path = "abis"
+cov_config = ".coveragerc"
+dot_env = ".hello"
+db_path = ".deployments.db"
+
+# PRESERVE COMMENTS
+
+[networks.sepolia]
+url = "https://ethereum-sepolia-rpc.publicnode.com"
+chain_id = 11155111
+"""
 # ------------------------------------------------------------------
 #                           TEST LIB
 # ------------------------------------------------------------------

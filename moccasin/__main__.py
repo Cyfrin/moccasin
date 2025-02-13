@@ -146,6 +146,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         action="store_true",
     )
 
+    compile_parser.add_argument(
+        "--update-packages",
+        help="Update the packages before running the script.",
+        action="store_false",
+    )
+
     zksync_ground = compile_parser.add_mutually_exclusive_group()
     zksync_ground.add_argument(
         "--network", help=f"Alias of the network (from the {CONFIG_NAME})."
@@ -333,6 +339,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         "--no-install",
         help="Do not install the requirements before running the script.",
         action="store_true",
+    )
+
+    run_parser.add_argument(
+        "--update-packages",
+        help="Update the packages before running the script.",
+        action="store_false",
     )
 
     add_network_args_to_parser(run_parser)
