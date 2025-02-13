@@ -12,7 +12,7 @@ def test_inspect_layout_imports(
     try:
         os.chdir(current_dir.joinpath(installation_temp_path))
         result = subprocess.run(
-            [mox_path, "install"], check=True, capture_output=False, text=True
+            [mox_path, "install"], check=True, capture_output=True, text=True
         )
         result = inspect_contract("MyToken", "storage_layout", print_out=False)
     finally:
