@@ -15,6 +15,7 @@ from vyper.compiler.phases import CompilerData
 from vyper.exceptions import VersionException, _BaseVyperException
 
 from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
+from moccasin.commands._install_utils import check_mox_install
 from moccasin.config import Config, get_config, get_or_initialize_config
 from moccasin.constants.vars import (
     BUILD_FOLDER,
@@ -24,12 +25,20 @@ from moccasin.constants.vars import (
     MOCCASIN_GITHUB,
 )
 from moccasin.logging import logger
-from moccasin.commands.install import mox_install
 
 
 def main(args: Namespace) -> int:
-    if not args.no_install:
-        mox_install(args)
+    # Set multiprocessing context first
+    # @dev check if OS is Windows since fork
+    # is not supported on Windows, change it to spawn method
+    start_method = "fork" if not IS_WINDOWS else "spawn"
+    try:
+        multiprocessing.set_start_method(start_method)
+    except RuntimeError:
+        logger.debug("Multiprocessing context already set by parent process")
+
+    # Install if needed
+    check_mox_install(args)
 
     config = get_or_initialize_config()
     project_path: Path = config.get_root()
@@ -112,13 +121,7 @@ def compile_project(
         f"Compiling {len(contracts_to_compile)} contracts to {build_folder_relpath}/..."
     )
 
-    # @dev check if OS is Windows since fork
-    # is not supported on Windows, change it to spawn method
-    start_method = "fork"
-    if IS_WINDOWS:
-        start_method = "spawn"
-    multiprocessing.set_start_method(start_method, force=False)
-
+    # Init multiprocessing
     n_cpus = max(1, _get_cpu_count() - 2)
     jobs = []
 

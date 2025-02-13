@@ -16,13 +16,13 @@ from tqdm import tqdm
 from moccasin._dependency_utils import (
     DependencyType,
     GitHubDependency,
-    write_dependency_to_versions_file,
     get_new_or_updated_dependencies,
+    write_dependency_to_versions_file,
     write_new_config_dependencies,
 )
 from moccasin.config import get_or_initialize_config
 from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
-from moccasin.logging import logger
+from moccasin.logging import logger, set_log_level
 
 
 def main(args: Namespace) -> int:
@@ -69,8 +69,9 @@ def mox_install(args: Namespace | None = None) -> int:
         args.requirements if args is not None and hasattr(args, "requirements") else []
     )
 
-    # Get quiet flag
+    # Get quiet flag and set log level
     quiet = args.quiet if hasattr(args, "quiet") else False
+    set_log_level(quiet=quiet)
 
     # Get pip and github requirements
     logger.info("Checking for new or to update packages...")
@@ -90,6 +91,9 @@ def mox_install(args: Namespace | None = None) -> int:
         _github_installs(github_new_or_updated, github_install_path)
     else:
         logger.info("No GitHub packages to install")
+
+    # Reset log level
+    set_log_level()
     return 0
 
 

@@ -7,15 +7,13 @@ from moccasin._sys_path_and_config_setup import (
     _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
+from moccasin.commands._install_utils import check_mox_install
 from moccasin.config import get_config, get_or_initialize_config
 from moccasin.logging import logger
 
-from moccasin.commands.install import mox_install
-
 
 def main(args: Namespace) -> int:
-    if not args.no_install:
-        mox_install(args)
+    check_mox_install(args)
 
     get_or_initialize_config()
     run_script(

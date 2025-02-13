@@ -35,7 +35,6 @@ def test_run_default(mox_path, complex_cleanup_dependencies_folder, complex_temp
     finally:
         os.chdir(current_dir)
 
-    assert "Installing 1 pip packages..." in result.stderr
     assert complex_temp_path.joinpath(LIB_PIP_PATH).exists()
     assert "Ending count:  1" in result.stdout
 

@@ -50,7 +50,6 @@ def test_compile_alias_build_project(
         ]
     )
 
-    assert "Installing 1 pip packages..." in result.stderr
     assert complex_temp_path.joinpath(LIB_PIP_PATH).exists()
 
     assert "Running compile command" in result.stderr
