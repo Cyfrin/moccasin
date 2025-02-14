@@ -2,14 +2,20 @@ import os
 import subprocess
 from pathlib import Path
 
+import tomli_w
+
 from moccasin.config import Config
 from tests.constants import (
-    COMPLEX_UPDATE_PACKAGES_TOML,
     LIB_GH_PATH,
     LIB_PIP_PATH,
+    MOCCASIN_TOML,
     NEW_VERSION,
     PATRICK_PACKAGE_NAME,
     PIP_PACKAGE_NAME,
+)
+from tests.utils.helpers import (
+    get_temp_versions_toml_from_libs,
+    rewrite_temp_moccasin_toml_dependencies,
 )
 
 EXPECTED_HELP_TEXT = "Vyper compiler"
@@ -105,8 +111,7 @@ def test_compile_and_update(complex_temp_path, complex_cleanup_out_folder, mox_p
     assert result.returncode == 0
 
     # Second run should update the version in the config
-    with open(complex_temp_path.joinpath("moccasin.toml"), "w") as f:
-        f.write(COMPLEX_UPDATE_PACKAGES_TOML)
+    old_moccasin_toml = rewrite_temp_moccasin_toml_dependencies(complex_temp_path)
 
     try:
         os.chdir(current_dir.joinpath(complex_temp_path))
@@ -119,12 +124,21 @@ def test_compile_and_update(complex_temp_path, complex_cleanup_out_folder, mox_p
     finally:
         os.chdir(current_dir)
 
-    project_root: Path = Config.find_project_root(complex_temp_path)
-    config = Config(project_root)
-
-    assert f"{PIP_PACKAGE_NAME}=={NEW_VERSION}" in config.dependencies
-    assert f"{PATRICK_PACKAGE_NAME}" in config.dependencies
     assert complex_temp_path.joinpath(LIB_GH_PATH).exists()
     assert complex_temp_path.joinpath(LIB_PIP_PATH).exists()
+
+    project_root: Path = Config.find_project_root(complex_temp_path)
+    config = Config(project_root)
+    assert f"{PIP_PACKAGE_NAME}=={NEW_VERSION}" in config.dependencies
+    assert f"{PATRICK_PACKAGE_NAME}" in config.dependencies
+
+    github_versions, pip_versions = get_temp_versions_toml_from_libs(complex_temp_path)
+    assert github_versions[f"{PATRICK_PACKAGE_NAME}"] == "0.1.1"
+    assert pip_versions[f"{PIP_PACKAGE_NAME}"] == f"=={NEW_VERSION}"
+
     assert "Done compiling BuyMeACoffee" in result_two.stderr
     assert result_two.returncode == 0
+
+    # Reset toml to the original for next test
+    with open(complex_temp_path.joinpath(MOCCASIN_TOML), "wb") as f:
+        tomli_w.dump(old_moccasin_toml, f)

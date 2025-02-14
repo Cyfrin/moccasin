@@ -496,6 +496,7 @@ def write_dependency_to_versions_file(
     :type dependency: GitHubDependency | PipDependency
     """
     if versions_install_path.exists():
+        versions_data: dict[str, str] = {}
         with open(versions_install_path, "rb") as f:
             versions_data = tomllib.load(f)
         if isinstance(dependency, GitHubDependency):
@@ -504,11 +505,11 @@ def write_dependency_to_versions_file(
             versions_data[f"{dependency.requirement.name.lower()}"] = str(
                 dependency.requirement.specifier
             )
-
         with open(versions_install_path, "wb") as f:
             tomli_w.dump(versions_data, f)
     else:
         with open(versions_install_path, "w", encoding="utf-8") as f:
+            toml_string: str
             if isinstance(dependency, GitHubDependency):
                 toml_string = tomli_w.dumps(
                     {f"{dependency.org}/{dependency.repo}": dependency.version}

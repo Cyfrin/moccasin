@@ -10,7 +10,9 @@ def check_mox_install(args: Namespace) -> None:
     :param args: Command line arguments
     :type args: Namespace
     """
-    if hasattr(args, "no_install") and not args.no_install:
+    if not hasattr(args, "no_install") or (
+        hasattr(args, "no_install") and not args.no_install
+    ):
         init_quiet: bool | None = args.quiet if hasattr(args, "quiet") else None
         # Force/add quiet arg for install
         args.quiet = True

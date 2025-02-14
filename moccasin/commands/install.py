@@ -99,9 +99,6 @@ def mox_install(args: Namespace | None = None) -> int:
         requirements_dict, pip_install_path, github_install_path, update_packages
     )
 
-    logger.info(f"Pip new or updated: {pip_new_or_updated}")
-    logger.info(f"Github new or updated: {github_new_or_updated}")
-
     # Pip installs
     if len(pip_new_or_updated) > 0:
         _pip_installs(pip_new_or_updated, pip_install_path, quiet)

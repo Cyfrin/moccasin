@@ -149,7 +149,7 @@ Use this command to prepare your contracts for deployment or testing.""",
     compile_parser.add_argument(
         "--update-packages",
         help="Update the packages before running the script.",
-        action="store_false",
+        action="store_true",
     )
 
     zksync_ground = compile_parser.add_mutually_exclusive_group()
@@ -174,6 +174,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         type=str,
         nargs="?",
     )
+    test_parser.add_argument(
+        "--update-packages",
+        help="Update the packages before running the tests.",
+        action="store_true",
+    )
+
     add_network_args_to_parser(test_parser)
     add_account_args_to_parser(test_parser)
 
@@ -344,7 +350,7 @@ Use this command to prepare your contracts for deployment or testing.""",
     run_parser.add_argument(
         "--update-packages",
         help="Update the packages before running the script.",
-        action="store_false",
+        action="store_true",
     )
 
     add_network_args_to_parser(run_parser)
@@ -363,6 +369,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         "contract_name",
         help=f"Name of your named contract in your {CONFIG_NAME} to deploy.",
         type=str,
+    )
+
+    deploy_parser.add_argument(
+        "--update-packages",
+        help="Update the packages before deploying the contract.",
+        action="store_true",
     )
     add_network_args_to_parser(deploy_parser)
     add_account_args_to_parser(deploy_parser)
