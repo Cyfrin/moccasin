@@ -14,7 +14,6 @@ from packaging.requirements import Requirement
 from tqdm import tqdm
 
 from moccasin._dependency_utils import (
-    DependencyType,
     GitHubDependency,
     get_new_or_updated_dependencies,
     parse_and_convert_dependencies,
@@ -112,6 +111,9 @@ def mox_install(args: Namespace | None = None) -> int:
     else:
         logger.info("No GitHub packages to install")
 
+    # Write new config dependencies
+    write_new_config_dependencies(pip_new_or_updated, github_new_or_updated)
+
     # Reset log level
     set_log_level()
     return 0
@@ -164,8 +166,6 @@ def _pip_installs(
     # @dev Could be better here maybe
     for package in new_pip_packages:
         write_dependency_to_versions_file(versions_install_path, package)
-
-    write_new_config_dependencies(new_pip_packages, DependencyType.PIP)
 
 
 # ------------------------------------------------------------------
@@ -239,7 +239,7 @@ def _github_installs(
         # Update versions file
         write_dependency_to_versions_file(versions_install_path, github_dependency)
 
-    write_new_config_dependencies(github_new_or_updated, DependencyType.GITHUB)
+    return github_new_or_updated
 
 
 def _stream_download(

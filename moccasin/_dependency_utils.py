@@ -62,58 +62,25 @@ def parse_and_convert_dependencies(
     )
 
     for dependency in dependencies:
-        dependency_type = classify_dependency(dependency)
-        if dependency_type == DependencyType.PIP:
-            # Initialize variables
-            package_req = None
-            no_version = False
-            try:
-                # Preprocess package name
-                processed_package = preprocess_requirement(dependency)
-                package_req = Requirement(processed_package)
-                if package_req.specifier is None:
-                    no_version = True
-                    package_req.specifier = SpecifierSet(
-                        f"=={_get_latest_pip_version(package_req.name)}"
-                    )
-            except InvalidRequirement:
-                logger.warning(f"Invalid requirement format for package: {dependency}")
-                continue
+        converted_dependency = _convert_dependency(dependency)
+        if converted_dependency is None:
+            continue
 
+        if isinstance(converted_dependency, PipDependency):
             # Check if package has already been added
-            if package_req.name in added_dependency:
+            if converted_dependency.requirement.name in added_dependency:
                 continue
             # Add parsed dependency to the list
-            added_dependency.append(package_req.name)
-            parsed_dependencies["pip"].append(
-                PipDependency(requirement=package_req, no_version=no_version)
-            )
-        elif dependency_type == DependencyType.GITHUB:
-            # Convert GitHub dependency
-            github_dependency = GitHubDependency.from_string(dependency)
-            # Get headers for authentication
-            headers = REQUEST_HEADERS.copy()
-            headers.update(_maybe_retrieve_github_auth())
-            if github_dependency.headers is None:
-                github_dependency.headers = headers
-            # Get version if not specified
-            if github_dependency.version is None:
-                github_dependency.no_version = True
-                github_dependency.version = _get_latest_github_version(
-                    github_dependency.org,
-                    github_dependency.repo,
-                    github_dependency.headers,
-                )
-                logger.info(
-                    f"Using latest version for {github_dependency.org}/{github_dependency.repo}: {github_dependency.version}"
-                )
+            added_dependency.append(converted_dependency.requirement.name)
+            parsed_dependencies["pip"].append(converted_dependency)
 
+        elif isinstance(converted_dependency, GitHubDependency):
             # Check if dependency has already been added
-            if github_dependency.format_no_version() in added_dependency:
+            if converted_dependency.format_no_version() in added_dependency:
                 continue
             # Add parsed dependency to the list
-            added_dependency.append(github_dependency.format_no_version())
-            parsed_dependencies["github"].append(github_dependency)
+            added_dependency.append(converted_dependency.format_no_version())
+            parsed_dependencies["github"].append(converted_dependency)
 
     return parsed_dependencies
 
@@ -231,6 +198,54 @@ def _get_install_path_versions_toml(lib_install_path: Path) -> dict[str, str]:
         versions_toml = {k.lower(): v for k, v in versions.items()}
 
     return versions_toml
+
+
+def _convert_dependency(
+    dependency: str,
+) -> Union["PipDependency", "GitHubDependency", None]:
+    """Convert a dependency string to a PipDependency or GitHubDependency object.
+
+    :param dependency: Dependency string to convert
+    :type dependency: str
+    :return: PipDependency or GitHubDependency object or None
+    :rtype: "PipDependency" | "GitHubDependency" | None
+    """
+    dependency_type = classify_dependency(dependency)
+    no_version = False
+    # If it's a pip dependency
+    if dependency_type == DependencyType.PIP:
+        # Initialize variables
+        package_req = None
+        try:
+            # Preprocess package name
+            processed_package = preprocess_requirement(dependency)
+            package_req = Requirement(processed_package)
+            if len(package_req.specifier) == 0:
+                no_version = True
+                package_req.specifier = SpecifierSet(
+                    f"=={_get_latest_pip_version(package_req.name)}"
+                )
+        except InvalidRequirement:
+            logger.warning(f"Invalid requirement format for package: {dependency}")
+            return None
+        return PipDependency(requirement=package_req, no_version=no_version)
+
+    # If it's a github dependency
+    elif dependency_type == DependencyType.GITHUB:
+        # Convert GitHub dependency
+        github_dependency = GitHubDependency.from_string(dependency)
+        # Get headers for authentication
+        headers = REQUEST_HEADERS.copy()
+        headers.update(_maybe_retrieve_github_auth())
+        if github_dependency.headers is None:
+            github_dependency.headers = headers
+        # Get version if not specified
+        if github_dependency.version is None:
+            github_dependency.no_version = True
+            github_dependency.version = _get_latest_github_version(
+                github_dependency.org, github_dependency.repo, github_dependency.headers
+            )
+        return github_dependency
 
 
 # ------------------------------------------------------------------
@@ -526,77 +541,127 @@ def write_dependency_to_versions_file(
 
 
 def write_new_config_dependencies(
-    new_packages: list[GitHubDependency | PipDependency],
-    dependency_type: DependencyType,
+    new_pip_packages: list[PipDependency], new_github_packages: list[GitHubDependency]
 ):
     """Update the configuration with new or updated dependencies.
 
     :param new_packages: List of new or updated dependencies
     :type new_packages: list[GitHubDependency | PipDependency]
-    :param dependency_type: Type of dependencies (GitHub or PyPI)
-    :type dependency_type: DependencyType
     """
+    # Process and convert dependencies
     config = get_or_initialize_config()
-    dependencies = config.get_dependencies()
+    dependencies: list[str] = [
+        dependency.lower() for dependency in config.get_dependencies()
+    ]
+    dependencies_converted: list[GitHubDependency | PipDependency] = []
+    for dependency in dependencies:
+        dependency = _convert_dependency(dependency)
+        if dependency is not None:
+            dependencies_converted.append(dependency)
 
-    typed_dependencies = [
-        preprocess_requirement(dep)
-        for dep in dependencies
-        if classify_dependency(dep) == dependency_type
+    # Initialize new dependencies lists for config
+    new_deps: list[str] = []
+
+    # Get the new list of dependencies while preserving order
+    new_pip_packages_names = [
+        dependency.requirement.name.lower() for dependency in new_pip_packages
+    ]
+    new_github_packages_names = [
+        dependency.format_no_version() for dependency in new_github_packages
     ]
 
-    to_delete = set()
-    updated_packages = set()
+    # Get newly added dependencies not already in the config
+    # @dev get them here to place them at the end
+    dependencies_newly_added = [
+        dependency
+        for dependency in new_pip_packages + new_github_packages
+        if (
+            isinstance(dependency, PipDependency)
+            and dependency.requirement.name.lower() not in dependencies
+        )
+        or (
+            isinstance(dependency, GitHubDependency)
+            and dependency.format_no_version().lower() not in dependencies
+        )
+    ]
 
-    if dependency_type == DependencyType.PIP:
-        for pip_dependency in new_packages:
-            for dep in typed_dependencies:
-                dep_req = Requirement(dep)
-                if dep_req.name.lower() == pip_dependency.requirement.name.lower():
-                    to_delete.add(dep)
-                    updated_packages.add(pip_dependency.requirement.name)
-
-            if pip_dependency.requirement.name not in updated_packages:
-                logger.info(
-                    f"Installed new package: {str(pip_dependency.requirement.name.lower())}"
+    # Add dependencies to the list
+    for dependency in dependencies_converted:
+        # If it's a pip dependency
+        if isinstance(dependency, PipDependency):
+            if len(new_pip_packages_names) == 0:
+                new_deps.append(
+                    dependency.requirement.name
+                    if dependency.no_version
+                    else str(dependency)
                 )
-            else:
-                logger.info(
-                    f"Updated package: {str(pip_dependency.requirement.name.lower())}"
+                continue
+            # Get index match for the dependency name
+            try:
+                package_index_match = new_pip_packages_names.index(
+                    dependency.requirement.name.lower()
                 )
-    else:  # GIT dependencies
-        for package_dep in new_packages:
-            for dep in typed_dependencies:
-                dep_gh = GitHubDependency.from_string(dep)
-                if dep_gh.org == package_dep.org and dep_gh.repo == package_dep.repo:
-                    to_delete.add(dep)
-                    updated_packages.add(package_dep.format_no_version())
+            except ValueError:
+                logger.info(
+                    f"Installed new package: {dependency.requirement.name.lower()}"
+                )
+                continue
+            # Handle if the dependency has no version specified
+            new_deps.append(
+                new_pip_packages[package_index_match].requirement.name.lower()
+                if new_pip_packages[package_index_match].no_version
+                else str(new_pip_packages[package_index_match])
+            )
+            logger.info(f"Updated package: {dependency.requirement.name.lower()}")
 
-            if f"{package_dep.org}/{package_dep.repo}" not in updated_packages:
-                logger.info(f"Installed {str(package_dep.format_no_version())}")
-            else:
-                logger.info(f"Updated {str(package_dep.format_no_version())}")
+        # If it's a GitHub dependency
+        elif isinstance(dependency, GitHubDependency):
+            if len(new_github_packages_names) == 0:
+                new_deps.append(
+                    dependency.format_no_version().lower()
+                    if dependency.no_version
+                    else str(dependency)
+                )
+                continue
+            # Get index match for the dependency name
+            try:
+                package_index_match = new_github_packages_names.index(
+                    dependency.format_no_version().lower()
+                )
+            except ValueError:
+                logger.info(
+                    f"Installed new package: {dependency.format_no_version().lower()}"
+                )
+                continue
+            # Handle if the dependency has no version specified
+            new_deps.append(
+                new_github_packages[package_index_match].format_no_version().lower()
+                if new_github_packages[package_index_match].no_version
+                else str(new_github_packages[package_index_match])
+            )
+            logger.info(f"Updated package: {dependency.format_no_version()}")
 
-    # Remove old versions of updated packages
-    dependencies = [dep for dep in dependencies if dep not in to_delete]
+    # Add new dependencies to the list
+    for dependency in dependencies_newly_added:
+        # If it's a GitHub dependency
+        if isinstance(dependency, GitHubDependency):
+            new_deps.append(
+                dependency.format_no_version().lower()
+                if dependency.no_version
+                else str(dependency)
+            )
+            logger.info(f"Installed new package: {dependency.format_no_version()}")
 
-    # Get new packgages name and version if not latest
-    formated_new_packages: list[str] = []
-    for package in new_packages:
-        if package.no_version:
-            if dependency_type == DependencyType.PIP:
-                formated_new_packages.append(package.requirement.name)
-            else:
-                formated_new_packages.append(package.format_no_version())
+        # If it's a pip dependency
         else:
-            formated_new_packages.append(str(package))
+            new_deps.append(
+                dependency.requirement.name.lower()
+                if dependency.no_version
+                else str(dependency)
+            )
+            logger.info(f"Installed new package: {dependency.requirement.name.lower()}")
 
-    # Add new packages while preserving order
-    new_deps = []
-    for dep in dependencies + formated_new_packages:
-        if dep not in new_deps:
-            new_deps.append(dep)
-
+    # Write new dependencies to the config
     if len(new_deps) > 0:
         config.write_dependencies(new_deps)
 

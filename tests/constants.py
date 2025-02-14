@@ -113,6 +113,7 @@ chain_id = 11155111
 # ------------------------------------------------------------------
 #                           TEST LIB
 # ------------------------------------------------------------------
+# @dev latest version can be problematic to follow, so tests might fail later on
 COMMENT_CONTENT = "PRESERVE COMMENTS"
 NEW_VERSION = "0.0.5"
 ORG_NAME = "pcaversaccio"
@@ -123,6 +124,7 @@ LIB_GH_PATH = "lib/github"
 LIB_PIP_PATH = "lib/pypi"
 MOCCASIN_LIB_NAME = "moccasin"
 MOCCASIN_TOML = "moccasin.toml"
+MOCCASIN_VERSION = "0.3.8"
 PATRICK_ORG_NAME = "patrickalphac"
 PATRICK_REPO_NAME = "test_repo"
 PATRICK_PACKAGE_NAME = f"{PATRICK_ORG_NAME}/{PATRICK_REPO_NAME}"

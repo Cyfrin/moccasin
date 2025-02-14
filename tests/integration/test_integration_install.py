@@ -80,7 +80,7 @@ def test_write_to_config_after_install(
         subprocess.run(
             [mox_path, "install", GITHUB_PACKAGE_NAME],
             check=True,
-            capture_output=True,
+            capture_output=False,
             text=True,
         )
     finally:
@@ -108,7 +108,7 @@ def test_can_install_with_version(
         )
     finally:
         os.chdir(current_dir)
-    assert f"Installed {GITHUB_PACKAGE_NAME}" in result.stderr
+    assert f"Installed new package: {GITHUB_PACKAGE_NAME}" in result.stderr
     project_root: Path = Config.find_project_root(Path(installation_temp_path))
     config = Config(project_root)
     assert f"{GITHUB_PACKAGE_NAME}@{VERSION}" in config.dependencies
@@ -139,8 +139,11 @@ def test_can_change_versions(
         )
     finally:
         os.chdir(current_dir)
-    assert f"{GITHUB_PACKAGE_NAME} needs to be updated from version {VERSION} to {NEW_VERSION}"
-    assert f"Updated {GITHUB_PACKAGE_NAME}" in result_two.stderr
+    assert (
+        f"{GITHUB_PACKAGE_NAME} needs to be updated from version {VERSION} to {NEW_VERSION}"
+        in result_two.stderr
+    )
+    assert f"Updated package: {GITHUB_PACKAGE_NAME}" in result_two.stderr
     project_root: Path = Config.find_project_root(Path(installation_temp_path))
     config = Config(project_root)
     assert f"{GITHUB_PACKAGE_NAME}@{NEW_VERSION}" in config.dependencies

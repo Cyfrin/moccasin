@@ -175,6 +175,11 @@ Use this command to prepare your contracts for deployment or testing.""",
         nargs="?",
     )
     test_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before running the tests.",
+        action="store_true",
+    )
+    test_parser.add_argument(
         "--update-packages",
         help="Update the packages before running the tests.",
         action="store_true",
@@ -369,6 +374,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         "contract_name",
         help=f"Name of your named contract in your {CONFIG_NAME} to deploy.",
         type=str,
+    )
+
+    deploy_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before deploying.",
+        action="store_true",
     )
 
     deploy_parser.add_argument(

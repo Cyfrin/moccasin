@@ -36,6 +36,11 @@ def rewrite_temp_moccasin_toml_dependencies(
     # Read the moccasin.toml file
     with open(temp_path.joinpath(MOCCASIN_TOML), "rb") as f:
         old_moccasin_toml = tomllib.load(f)
+
+    # Return if no dependencies are provided to keep the config
+    if len(dependencies) == 0:
+        return old_moccasin_toml
+
     with open(temp_path.joinpath(MOCCASIN_TOML), "wb") as f:
         # Update dependencies of moccasin.toml
         # @dev add new dependencies and keep config
