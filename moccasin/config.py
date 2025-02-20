@@ -79,44 +79,44 @@ class Network:
     This class allows for flexible network configuration across different blockchain environments,
     supporting both local and remote networks, including special cases like forked networks.
 
-    :ivar name: Unique identifier for the network
-    :vartype name: str
-    :ivar url: Network endpoint URL
-    :vartype url: str | None
-    :ivar chain_id: Unique identifier for the blockchain network
-    :vartype chain_id: int | None
-    :ivar is_fork: Indicates if the network is a forked instance
-    :vartype is_fork: bool
-    :ivar block_identifier: Block identifier for the network
-    :vartype block_identifier: int | str
-    :ivar is_zksync: Indicates if the network is a zkSync network
-    :vartype is_zksync: bool
-    :ivar default_account_name: Default mox wallet account name to use for the network
-    :vartype default_account_name: str | None
-    :ivar unsafe_password_file: Path to the unsafe password file related to ``default_account_name``
-    :vartype unsafe_password_file: Path | None
-    :ivar save_abi_path: Path to save the ABI
-    :vartype save_abi_path: str | None
-    :ivar explorer_uri: URI of the explorer
-    :vartype explorer_uri: str | None
-    :ivar explorer_api_key: API key for the explorer
-    :vartype explorer_api_key: str | None
-    :ivar explorer_type: Type of the explorer ("blockscout", "etherscan", "zksyncexplorer")
-    :vartype explorer_type: str | None
-    :ivar named_contracts: Dictionary of named contracts
-    :vartype named_contracts: dict[str, NamedContract]
-    :ivar prompt_live: A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks
-    :vartype prompt_live: bool
-    :ivar save_to_db: Indicates if the network should save the deployment to the database, it defaults to true for "non-testing" networks
-    :vartype save_to_db: bool
-    :ivar live_or_staging: Indicates if the network is live or staging, defaults to true for non-local, non-forked networks
-    :vartype live_or_staging: bool
-    :ivar db_path: Path to the database
-    :vartype db_path: str | Path
-    :ivar extra_data: Extra data for the network
-    :vartype extra_data: dict[str, Any]
-    :ivar _network_env: Network environment
-    :vartype _network_env: _AnyEnv | None
+    :param name: Unique identifier for the network
+    :type name: str
+    :param url: Network endpoint URL
+    :type url: str | None
+    :param chain_id: Unique identifier for the blockchain network
+    :type chain_id: int | None
+    :param is_fork: Indicates if the network is a forked instance
+    :type is_fork: bool
+    :param block_identifier: Block identifier for the network
+    :type block_identifier: int | str
+    :param is_zksync: Indicates if the network is a zkSync network
+    :type is_zksync: bool
+    :param default_account_name: Default mox wallet account name to use for the network
+    :type default_account_name: str | None
+    :param unsafe_password_file: Path to the unsafe password file related to ``default_account_name``
+    :type unsafe_password_file: Path | None
+    :param save_abi_path: Path to save the ABI
+    :type save_abi_path: str | None
+    :param explorer_uri: URI of the explorer
+    :type explorer_uri: str | None
+    :param explorer_api_key: API key for the explorer
+    :type explorer_api_key: str | None
+    :param explorer_type: Type of the explorer ("blockscout", "etherscan", "zksyncexplorer")
+    :type explorer_type: str | None
+    :param named_contracts: Dictionary of named contracts
+    :type named_contracts: dict[str, NamedContract]
+    :param prompt_live: A flag that will prompt you before sending a transaction, it defaults to true for "non-testing" networks
+    :type prompt_live: bool
+    :param save_to_db: Indicates if the network should save the deployment to the database, it defaults to true for "non-testing" networks
+    :type save_to_db: bool
+    :param live_or_staging: Indicates if the network is live or staging, defaults to true for non-local, non-forked networks
+    :type live_or_staging: bool
+    :param db_path: Path to the database
+    :type db_path: str | Path
+    :param extra_data: Extra data for the network
+    :type extra_data: dict[str, Any]
+    :param _network_env: Network environment
+    :type _network_env: _AnyEnv | None
     """
 
     name: str
@@ -1128,6 +1128,11 @@ class _Networks:
     handling both default network settings and network-specific overrides. It manages
     contract deployments, network connections, and explorer configurations for each network.
 
+    :param toml_data: The configuration data from the ``moccasin.toml`` file
+    :type toml_data: dict
+    :param project_root: The root directory of the project
+    :type project_root: Path
+
     :ivar _networks: Dictionary mapping network names to their Network objects
     :vartype _networks: dict[str, Network]
     :ivar _default_named_contracts: Default contract configurations that apply across all networks
@@ -1147,13 +1152,7 @@ class _Networks:
     default_network_name: str
 
     def __init__(self, toml_data: dict, project_root: Path):
-        """Initialize the _Networks class.
-
-        :param toml_data: The configuration data from the ``moccasin.toml`` file
-        :type toml_data: dict
-        :param project_root: The root directory of the project
-        :type project_root: Path
-        """
+        """Initialize the _Networks class."""
         self._networks = {}
         self._default_named_contracts = {}
         self._overriden_active_network = None
@@ -1536,6 +1535,9 @@ class Config:
 
     This class reads the `moccasin.toml` file and sets up project configuration.
 
+    :param root_path: The root directory of the project. Defaults to None.
+    :type root_path: Path, optional
+
     :ivar _project_root: The root directory of the project.
     :vartype _project_root: Path
     :ivar _toml_data: The parsed TOML data from the `moccasin.toml` file.
@@ -1558,11 +1560,7 @@ class Config:
     networks: _Networks
 
     def __init__(self, root_path: Path | None):
-        """Initialize the Config object.
-
-        :param root_path: The root directory of the project. Defaults to None.
-        :type root_path: Path, optional
-        """
+        """Initialize the Config object."""
         if root_path is None:
             root_path = Config.find_project_root()
         root_path = cast(Path, root_path)
