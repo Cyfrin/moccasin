@@ -21,12 +21,15 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && s
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV PATH="/home/vscode/.local/bin:$PATH"
 
-# Add uv to shell configuration
+# Add cargo and uv to shell configuration
 RUN echo 'export PATH="/home/vscode/.cargo/bin:$PATH"' >> ~/.zshrc
 
-# Install tools using uv
-RUN uv tool install moccasin
-RUN uv tool install vyper
+# Install just via uv
+RUN uv tool install rust-just 
+
+# Foundry framework
+RUN curl -L https://foundry.paradigm.xyz | zsh
+RUN foundryup
 
 # Clean up
 RUN sudo apt-get autoremove -y && sudo apt-get clean -y

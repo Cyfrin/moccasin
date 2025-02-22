@@ -10,9 +10,11 @@ Issues, feedback, and sharing that you're using Moccasin on social media is alwa
 - [Contributing](#contributing)
 - [Table of Contents](#table-of-contents)
 - [Setup](#setup)
-  - [Requirements](#requirements)
+  - [Manual Setup Requirements](#manual-setup-requirements)
     - [ZKync requirements](#zkync-requirements)
-  - [Installing for local development](#installing-for-local-development)
+  - [Dev Container Setup Requirements](#dev-container-setup-requirements)
+  - [Installing for local development (Manual)](#installing-for-local-development-manual)
+  - [Installing for local development (Dev Container)](#installing-for-local-development-dev-container)
   - [Running Tests](#running-tests)
     - [Local Tests](#local-tests)
     - [Integration Tests](#integration-tests)
@@ -24,7 +26,7 @@ Issues, feedback, and sharing that you're using Moccasin on social media is alwa
 
 # Setup
 
-## Requirements
+## Manual Setup Requirements
 
 You must have the following installed to proceed with contributing to this project. 
 
@@ -49,7 +51,14 @@ If you wish to run the ZKync tests, you'll need these as well (ran with `just te
 - [era-compiler-vyper](https://github.com/matter-labs/era-compiler-vyper)
   - You'll know you did it right if you can run `zkvyper --version` and you see a response like `Vyper compiler for ZKync v1.5.4 (LLVM build f9f732c8ebdb88fb8cd4528482a00e4f65bcb8b7)`
 
-## Installing for local development 
+## Dev Container Setup Requirements
+
+- [Docker](https://www.docker.com/)
+  - You'll know you did it right if you can run `docker --version` and you see a response like `Docker version x.x.x, build xxxxxxx`
+- [VSCode](https://code.visualstudio.com/)
+
+
+## Installing for local development (Manual)
 
 Follow the steps to clone the repo for you to make changes to this project.
 
@@ -98,6 +107,25 @@ deactivate
 However, if you run tests and scripts using the `uv` or `just` commands as we will describe below, you won't have to worry about that. 
 
 *Note: When you delete your terminal/shell, you will need to reactivate this virtual environment again each time. To exit this python virtual environment, type `deactivate`*
+
+## Installing for local development (Dev Container)
+
+1. Clone the repo
+
+```bash
+git clone https://github.com/cyfrin/moccasin
+cd moccasin
+```
+
+2. Start the dev container
+
+Open the repo in VSCode and you should see a prompt to open the repo in a dev container. Click on that and it will start the dev container for you.
+
+This will:
+1. Install the required dependencies
+2. Set up the environment for you
+
+Then, you'll be all setup already!
 
 ## Running Tests
 
