@@ -11,8 +11,26 @@ from moccasin.logging import logger
 
 @dataclass
 class NamedContract:
-    """
-    A class to represent a named contract. These hold only data about NamedContracts from the config.
+    """A class to represent a named contract.
+
+    This class holds data about NamedContracts from the configuration and manages their deployment.
+
+    :param contract_name: The name of the contract
+    :type contract_name: str
+    :param force_deploy: Whether to force deployment of the contract
+    :type force_deploy: bool | None
+    :param abi: The ABI of the contract
+    :type abi: str | None
+    :param abi_from_explorer: Whether to fetch the ABI from the explorer
+    :type abi_from_explorer: bool | None
+    :param deployer_script: The path to the deployer script
+    :type deployer_script: str | Path | None
+    :param address: The address of the contract
+    :type address: str | None
+    :param deployer: The deployer instance for the contract
+    :type deployer: VyperDeployer | ZksyncDeployer | None
+    :param recently_deployed_contract: The recently deployed contract instance
+    :type recently_deployed_contract: VyperContract | ZksyncContract | None
     """
 
     # From the config
@@ -28,6 +46,11 @@ class NamedContract:
     recently_deployed_contract: VyperContract | ZksyncContract | None = None
 
     def set_defaults(self, other: "NamedContract"):
+        """Set default values from another NamedContract instance if they are not already set.
+
+        :param other: Another NamedContract instance to copy defaults from
+        :type other: NamedContract
+        """
         self.force_deploy = (
             self.force_deploy if self.force_deploy is not None else other.force_deploy
         )
@@ -45,17 +68,36 @@ class NamedContract:
         self.address = self.address if self.address is not None else other.address
 
     def reset(self):
+        """Reset the deployer and recently deployed contract to None."""
         self.deployer = None
         self.recently_deployed_contract = None
 
     def get(self, key: str, otherwise: Any):
+        """Get a NamedContract attribute value or return a default if the attribute is not set.
+
+        :param key: The attribute name to get
+        :type key: str
+        :param otherwise: The default value to return if the attribute is not set
+        :type otherwise: Any
+        :return: The attribute value or the default value
+        :rtype: Any
+        """
         return getattr(self, key, otherwise)
 
     def _deploy(
         self, script_folder: str, deployer_script: str | Path | None = None
     ) -> VyperContract | ZksyncContract:
-        """
+        """Deploy the contract using the specified deployer script.
+
         This function will not save the named contract to the database with it's name!
+
+        :param script_folder: The folder containing the deployer scripts
+        :type script_folder: str
+        :param deployer_script: The path to the deployer script, defaults to None
+        :type deployer_script: str | Path | None
+        :return: The deployed contract instance
+        :rtype: VyperContract | ZksyncContract
+        :raises ValueError: If deployer path is not provided or invalid contract type is returned
         """
         if deployer_script:
             deployer_script = str(deployer_script)

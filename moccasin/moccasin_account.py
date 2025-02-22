@@ -16,6 +16,34 @@ from moccasin.logging import logger
 
 
 class MoccasinAccount(LocalAccount):
+    """A class representing a Moccasin account, extending LocalAccount functionality.
+
+    This class provides enhanced account management features including keystore handling,
+    private key management, and account unlocking capabilities.
+
+    :param private_key: The private key for the account
+    :type private_key: str | bytes | None
+    :param keystore_path_or_account_name: Path to keystore file or account name
+    :type keystore_path_or_account_name: Path | str | None
+    :param password: Password for keystore decryption
+    :type password: str
+    :param password_file_path: Path to file containing password
+    :type password_file_path: Path
+    :param address: Address for the account
+    :type address: Address | None
+    :param ignore_warning: Whether to ignore warning about unlocked account
+    :type ignore_warning: bool
+
+    :ivar _private_key: The account's private key
+    :type _private_key: bytes | None
+    :ivar _address: The account's address
+    :type _address: ChecksumAddress | None
+    :ivar _publicapi: Public API instance for account operations
+    :type _publicapi: Account
+    :ivar keystore_path: Path to the account's keystore file
+    :type keystore_path: Path
+    """
+
     def __init__(
         self,
         private_key: str | bytes | None = None,
@@ -25,6 +53,7 @@ class MoccasinAccount(LocalAccount):
         address: Address | None = None,
         ignore_warning: bool = False,
     ):
+        """Initialize the MoccasinAccount object."""
         # We override the LocalAccount Type
         self._private_key: bytes | None = None  # type: ignore
         # We override the LocalAccount Type
@@ -57,10 +86,20 @@ class MoccasinAccount(LocalAccount):
 
     @property
     def private_key(self) -> bytes:
+        """Get the private key of the account.
+
+        :return: The private key in bytes
+        :rtype: bytes
+        """
         return self.key
 
     @property
     def address(self) -> ChecksumAddress | None:  # type: ignore
+        """Get the account's address.
+
+        :return: The account's checksum address or None if not set
+        :rtype: ChecksumAddress | None
+        """
         if self.private_key:
             return PrivateKey(self.private_key).public_key.to_checksum_address()
         if self._address:
@@ -68,6 +107,11 @@ class MoccasinAccount(LocalAccount):
         return None
 
     def _init_key(self, private_key: bytes | HexBytes):
+        """Initialize the account with a private key.
+
+        :param private_key: The private key to initialize with
+        :type private_key: bytes | HexBytes
+        """
         if isinstance(private_key, HexBytes):
             private_key = bytes(private_key)
         private_key_converted = PrivateKey(private_key)
@@ -77,11 +121,21 @@ class MoccasinAccount(LocalAccount):
         self._key_obj: PrivateKey = private_key_converted
 
     def set_keystore_path(self, keystore_path: Path | str):
+        """Set the path to the keystore file.
+
+        :param keystore_path: Path to the keystore file
+        :type keystore_path: Path | str
+        """
         if isinstance(keystore_path, str):
             keystore_path = MOCCASIN_KEYSTORE_PATH.joinpath(Path(keystore_path))
         self.keystore_path = keystore_path
 
     def unlocked(self) -> bool:
+        """Check if the account is unlocked.
+
+        :return: True if the account is unlocked, False otherwise
+        :rtype: bool
+        """
         return self.private_key is not None
 
     def unlock(
@@ -90,6 +144,18 @@ class MoccasinAccount(LocalAccount):
         password_file_path: Path = None,
         prompt_even_if_unlocked: bool = False,
     ) -> HexBytes:
+        """Unlock the account using a password or password file.
+
+        :param password: Password for keystore decryption
+        :type password: str
+        :param password_file_path: Path to file containing password
+        :type password_file_path: Path
+        :param prompt_even_if_unlocked: Whether to prompt for password even if account is already unlocked
+        :type prompt_even_if_unlocked: bool
+        :return: The decrypted private key
+        :rtype: HexBytes
+        :raises Exception: If no keystore path is provided
+        """
         if password_file_path:
             password_file_path = Path(password_file_path).expanduser().resolve()
         if not self.unlocked() or prompt_even_if_unlocked:
@@ -107,6 +173,11 @@ class MoccasinAccount(LocalAccount):
         return cast(HexBytes, self.private_key)
 
     def get_balance(self) -> int:
+        """Get the account balance using boa environment.
+
+        :return: The account balance in wei
+        :rtype: int
+        """
         # This might be dumb? Idk
         import boa
 
@@ -114,4 +185,11 @@ class MoccasinAccount(LocalAccount):
 
     @classmethod
     def from_boa_address(cls, address: Address) -> "MoccasinAccount":
+        """Create a MoccasinAccount instance from a boa address.
+
+        :param address: The boa address
+        :type address: Address
+        :return: A new MoccasinAccount instance
+        :rtype: MoccasinAccount
+        """
         return cls()
