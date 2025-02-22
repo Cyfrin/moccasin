@@ -48,7 +48,7 @@ Head over to [the moccasin installation documentation](https://cyfrin.github.io/
 To install the moccasin `mox` command, we recommend the [uv](https://docs.astral.sh/uv/) tool.
 
 ```bash
-uv tool install moccasin --prerelease=allow
+uv tool install moccasin
 ```
 
 Then, see a list of commands with:
