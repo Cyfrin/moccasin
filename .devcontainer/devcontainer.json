@@ -1,0 +1,27 @@
+{
+    "name": "Cyfrin's Moccasin DevContainer",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "features": {},
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "tintinweb.vscode-vyper",
+                "trailofbits.weaudit",
+                "ms-python.python"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.profiles.linux": {
+                    "zsh": {
+                        "path": "/usr/bin/zsh"
+                    }
+                }
+            }
+        }
+    },
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "workspaceFolder": "/workspace",
+    "postCreateCommand": "echo 'Welcome to Cyfrins dev-container'"
+}
