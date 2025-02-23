@@ -52,7 +52,14 @@ def test_get_abi_from_script_etherscan(mox_path, complex_project_config):
     os.chdir(COMPLEX_PROJECT_PATH)
     try:
         result = subprocess.run(
-            [mox_path, "run", "get_usdc_balance", "--network", "mainnet_fork"],
+            [
+                mox_path,
+                "run",
+                "get_usdc_balance",
+                "--network",
+                "mainnet_fork",
+                "--no-install",
+            ],
             check=True,
             capture_output=True,
             text=True,

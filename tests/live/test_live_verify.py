@@ -21,6 +21,7 @@ def test_zksync_verify(mox_path):
                 "sepolia-zksync",
                 "--account",
                 "smalltestnet",
+                "--no-install",
             ],
             check=True,
             capture_output=True,

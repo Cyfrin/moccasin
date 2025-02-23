@@ -140,6 +140,18 @@ Use this command to prepare your contracts for deployment or testing.""",
         help="Optional argument to compile a specific contract.",
     )
 
+    compile_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before compiling.",
+        action="store_true",
+    )
+
+    compile_parser.add_argument(
+        "--update-packages",
+        help="Update the packages before running the script.",
+        action="store_true",
+    )
+
     zksync_ground = compile_parser.add_mutually_exclusive_group()
     zksync_ground.add_argument(
         "--network", help=f"Alias of the network (from the {CONFIG_NAME})."
@@ -162,6 +174,17 @@ Use this command to prepare your contracts for deployment or testing.""",
         type=str,
         nargs="?",
     )
+    test_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before running the tests.",
+        action="store_true",
+    )
+    test_parser.add_argument(
+        "--update-packages",
+        help="Update the packages before running the tests.",
+        action="store_true",
+    )
+
     add_network_args_to_parser(test_parser)
     add_account_args_to_parser(test_parser)
 
@@ -322,6 +345,19 @@ Use this command to prepare your contracts for deployment or testing.""",
         type=str,
         default="./script/deploy.py",
     )
+
+    run_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before running the script.",
+        action="store_true",
+    )
+
+    run_parser.add_argument(
+        "--update-packages",
+        help="Update the packages before running the script.",
+        action="store_true",
+    )
+
     add_network_args_to_parser(run_parser)
     add_account_args_to_parser(run_parser)
 
@@ -338,6 +374,18 @@ Use this command to prepare your contracts for deployment or testing.""",
         "contract_name",
         help=f"Name of your named contract in your {CONFIG_NAME} to deploy.",
         type=str,
+    )
+
+    deploy_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before deploying.",
+        action="store_true",
+    )
+
+    deploy_parser.add_argument(
+        "--update-packages",
+        help="Update the packages before deploying the contract.",
+        action="store_true",
     )
     add_network_args_to_parser(deploy_parser)
     add_account_args_to_parser(deploy_parser)

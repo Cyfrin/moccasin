@@ -2,10 +2,25 @@ import os
 import subprocess
 from pathlib import Path
 
+import pytest
+import tomli_w
+
+from moccasin.config import Config
 from tests.constants import (
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
     ANVIL1_PRIVATE_KEY,
+    LIB_GH_PATH,
+    LIB_PIP_PATH,
+    MOCCASIN_TOML,
+    NEW_VERSION,
+    PATRICK_PACKAGE_NAME,
+    PIP_PACKAGE_NAME,
+    VERSION,
+)
+from tests.utils.helpers import (
+    get_temp_versions_toml_from_libs,
+    rewrite_temp_moccasin_toml_dependencies,
 )
 
 
@@ -24,7 +39,7 @@ def test_run_help(mox_path, complex_temp_path):
     assert "Moccasin CLI run" in result.stdout
 
 
-def test_run_default(mox_path, complex_temp_path):
+def test_run_default(mox_path, complex_cleanup_dependencies_folder, complex_temp_path):
     current_dir = Path.cwd()
     try:
         os.chdir(complex_temp_path)
@@ -33,7 +48,115 @@ def test_run_default(mox_path, complex_temp_path):
         )
     finally:
         os.chdir(current_dir)
+
+    assert complex_temp_path.joinpath(LIB_PIP_PATH).exists()
     assert "Ending count:  1" in result.stdout
+
+
+@pytest.mark.parametrize(
+    "cli_args, expect_gh_path, expect_pip_path, expect_pip_version, expect_gh_package, dependencies",
+    [
+        # --no-install should skip package installation
+        (["--no-install"], False, False, f"=={VERSION}", False, []),
+        # Default behavior - installs dependencies
+        ([], False, True, f"=={VERSION}", False, []),
+        # --update-packages should update existing dependencies
+        (["--update-packages"], True, True, f"=={NEW_VERSION}", True, None),
+    ],
+)
+def test_run_default_with_flags(
+    complex_temp_path,
+    complex_cleanup_dependencies_folder,
+    mox_path,
+    cli_args,
+    expect_gh_path,
+    expect_pip_path,
+    expect_pip_version,
+    expect_gh_package,
+    dependencies,
+):
+    current_dir = Path.cwd()
+    if dependencies is not None:
+        old_moccasin_toml = rewrite_temp_moccasin_toml_dependencies(
+            complex_temp_path, dependencies
+        )
+    else:
+        old_moccasin_toml = rewrite_temp_moccasin_toml_dependencies(complex_temp_path)
+
+    try:
+        os.chdir(current_dir.joinpath(complex_temp_path))
+        base_args = [mox_path, "run", "deploy"]
+        result = subprocess.run(
+            base_args + cli_args, check=True, capture_output=True, text=True
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert complex_temp_path.joinpath(LIB_GH_PATH).exists() == expect_gh_path
+    assert complex_temp_path.joinpath(LIB_PIP_PATH).exists() == expect_pip_path
+
+    # Verify config state if versions are expected
+    project_root: Path = Config.find_project_root(complex_temp_path)
+    config = Config(project_root)
+    github_versions, pip_versions = get_temp_versions_toml_from_libs(complex_temp_path)
+    assert f"{PIP_PACKAGE_NAME}{expect_pip_version}" in config.dependencies
+    if expect_pip_path and expect_pip_version:
+        assert pip_versions[f"{PIP_PACKAGE_NAME}"] == expect_pip_version
+    if expect_gh_path and expect_gh_package:
+        assert PATRICK_PACKAGE_NAME in config.dependencies
+        assert github_versions[f"{PATRICK_PACKAGE_NAME}"] == "0.1.1"
+
+    assert "Ending count:  1" in result.stdout
+
+    # Reset toml to the original for next test
+    with open(complex_temp_path.joinpath(MOCCASIN_TOML), "wb") as f:
+        tomli_w.dump(old_moccasin_toml, f)
+
+
+def and_update(complex_temp_path, complex_cleanup_out_folder, mox_path):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(complex_temp_path))
+        result = subprocess.run(
+            [mox_path, "run", "deploy"], check=True, capture_output=True, text=True
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert complex_temp_path.joinpath(LIB_PIP_PATH).exists()
+    assert "Ending count:  1" in result.stdout
+
+    # Second run should update the version in the config
+    old_moccasin_toml = rewrite_temp_moccasin_toml_dependencies(complex_temp_path)
+
+    try:
+        os.chdir(current_dir.joinpath(complex_temp_path))
+        result_two = subprocess.run(
+            [mox_path, "run", "deploy", "--update-packages"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert complex_temp_path.joinpath(LIB_GH_PATH).exists()
+    assert complex_temp_path.joinpath(LIB_PIP_PATH).exists()
+
+    project_root: Path = Config.find_project_root(complex_temp_path)
+    config = Config(project_root)
+    assert f"{PIP_PACKAGE_NAME}=={NEW_VERSION}" in config.dependencies
+    assert f"{PATRICK_PACKAGE_NAME}" in config.dependencies
+
+    github_versions, pip_versions = get_temp_versions_toml_from_libs(complex_temp_path)
+    assert github_versions[f"{PATRICK_PACKAGE_NAME}"] == "0.1.1"
+    assert pip_versions[f"{PIP_PACKAGE_NAME}"] == f"=={NEW_VERSION}"
+
+    assert "Ending count:  1" in result_two.stdout
+
+    # Reset toml to the original for next test
+    with open(complex_temp_path.joinpath(MOCCASIN_TOML), "wb") as f:
+        tomli_w.dump(old_moccasin_toml, f)
 
 
 def test_multiple_manifest_returns_the_same_or_different(mox_path, complex_temp_path):
@@ -41,7 +164,7 @@ def test_multiple_manifest_returns_the_same_or_different(mox_path, complex_temp_
     os.chdir(complex_temp_path)
     try:
         result = subprocess.run(
-            [mox_path, "run", "quad_manifest"],
+            [mox_path, "run", "quad_manifest", "--no-install"],
             check=True,
             capture_output=True,
             text=True,

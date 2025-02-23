@@ -12,6 +12,7 @@ from moccasin._sys_path_and_config_setup import (
     _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
+from moccasin.commands._install_utils import check_mox_install
 from moccasin.config import Config, get_config, initialize_global_config
 from moccasin.constants.vars import TESTS_FOLDER
 
@@ -51,6 +52,9 @@ PYTEST_ARGS: list[str] = [
 def main(args: Namespace) -> int:
     initialize_global_config()
     pytest_args = []
+
+    # Install if needed
+    check_mox_install(args)
 
     # This is not in PYTEST_ARGS
     if "coverage" in args and args.coverage:

@@ -19,7 +19,11 @@ from tests.constants import (
     ANVIL_STORED_STATE_PATH,
     COMPLEX_PROJECT_PATH,
     INSTALL_PROJECT_PATH,
+    INSTALLATION_FULL_DEPENDENCIES_TOML,
+    INSTALLATION_NO_DEPENDENCIES_TOML,
     INSTALLATION_STARTING_TOML,
+    INSTALLATION_WITH_GH_TOML,
+    INSTALLATION_WITH_PIP_TOML,
     NO_CONFIG_PROJECT_PATH,
     PURGE_PROJECT_PATH,
     PURGE_STARTING_TOML,
@@ -159,6 +163,30 @@ def installation_cleanup_dependencies(installation_temp_path):
         f.write(INSTALLATION_STARTING_TOML)
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)
+
+
+@pytest.fixture
+def installation_remove_dependencies(installation_temp_path):
+    with open(installation_temp_path.joinpath("moccasin.toml"), "w") as f:
+        f.write(INSTALLATION_NO_DEPENDENCIES_TOML)
+
+
+@pytest.fixture
+def installation_keep_pip_dependencies(installation_temp_path):
+    with open(installation_temp_path.joinpath("moccasin.toml"), "w") as f:
+        f.write(INSTALLATION_WITH_PIP_TOML)
+
+
+@pytest.fixture
+def installation_keep_gh_dependencies(installation_temp_path):
+    with open(installation_temp_path.joinpath("moccasin.toml"), "w") as f:
+        f.write(INSTALLATION_WITH_GH_TOML)
+
+
+@pytest.fixture
+def installation_keep_full_dependencies(installation_temp_path):
+    with open(installation_temp_path.joinpath("moccasin.toml"), "w") as f:
+        f.write(INSTALLATION_FULL_DEPENDENCIES_TOML)
 
 
 # ------------------------------------------------------------------
