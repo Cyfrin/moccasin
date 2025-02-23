@@ -61,9 +61,9 @@ def main(argv: list) -> int:
     return 0
 
 
-def generate_main_parser_and_sub_parsers() -> Tuple[
-    argparse.ArgumentParser, argparse.Action
-]:
+def generate_main_parser_and_sub_parsers() -> (
+    Tuple[argparse.ArgumentParser, argparse.Action]
+):
     parent_parser = create_parent_parser()
     main_parser = argparse.ArgumentParser(
         prog="Moccasin CLI",
@@ -140,6 +140,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         help="Optional argument to compile a specific contract.",
     )
 
+    compile_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before compiling.",
+        action="store_true",
+    )
+
     zksync_ground = compile_parser.add_mutually_exclusive_group()
     zksync_ground.add_argument(
         "--network", help=f"Alias of the network (from the {CONFIG_NAME})."
@@ -161,6 +167,11 @@ Use this command to prepare your contracts for deployment or testing.""",
         help="Name of the test or folder to run tests on, or the path to your script.",
         type=str,
         nargs="?",
+    )
+    test_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before running the tests.",
+        action="store_true",
     )
     add_network_args_to_parser(test_parser)
     add_account_args_to_parser(test_parser)
@@ -322,6 +333,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         type=str,
         default="./script/deploy.py",
     )
+    run_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before running the script.",
+        action="store_true",
+    )
+
     add_network_args_to_parser(run_parser)
     add_account_args_to_parser(run_parser)
 
@@ -339,6 +356,12 @@ Use this command to prepare your contracts for deployment or testing.""",
         help=f"Name of your named contract in your {CONFIG_NAME} to deploy.",
         type=str,
     )
+    deploy_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before deploying.",
+        action="store_true",
+    )
+
     add_network_args_to_parser(deploy_parser)
     add_account_args_to_parser(deploy_parser)
 
