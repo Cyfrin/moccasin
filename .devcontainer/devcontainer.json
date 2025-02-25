@@ -16,7 +16,9 @@
             "extensions": [
                 "tintinweb.vscode-vyper",
                 "trailofbits.weaudit",
-                "ms-python.python"
+                "ms-python.python",
+                "charliermarsh.ruff",
+                "tamasfe.even-better-toml"
             ],
             "settings": {
                 "terminal.integrated.defaultProfile.linux": "zsh",
@@ -24,11 +26,13 @@
                     "zsh": {
                         "path": "/usr/bin/zsh"
                     }
-                }
+                },
+                "python.terminal.activateEnvironment": true,
+                "python.defaultInterpreterPath": ".venv/bin/python"
             }
         }
     },
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
     "workspaceFolder": "/workspace",
-    "postCreateCommand": "uv venv && source .venv/bin/activate && uv sync --all-extras"
+    "postCreateCommand": "zsh -c 'uv venv && source .venv/bin/activate && uv sync --all-extras'"
 }
