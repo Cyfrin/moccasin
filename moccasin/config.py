@@ -2061,7 +2061,20 @@ class Config:
             )
 
         def deep_update(d, u):
+            # Special keys that should not be merged
+            pyproject_special_keys = [
+                "tool",
+                "build-systemname",
+                "name",
+                "version",
+                "description",
+                "readme",
+                "requires-python",
+            ]
+
             for k, v in u.items():
+                if k in pyproject_special_keys:
+                    continue
                 if isinstance(v, dict):
                     if k not in d:
                         d[k] = {}
