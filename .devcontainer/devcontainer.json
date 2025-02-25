@@ -3,6 +3,13 @@
     "build": {
         "dockerfile": "Dockerfile"
     },
+    "containerEnv": {
+        "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+        "EXPLORER_API_KEY": "${localEnv:EXPLORER_API_KEY}",
+        "OPTIMISTIC_ETHERSCAN_API_KEY": "${localEnv:OPTIMISTIC_ETHERSCAN_API_KEY}",
+        "MAINNET_RPC_URL": "${localEnv:MAINNET_RPC_URL}",
+        "SEPOLIA_ZKSYNC_RPC_URL": "${localEnv:SEPOLIA_ZKSYNC_RPC_URL}"
+    },
     "features": {},
     "customizations": {
         "vscode": {
