@@ -4,14 +4,17 @@ from pathlib import Path
 
 import pytest
 
-from tests.constants import COMPLEX_PROJECT_PATH
-
 
 @pytest.mark.skip
-def test_zksync_verify(mox_path):
+def test_zksync_verify(
+    mox_path,
+    complex_temp_path,
+    complex_cleanup_dependencies_folder,
+    complex_cleanup_out_folder,
+):
     current_dir = Path.cwd()
     try:
-        os.chdir(COMPLEX_PROJECT_PATH)
+        os.chdir(complex_temp_path)
         result = subprocess.run(
             [
                 mox_path,
