@@ -32,8 +32,7 @@ RUN curl -L https://foundry.paradigm.xyz | zsh
 RUN foundryup
 
 # Install anvil-zksync
-# @dev https://github.com/matter-labs/anvil-zksync/issues/597#issuecomment-2687248515
-ENV ANVIL_ZKSYNC_VERSION=0.3.0
+ENV ANVIL_ZKSYNC_VERSION=0.3.2
 RUN curl -L https://github.com/matter-labs/anvil-zksync/releases/download/v${ANVIL_ZKSYNC_VERSION}/anvil-zksync-v${ANVIL_ZKSYNC_VERSION}-x86_64-unknown-linux-gnu.tar.gz -o $HOME/anvil-zksync.tar.gz && \
     tar xf $HOME/anvil-zksync.tar.gz -C $HOME/.foundry/bin/ && \
     chmod +x $HOME/.foundry/bin/anvil-zksync && \
