@@ -10,10 +10,10 @@ from moccasin.constants.vars import (
     PYPI,
 )
 from tests.constants import (
+    PACKAGE_VERSION,
     PATRICK_ORG_NAME,
     PATRICK_PACKAGE_NAME,
     PIP_PACKAGE_NAME,
-    PACKAGE_VERSION,
 )
 
 
