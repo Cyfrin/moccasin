@@ -164,6 +164,7 @@ def installation_cleanup_dependencies(installation_temp_path):
     if os.path.exists(created_folder_path):
         shutil.rmtree(created_folder_path)
 
+
 @pytest.fixture
 def installation_remove_dependencies(installation_temp_path):
     with open(installation_temp_path.joinpath("moccasin.toml"), "w") as f:
