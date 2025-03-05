@@ -7,12 +7,18 @@ from moccasin._sys_path_and_config_setup import (
     _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
+from moccasin.commands.install import mox_install
 from moccasin.config import get_config, initialize_global_config
-from moccasin.logging import logger
+from moccasin.logging import logger, set_log_level
 
 
 def main(args: Namespace) -> int:
     initialize_global_config()
+
+    if not args.no_install:
+        mox_install(config=get_config(), quiet=True, override_logger=True)
+    set_log_level(quiet=args.quiet, debug=args.debug)
+
     run_script(
         args.script_name_or_path,
         network=args.network,

@@ -12,8 +12,10 @@ from moccasin._sys_path_and_config_setup import (
     _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
+from moccasin.commands.install import mox_install
 from moccasin.config import Config, get_config, initialize_global_config
 from moccasin.constants.vars import TESTS_FOLDER
+from moccasin.logging import set_log_level
 
 HYPOTHESIS_ARGS: list[str] = ["hypothesis-seed"]
 
@@ -50,6 +52,11 @@ PYTEST_ARGS: list[str] = [
 
 def main(args: Namespace) -> int:
     initialize_global_config()
+
+    if not args.no_install:
+        mox_install(config=get_config(), quiet=True, override_logger=True)
+    set_log_level(quiet=args.quiet, debug=args.debug)
+
     pytest_args = []
 
     # This is not in PYTEST_ARGS

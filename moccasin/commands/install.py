@@ -14,6 +14,8 @@ from urllib.parse import quote
 
 import requests  # type: ignore
 import tomli_w
+from packaging.requirements import Requirement
+from packaging.version import parse as parse_version
 from tqdm import tqdm
 
 from moccasin._dependency_utils import (
@@ -23,18 +25,45 @@ from moccasin._dependency_utils import (
 )
 from moccasin.config import get_or_initialize_config
 from moccasin.constants.vars import GITHUB, PACKAGE_VERSION_FILE, PYPI, REQUEST_HEADERS
-from moccasin.logging import logger
+from moccasin.logging import logger, set_log_level
 
 
 def main(args: Namespace):
-    requirements = args.requirements
-    config = get_or_initialize_config()
+    requirements = args.requirements if hasattr(args, "requirements") else []
+    no_install = args.no_install if hasattr(args, "no_install") else False
+    quiet = args.quiet if hasattr(args, "quiet") else False
+    debug = args.debug if hasattr(args, "debug") else False
+    return mox_install(
+        requirements=requirements,
+        no_install=no_install,
+        quiet=quiet,
+        debug=debug,
+        override_logger=False,
+    )
+
+
+def mox_install(
+    requirements=[],
+    no_install=None,
+    config=None,
+    quiet=False,
+    debug=False,
+    override_logger=False,
+):
+    """@dev IMPORTANT, this function can override the logger level, it's good to
+    reset it after calling this function.
+    """
+    if quiet:
+        set_log_level(quiet=quiet, debug=debug)
+    if no_install:
+        return 0
+    if config is None:
+        config = get_or_initialize_config()
     if len(requirements) == 0:
         requirements = config.get_dependencies()
     if len(requirements) == 0:
         logger.info("No dependencies to install.")
         return 0
-
     pip_requirements = []
     github_requirements = []
     for requirement in requirements:
@@ -42,18 +71,34 @@ def main(args: Namespace):
             github_requirements.append(requirement)
         else:
             pip_requirements.append(requirement)
+
+    # Get dependencies install path and create it if it doesn't exist
+    # @dev allows to avoid vyper compiler error when missing one dir
     install_path: Path = config.get_base_dependencies_install_path()
+    install_path.joinpath(PYPI).mkdir(exist_ok=True, parents=True)
+    install_path.joinpath(GITHUB).mkdir(exist_ok=True, parents=True)
+
+    # @dev in case of fresh install, dependencies might be ordered differently
+    # since we install pip packages first and github packages later
+    # @dev see _dependency_utils._write_new_dependencies
     if len(pip_requirements) > 0:
-        _pip_installs(pip_requirements, install_path.joinpath(PYPI), args.quiet)
+        _pip_installs(
+            pip_requirements, install_path.joinpath(PYPI), quiet, override_logger
+        )
     if len(github_requirements) > 0:
-        _github_installs(github_requirements, install_path.joinpath(GITHUB), args.quiet)
+        _github_installs(
+            github_requirements, install_path.joinpath(GITHUB), quiet, override_logger
+        )
     return 0
 
 
 # Much of this code thanks to brownie
 # https://github.com/eth-brownie/brownie/blob/master/brownie/_config.py
 def _github_installs(
-    github_ids: list[str], base_install_path: Path, quiet: bool = False
+    github_ids: list[str],
+    base_install_path: Path,
+    quiet: bool = False,
+    override_logger=False,
 ):
     logger.info(f"Installing {len(github_ids)} GitHub packages...")
     for package_id in github_ids:
@@ -91,8 +136,10 @@ def _github_installs(
                 installed_version = versions.get(f"{org}/{repo}", None)
             if installed_version == version:
                 logger.info(f"{org}/{repo} already installed at version {version}")
-                return f"{org}/{repo}@{version}"
+                continue
             else:
+                if override_logger:
+                    set_log_level(quiet=False)
                 logger.info(
                     f"Updating {org}/{repo} from {installed_version} to {version}"
                 )
@@ -215,10 +262,50 @@ def _get_download_url_from_tag(org: str, repo: str, version: str, headers: dict)
     )
 
 
-def _pip_installs(package_ids: list[str], base_install_path: Path, quiet: bool = False):
+def _pip_installs(
+    package_ids: list[str],
+    base_install_path: Path,
+    quiet: bool = False,
+    override_logger=False,
+):
     logger.info(f"Installing {len(package_ids)} pip packages...")
-    cmd = []
-    cmd = ["uv", "pip", "install", *package_ids, "--target", str(base_install_path)]
+
+    # Check if they are already installed on the right version
+    packages_to_install = []
+    for package_id in package_ids:
+        name, version_spec = parse_package_req(package_id)
+
+        if base_install_path.joinpath(name).exists():
+            dist_info = next(base_install_path.glob(f"{name}-*.dist-info"))
+            installed_version = dist_info.name.replace(f"{name}-", "").replace(
+                ".dist-info", ""
+            )
+
+            if version_spec:
+                if not version_spec.contains(parse_version(installed_version)):
+                    logger.info(
+                        f"{name} {installed_version} installed but {package_id} required."
+                    )
+                    packages_to_install.append(package_id)
+                    continue
+        else:
+            packages_to_install.append(package_id)
+
+    if len(packages_to_install) == 0:
+        logger.info("All packages already installed.")
+        return 0
+
+    if override_logger:
+        set_log_level(quiet=False)
+
+    cmd = [
+        "uv",
+        "pip",
+        "install",
+        *packages_to_install,
+        "--target",
+        str(base_install_path),
+    ]
 
     capture_output = quiet
     try:
@@ -230,3 +317,8 @@ def _pip_installs(package_ids: list[str], base_install_path: Path, quiet: bool =
         sys.exit(1)
 
     _write_new_dependencies(package_ids, DependencyType.PIP)
+
+
+def parse_package_req(package_id):
+    req = Requirement(package_id)
+    return req.name, next(iter(req.specifier)) if req.specifier else None

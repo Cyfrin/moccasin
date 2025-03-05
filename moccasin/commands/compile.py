@@ -15,6 +15,7 @@ from vyper.compiler.phases import CompilerData
 from vyper.exceptions import VersionException, _BaseVyperException
 
 from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
+from moccasin.commands.install import mox_install
 from moccasin.config import Config, get_config, initialize_global_config
 from moccasin.constants.vars import (
     BUILD_FOLDER,
@@ -23,7 +24,7 @@ from moccasin.constants.vars import (
     IS_WINDOWS,
     MOCCASIN_GITHUB,
 )
-from moccasin.logging import logger
+from moccasin.logging import logger, set_log_level
 
 
 def main(args: Namespace) -> int:
@@ -31,6 +32,10 @@ def main(args: Namespace) -> int:
     project_path: Path = config.get_root()
 
     is_zksync: bool = _set_zksync_test_env_if_applicable(args, config)
+
+    if not args.no_install:
+        mox_install(config=config, quiet=True, override_logger=True)
+    set_log_level(quiet=args.quiet, debug=args.debug)
 
     with _patch_sys_path(get_sys_paths_list(config)):
         if args.contract_or_contract_path:
