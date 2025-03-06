@@ -1646,7 +1646,14 @@ class Config:
         )
         if moccasin_config == {}:
             return pyproject_config
-        merged_config = self.merge_configs(moccasin_config, pyproject_config)
+
+        # Get moccasin specific config from pyproject
+        pyproject_mox_config = pyproject_config.get("tool", {}).get("moccasin", {})
+        if pyproject_mox_config == {}:
+            return moccasin_config
+
+        # Merge the two configs
+        merged_config = self.merge_configs(moccasin_config, pyproject_mox_config)
         merged_config = cast(tomlkit.TOMLDocument, merged_config)
         return merged_config
 
@@ -2034,7 +2041,7 @@ class Config:
     @staticmethod
     def merge_configs(
         moccasin_config_dict: Union[dict, tomlkit.TOMLDocument],
-        pyproject_config_dict: Union[dict, tomlkit.TOMLDocument],
+        pyproject_mox_config_dict: Union[dict, tomlkit.TOMLDocument],
     ) -> Union[dict, tomlkit.TOMLDocument]:
         """Merges the `moccasin` and `pyproject` configuration dictionaries.
 
@@ -2042,18 +2049,15 @@ class Config:
 
         :param moccasin_config_dict: Configuration from `moccasin.toml`.
         :type moccasin_config_dict: Union[dict, tomlkit.TOMLDocument]
-        :param pyproject_config_dict: Configuration from `pyproject.toml`.
-        :type pyproject_config_dict: Union[dict, tomlkit.TOMLDocument]
+        :param pyproject_mox_config_dict: Moccasin configuration from `pyproject.toml`.
+        :type pyproject_mox_config_dict: Union[dict, tomlkit.TOMLDocument]
         :return: The merged configuration dictionary.
         :rtype: Union[dict, tomlkit.TOMLDocument]
         """
         merged = moccasin_config_dict.copy()
 
         if (
-            pyproject_config_dict.get("tool", {})
-            .get("moccasin", {})
-            .get("project", {})
-            .get("dependencies", None)
+            pyproject_mox_config_dict.get("project", {}).get("dependencies", None)
             is not None
         ):
             logger.warning(
@@ -2061,20 +2065,7 @@ class Config:
             )
 
         def deep_update(d, u):
-            # Special keys that should not be merged
-            pyproject_special_keys = [
-                "tool",
-                "build-systemname",
-                "name",
-                "version",
-                "description",
-                "readme",
-                "requires-python",
-            ]
-
             for k, v in u.items():
-                if k in pyproject_special_keys:
-                    continue
                 if isinstance(v, dict):
                     if k not in d:
                         d[k] = {}
@@ -2083,7 +2074,7 @@ class Config:
                     d[k] = v
             return d
 
-        return deep_update(merged, pyproject_config_dict)
+        return deep_update(merged, pyproject_mox_config_dict)
 
     @staticmethod
     def _validated_pyproject_config_path(config_path: Path):
