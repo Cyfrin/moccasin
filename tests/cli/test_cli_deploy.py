@@ -11,7 +11,7 @@ def test_deploy_price_feed_pyevm(mox_path, complex_temp_path, complex_project_co
     try:
         os.chdir(complex_temp_path)
         result = subprocess.run(
-            [mox_path, "deploy", "price_feed"],
+            [mox_path, "deploy", "price_feed", "--no-install"],
             check=True,
             capture_output=True,
             text=True,

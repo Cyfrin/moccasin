@@ -24,7 +24,7 @@ def test_run_help(mox_path, complex_temp_path):
     assert "Moccasin CLI run" in result.stdout
 
 
-def test_run_default(mox_path, complex_temp_path):
+def test_run_default(mox_path, complex_temp_path, complex_cleanup_dependencies_folder):
     current_dir = Path.cwd()
     try:
         os.chdir(complex_temp_path)

@@ -10,10 +10,10 @@ from moccasin.constants.vars import (
     PYPI,
 )
 from tests.constants import (
+    PACKAGE_VERSION,
     PATRICK_ORG_NAME,
     PATRICK_PACKAGE_NAME,
     PIP_PACKAGE_NAME,
-    VERSION,
 )
 
 
@@ -34,7 +34,7 @@ def test_can_purge_github_no_version(
     assert f"Removed {PATRICK_PACKAGE_NAME}" in result.stderr
     project_root: Path = Config.find_project_root(Path(purge_temp_path))
     config = Config(project_root)
-    assert f"{PATRICK_PACKAGE_NAME}@{VERSION}" not in config.dependencies
+    assert f"{PATRICK_PACKAGE_NAME}@{PACKAGE_VERSION}" not in config.dependencies
     assert (
         not Path(purge_temp_path)
         .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{PATRICK_ORG_NAME}")
@@ -56,7 +56,7 @@ def test_can_purge_github_with_version(
     try:
         os.chdir(purge_temp_path)
         result = subprocess.run(
-            [mox_path, "purge", f"{PATRICK_PACKAGE_NAME}@{VERSION}"],
+            [mox_path, "purge", f"{PATRICK_PACKAGE_NAME}@{PACKAGE_VERSION}"],
             check=True,
             capture_output=True,
             text=True,
@@ -66,7 +66,7 @@ def test_can_purge_github_with_version(
     assert f"Removed {PATRICK_PACKAGE_NAME}" in result.stderr
     project_root: Path = Config.find_project_root(Path(purge_temp_path))
     config = Config(project_root)
-    assert f"{PATRICK_PACKAGE_NAME}@{VERSION}" not in config.dependencies
+    assert f"{PATRICK_PACKAGE_NAME}@{PACKAGE_VERSION}" not in config.dependencies
     assert (
         not Path(purge_temp_path)
         .joinpath(f"{DEPENDENCIES_FOLDER}/{GITHUB}/{PATRICK_ORG_NAME}")
