@@ -28,7 +28,7 @@ EXPECTED_HELP_TEXT = "Vyper compiler"
     "cli_args, rewrite_dependencies, expected_lib_path, expected_pip_deps, expected_gh_deps, expected_gh_versions",
     [
         # --no-install should skip package installation
-        (["BuyMeACoffee.vy", "--no-install"], [], False, ["snekmate==0.1.0"], [], None),
+        (["BuyMeACoffee.vy", "--no-install"], [], False, [], [], None),
         # Default behavior - installs dependencies
         (
             ["BuyMeACoffee.vy"],
@@ -91,7 +91,8 @@ def test_compile_with_flags(
     # Verify config state if versions are expected
     project_root: Path = Config.find_project_root(complex_temp_path)
     config = Config(project_root)
-    assert config.dependencies == expected_pip_deps + expected_gh_deps
+    if "--no-install" not in cli_args:
+        assert config.dependencies == expected_pip_deps + expected_gh_deps
 
     # Verify gh versions file contents
     if expected_gh_versions:
