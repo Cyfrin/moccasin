@@ -23,5 +23,5 @@
     },
     "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
     "workspaceFolder": "/workspace",
-    "postCreateCommand": "uv venv && source .venv/bin/activate && uv sync --all-extras"
+    "postCreateCommand": "zsh -c 'uv venv && source .venv/bin/activate && uv sync --all-extras'"
 }
