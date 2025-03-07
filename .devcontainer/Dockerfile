@@ -33,7 +33,13 @@ RUN foundryup
 
 # Install anvil-zksync
 ENV ANVIL_ZKSYNC_VERSION=0.3.2
-RUN curl -L https://github.com/matter-labs/anvil-zksync/releases/download/v${ANVIL_ZKSYNC_VERSION}/anvil-zksync-v${ANVIL_ZKSYNC_VERSION}-x86_64-unknown-linux-gnu.tar.gz -o $HOME/anvil-zksync.tar.gz && \
+RUN ARCH=$(dpkg --print-architecture) && \
+    case $ARCH in \
+    amd64) ARCH_TYPE=x86_64 ;; \
+    arm64) ARCH_TYPE=aarch64 ;; \
+    *) echo "Unsupported architecture: $ARCH" && exit 1 ;; \
+    esac && \
+    curl -L https://github.com/matter-labs/anvil-zksync/releases/download/v${ANVIL_ZKSYNC_VERSION}/anvil-zksync-v${ANVIL_ZKSYNC_VERSION}-${ARCH_TYPE}-unknown-linux-gnu.tar.gz -o $HOME/anvil-zksync.tar.gz && \
     tar xf $HOME/anvil-zksync.tar.gz -C $HOME/.foundry/bin/ && \
     chmod +x $HOME/.foundry/bin/anvil-zksync && \
     rm $HOME/anvil-zksync.tar.gz
@@ -41,7 +47,8 @@ RUN curl -L https://github.com/matter-labs/anvil-zksync/releases/download/v${ANV
 # Install zkvyper
 # @dev https://github.com/vyperlang/titanoboa-zksync/issues/41
 ENV ZKVYPER_VERSION=1.5.7
-RUN curl -L https://github.com/matter-labs/era-compiler-vyper/releases/download/${ZKVYPER_VERSION}/zkvyper-linux-amd64-gnu-v${ZKVYPER_VERSION} -o $HOME/zkvyper && \
+RUN ARCH=$(dpkg --print-architecture) && \
+    curl -L https://github.com/matter-labs/era-compiler-vyper/releases/download/${ZKVYPER_VERSION}/zkvyper-linux-${ARCH}-gnu-v${ZKVYPER_VERSION} -o $HOME/zkvyper && \
     chmod +x $HOME/zkvyper && \
     sudo mv $HOME/zkvyper /usr/local/bin/zkvyper
 
