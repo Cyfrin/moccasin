@@ -9,7 +9,9 @@
             "extensions": [
                 "tintinweb.vscode-vyper",
                 "trailofbits.weaudit",
-                "ms-python.python"
+                "ms-python.python",
+                "charliermarsh.ruff",
+                "tamasfe.even-better-toml"
             ],
             "settings": {
                 "terminal.integrated.defaultProfile.linux": "zsh",
@@ -17,7 +19,9 @@
                     "zsh": {
                         "path": "/usr/bin/zsh"
                     }
-                }
+                },
+                "python.terminal.activateEnvironment": true,
+                "python.defaultInterpreterPath": ".venv/bin/python"
             }
         }
     },
