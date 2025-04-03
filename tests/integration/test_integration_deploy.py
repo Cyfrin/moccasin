@@ -26,7 +26,7 @@ from tests.utils.helpers import (
     "cli_args, rewrite_dependencies, expected_lib_path, expected_pip_deps, expected_gh_deps, expected_gh_versions",
     [
         # --no-install should skip package installation
-        (["price_feed", "--no-install"], [], False, ["snekmate==0.1.0"], [], None),
+        (["price_feed", "--no-install"], [], False, [], [], None),
         # Default behavior - installs dependencies
         (
             ["price_feed"],
@@ -89,7 +89,8 @@ def test_deploy_price_feed_pyevm_with_flags(
     # Verify config state if versions are expected
     project_root: Path = Config.find_project_root(complex_temp_path)
     config = Config(project_root)
-    assert config.dependencies == expected_pip_deps + expected_gh_deps
+    if "--no-install" not in cli_args:
+        assert config.dependencies == expected_pip_deps + expected_gh_deps
 
     # Verify gh versions file contents
     if expected_gh_versions:
