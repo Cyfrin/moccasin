@@ -11,7 +11,7 @@ def test_classify_dependency_pip():
 
 
 def test_classify_dependency_pip_version():
-    dep = "snekmate==0.1.0"
+    dep = "snekmate==0.1.1"
     assert classify_dependency(dep) == DependencyType.PIP
 
 
@@ -26,7 +26,7 @@ def test_classify_dependency_git():
 
 
 def test_classify_dependency_git_version():
-    dep = "pcaversaccio/snekmate@0.1.0"
+    dep = "pcaversaccio/snekmate@0.1.1"
     assert classify_dependency(dep) == DependencyType.GITHUB
 
 

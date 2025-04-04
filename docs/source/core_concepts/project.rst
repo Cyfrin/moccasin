@@ -40,7 +40,7 @@ By default, ``moccasin`` discourages passing compiler options in the ``moccasin.
 
 .. code-block:: python
 
-    # pragma version 0.4.0
+    # pragma version ^0.4.1
     # pragma enable-decimals
 
     some_value: public(decimal)

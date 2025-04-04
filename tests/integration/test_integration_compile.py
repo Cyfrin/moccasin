@@ -28,7 +28,7 @@ EXPECTED_HELP_TEXT = "Vyper compiler"
     "cli_args, rewrite_dependencies, expected_lib_path, expected_pip_deps, expected_gh_deps, expected_gh_versions",
     [
         # --no-install should skip package installation
-        (["BuyMeACoffee.vy", "--no-install"], [], False, ["snekmate==0.1.0"], [], None),
+        (["BuyMeACoffee.vy", "--no-install"], [], False, ["snekmate==0.1.1"], [], None),
         # Default behavior - installs dependencies
         (
             ["BuyMeACoffee.vy"],
@@ -43,7 +43,7 @@ EXPECTED_HELP_TEXT = "Vyper compiler"
             {"patrickalphac/test_repo": "0.1.1"},
         ),
         # Change compiled file
-        (["MyTokenPyPI.vy"], [], True, ["snekmate==0.1.0"], [], None),
+        (["MyTokenPyPI.vy"], [], True, ["snekmate==0.1.1"], [], None),
     ],
 )
 def test_compile_with_flags(

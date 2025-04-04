@@ -30,7 +30,7 @@ For example:
     # Without a version
     mox install pcaversaccio/snekmate
     # With a version
-    mox install pcaversaccio/snekmate@0.1.0
+    mox install pcaversaccio/snekmate@0.1.1
 
 This will create an entry in your ``moccasin.toml`` file that looks like this:
 
@@ -38,7 +38,7 @@ This will create an entry in your ``moccasin.toml`` file that looks like this:
 
     [project]
     dependencies = [
-        "pcaversaccio/snekmate@0.1.0",
+        "pcaversaccio/snekmate@0.1.1",
     ]
 
 Which follows the same syntax that ``pip`` and ``uv`` to do installs from GitHub repositories. This will also download the GitHub repository into your ``lib`` folder.
@@ -108,7 +108,7 @@ This will create an entry in your ``moccasin.toml`` file that looks like this:
 
     [project]
     dependencies = [
-        "snekmate==0.1.0",
+        "snekmate==0.1.1",
     ]
 
 You can then use these packages in your vyper contracts, for example in an miniaml ERC20 vyper contract:

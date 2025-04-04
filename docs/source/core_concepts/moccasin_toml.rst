@@ -20,7 +20,7 @@ A ``moccasin.toml`` file can look like this:
 .. code-block:: toml
 
     [project]
-    dependencies = ["snekmate==0.1.0"]
+    dependencies = ["snekmate==0.1.1"]
     src = "contracts"
     explorer_api_key = "${ETHERSCAN_API_KEY}"
     dot_env = ".env"
