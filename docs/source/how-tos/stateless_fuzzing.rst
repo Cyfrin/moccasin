@@ -14,7 +14,7 @@ Let's say you have a contract as such:
 .. code-block:: python
 
     """
-    @ pragma version 0.4.0
+    @ pragma version ^0.4.0
     @ title always_return_input
     @ license MIT
     @ notice INVARIANT: always_returns_input_number should always return the input number

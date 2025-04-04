@@ -7,7 +7,7 @@ authors = [
     { name = "charles-cooper", email = "3867501+charles-cooper@users.noreply.github.com" },
 ]
 dependencies = [
-    "titanoboa>=v0.2.5",
+    "titanoboa>=v0.2.6",
     "python-dotenv>=1.0.1",
     "titanoboa-zksync>=0.2.9",
     "tqdm>=4.66.5",
@@ -17,7 +17,7 @@ dependencies = [
     "pytest-cov>=5.0.0",
     "uv>=0.4.15",
     "pytest-xdist>=3.6.1",
-    "vyper>=0.4.0",
+    "vyper>=0.4.1",
     "ipykernel>=6.29.5",
 ]
 readme = "README.md"
@@ -56,7 +56,7 @@ package = true
 dev-dependencies = [
     "pytest>=8.3.2",
     "mypy>=1.11.0",
-    "snekmate>=0.1.0",
+    "snekmate>=0.1.1",
     "vyper>=0.4.0",
     "ruff>=0.6.3",
     "moccasin",

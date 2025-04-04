@@ -1,4 +1,4 @@
-# pragma version ^0.4.0
+# pragma version ^0.4.1
 import Auth as auth
 
 # This contract is not a valid contract. auth.__init__() must be called
