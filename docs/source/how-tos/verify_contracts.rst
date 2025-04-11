@@ -15,10 +15,11 @@ In your ``moccasin.toml`` add your explorer details:
     explorer_type = "zksyncexplorer"
     explorer_api_key = "None"
 
-Some networks, like ``sepolia-zksync``, have some of these details defaulted for you. You can check out the :doc:`/explorer_network_defaults` page to see what's available. As of today, the only supported explorers are:
+Some networks, like ``sepolia-zksync``, have some of these details defaulted for you. You can check out the :doc:`/explorer_network_defaults` page to see what's available. As of today, the supported explorers are:
 
 - `Blockscount explorer <https://www.blockscout.com/>`_
 - `ZKsync explorer <https://explorer.zksync.io/>`_
+- `Etherscan explorer <https://etherscan.io>`_
 
 
 2. Add ``moccasin_verify`` to your script

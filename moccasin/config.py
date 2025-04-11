@@ -31,6 +31,7 @@ from dotenv import load_dotenv
 from eth_utils import to_hex
 from tomlkit.items import Table
 
+from moccasin.constants.chains import ETHERSCAN_EXPLORERS
 from moccasin.constants.vars import (
     BUILD_FOLDER,
     CONFIG_NAME,
@@ -247,6 +248,8 @@ class Network:
                     self.explorer_type = "blockscout"
                 elif "zksync" in self.explorer_uri:
                     self.explorer_type = "zksyncexplorer"
+                elif self.explorer_uri.strip('/') in ETHERSCAN_EXPLORERS.keys():
+                    self.explorer_type = "etherscan"
 
         if self.explorer_type is None:
             raise ValueError(
@@ -275,8 +278,10 @@ class Network:
             return "Blockscout"
         if verifier_string.lower().strip() == "zksyncexplorer":
             return "ZksyncExplorer"
+        if verifier_string.lower().strip() == "etherscan":
+            return "Etherscan"
         raise ValueError(
-            f"Verifier {verifier_string} is not supported. Please use 'blockscout' or 'zksyncexplorer'."
+            f"Verifier {verifier_string} is not supported. Please use 'blockscout', 'etherscan' or 'zksyncexplorer'."
         )
 
     def get_default_account(self) -> MoccasinAccount | Any:
