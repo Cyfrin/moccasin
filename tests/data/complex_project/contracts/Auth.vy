@@ -1,4 +1,4 @@
-# pragma version ^0.4.0
+# pragma version ^0.4.1
 
 # Not export to importing module?
 owner: public(address)

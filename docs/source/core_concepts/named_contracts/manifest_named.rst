@@ -22,7 +22,7 @@ Let's take the following contract:
 
 .. code-block:: python 
 
-    # pragma version 0.4.0
+    # pragma version ^0.4.1
     # SPDX-License-Identifier: MIT
     from interfaces import ERC20
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# pragma version 0.4.0
+# pragma version ^0.4.1
 
 number: public(uint256)
 other_number: public(uint256)

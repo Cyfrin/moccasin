@@ -26,7 +26,7 @@ from tests.utils.helpers import (
     "cli_args, rewrite_dependencies, expected_lib_path, expected_pip_deps, expected_gh_deps, expected_gh_versions",
     [
         # --no-install should skip package installation
-        (["price_feed", "--no-install"], [], False, ["snekmate==0.1.0"], [], None),
+        (["price_feed", "--no-install"], [], False, ["snekmate==0.1.1"], [], None),
         # Default behavior - installs dependencies
         (
             ["price_feed"],
@@ -41,7 +41,7 @@ from tests.utils.helpers import (
             {"patrickalphac/test_repo": "0.1.1"},
         ),
         # Change compiled file
-        (["price_feed"], [], True, ["snekmate==0.1.0"], [], None),
+        (["price_feed"], [], True, ["snekmate==0.1.1"], [], None),
     ],
 )
 def test_deploy_price_feed_pyevm_with_flags(
