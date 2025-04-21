@@ -477,8 +477,8 @@ Where:
 - VERSION is the optional version of the repository to download. If not provided, the latest version is downloaded.
 
 Examples:
-- pcaversaccio/snekmate@0.1.0 # Moccasin GitHub formatted dependency
-- snekmate==0.1.0 # Pip-compatible string""",
+- pcaversaccio/snekmate@0.1.1 # Moccasin GitHub formatted dependency
+- snekmate==0.1.1 # Pip-compatible string""",
         parents=[parent_parser],
     )
     install_parser.add_argument(

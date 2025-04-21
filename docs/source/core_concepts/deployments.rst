@@ -61,7 +61,7 @@ When developing, you'll often make changes to your smart contracts, and you may 
 .. code-block:: python 
 
     # SPDX-License-Identifier: MIT
-    # pragma version 0.4.0
+    # pragma version ^0.4.1
     number: public(uint256)
     @external
     def set_number(new_number: uint256):
@@ -77,7 +77,7 @@ And deploy it as ``contract A``, then, change it:
 .. code-block:: python 
 
     # SPDX-License-Identifier: MIT
-    # pragma version 0.4.0
+    # pragma version ^0.4.1
     number: public(uint256)
     @external
     def set_number(new_number: uint256):

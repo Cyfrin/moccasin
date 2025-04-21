@@ -1,3 +1,4 @@
+# pragma version ^0.4.1
 # from snekmate.auth import ownable as ow
 # from snekmate.tokens import erc20
 from snekmate.auth import ownable as ow 
