@@ -2,7 +2,7 @@ import os
 import platform
 from pathlib import Path
 
-from moccasin.constants.chains import CHAIN_INFO, BLOCKSCOUT_EXPLORERS, ZKSYNC_EXPLORERS
+from moccasin.constants.chains import BLOCKSCOUT_EXPLORERS, CHAIN_INFO, ZKSYNC_EXPLORERS
 
 # File Names
 README_PATH = "README.md"
