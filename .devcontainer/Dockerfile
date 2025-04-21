@@ -45,8 +45,7 @@ RUN ARCH=$(dpkg --print-architecture) && \
     rm $HOME/anvil-zksync.tar.gz
 
 # Install zkvyper
-# @dev https://github.com/vyperlang/titanoboa-zksync/issues/41
-ENV ZKVYPER_VERSION=1.5.7
+ENV ZKVYPER_VERSION=1.5.10
 RUN ARCH=$(dpkg --print-architecture) && \
     curl -L https://github.com/matter-labs/era-compiler-vyper/releases/download/${ZKVYPER_VERSION}/zkvyper-linux-${ARCH}-gnu-v${ZKVYPER_VERSION} -o $HOME/zkvyper && \
     chmod +x $HOME/zkvyper && \
