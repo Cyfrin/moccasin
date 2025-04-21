@@ -702,7 +702,7 @@ name = "ipykernel"
 version = "6.29.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "appnope", marker = "sys_platform == 'darwin'" },
+    { name = "appnope", marker = "platform_system == 'Darwin'" },
     { name = "comm" },
     { name = "debugpy" },
     { name = "ipython" },
@@ -944,11 +944,7 @@ version = "1.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
-<<<<<<< HEAD
     { name = "colorama", marker = "platform_system == 'Windows'" },
-=======
-    { name = "colorama", marker = "sys_platform == 'win32'" },
->>>>>>> d4da4f8 (Bump titanoboa to 0.2.6)
     { name = "ghp-import" },
     { name = "jinja2" },
     { name = "markdown" },
@@ -1063,7 +1059,7 @@ requires-dist = [
     { name = "sphinx-multiversion", marker = "extra == 'docs'", specifier = ">=0.2.4" },
     { name = "sphinx-tabs", marker = "extra == 'docs'", specifier = ">=3.4.5" },
     { name = "titanoboa", specifier = ">=0.2.6" },
-    { name = "titanoboa-zksync", specifier = ">=0.2.9" },
+    { name = "titanoboa-zksync", specifier = ">=0.2.10" },
     { name = "tomli-w", specifier = ">=1.0.0" },
     { name = "tomlkit", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.66.5" },
@@ -1314,6 +1310,8 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/39/1b/d0b013bf7d1af7cf0a6a4fce13f5fe5813ab225313755367b36e714a63f8/pycryptodome-3.21.0-cp36-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:18caa8cfbc676eaaf28613637a89980ad2fd96e00c564135bf90bc3f0b34dd93", size = 2254397 },
     { url = "https://files.pythonhosted.org/packages/14/71/4cbd3870d3e926c34706f705d6793159ac49d9a213e3ababcdade5864663/pycryptodome-3.21.0-cp36-abi3-win32.whl", hash = "sha256:280b67d20e33bb63171d55b1067f61fbd932e0b1ad976b3a184303a3dad22764", size = 1775641 },
     { url = "https://files.pythonhosted.org/packages/43/1d/81d59d228381576b92ecede5cd7239762c14001a828bdba30d64896e9778/pycryptodome-3.21.0-cp36-abi3-win_amd64.whl", hash = "sha256:b7aa25fc0baa5b1d95b7633af4f5f1838467f1815442b22487426f94e0d66c53", size = 1812863 },
+    { url = "https://files.pythonhosted.org/packages/25/b3/09ff7072e6d96c9939c24cf51d3c389d7c345bf675420355c22402f71b68/pycryptodome-3.21.0-pp27-pypy_73-manylinux2010_x86_64.whl", hash = "sha256:2cb635b67011bc147c257e61ce864879ffe6d03342dc74b6045059dfbdedafca", size = 1691593 },
+    { url = "https://files.pythonhosted.org/packages/a8/91/38e43628148f68ba9b68dedbc323cf409e537fd11264031961fd7c744034/pycryptodome-3.21.0-pp27-pypy_73-win32.whl", hash = "sha256:4c26a2f0dc15f81ea3afa3b0c87b87e501f235d332b7f27e2225ecb80c0b1cdd", size = 1765997 },
 ]
 
 [[package]]
@@ -1926,14 +1924,14 @@ wheels = [
 
 [[package]]
 name = "titanoboa-zksync"
-version = "0.2.9"
+version = "0.2.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "titanoboa" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ec/7c/35d9fbc910b0b8855a77d5001d354d19e52dbfa8f0536cafe1cf49e7cabe/titanoboa_zksync-0.2.9.tar.gz", hash = "sha256:120f498f3a40f08c90d43264f8ca7d42b85d42e7977deb6abfaa4407a0711062", size = 26083 }
+sdist = { url = "https://files.pythonhosted.org/packages/f5/3e/fd3e4579dd06f24a710dc6986ca309ff15393d9d77754abf398ed2dabc3e/titanoboa_zksync-0.2.10.tar.gz", hash = "sha256:c22ca0b9632acb852acb6418c8cbbd1be00855676480d72abf99525882599ea6", size = 26254 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c4/06/9ca1545bdafbeb3b681f65b850bf54e2c0cf25c64dff150210a2df03833a/titanoboa_zksync-0.2.9-py3-none-any.whl", hash = "sha256:ee95c2c8089519dc8579c97898e1edd02eeaef96970d68f5abbd28b365e49e18", size = 25478 },
+    { url = "https://files.pythonhosted.org/packages/36/2f/b21f8e88e8263340a7cc3c4cd1f12c58c6dcce2c25237482c197a6c42af6/titanoboa_zksync-0.2.10-py3-none-any.whl", hash = "sha256:ae204fbc5f62cfe04175219eab11e636b6a03cbe0ce90559eb326b9bf7619975", size = 25606 },
 ]
 
 [[package]]
@@ -2025,7 +2023,7 @@ name = "tqdm"
 version = "4.67.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "platform_system == 'Windows'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2", size = 169737 }
 wheels = [
