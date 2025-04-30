@@ -1,6 +1,7 @@
 import json
 import multiprocessing
 import os
+import re
 import sys
 import time
 import traceback
@@ -11,6 +12,7 @@ import vyper.compiler.output
 from boa import load_partial
 from boa.contracts.vvm.vvm_contract import VVMDeployer
 from boa.contracts.vyper.vyper_contract import VyperDeployer
+from vvm.exceptions import VyperError as VVMVyperError
 from vyper.compiler.phases import CompilerData
 from vyper.exceptions import VersionException, _BaseVyperException
 
@@ -183,6 +185,23 @@ def compile_(
         if callable(exc._hint):
             exc._hint = exc._hint()
         raise exc
+    except VVMVyperError as vvm_exc:
+        # Handle VVMVyperError
+        # Workaround for the VVM compiler, which uses temporary paths for contracts.
+        original_stderr = vvm_exc.stderr_data
+        temporary_path_pattern = r'contract "/tmp/vyper-[a-zA-Z0-9]+\.vy:(\d+)"'
+        replacement_string = f'contract "{str(contract_path)}:\\1"'
+
+        # Replace the temporary path with the actual contract path
+        modified_stderr = re.sub(
+            temporary_path_pattern, replacement_string, original_stderr
+        )
+        raise VVMVyperError(
+            stderr_data=modified_stderr,
+            stdout_data=vvm_exc.stdout_data,
+            return_code=vvm_exc.return_code,
+            command=vvm_exc.command,
+        )
 
     abi: list
     bytecode: bytes
