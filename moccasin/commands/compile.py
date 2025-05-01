@@ -1,7 +1,6 @@
 import json
 import multiprocessing
 import os
-import re
 import sys
 import time
 import traceback
@@ -16,6 +15,7 @@ from vvm.exceptions import VyperError as VVMVyperError
 from vyper.compiler.phases import CompilerData
 from vyper.exceptions import VersionException, _BaseVyperException
 
+from moccasin._error_utils import handle_vvm_error
 from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
 from moccasin.commands.install import mox_install
 from moccasin.config import Config, get_config, initialize_global_config
@@ -27,6 +27,7 @@ from moccasin.constants.vars import (
     MOCCASIN_GITHUB,
 )
 from moccasin.logging import logger, set_log_level
+
 
 
 def main(args: Namespace) -> int:
@@ -186,22 +187,7 @@ def compile_(
             exc._hint = exc._hint()
         raise exc
     except VVMVyperError as vvm_exc:
-        # Handle VVMVyperError
-        # Workaround for the VVM compiler, which uses temporary paths for contracts.
-        original_stderr = vvm_exc.stderr_data
-        temporary_path_pattern = r'contract "/tmp/vyper-[a-zA-Z0-9]+\.vy:(\d+)"'
-        replacement_string = f'contract "{str(contract_path)}:\\1"'
-
-        # Replace the temporary path with the actual contract path
-        modified_stderr = re.sub(
-            temporary_path_pattern, replacement_string, original_stderr
-        )
-        raise VVMVyperError(
-            stderr_data=modified_stderr,
-            stdout_data=vvm_exc.stdout_data,
-            return_code=vvm_exc.return_code,
-            command=vvm_exc.command,
-        )
+        handle_vvm_error(vvm_exc, contract_path)
 
     abi: list
     bytecode: bytes
