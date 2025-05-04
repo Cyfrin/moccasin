@@ -445,6 +445,13 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
     delete_parser.add_argument("keystore_file_name", help="Name of keystore file")
 
+    # Keystore location
+    wallet_subparsers.add_parser(
+        "keystore-location",
+        aliases=["ks"],
+        help="Get the location of the keystore (e.g. related to your MOCCASIN_KEYSTORE_PATH)",
+    )
+
     # ------------------------------------------------------------------
     #                        CONSOLE COMMAND
     # ------------------------------------------------------------------

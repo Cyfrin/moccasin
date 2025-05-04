@@ -7,18 +7,20 @@ By default, you don't want to ever expose your private key in your scripts. You 
 
     mox wallet --help
 
-    usage: Moccasin CLI wallet [-h] [-d] [-q] {list,ls,generate,g,new,import,i,add,view,decrypt,dk,delete,d} ...
+    usage: Moccasin CLI wallet [-h] [-d] [-q] {list,ls,generate,g,new,import,i,add,view,decrypt,dk,delete,d,keystore-location,ks} ...
 
     Wallet management utilities.
 
     positional arguments:
-    {list,ls,generate,g,new,import,i,add,view,decrypt,dk,delete,d}
+    {list,ls,generate,g,new,import,i,add,view,decrypt,dk,delete,d,keystore-location,ks}
         list (ls)           List all the accounts in the keystore default directory
         generate (g, new)   Create a new account with a random private key
         import (i, add)     Import a private key into an encrypted keystore
         view                View the JSON of a keystore file
         decrypt (dk)        Decrypt a keystore file to get the private key
         delete (d)          Delete a keystore file
+        keystore-location (ks)
+                            Get the location of the keystore (e.g. related to your MOCCASIN_KEYSTORE_PATH)
 
     options:
     -h, --help            show this help message and exit

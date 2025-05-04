@@ -10,7 +10,7 @@ from eth_account.signers.local import LocalAccount
 from eth_account.types import PrivateKeyType
 from hexbytes import HexBytes
 
-from moccasin.constants.vars import MOCCASIN_KEYSTORE_PATH
+from moccasin.constants.vars import MOCCASIN_DEFAULT_FOLDER, MOCCASIN_KEYSTORE_PATH
 from moccasin.logging import logger
 
 ALIAS_TO_COMMAND = {"add": "import", "i": "import"}
@@ -43,6 +43,17 @@ def main(args: Namespace) -> int:
         )
         if key:
             logger.info("Rerun the command and use the '-p' flag to print it.")
+    elif wallet_command == "keystore-location":
+        # This command is used to check the location of the keystore
+        location_type = (
+            "default"
+            if MOCCASIN_KEYSTORE_PATH == MOCCASIN_DEFAULT_FOLDER.joinpath("keystores/")
+            else "custom"
+        )
+        # Log the location of the keystore
+        logger.info(
+            f"Keystore location: {MOCCASIN_KEYSTORE_PATH} ({location_type} location)"
+        )
     else:
         logger.error(f"Unknown accounts command: {wallet_command}")
         return 1
