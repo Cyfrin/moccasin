@@ -61,9 +61,9 @@ def main(argv: list) -> int:
     return 0
 
 
-def generate_main_parser_and_sub_parsers() -> (
-    Tuple[argparse.ArgumentParser, argparse.Action]
-):
+def generate_main_parser_and_sub_parsers() -> Tuple[
+    argparse.ArgumentParser, argparse.Action
+]:
     parent_parser = create_parent_parser()
     main_parser = argparse.ArgumentParser(
         prog="Moccasin CLI",
@@ -444,6 +444,13 @@ Use this command to prepare your contracts for deployment or testing.""",
         "delete", aliases=["d"], help="Delete a keystore file"
     )
     delete_parser.add_argument("keystore_file_name", help="Name of keystore file")
+
+    # Keystore location
+    wallet_subparsers.add_parser(
+        "keystore-location",
+        aliases=["kl"],
+        help="Get the location of the keystore (e.g. related to your MOCCASIN_KEYSTORE_PATH)",
+    )
 
     # ------------------------------------------------------------------
     #                        CONSOLE COMMAND

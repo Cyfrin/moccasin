@@ -10,10 +10,14 @@ from eth_account.signers.local import LocalAccount
 from eth_account.types import PrivateKeyType
 from hexbytes import HexBytes
 
-from moccasin.constants.vars import MOCCASIN_KEYSTORE_PATH
+from moccasin.constants.vars import (
+    MOCCASIN_DEFAULT_FOLDER,
+    MOCCASIN_KEYSTORE_PATH,
+    MOCCASIN_KEYSTORES_FOLDER_NAME,
+)
 from moccasin.logging import logger
 
-ALIAS_TO_COMMAND = {"add": "import", "i": "import"}
+ALIAS_TO_COMMAND = {"add": "import", "i": "import", "kl": "keystore-location"}
 
 
 def main(args: Namespace) -> int:
@@ -43,6 +47,18 @@ def main(args: Namespace) -> int:
         )
         if key:
             logger.info("Rerun the command and use the '-p' flag to print it.")
+    elif wallet_command == "keystore-location":
+        # This command is used to check the location of the keystore
+        location_type = (
+            "default"
+            if MOCCASIN_KEYSTORE_PATH
+            == MOCCASIN_DEFAULT_FOLDER.joinpath(MOCCASIN_KEYSTORES_FOLDER_NAME)
+            else "custom"
+        )
+        # Log the location of the keystore
+        logger.info(
+            f"Keystore location: {MOCCASIN_KEYSTORE_PATH} ({location_type} location)"
+        )
     else:
         logger.error(f"Unknown accounts command: {wallet_command}")
         return 1
@@ -74,7 +90,7 @@ def list_accounts(keystores_path: Path = MOCCASIN_KEYSTORE_PATH) -> list[Any] | 
     if keystores_path.exists():
         account_paths = sorted(keystores_path.glob("*"))
         logger.info(
-            f"Found {len(account_paths)} account{'s' if len(account_paths)!=1 else ''}:"
+            f"Found {len(account_paths)} account{'s' if len(account_paths) != 1 else ''}:"
         )
         for path in account_paths:
             logger.info(f"{path.stem}")
