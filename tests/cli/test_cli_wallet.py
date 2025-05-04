@@ -2,6 +2,7 @@ import os
 import subprocess
 from pathlib import Path
 
+from moccasin.constants.vars import MOCCASIN_KEYSTORES_FOLDER_NAME
 from tests.constants import COMPLEX_PROJECT_PATH
 
 
@@ -32,7 +33,7 @@ def test_run_keystore_location(mox_path, moccasin_home_folder):
     # @dev using moccasin_home_folder fixture due to MOCCASIN_KEYSTORE_PATH
     # being modified during session tests in temporary directory
     assert (
-        f"Keystore location: {moccasin_home_folder.joinpath('keystores/')} (default location)"
+        f"Keystore location: {moccasin_home_folder.joinpath(MOCCASIN_KEYSTORES_FOLDER_NAME)} (default location)"
         in result.stderr
     )
 

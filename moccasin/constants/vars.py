@@ -44,6 +44,14 @@ DEFAULT_PROJECT_FOLDERS = [
     DEPENDENCIES_FOLDER + "/" + PYPI,
 ]
 
+# Default Network Vars
+MOCCASIN_KEYSTORES_FOLDER_NAME = "keystores/"
+FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
+DOT_ENV_FILE = ".env"
+DOT_ENV_KEY = "dot_env"
+KEYSTORES_PATH_KEY = "keystores_path"
+CONSOLE_HISTORY_FILE = "moccasin_history"
+DEFAULT_API_KEY_ENV_VAR = "EXPLORER_API_KEY"
 
 # Configurable Vars
 MOCCASIN_DEFAULT_FOLDER = Path(
@@ -51,18 +59,15 @@ MOCCASIN_DEFAULT_FOLDER = Path(
 )
 MOCCASIN_DEFAULT_FOLDER.mkdir(parents=True, exist_ok=True)
 MOCCASIN_KEYSTORE_PATH = Path(
-    os.getenv("MOCCASIN_KEYSTORE_PATH", MOCCASIN_DEFAULT_FOLDER.joinpath("keystores/"))
+    os.getenv(
+        "MOCCASIN_KEYSTORE_PATH",
+        MOCCASIN_DEFAULT_FOLDER.joinpath(MOCCASIN_KEYSTORES_FOLDER_NAME),
+    )
 )
 MOCCASIN_KEYSTORE_PATH.mkdir(parents=True, exist_ok=True)
 CONFIG_NAME = "moccasin.toml"
 
-# Default Network Vars
-FOUNDRTY_KEYSTORES_PATH = Path.home().joinpath(".foundry/keystores")
-DOT_ENV_FILE = ".env"
-DOT_ENV_KEY = "dot_env"
-KEYSTORES_PATH_KEY = "keystores_path"
-CONSOLE_HISTORY_FILE = "moccasin_history"
-DEFAULT_API_KEY_ENV_VAR = "EXPLORER_API_KEY"
+
 # Define default values for PYEVM and ERAVM
 LOCAL_NETWORK_DEFAULTS = {
     PYEVM: {
