@@ -80,6 +80,14 @@ def mox_path():
     return os.path.join(os.path.dirname(sys.executable), "mox")
 
 
+@pytest.fixture(scope="function")
+def custom_moccasin_keystore_path(session_monkeypatch, moccasin_home_folder):
+    """Set a custom keystore path for testing wallet `keystore-location`."""
+    custom_path = moccasin_home_folder.joinpath("custom_keystore")
+    session_monkeypatch.setenv("MOCCASIN_KEYSTORE_PATH", str(custom_path))
+    yield Path(custom_path)
+
+
 # ------------------------------------------------------------------
 #                    COMPLEX PROJECT FIXTURES
 # ------------------------------------------------------------------

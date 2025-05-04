@@ -32,7 +32,7 @@ RUN curl -L https://foundry.paradigm.xyz | zsh
 RUN foundryup
 
 # Install anvil-zksync
-ENV ANVIL_ZKSYNC_VERSION=0.3.2
+ENV ANVIL_ZKSYNC_VERSION=0.6.0
 RUN ARCH=$(dpkg --print-architecture) && \
     case $ARCH in \
     amd64) ARCH_TYPE=x86_64 ;; \
