@@ -11,9 +11,11 @@ import vyper.compiler.output
 from boa import load_partial
 from boa.contracts.vvm.vvm_contract import VVMDeployer
 from boa.contracts.vyper.vyper_contract import VyperDeployer
+from vvm.exceptions import VyperError as VVMVyperError
 from vyper.compiler.phases import CompilerData
 from vyper.exceptions import VersionException, _BaseVyperException
 
+from moccasin._error_utils import handle_vvm_error
 from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
 from moccasin.commands.install import mox_install
 from moccasin.config import Config, get_config, initialize_global_config
@@ -183,6 +185,8 @@ def compile_(
         if callable(exc._hint):
             exc._hint = exc._hint()
         raise exc
+    except VVMVyperError as vvm_exc:
+        handle_vvm_error(vvm_exc, contract_path)
 
     abi: list
     bytecode: bytes
