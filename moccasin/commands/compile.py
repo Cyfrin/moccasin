@@ -29,7 +29,6 @@ from moccasin.constants.vars import (
 from moccasin.logging import logger, set_log_level
 
 
-
 def main(args: Namespace) -> int:
     config = initialize_global_config()
     project_path: Path = config.get_root()

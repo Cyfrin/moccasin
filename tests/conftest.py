@@ -28,6 +28,7 @@ from tests.constants import (
     PURGE_PROJECT_PATH,
     PURGE_STARTING_TOML,
     TESTS_CONFIG_PROJECT_PATH,
+    VVM_ERROR_PROJECT_PATH,
 )
 from tests.utils.anvil import ANVIL_URL, AnvilProcess
 
@@ -274,6 +275,55 @@ def test_config_config(test_config_temp_path) -> Config:
     if os.path.exists(test_db_path):
         os.remove(test_db_path)
     return _set_global_config(test_config_temp_path)
+
+
+################################################################
+#                        TEST VVM ERROR                        #
+################################################################
+# @pytest.fixture(scope="module")
+# def vvm_error_temp_path() -> Generator[Path, None, None]:
+#     """Fixture to create a temporary directory for VVM error testing."""
+#     with tempfile.TemporaryDirectory() as temp_dir:
+#         shutil.copytree(
+#             VVM_ERROR_PROJECT_PATH, os.path.join(temp_dir), dirs_exist_ok=True
+#         )
+#         yield Path(temp_dir)
+
+
+@pytest.fixture(scope="module")
+def vvm_error_project_config() -> Config:
+    """Fixture to create a VVM error project mox configuration."""
+    test_db_path = os.path.join(VVM_ERROR_PROJECT_PATH, ".deployments.db")
+
+    if os.path.exists(test_db_path):
+        os.remove(test_db_path)
+
+    config = _set_global_config(VVM_ERROR_PROJECT_PATH)
+    return config
+
+
+@pytest.fixture(scope="module")
+def vvm_error_out_folder(vvm_error_project_config) -> Config:
+    """Fixture to get the output folder for VVM error testing."""
+    return vvm_error_project_config.out_folder
+
+
+@pytest.fixture
+def vvm_error_cleanup_out_folder(vvm_error_out_folder):
+    """Fixture to clean up the output folder after VVM error testing."""
+    yield
+    created_folder_path = VVM_ERROR_PROJECT_PATH.joinpath(vvm_error_out_folder)
+    if os.path.exists(created_folder_path):
+        shutil.rmtree(created_folder_path)
+
+
+@pytest.fixture
+def vvm_error_cleanup_dependencies_folder():
+    """Fixture to clean up the dependencies folder after VVM error testing."""
+    yield
+    created_folder_path = VVM_ERROR_PROJECT_PATH.joinpath(DEPENDENCIES_FOLDER)
+    if os.path.exists(created_folder_path):
+        shutil.rmtree(created_folder_path)
 
 
 # ------------------------------------------------------------------
