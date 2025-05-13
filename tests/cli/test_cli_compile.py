@@ -88,7 +88,7 @@ def test_compile_with_vvm_assign_error(
         subprocess.run(
             [mox_path, "build", "AssignError.vy"],
             check=True,
-            capture_output=False,
+            capture_output=True,
             text=True,
         )
     except subprocess.CalledProcessError as result:
