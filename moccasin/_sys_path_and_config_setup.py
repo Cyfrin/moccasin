@@ -17,6 +17,11 @@ from moccasin.constants.vars import (
 )
 from moccasin.logging import logger
 from moccasin.moccasin_account import MoccasinAccount
+from moccasin.metamask_integration import (
+    start_metamask_ui_server,
+    stop_metamask_ui_server,
+    MetaMaskAccount,
+)
 
 
 def get_sys_paths_list(config: Config) -> List[Path]:
@@ -118,6 +123,10 @@ def _get_set_active_network_from_cli_and_config(
     return active_network
 
 
+# @dev allows _setup_network_and_account_from_config_and_cli to act as a robust initializer
+# and finalizer for your Moccasin script's environment, ensuring that
+# external resources like the MetaMask UI server are properly managed.
+@contextlib.contextmanager
 def _setup_network_and_account_from_config_and_cli(
     network: str = None,
     url: str = None,
@@ -131,81 +140,120 @@ def _setup_network_and_account_from_config_and_cli(
     explorer_api_key: str | None = None,
     db_path: str | None = None,
     save_to_db: bool | None = None,
+    prompt_metamask: bool = False,
 ):
-    """All the network and account logic in the function parameters are from the CLI.
-    We will use the order of operations to setup the network:
-
-        1. scripts (which, we don't touch here)
-        2. CLI
-        3. Config
-        4. Default Values
-
-    All the values passed into this function come from the CLI.
+    """
+    All the network and account logic in the function parameters are from the CLI.
+    This function sets up the network and account for the script's execution.
     """
     if account is not None and private_key is not None:
         raise ValueError("Cannot set both account and private key in the CLI!")
 
     mox_account: MoccasinAccount | None = None
     config = get_config()
+    server_control = None  # Initialize server_control to None
 
-    # 1. Update the network with the CLI values
-    active_network = _get_set_active_network_from_cli_and_config(
-        config,
-        network,
-        url,
-        fork,
-        account,
-        password_file_path,
-        prompt_live,
-        explorer_uri,
-        explorer_api_key,
-        db_path,
-        save_to_db,
-    )
+    try:
+        # Step 1: Set active network
+        active_network = _get_set_active_network_from_cli_and_config(
+            config,
+            network,
+            url,
+            fork,
+            account,
+            password_file_path,
+            prompt_live,
+            explorer_uri,
+            explorer_api_key,
+            db_path,
+            save_to_db,
+        )
 
-    # 2. Update and set account
-    if active_network.prompt_live:
-        if not fork:
-            response = input(
-                "The transactions run on this will actually be broadcast/transmitted, spending gas associated with your account. Are you sure you wish to continue?\nType 'y' or 'Y' and hit 'ENTER' or 'RETURN' to continue:\n"
+        # Step 2: Handle MetaMask UI integration
+        if prompt_metamask:
+            logger.info("MetaMask UI mode enabled. Initiating browser connection...")
+            server_control = start_metamask_ui_server()  # Start server and browser
+
+            # The connected_account_address from control is already a boa.Address object.
+            # Use it to get the checksum string for MetaMaskAccount init
+            metamask_account_instance = MetaMaskAccount(
+                str(server_control.connected_account_address)
             )
-            if response.lower() != "y":
-                logger.info("Operation cancelled.")
-                sys.exit(0)
 
-    if active_network.default_account_name and private_key is None:
-        # This will also attempt to unlock the account with a prompt
-        # If no password or password file is passed
-        mox_account = MoccasinAccount(
-            keystore_path_or_account_name=active_network.default_account_name,
-            password=password,
-            password_file_path=active_network.unsafe_password_file,
-        )
+            # 1. Set boa.env.eoa to the actual Address (boa.Address) of the MetaMask account.
+            #    This is what Boa expects for its 'sender' logic.
+            boa.env.eoa = server_control.connected_account_address
 
-    # Private key overrides the default account
-    if private_key:
-        mox_account = MoccasinAccount(
-            private_key=private_key,
-            password=password,
-            password_file_path=active_network.unsafe_password_file,
-        )
+            # 2. Register our custom MetaMaskAccount instance with the current network's accounts.
+            #    Access boa.env.current_network to get the NetworkEnv instance.
+            boa.env.current_network.accounts[
+                server_control.connected_account_address
+            ] = metamask_account_instance
 
-    if mox_account:
-        if active_network.is_local_or_forked_network():
-            boa.env.eoa = mox_account.address
+            logger.info(
+                f"Boa environment configured with MetaMask account: {boa.env.eoa}"
+            )
+
+        # Step 3: Handle traditional Moccasin accounts if not using MetaMask UI
         else:
-            boa.env.add_account(mox_account, force_eoa=True)
+            if active_network.prompt_live:
+                if not fork:
+                    response = input(
+                        "The transactions run on this will actually be broadcast/transmitted, spending gas associated with your account. Are you sure you wish to continue?\nType 'y' or 'Y' and hit 'ENTER' or 'RETURN' to continue:\n"
+                    )
+                    if response.lower() != "y":
+                        logger.info("Operation cancelled.")
+                        sys.exit(0)
 
-    # Once the anvil-zksync gets pranking support, we'll have to update this.
-    if not mox_account and active_network.name is ERAVM:
-        boa.env.add_account(MoccasinAccount(private_key=ERA_DEFAULT_PRIVATE_KEY))
+            if active_network.default_account_name and private_key is None:
+                mox_account = MoccasinAccount(
+                    keystore_path_or_account_name=active_network.default_account_name,
+                    password=password,
+                    password_file_path=active_network.unsafe_password_file,
+                )
 
-    # Check if it's a fork, pyevm, or eravm
-    if not active_network.is_local_or_forked_network():
-        if boa.env.eoa is None:
-            logger.warning(
-                "No default EOA account found. Please add an account to the environment before attempting a transaction."
-            )
+            if private_key:
+                mox_account = MoccasinAccount(
+                    private_key=private_key,
+                    password=password,
+                    password_file_path=active_network.unsafe_password_file,
+                )
 
-    if isinstance(boa.env.eoa, Address) and active_network.is_local_or_forked_network():
-        boa.env.set_balance(boa.env.eoa, STARTING_BOA_BALANCE)
+            if mox_account:
+                if active_network.is_local_or_forked_network():
+                    boa.env.eoa = (
+                        mox_account.address
+                    )  # Local/forked networks use address as EOA directly in boa
+                else:
+                    boa.env.add_account(
+                        mox_account, force_eoa=True
+                    )  # Live networks use boa's account management
+
+            if not mox_account and active_network.name is ERAVM:
+                # Add default ERAVM account if no other account specified
+                boa.env.add_account(
+                    MoccasinAccount(private_key=ERA_DEFAULT_PRIVATE_KEY)
+                )
+
+            if not active_network.is_local_or_forked_network():
+                if boa.env.eoa is None:
+                    logger.warning(
+                        "No default EOA account found. Please add an account to the environment before attempting a transaction."
+                    )
+
+            # For local/forked networks, ensure EOA has balance
+            if (
+                isinstance(boa.env.eoa, Address)
+                and active_network.is_local_or_forked_network()
+            ):
+                boa.env.set_balance(boa.env.eoa, STARTING_BOA_BALANCE)
+
+        yield  # Yield control to the calling script
+
+    finally:
+        # Step 4: Cleanup
+        if prompt_metamask:
+            # Removed remove_boa_patch()
+            if server_control:
+                stop_metamask_ui_server(server_control)  # Stop the server and browser
+            logger.info("MetaMask UI integration cleanup complete.")

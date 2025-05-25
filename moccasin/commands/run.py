@@ -30,6 +30,7 @@ def main(args: Namespace) -> int:
         url=args.url,
         prompt_live=args.prompt_live,
         db_path=args.db_path,
+        prompt_metamask=args.prompt_metamask,
     )
     return 0
 
@@ -45,13 +46,15 @@ def run_script(
     url: str = None,
     prompt_live: bool = None,
     db_path: str = None,
+    prompt_metamask: bool = False,
 ):
     config = get_config()
     script_path: Path = get_script_path(script_name_or_path)
 
     # Set up the environment (add necessary paths to sys.path, etc.)
     with _patch_sys_path(get_sys_paths_list(config)):
-        _setup_network_and_account_from_config_and_cli(
+        # @dev Guaranteed Setup and Teardown (Cleanup) if used as a context manager
+        with _setup_network_and_account_from_config_and_cli(
             network=network,
             url=url,
             fork=fork,
@@ -61,25 +64,25 @@ def run_script(
             password_file_path=password_file_path,
             prompt_live=prompt_live,
             db_path=db_path,
-        )
+            prompt_metamask=prompt_metamask,
+        ):
+            # We give the user's script the module name "deploy_script_moccasin"
+            spec = importlib.util.spec_from_file_location(
+                "deploy_script_moccasin", script_path
+            )
+            if spec is None:
+                raise Exception(f"Cannot find script '{script_path}'")
 
-        # We give the user's script the module name "deploy_script_moccasin"
-        spec = importlib.util.spec_from_file_location(
-            "deploy_script_moccasin", script_path
-        )
-        if spec is None:
-            raise Exception(f"Cannot find script '{script_path}'")
+            if spec.loader is None:
+                raise Exception(f"not a module: '{script_path}'")
 
-        if spec.loader is None:
-            raise Exception(f"not a module: '{script_path}'")
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
 
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-
-        # neat functionality:
-        if hasattr(module, "moccasin_main") and callable(module.moccasin_main):
-            result = module.moccasin_main()
-            return result
+            # neat functionality:
+            if hasattr(module, "moccasin_main") and callable(module.moccasin_main):
+                result = module.moccasin_main()
+                return result
 
 
 def get_script_path(script_name_or_path: Path | str) -> Path:
