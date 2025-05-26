@@ -5,75 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Moccasin - MetaMask UI</title>
     <style>
-        /* Apply a consistent font and basic styling to the body */
         body {
-            font-family: 'Inter', sans-serif; /* Use Inter font */
+            font-family: 'Inter', sans-serif;
             display: flex;
-            justify-content: center; /* Center content horizontally */
-            align-items: center; /* Center content vertically */
-            min-height: 100vh; /* Full viewport height */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             margin: 0;
-            /* Moccasin website's dark background */
-            background-color: rgb(30, 32, 33); /* #1E2021 equivalent */
-            color: rgb(200, 200, 200); /* Lighter grey for general body text */
+            background-color: rgb(30, 32, 33);
+            color: rgb(200, 200, 200);
             text-align: center;
             flex-direction: column;
             padding: 20px;
         }
-        /* Style for the main content container (modal) */
         .container {
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Stronger shadow for depth */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             max-width: 500px;
             width: 100%;
-            /* Slightly lighter dark background for the container/card */
-            background-color: rgb(40, 42, 43); /* Slightly lighter than body background */
-            color: rgb(220, 220, 220); /* Lighter grey for text inside container */
+            background-color: rgb(40, 42, 43);
+            color: rgb(220, 220, 220);
         }
-        /* Styling for the main heading */
         h1 {
-            /* Moccasin website's primary accent color (orange) */
-            color: rgb(248, 120, 42); /* #F8782A equivalent */
+            color: rgb(248, 120, 42);
             margin-bottom: 20px;
         }
-        /* Styling for paragraphs */
         p {
             line-height: 1.6;
             margin-bottom: 15px;
         }
-        /* Styling for the loading spinner */
         .loading-spinner {
-            border: 4px solid rgba(248, 120, 42, 0.3); /* Moccasin orange, semi-transparent */
-            border-top: 4px solid rgb(248, 120, 42); /* Moccasin orange */
+            border: 4px solid rgba(248, 120, 42, 0.3);
+            border-top: 4px solid rgb(248, 120, 42);
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
             margin: 20px auto;
+            display: none; /* Hidden by default */
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        /* Styling for the message box */
         .message-box {
-            /* A subtle highlight color, perhaps a lighter version of the orange or a contrasting grey */
-            background-color: rgba(248, 120, 42, 0.1); /* Light orange background */
-            border: 1px solid rgba(248, 120, 42, 0.4); /* Orange border */
+            background-color: rgba(248, 120, 42, 0.1);
+            border: 1px solid rgba(248, 120, 42, 0.4);
             padding: 15px;
             border-radius: 5px;
             margin-top: 20px;
             font-size: 0.9em;
-            color: rgb(248, 120, 42); /* Moccasin orange text */
+            color: rgb(248, 120, 42);
         }
-        /* Styling for account status text */
-        #account-status {
+        /* --- NEW STYLES FOR STATUS AND BUTTONS --- */
+        .status-message {
             font-weight: bold;
-            color: rgb(100, 200, 100); /* A distinct green for success/connected status */
+            font-size: 1.1em;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid transparent; /* Default transparent border */
         }
-        .error {
-            color: rgb(220, 80, 80); /* A distinct red for errors */
+        .status-green {
+            background-color: rgba(100, 200, 100, 0.1); /* Light green background */
+            color: rgb(100, 200, 100); /* Green text */
+            border-color: rgb(100, 200, 100);
+        }
+        .status-red {
+            background-color: rgba(220, 80, 80, 0.1); /* Light red background */
+            color: rgb(220, 80, 80); /* Red text */
+            border-color: rgb(220, 80, 80);
+        }
+        .status-orange { /* For warnings or pending states */
+            background-color: rgba(255, 165, 0, 0.1);
+            color: rgb(255, 165, 0);
+            border-color: rgb(255, 165, 0);
+        }
+        .instructions {
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 0.95em;
+            line-height: 1.5;
+            color: rgb(220, 220, 220);
+        }
+        .instructions strong {
+            color: rgb(248, 120, 42); /* Moccasin orange for emphasis */
+        }
+        .buttons button {
+            background-color: rgb(248, 120, 42); /* Moccasin orange */
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .buttons button:hover {
+            background-color: rgb(220, 100, 20); /* Darker orange on hover */
+        }
+        .buttons button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        .code {
+            background-color: rgb(50, 52, 53); /* Slightly lighter dark for code blocks */
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Fira Code', 'monospace'; /* Or any preferred monospace font */
+            overflow-x: auto;
+            margin-top: 10px;
+            font-size: 0.85em;
+            border: 1px solid rgb(60, 62, 63);
+            color: rgb(200, 200, 200);
+            text-align: left;
         }
     </style>
 </head>
@@ -81,9 +128,15 @@
     <div class="container">
         <h1>Moccasin - MetaMask Interaction</h1>
         <div class="loading-spinner"></div>
-        <p>Connecting to MetaMask...</p>
-        <p id="account-status">Account: Not Connected</p>
-        <p>This page is managing the transaction confirmation process with your MetaMask extension. Please keep this tab open.</p>
+        <div id="status-message" class="status-message">Connecting to MetaMask...</div>
+        <div id="instructions" class="instructions"></div>
+        
+        <div class="buttons">
+            <button id="switchNetworkButton" style="display:none;">Switch Network in MetaMask</button>
+            <button id="addNetworkButton" style="display:none;">Add Network to MetaMask</button>
+            <button id="continueButton" style="display:none;">Continue Script</button>
+        </div>
+
         <div class="message-box">
             <p><strong>Heads Up:</strong> You might need to open your MetaMask extension (check for a pop-up or the fox icon) to confirm or reject transactions initiated by Moccasin.</p>
             <p>If you close this tab or the MetaMask connection is lost, the Moccasin CLI operation may time out.</p>

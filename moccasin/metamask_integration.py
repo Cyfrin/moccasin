@@ -27,6 +27,9 @@ class MetamaskServerControl:
     def __init__(self, port: int):
         self.port = port
         self.shutdown_flag = threading.Event()
+        self.network_sync_event = (
+            threading.Event()
+        )  # NEW: Signals when network is synced
         self.transaction_request_queue = Queue()  # CLI -> Browser
         self.transaction_response_queue = Queue()  # Browser -> CLI
         self.connected_account_event = (
@@ -70,8 +73,6 @@ class MetaMaskAccount:
     """
 
     def __init__(self, address: str):
-        # Store the actual address provided by MetaMask
-        # We need it as a boa.Address object for boa.env.eoa and as a checksum string for internal consistency
         self._address_boa = Address(address)
         self._address_checksum_str = to_checksum_address(address)
 
@@ -84,8 +85,6 @@ class MetaMaskAccount:
         """Returns the account address as boa.util.abi.Address."""
         return self._address_boa
 
-    # IMPORTANT: We implement `send_transaction` NOT `sign_transaction`
-    # This makes Boa take the `else` branch in `NetworkEnv._send_txn`
     def send_transaction(self, raw_tx_data: dict) -> Dict[str, str]:
         """
         Delegates transaction sending to the MetaMask UI.
@@ -106,8 +105,10 @@ class MetaMaskAccount:
 
             # Wait for the browser to send back the result (hash or error)
             # Use a long timeout as user interaction can take time
+            # Assuming network sync happened already, this wait is for transaction confirmation.
             result_json = control.transaction_response_queue.get(
-                timeout=control.heartbeat_timeout_s * 5
+                timeout=control.heartbeat_timeout_s
+                * 10  # Extended timeout for user interaction
             )
             result = json.loads(result_json)
 
@@ -120,10 +121,13 @@ class MetaMaskAccount:
                 return {"hash": tx_hash}
             else:
                 error_message = result.get("error", "Unknown MetaMask UI error")
-                raise Exception(f"MetaMask transaction failed: {error_message}")
+                error_code = result.get("code", "N/A")
+                raise Exception(
+                    f"MetaMask transaction failed: {error_message} (Code: {error_code})"
+                )
         except Empty:
             raise TimeoutError(
-                "Timed out waiting for MetaMask transaction response from UI."
+                "Timed out waiting for MetaMask transaction response from UI. User did not confirm in time."
             )
         except Exception as e:
             logger.error(f"Error during MetaMask UI transaction delegation: {e}")
@@ -138,7 +142,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
     """
     A custom HTTP request handler for the MetaMask integration server.
     It serves static files and handles API endpoints for transaction details,
-    shutdown, heartbeat, and dynamic transaction requests.
+    shutdown, heartbeat, and dynamic transaction requests, and now network sync.
     """
 
     def __init__(self, *args, directory=None, **kwargs):
@@ -165,6 +169,62 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-type", "text/plain")
             self.end_headers()
             self.wfile.write(b"OK")
+
+        elif self.path == "/api/boa-network-details":
+            chain_id = "unknown"
+            rpc_url = "unknown"
+            network_name = "Boa Local Network"
+
+            # Assuming boa.env is globally accessible after Boa setup
+            try:
+                # Import boa.env here to ensure it's initialized
+                from boa import env as boa_env
+
+                # Attempt to get chain_id from boa.env directly
+                if hasattr(boa_env, "chain_id") and boa_env.chain_id is not None:
+                    chain_id = boa_env.chain_id
+                else:  # Fallback to fetching if chain_id is not a direct property or is None
+                    # This might raise RPCError if the RPC is not responsive or EIP-1559/legacy fees can't be fetched
+                    _base_fee, _priority_fee, _max_fee, chain_id_hex = (
+                        boa_env.get_eip1559_fee()
+                    )
+                    chain_id = int(chain_id_hex, 16)  # Convert hex string to integer
+
+                # Safely get rpc_url, assuming it's an attribute of the active network
+                rpc_url = getattr(boa_env, "rpc_url", "unknown")
+
+                # Try to make a more specific name if possible
+                if hasattr(boa_env, "nickname") and boa_env.nickname not in [
+                    None,
+                    "unknown",
+                    "",
+                ]:
+                    network_name = boa_env.nickname.capitalize() + " Network"
+                elif chain_id == 31337:  # Common Anvil default
+                    network_name = "Anvil Localhost"
+                else:
+                    network_name = (
+                        f"Boa Network (ID: {chain_id})"  # Fallback using Chain ID
+                    )
+
+            except (ImportError, AttributeError, Exception) as e:
+                logger.warning(
+                    f"Could not reliably determine boa_env Chain ID/RPC for UI: {e}"
+                )
+                # Keep defaults if detection fails
+
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            self.wfile.write(
+                json.dumps(
+                    {
+                        "chainId": str(chain_id),  # Send as string for JS
+                        "rpcUrl": rpc_url,
+                        "networkName": network_name,
+                    }
+                ).encode("utf-8")
+            )
         else:
             super().do_GET()
 
@@ -177,10 +237,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             post_body = "{}"
 
         if self.path == "/report_transaction_result":
-            # Browser (main.js) posts transaction hash/error/address here
-            control.transaction_response_queue.put(
-                post_body
-            )  # Puts full JSON object directly
+            control.transaction_response_queue.put(post_body)
             logger.info(f"Received transaction result from browser: {post_body}")
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
@@ -191,9 +248,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             data = json.loads(post_body)
             connected_address = data.get("account")
             if connected_address:
-                control.connected_account_address = Address(
-                    connected_address
-                )  # Store as boa.Address
+                control.connected_account_address = Address(connected_address)
                 control.connected_account_event.set()
                 logger.info(f"Received connected MetaMask account: {connected_address}")
                 self.send_response(200)
@@ -204,6 +259,15 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 logger.warning("No account address received from browser.")
                 self.send_response(400)
                 self.end_headers()
+
+        # NEW API ENDPOINT FOR NETWORK SYNC SIGNAL
+        elif self.path == "/api/network-synced":
+            control.network_sync_event.set()  # Signal that network is synced
+            logger.info("Received signal from UI: MetaMask network is synchronized.")
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"OK")
         else:
             super().do_POST()
 
@@ -212,6 +276,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
 def _open_browser_tab(port: int):
     control = get_server_control()
     try:
+        # Open the specific HTML file that handles network sync first
         webbrowser.open(f"http://localhost:{port}/index.html")
     except Exception as e:
         logger.error(f"Failed to open browser tab: {e}")
@@ -230,17 +295,15 @@ def _heartbeat_monitor(control: MetamaskServerControl):
 
 
 def _run_http_server(port: int, ui_files_path: Path, control: MetamaskServerControl):
-    # Custom HTTP handler to serve MetaMask UI files
     class Handler(CustomHandler):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=ui_files_path, **kwargs)
 
     try:
-        # Create a reusable TCP server to allow port reuse
+
         class ReusableTCPServer(socketserver.TCPServer):
             allow_reuse_address = True
 
-        # Create the HTTP server with the custom handler
         httpd = ReusableTCPServer(("", port), Handler)
         control.httpd = httpd
         logger.debug(f"MetaMask UI server started at http://localhost:{port}")
@@ -249,17 +312,16 @@ def _run_http_server(port: int, ui_files_path: Path, control: MetamaskServerCont
         logger.error(f"MetaMask UI server error: {e}")
     finally:
         logger.debug("MetaMask UI server stopped.")
-        control.shutdown_flag.set()  # Ensure flag is set on unexpected exit
+        control.shutdown_flag.set()
 
 
 # --- CLI Orchestration Functions ---
 def start_metamask_ui_server() -> MetamaskServerControl:
-    PORT = 9000  # You can make this configurable
+    PORT = 9000
     control = MetamaskServerControl(PORT)
     set_server_control(control)
 
     try:
-        # Assuming moccasin.data is a package in your installation
         with importlib.resources.path("moccasin.data", "metamask_ui") as p:
             ui_files_path = p
         if not ui_files_path.is_dir():
@@ -276,37 +338,53 @@ def start_metamask_ui_server() -> MetamaskServerControl:
     control.server_thread = threading.Thread(
         target=_run_http_server, args=(PORT, ui_files_path, control)
     )
-    # @dev background thread that will be automatically killed by the Python interpreter
-    # when all non-daemon threads have finished
-    control.server_thread.daemon = True  # Daemonize to allow main program to exit
+    control.server_thread.daemon = True
     control.server_thread.start()
 
-    time.sleep(0.5)  # Give server a moment to start
+    time.sleep(0.5)
 
     control.monitor_thread = threading.Thread(
         target=_heartbeat_monitor, args=(control,)
     )
     control.monitor_thread.daemon = True
+
+    # Open browser immediately to start network sync process
     control.browser_thread = threading.Thread(target=_open_browser_tab, args=(PORT,))
     control.browser_thread.daemon = True
     control.browser_thread.start()
 
     logger.info(
-        "MetaMask UI launched. Please interact with the browser window to connect account."
+        "MetaMask UI launched. Please check the browser window for network synchronization."
     )
-    logger.info(
-        f"If the pop-up doesn't appear, visit http://localhost:{PORT}/index.html"
-    )
+    logger.info(f"If the tab didn't open, visit http://localhost:{PORT}/index.html")
 
-    logger.info("Waiting for MetaMask account connection...")
-    if not control.connected_account_event.wait(
-        timeout=control.heartbeat_timeout_s * 2
+    # --- NEW: Wait for network sync first ---
+    logger.info("Waiting for MetaMask network synchronization...")
+    if not control.network_sync_event.wait(
+        timeout=control.heartbeat_timeout_s * 5  # Longer timeout for initial sync
     ):
         logger.error(
-            "Timed out waiting for MetaMask account connection. Please ensure MetaMask is connected and the page is open."
+            "Timed out waiting for MetaMask network synchronization. Please ensure MetaMask is connected and the page is open."
         )
         stop_metamask_ui_server(control)
-        raise TimeoutError("MetaMask account connection timed out.")
+        raise TimeoutError("MetaMask network synchronization timed out.")
+
+    # --- Then wait for account connection (if not already received during sync) ---
+    # This part should be called *after* network sync, as account connection might depend on it.
+    if (
+        not control.connected_account_address
+    ):  # Only wait if address not already set by JS sync
+        logger.info("MetaMask network synced. Waiting for account connection...")
+        if not control.connected_account_event.wait(
+            timeout=control.heartbeat_timeout_s * 2
+        ):
+            logger.error(
+                "Timed out waiting for MetaMask account connection. Ensure account is connected."
+            )
+            stop_metamask_ui_server(control)
+            raise TimeoutError(
+                "MetaMask account connection timed out after network sync."
+            )
 
     if not control.connected_account_address:
         stop_metamask_ui_server(control)
@@ -319,7 +397,7 @@ def start_metamask_ui_server() -> MetamaskServerControl:
 def stop_metamask_ui_server(control: MetamaskServerControl):
     """Gracefully stops the MetaMask UI server."""
     if control and control.httpd:
-        control.shutdown_flag.set()  # Signal threads to stop
+        control.shutdown_flag.set()
         control.httpd.shutdown()
         control.httpd.server_close()
         logger.debug("MetaMask UI server gracefully stopped and closed.")

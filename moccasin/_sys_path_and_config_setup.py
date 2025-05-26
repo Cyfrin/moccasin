@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Iterator, List
 
 import boa
+from boa.environment import Env
 from boa.util.abi import Address
 
 from moccasin.config import Config, Network, get_config
@@ -83,8 +84,8 @@ def _patch_sys_path(paths: List[Path]) -> Iterator[None]:
 # REVIEW: Might be best to just set this as **kwargs
 def _get_set_active_network_from_cli_and_config(
     config: Config,
-    network: str = None,
-    url: str = None,
+    network: str | None = None,
+    url: str | None = None,
     fork: bool | None = None,
     account: str | None = None,
     password_file_path: Path | None = None,
@@ -128,8 +129,8 @@ def _get_set_active_network_from_cli_and_config(
 # external resources like the MetaMask UI server are properly managed.
 @contextlib.contextmanager
 def _setup_network_and_account_from_config_and_cli(
-    network: str = None,
-    url: str = None,
+    network: str | None = None,
+    url: str | None = None,
     fork: bool | None = None,
     account: str | None = None,
     private_key: str | None = None,
@@ -180,15 +181,14 @@ def _setup_network_and_account_from_config_and_cli(
                 str(server_control.connected_account_address)
             )
 
-            # 1. Set boa.env.eoa to the actual Address (boa.Address) of the MetaMask account.
-            #    This is what Boa expects for its 'sender' logic.
-            boa.env.eoa = server_control.connected_account_address
-
-            # 2. Register our custom MetaMaskAccount instance with the current network's accounts.
-            #    Access boa.env.current_network to get the NetworkEnv instance.
-            boa.env.current_network.accounts[
-                server_control.connected_account_address
-            ] = metamask_account_instance
+            if active_network.is_local_or_forked_network():
+                boa.env.eoa = (
+                    metamask_account_instance.address
+                )  # Local/forked networks use address as EOA directly in boa
+            else:
+                boa.env.add_account(
+                    metamask_account_instance, force_eoa=True
+                )  # Live networks use boa's account management
 
             logger.info(
                 f"Boa environment configured with MetaMask account: {boa.env.eoa}"
