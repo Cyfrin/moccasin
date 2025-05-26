@@ -40,7 +40,7 @@ EXPECTED_HELP_TEXT = "Vyper compiler"
             True,
             [f"{PIP_PACKAGE_NAME}>={PACKAGE_VERSION}", f"{MOCCASIN_LIB_NAME}==0.3.6"],
             ["PatrickAlphaC/test_repo"],
-            {"patrickalphac/test_repo": "0.1.1"},
+            {"patrickalphac/test_repo": "0.1.2"},
         ),
         # Change compiled file
         (["MyTokenPyPI.vy"], [], True, ["snekmate==0.1.1"], [], None),

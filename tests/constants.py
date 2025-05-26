@@ -71,7 +71,7 @@ save_to_db = false
 
 INSTALLATION_WITH_GH_TOML = """[project]
 dependencies = [
-    "PatrickAlphaC/test_repo@0.1.1",
+    "PatrickAlphaC/test_repo",
     "pcaversaccio/snekmate",
 ]
 
@@ -87,7 +87,7 @@ INSTALLATION_FULL_DEPENDENCIES_TOML = """[project]
 dependencies = [
     "snekmate", 
     "moccasin",
-    "PatrickAlphaC/test_repo@0.1.1",
+    "PatrickAlphaC/test_repo",
     "pcaversaccio/snekmate",
 ]
 
@@ -118,7 +118,7 @@ COMMENT_CONTENT = "PRESERVE COMMENTS"
 PACKAGE_NEW_VERSION = "0.0.5"
 ORG_NAME = "pcaversaccio"
 PIP_PACKAGE_NAME = "snekmate"
-PACKAGE_VERSION = "0.1.0"
+PACKAGE_VERSION = "0.1.1"
 GITHUB_PACKAGE_NAME = f"{ORG_NAME}/{PIP_PACKAGE_NAME}"
 LIB_GH_PATH = "lib/github"
 LIB_PIP_PATH = "lib/pypi"
