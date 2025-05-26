@@ -2,23 +2,23 @@
 
 const HEARTBEAT_INTERVAL_CLIENT_MS = 5000;
 
-const statusElement = document.getElementById('status-message'); // Changed ID to match new HTML
-const instructionsElement = document.getElementById('instructions'); // New element
-const switchButton = document.getElementById('switchNetworkButton'); // New button
-const addButton = document.getElementById('addNetworkButton'); // New button
-const continueButton = document.getElementById('continueButton'); // New button
-const spinnerElement = document.querySelector('.loading-spinner'); // Keep for transaction loading
+const statusElement = document.getElementById('status-message');
+const instructionsElement = document.getElementById('instructions');
+const switchButton = document.getElementById('switchNetworkButton');
+// const addButton = document.getElementById('addNetworkButton'); // Removed as per user request
+const continueButton = document.getElementById('continueButton');
+const spinnerElement = document.querySelector('.loading-spinner');
 
 let currentAccount = null;
 let isMetaMaskConnected = false;
 let heartbeatInterval = null;
-let pollingInterval = null; // Moved to global scope
-let boaNetworkDetails = {}; // Global to store Boa's network config
+let pollingInterval = null;
+let boaNetworkDetails = {};
 
 // --- Utility Functions for UI Updates ---
 function setStatus(message, type = 'default') {
     statusElement.textContent = message;
-    statusElement.className = 'status-message'; // Reset class
+    statusElement.className = 'status-message';
     if (type === 'error') statusElement.classList.add('status-red');
     else if (type === 'success') statusElement.classList.add('status-green');
     else if (type === 'warning') statusElement.classList.add('status-orange');
@@ -32,8 +32,8 @@ function showSpinner() { spinnerElement.style.display = 'block'; }
 function hideSpinner() { spinnerElement.style.display = 'none'; }
 
 function showButtons(...buttons) {
-    // Hide all buttons first
-    [switchButton, addButton, continueButton].forEach(btn => btn.style.display = 'none');
+    // Hide all relevant buttons first
+    [switchButton, continueButton].forEach(btn => btn.style.display = 'none');
     // Then show the ones passed as arguments
     buttons.forEach(btn => btn.style.display = 'block');
 }
@@ -92,7 +92,6 @@ async function sendHeartbeat() {
         console.error('Heartbeat failed, Python server might be down:', error);
         clearInterval(heartbeatInterval);
         setStatus('Connection to Moccasin CLI lost.', 'error');
-        // Optionally, disable further operations or prompt user to restart CLI
     }
 }
 
@@ -104,9 +103,58 @@ async function getMetaMaskChainId() {
         return parseInt(chainIdHex, 16); // Convert hex string to integer
     } catch (error) {
         console.error("Error getting MetaMask chainId:", error);
-        return null; // Indicates error or not connected
+        return null;
     }
 }
+
+/**
+ * Attempts to switch to the target network. If the network is not found (error 4902),
+ * it instructs the user to add it manually.
+ */
+async function handleNetworkSwitch() {
+    if (!window.ethereum || !boaNetworkDetails.chainId) return;
+
+    const targetChainIdHex = '0x' + boaNetworkDetails.chainId.toString(16); 
+    
+    try {
+        showSpinner();
+        setStatus("Requesting MetaMask to switch network...", 'default');
+        await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: targetChainIdHex }],
+        });
+        // If successful, MetaMask will trigger 'chainChanged' event, which calls updateUI().
+    } catch (switchError) {
+        hideSpinner();
+        console.error("Error switching network:", switchError);
+        if (switchError.code === 4001) {
+            setStatus('Network switch rejected by user.', 'error');
+        } else if (switchError.code === 4902) {
+            // Network not found in MetaMask, instruct user to add manually
+            setStatus('Network not found in MetaMask.', 'warning');
+            setInstructions(`
+                <p>The network <strong>${boaNetworkDetails.networkName}</strong> (Chain ID: <strong>${boaNetworkDetails.chainId}</strong>) is not configured in your MetaMask.</p>
+                <p>Please add it manually to MetaMask using the details below, then click 'Continue Script'.</p>
+                <div class="code">
+                    <strong>Network Name:</strong> ${boaNetworkDetails.networkName}<br>
+                    <strong>RPC URL:</strong> ${boaNetworkDetails.rpcUrl}<br>
+                    <strong>Chain ID:</strong> ${boaNetworkDetails.chainId}<br>
+                    <strong>Currency Symbol:</strong> ETH (or equivalent)
+                </div>
+            `);
+            showButtons(continueButton); // Only show continue button after manual instruction
+            // DO NOT signal Python backend here, as user has a manual step
+        } else if (switchError.code === -32002) {
+            setStatus('MetaMask request already pending. Please approve or reject the current request in MetaMask.', 'warning');
+        } else {
+            setStatus(`Error switching network: ${switchError.message || switchError.code}. Please try manually.`, 'error');
+        }
+        // No need to call updateUI() here if we've provided specific instructions and buttons
+        // The chainChanged event will trigger updateUI() if the user successfully switches/adds manually.
+    }
+}
+
+// handleNetworkAdd function is removed as per user request.
 
 async function connectMetaMaskAndReportAccount() {
     if (typeof window.ethereum === 'undefined') return false;
@@ -131,79 +179,14 @@ async function connectMetaMaskAndReportAccount() {
     }
 }
 
-async function handleNetworkSwitch() {
-    if (!window.ethereum || !boaNetworkDetails.chainId) return;
-
-    // MetaMask expects chainId as a hex string prefixed with '0x'
-    const targetChainIdHex = '0x' + boaNetworkDetails.chainId.toString(16); 
-    
-    try {
-        showSpinner();
-        setStatus("Requesting MetaMask to switch network...", 'default');
-        await window.ethereum.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: targetChainIdHex }],
-        });
-        // MetaMask will automatically trigger 'chainChanged' event if successful,
-        // which will call updateUI() again.
-    } catch (switchError) {
-        hideSpinner();
-        console.error("Error switching network:", switchError);
-        if (switchError.code === 4001) {
-            setStatus('Network switch rejected by user.', 'error');
-        } else if (switchError.code === 4902) { 
-            setStatus('Network not found in MetaMask. Please use the "Add Network" button to configure it.', 'warning');
-        } else if (switchError.code === -32002) {
-            setStatus('MetaMask request already pending. Please approve or reject the current request in MetaMask.', 'warning');
-        } else {
-            setStatus(`Error switching network: ${switchError.message || switchError.code}. Please try manually.`, 'error');
-        }
-        await updateUI(); // Revert UI to previous state if switch failed
-    }
-}
-
-async function handleNetworkAdd() {
-    if (!window.ethereum || !boaNetworkDetails.chainId || !boaNetworkDetails.rpcUrl) return;
-
-    const targetChainIdHex = '0x' + boaNetworkDetails.chainId.toString(16);
-    const targetRpcUrl = boaNetworkDetails.rpcUrl;
-    const targetNetworkName = boaNetworkDetails.networkName;
-
-    try {
-        showSpinner();
-        setStatus("Requesting MetaMask to add network...", 'default');
-        await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-                chainId: targetChainIdHex,
-                rpcUrls: [targetRpcUrl],
-                chainName: targetNetworkName,
-                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, // Assuming ETH
-                blockExplorerUrls: [], // Optional, leave empty for local networks
-            }],
-        });
-        // MetaMask will automatically trigger 'chainChanged' event if successful
-    } catch (addError) {
-        hideSpinner();
-        console.error("Error adding network:", addError);
-        if (addError.code === 4001) {
-            setStatus('Network addition rejected by user.', 'error');
-        } else {
-            setStatus(`Error adding network: ${addError.message || addError.code}. Please add it manually in MetaMask.`, 'error');
-        }
-        await updateUI(); // Revert UI to previous state if add failed
-    }
-}
-
 // --- Main UI Update Logic ---
 async function updateUI() {
-    hideSpinner(); // Hide spinner initially
+    hideSpinner();
     const boaNetDetails = await getBoaNetworkDetails();
-    if (!boaNetDetails) return; // Error handled inside getBoaNetworkDetails
+    if (!boaNetDetails) return;
 
     const metamaskChainId = await getMetaMaskChainId();
 
-    // Reset button display
     showButtons(); // Hide all buttons by default
     
     if (metamaskChainId === null) {
@@ -215,27 +198,23 @@ async function updateUI() {
     if (boaNetDetails.chainId === metamaskChainId) {
         setStatus(`MetaMask is connected to the correct network! (Chain ID: ${metamaskChainId})`, 'success');
         setInstructions("<p>Click 'Continue Script' below to proceed with your Boa script, or it may continue automatically.</p>");
-        showButtons(continueButton); // Only show continue button
+        showButtons(continueButton);
         
-        // Auto-signal backend if the user just opened the page and it's already correct,
-        // or if they just switched manually.
         await signalPythonBackendNetworkSynced(); 
 
-        // After network sync, ensure account is connected and polling starts
         if (!isMetaMaskConnected) {
-             const connected = await connectMetaMaskAndReportAccount(); // This will show MetaMask popup if not connected
+             const connected = await connectMetaMaskAndReportAccount();
              if (connected) {
                  startTransactionPolling();
                  startHeartbeat();
              } else {
-                 // If network is correct but account isn't connected, prompt for account
                  setStatus("MetaMask account not connected. Please connect your account.", 'error');
                  setInstructions("<p>Your network is correct, but an account is not connected. Click 'Connect' in MetaMask.</p>");
                  showButtons(); // No network buttons, but prompt for account
              }
         } else {
-             startTransactionPolling(); // Ensure polling is running if already connected
-             startHeartbeat(); // Ensure heartbeat is running
+             startTransactionPolling();
+             startHeartbeat();
         }
 
     } else {
@@ -243,7 +222,7 @@ async function updateUI() {
         setInstructions(`
             <p>Your Boa script expects Chain ID: <strong>${boaNetDetails.chainId}</strong> (<strong>${boaNetDetails.networkName}</strong>).</p>
             <p>Your MetaMask is currently on Chain ID: <strong>${metamaskChainId}</strong>.</p>
-            <p>Please use the buttons below to switch or add the correct network in MetaMask:</p>
+            <p>Click 'Switch Network' below to try and switch. If the network is not found, you will be prompted to add it manually.</p>
             <div class="code">
                 <strong>Network Name:</strong> ${boaNetDetails.networkName}<br>
                 <strong>RPC URL:</strong> ${boaNetDetails.rpcUrl}<br>
@@ -251,22 +230,19 @@ async function updateUI() {
                 <strong>Currency Symbol:</strong> ETH (or equivalent)
             </div>
         `);
-        showButtons(switchButton, addButton); // Show switch and add buttons
+        showButtons(switchButton); // Only show the "Switch Network" button
     }
 }
 
 
 // --- Transaction Polling and Reporting (Existing Logic) ---
-// This part remains largely the same, but starts *after* network sync and account connection
 async function fetchAndProcessTransaction() {
     if (!isMetaMaskConnected || !currentAccount) {
-        // Only proceed if MetaMask is connected and an account is selected
-        // updateStatus("Waiting for MetaMask account connection...", true); // Too chatty
         return;
     }
     
     try {
-        const response = await fetch('/get_pending_transaction', { method: 'GET' });
+        const response = await fetch('/get_pending_transaction');
 
         if (response.status === 200) {
             const txParams = await response.json();
@@ -275,7 +251,6 @@ async function fetchAndProcessTransaction() {
             showSpinner();
 
             try {
-                // Ensure the 'from' address matches the connected account
                 if (txParams.from && txParams.from.toLowerCase() !== currentAccount.toLowerCase()) {
                     console.warn(`Transaction 'from' address mismatch. Overwriting with connected account: ${currentAccount}`);
                     txParams.from = currentAccount;
@@ -302,10 +277,9 @@ async function fetchAndProcessTransaction() {
 
             } catch (txError) {
                 console.error('MetaMask transaction error:', txError);
-                // Handle common MetaMask error codes
                 if (txError.code === 4001) {
                     setStatus("Transaction rejected by user.", 'error');
-                } else if (txError.code === -32603) { // Internal JSON-RPC error (often insufficient funds or gas limit)
+                } else if (txError.code === -32603) {
                     setStatus(`Transaction error: ${txError.message}. Check gas limit or funds.`, 'error');
                 } else {
                     setStatus(`Transaction failed: ${txError.message}`, 'error');
@@ -332,7 +306,7 @@ async function fetchAndProcessTransaction() {
     }
 }
 
-async function pollForReceipt(txHash, maxAttempts = 60, delay = 5000) { // Max 5 mins, 5 sec delay
+async function pollForReceipt(txHash, maxAttempts = 60, delay = 5000) {
     let attempts = 0;
     while (attempts < maxAttempts) {
         try {
@@ -371,29 +345,27 @@ async function reportTransactionResult(result) {
 
 
 // --- Event Listeners and Initial Setup ---
-// Event listeners for MetaMask account changes and disconnections
 window.ethereum.on('accountsChanged', (accounts) => {
     if (accounts.length === 0) {
         currentAccount = null;
         isMetaMaskConnected = false;
-        reportConnectedAccount(null); // Report disconnection to Python
+        reportConnectedAccount(null);
         clearInterval(pollingInterval);
         clearInterval(heartbeatInterval);
-        pollingInterval = null; // Reset interval ID
-        heartbeatInterval = null; // Reset interval ID
-        updateUI(); // Re-evaluate UI state
+        pollingInterval = null;
+        heartbeatInterval = null;
+        updateUI();
     } else {
         currentAccount = accounts[0];
         isMetaMaskConnected = true;
         reportConnectedAccount(currentAccount);
-        updateUI(); // Re-evaluate UI state (will start polling if needed)
+        updateUI();
     }
 });
 
 window.ethereum.on('chainChanged', (chainId) => {
-    // This event fires if the user manually changes network in MetaMask, or via wallet_switch/addEthereumChain
     console.log(`MetaMask chain changed to ${chainId}.`);
-    updateUI(); // Re-evaluate UI state, do not reload the page
+    updateUI();
 });
 
 window.ethereum.on('disconnect', (error) => {
@@ -403,25 +375,23 @@ window.ethereum.on('disconnect', (error) => {
     reportConnectedAccount(null);
     clearInterval(pollingInterval);
     clearInterval(heartbeatInterval);
-    pollingInterval = null; // Reset interval ID
-    heartbeatInterval = null; // Reset interval ID
-    updateUI(); // Re-evaluate UI state
+    pollingInterval = null;
+    heartbeatInterval = null;
+    updateUI();
 });
 
-// Initial page load logic: Start by updating the UI, which will handle connection and sync
 document.addEventListener('DOMContentLoaded', () => {
     // Attach button event listeners
     switchButton.addEventListener('click', handleNetworkSwitch);
-    addButton.addEventListener('click', handleNetworkAdd);
-    continueButton.addEventListener('click', signalPythonBackendNetworkSynced); // Changed to signal directly
+    continueButton.addEventListener('click', signalPythonBackendNetworkSynced);
 
-    updateUI(); // Initial UI update
+    updateUI();
 });
 
-// Functions to start intervals (moved to global scope for clarity)
+// Functions to start intervals
 function startTransactionPolling() {
     if (!pollingInterval) {
-        pollingInterval = setInterval(fetchAndProcessTransaction, 1000); // Poll every second
+        pollingInterval = setInterval(fetchAndProcessTransaction, 1000);
         console.log('Started transaction polling.');
     }
 }

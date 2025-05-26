@@ -8,7 +8,7 @@ import time
 
 from pathlib import Path
 from queue import Queue, Empty
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 
 from boa.util.abi import Address
 from eth_utils.address import to_checksum_address
@@ -27,14 +27,10 @@ class MetamaskServerControl:
     def __init__(self, port: int):
         self.port = port
         self.shutdown_flag = threading.Event()
-        self.network_sync_event = (
-            threading.Event()
-        )  # NEW: Signals when network is synced
+        self.network_sync_event = threading.Event()
         self.transaction_request_queue = Queue()  # CLI -> Browser
         self.transaction_response_queue = Queue()  # Browser -> CLI
-        self.connected_account_event = (
-            threading.Event()
-        )  # Signals when account is connected
+        self.connected_account_event = threading.Event()
         self.connected_account_address: Optional[Address] = None
         self.last_heartbeat_time = time.time()
         self.httpd: Optional[socketserver.TCPServer] = None
@@ -42,6 +38,7 @@ class MetamaskServerControl:
         self.monitor_thread: Optional[threading.Thread] = None
         self.browser_thread: Optional[threading.Thread] = None
         self.heartbeat_timeout_s = HEARTBEAT_TIMEOUT_SERVER_S
+        self.boa_network_details: Dict[str, Any] = {}
 
 
 # Global instance of server control, managed by _setup_network_and_account_from_config_and_cli
@@ -150,6 +147,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         control = get_server_control()
+        # Get the pending transaction request from the queue
         if self.path == "/get_pending_transaction":
             try:
                 tx_params = control.transaction_request_queue.get_nowait()
@@ -162,69 +160,20 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(204)
                 self.end_headers()
                 logger.debug("No pending transaction request for browser.")
-
+        # Heartbeat endpoint to keep the server alive
         elif self.path == "/heartbeat":
             control.last_heartbeat_time = time.time()
             self.send_response(200)
             self.send_header("Content-type", "text/plain")
             self.end_headers()
             self.wfile.write(b"OK")
-
+        # Network details endpoint for MetaMask UI
         elif self.path == "/api/boa-network-details":
-            chain_id = "unknown"
-            rpc_url = "unknown"
-            network_name = "Boa Local Network"
-
-            # Assuming boa.env is globally accessible after Boa setup
-            try:
-                # Import boa.env here to ensure it's initialized
-                from boa import env as boa_env
-
-                # Attempt to get chain_id from boa.env directly
-                if hasattr(boa_env, "chain_id") and boa_env.chain_id is not None:
-                    chain_id = boa_env.chain_id
-                else:  # Fallback to fetching if chain_id is not a direct property or is None
-                    # This might raise RPCError if the RPC is not responsive or EIP-1559/legacy fees can't be fetched
-                    _base_fee, _priority_fee, _max_fee, chain_id_hex = (
-                        boa_env.get_eip1559_fee()
-                    )
-                    chain_id = int(chain_id_hex, 16)  # Convert hex string to integer
-
-                # Safely get rpc_url, assuming it's an attribute of the active network
-                rpc_url = getattr(boa_env, "rpc_url", "unknown")
-
-                # Try to make a more specific name if possible
-                if hasattr(boa_env, "nickname") and boa_env.nickname not in [
-                    None,
-                    "unknown",
-                    "",
-                ]:
-                    network_name = boa_env.nickname.capitalize() + " Network"
-                elif chain_id == 31337:  # Common Anvil default
-                    network_name = "Anvil Localhost"
-                else:
-                    network_name = (
-                        f"Boa Network (ID: {chain_id})"  # Fallback using Chain ID
-                    )
-
-            except (ImportError, AttributeError, Exception) as e:
-                logger.warning(
-                    f"Could not reliably determine boa_env Chain ID/RPC for UI: {e}"
-                )
-                # Keep defaults if detection fails
-
+            # Use the network details stored in the control object
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
-            self.wfile.write(
-                json.dumps(
-                    {
-                        "chainId": str(chain_id),  # Send as string for JS
-                        "rpcUrl": rpc_url,
-                        "networkName": network_name,
-                    }
-                ).encode("utf-8")
-            )
+            self.wfile.write(json.dumps(control.boa_network_details).encode("utf-8"))
         else:
             super().do_GET()
 
@@ -316,10 +265,15 @@ def _run_http_server(port: int, ui_files_path: Path, control: MetamaskServerCont
 
 
 # --- CLI Orchestration Functions ---
-def start_metamask_ui_server() -> MetamaskServerControl:
+def start_metamask_ui_server(
+    boa_network_details: Dict[str, Any],
+) -> MetamaskServerControl:
     PORT = 9000
     control = MetamaskServerControl(PORT)
     set_server_control(control)
+
+    # Store the network details in the control object for the handler to access
+    control.boa_network_details = boa_network_details
 
     try:
         with importlib.resources.path("moccasin.data", "metamask_ui") as p:
