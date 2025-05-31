@@ -217,8 +217,10 @@ def _setup_network_and_account_from_config_and_cli(
         boa.env.set_balance(boa.env.eoa, STARTING_BOA_BALANCE)
 
 
-# @dev Act as a robust initializer and finalizer
+# @dev contextmanager allows to act as a robust initializer and finalizer
 # ensuring that external resources like the MetaMask UI server are properly managed.
+# @dev separated from _setup_network_and_account_from_config_and_cli to avoid
+# unwanted side effects in other CLI commands that might use this function.
 @contextlib.contextmanager
 def setup_network_and_account_for_metamask_ui(
     network: str | None = None,
@@ -233,10 +235,26 @@ def setup_network_and_account_for_metamask_ui(
     db_path: str | None = None,
     save_to_db: bool | None = None,
 ):
-    """
-    Context manager to set up the network and account for MetaMask UI integration.
+    """Context manager to set up the network and account for MetaMask UI integration.
+
     This function initializes the network and account based on CLI parameters and config,
     and starts the MetaMask UI server for user interaction.
+    It ensures that the environment is properly configured for MetaMask integration,
+    and cleans up resources after use.
+
+    :param network: The name of the network to set as active.
+    :param url: The URL of the network to connect to.
+    :param fork: Whether to use a forked network.
+    :param account: The account name to use for the network.
+    :param private_key: The private key to use for the account.
+    :param password_file_path: Path to the password file for the account.
+    :param prompt_live: Whether to prompt the user for confirmation on live networks.
+    :param explorer_uri: The URI of the blockchain explorer.
+    :param explorer_api_key: The API key for the blockchain explorer.
+    :param db_path: Path to the database for storing network data.
+    :param save_to_db: Whether to save network data to the database.
+    :raises ValueError: If both account and private key are provided.
+    :yield: Yields control to the calling script after setting up the environment.
     """
     if account is not None and private_key is not None:
         raise ValueError("Cannot set both account and private key in the CLI!")
