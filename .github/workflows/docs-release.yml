@@ -17,7 +17,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
       - name: Setup just
-        uses: extractions/setup-just@v2
+        uses: extractions/setup-just@v3
       - name: Sphinx build
         run: just docs
       - name: Deploy to GitHub Pages
