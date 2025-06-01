@@ -5,8 +5,8 @@ In ``moccasin``, we use `hypothesis <https://hypothesis.readthedocs.io/en/latest
 
 If you'd like to see how to do fuzzing in ``moccasin``, head over to either:
 
-- `Stateless Fuzzing <how-tos/stateless_fuzzing.rst>`_
-- `Stateful Fuzzing <how-tos/stateful_fuzzing.rst>`_
+- :doc:`Stateless Fuzzing </how-tos/stateless_fuzzing>`
+- :doc:`Stateful Fuzzing </how-tos/stateful_fuzzing>`
 
 What is fuzzing?
 ================
@@ -154,5 +154,5 @@ You can learn more about fuzzing from the video here:
 And then, learn how to do stateless and stateful fuzz tests in ``moccasin`` from these guides.
 
 
-- `Stateless Fuzzing <how-tos/stateless_fuzzing.rst>`_
-- `Stateful Fuzzing <how-tos/stateful_fuzzing.rst>`_
+- :doc:`Stateless Fuzzing </how-tos/stateless_fuzzing>`
+- :doc:`Stateful Fuzzing </how-tos/stateful_fuzzing>`
