@@ -35,5 +35,7 @@ def test_run_install_no_dependencies(
     assert "No dependencies to install" in result.stderr
 
     assert installation_temp_path.joinpath(MOCCASIN_TOML).exists()
-    assert not installation_temp_path.joinpath(LIB_GH_PATH).exists()
-    assert not installation_temp_path.joinpath(LIB_PIP_PATH).exists()
+    gh_path = installation_temp_path.joinpath(LIB_GH_PATH)
+    pip_path = installation_temp_path.joinpath(LIB_PIP_PATH)
+    assert gh_path.exists() and not os.listdir(gh_path)
+    assert pip_path.exists() and not os.listdir(pip_path)

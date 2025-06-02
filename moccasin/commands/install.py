@@ -61,9 +61,16 @@ def mox_install(
         config = get_or_initialize_config()
     if len(requirements) == 0:
         requirements = config.get_dependencies()
+
+    # Get dependencies install path and create it if it doesn't exist
+    # @dev allows to avoid vyper compiler error when missing one dir
+    install_path: Path = config.get_base_dependencies_install_path()
+    install_path.joinpath(PYPI).mkdir(exist_ok=True, parents=True)
+    install_path.joinpath(GITHUB).mkdir(exist_ok=True, parents=True)
     if len(requirements) == 0:
         logger.info("No dependencies to install.")
         return 0
+
     pip_requirements = []
     github_requirements = []
     for requirement in requirements:
@@ -71,12 +78,6 @@ def mox_install(
             github_requirements.append(requirement)
         else:
             pip_requirements.append(requirement)
-
-    # Get dependencies install path and create it if it doesn't exist
-    # @dev allows to avoid vyper compiler error when missing one dir
-    install_path: Path = config.get_base_dependencies_install_path()
-    install_path.joinpath(PYPI).mkdir(exist_ok=True, parents=True)
-    install_path.joinpath(GITHUB).mkdir(exist_ok=True, parents=True)
 
     # @dev in case of fresh install, dependencies might be ordered differently
     # since we install pip packages first and github packages later
