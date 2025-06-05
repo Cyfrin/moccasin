@@ -1,8 +1,9 @@
 import contextlib
 import os
 import sys
+import time
 from pathlib import Path
-from typing import Iterator, List, Dict, Any
+from typing import Any, Dict, Iterator, List
 
 import boa
 from boa.util.abi import Address
@@ -11,18 +12,18 @@ from moccasin.config import Config, Network, get_config
 from moccasin.constants.vars import (
     ERA_DEFAULT_PRIVATE_KEY,
     ERAVM,
-    PYEVM,
     GITHUB,
+    PYEVM,
     PYPI,
     STARTING_BOA_BALANCE,
 )
 from moccasin.logging import logger
-from moccasin.moccasin_account import MoccasinAccount
 from moccasin.metamask_integration import (
+    MetaMaskAccount,
     start_metamask_ui_server,
     stop_metamask_ui_server,
-    MetaMaskAccount,
 )
+from moccasin.moccasin_account import MoccasinAccount
 
 
 def get_sys_paths_list(config: Config) -> List[Path]:
@@ -304,17 +305,66 @@ def setup_network_and_account_for_metamask_ui(
             boa_network_details
         )  # Pass network details
 
-        # The connected_account_address from control is already a boa.Address object.
-        # Use it to get the checksum string for MetaMaskAccount init
+        # Poll for an account with balance
+        logger.info("Checking connected account balance...")
+        max_attempts = 150  # 5 minutes total (2 second intervals)
+        attempts = 0
+
+        while attempts < max_attempts:
+            current_balance = boa.env.get_balance(
+                server_control.connected_account_address
+            )
+
+            if current_balance > 0:
+                server_control.account_status = {
+                    "ok": True,
+                    "message": "Connected wallet has gas. Proceeding with transaction.",
+                    "current_address": str(server_control.connected_account_address),
+                }
+                logger.info(
+                    f"Account {server_control.connected_account_address} has balance: {current_balance}"
+                )
+                break
+
+            # Update the account status to show zero balance
+            server_control.account_status = {
+                "ok": False,
+                "error": "zero_balance",
+                "message": "Connected wallet has 0 gas. Please change to an account with funds.",
+                "current_address": str(server_control.connected_account_address),
+            }
+
+            if attempts == 0:  # Only log once
+                logger.warning(
+                    f"Connected account {server_control.connected_account_address} has zero balance. Waiting for account with funds..."
+                )
+
+            # Wait for 2 seconds before checking again
+            time.sleep(2)
+            attempts += 1
+
+            # Check if account was changed (clear and wait for new connection)
+            if server_control.connected_account_event.wait(timeout=0.1):
+                # Account was changed, reset the event and check new balance
+                server_control.connected_account_event.clear()
+                logger.info(
+                    f"Account changed to: {server_control.connected_account_address}"
+                )
+                attempts = 0  # Reset attempts for new account
+
+        if current_balance <= 0:
+            logger.error("No account with balance was connected within timeout period.")
+            raise TimeoutError(
+                "No account with balance connected. Please use an account with funds."
+            )
+
         metamask_account_instance = MetaMaskAccount(
             str(server_control.connected_account_address)
         )
 
         # Ensure the MetaMask account is added to the boa environment
         if active_network.is_local_or_forked_network():
-            boa.env.eoa = (
-                metamask_account_instance.address
-            )  # Local/forked networks use address as EOA directly in boa
+            boa.env.eoa = metamask_account_instance.addresss
         else:
             boa.env.add_account(
                 metamask_account_instance, force_eoa=True

@@ -21,6 +21,7 @@ let isMetaMaskConnected = false;
 let heartbeatInterval = null; // Interval for heartbeat to Python server
 let pollingInterval = null; // Interval for transaction polling
 let boaNetworkDetails = {}; // Details of the active network for Boa (chainId, rpcUrl, networkName)
+let accountStatusInterval = null;
 
 // --- Utility Functions for UI Updates ---
 /**
@@ -129,9 +130,9 @@ async function signalPythonBackendNetworkSynced() {
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     // If the response is OK, log success and update UI
     console.log("Signaled Python backend that network is synced.");
-    setStatus("Network synced! Script should now be continuing...", "success");
-    setInstructions("You can close this browser tab.");
-    showButtons(); // Hide all buttons
+    // setStatus("Network synced! Script should now be continuing...", "success");
+    // setInstructions("You can close this browser tab.");
+    // showButtons(); // Hide all buttons
   } catch (error) {
     console.error("Failed to signal Python backend:", error);
     alert(
@@ -226,8 +227,7 @@ async function handleNetworkSwitch() {
       );
     } else {
       setStatus(
-        `Error switching network: ${
-          switchError.message || switchError.code
+        `Error switching network: ${switchError.message || switchError.code
         }. Please try manually.`,
         "error"
       );
@@ -300,18 +300,24 @@ async function updateUI() {
     return;
   }
 
+  if (metamaskChainId === null) {
+    setStatus(
+      "MetaMask not detected or not connected. Please install/unlock MetaMask extension.",
+      "error"
+    );
+    setInstructions(
+      "<p>Ensure your MetaMask extension is installed, unlocked, and click 'Connect' if prompted.</p>"
+    );
+    return;
+  }
+
   if (boaNetDetails.chainId === metamaskChainId) {
     // Network matches, proceed with the script
     setStatus(
       `MetaMask is connected to the correct network! (Chain ID: ${metamaskChainId})`,
       "success"
     );
-    setInstructions(
-      "<p>Click 'Continue Script' below to proceed with your Boa script, or it may continue automatically.</p>"
-    );
-    showButtons(continueButton);
-
-    // Report that the network is synced to the Python backend
+    setInstructions("<p>Checking account balance...</p>");
     await signalPythonBackendNetworkSynced();
 
     if (!isMetaMaskConnected) {
@@ -319,8 +325,8 @@ async function updateUI() {
       const connected = await connectMetaMaskAndReportAccount();
       if (connected) {
         // If connection is successful, start polling and heartbeat
-        startTransactionPolling();
         startHeartbeat();
+        startAccountStatusPolling();
       } else {
         // If connection failed, update UI to prompt user
         setStatus(
@@ -334,8 +340,8 @@ async function updateUI() {
       }
     } else {
       // If MetaMask is already connected, just start polling and heartbeat
-      startTransactionPolling();
       startHeartbeat();
+      startAccountStatusPolling();
     }
   } else {
     // Network mismatch, prompt user to switch networks
@@ -485,8 +491,7 @@ async function pollForReceipt(txHash, maxAttempts = 60, delay = 5000) {
     } catch (error) {
       // If receipt is not found, it may still be pending
       console.warn(
-        `Error getting receipt for ${txHash} (attempt ${
-          attempts + 1
+        `Error getting receipt for ${txHash} (attempt ${attempts + 1
         }/${maxAttempts}): ${error.message}`
       );
     }
@@ -529,7 +534,6 @@ window.ethereum.on("accountsChanged", (accounts) => {
     isMetaMaskConnected = false;
     reportConnectedAccount(null);
     clearInterval(pollingInterval);
-    clearInterval(heartbeatInterval);
     pollingInterval = null;
     heartbeatInterval = null;
     updateUI();
@@ -539,6 +543,9 @@ window.ethereum.on("accountsChanged", (accounts) => {
     isMetaMaskConnected = true;
     reportConnectedAccount(currentAccount);
     updateUI();
+    if (accountStatusInterval) {
+      checkAndHandleAccountStatus();
+    }
   }
 });
 
@@ -594,5 +601,70 @@ function startHeartbeat() {
       sendHeartbeat,
       HEARTBEAT_INTERVAL_CLIENT_MS
     );
+  }
+}
+
+/**
+ * Starts polling for account status when we need to check for balance issues
+ */
+function startAccountStatusPolling() {
+  if (!accountStatusInterval) {
+    // Check immediately
+    checkAndHandleAccountStatus();
+
+    // Then check every 2 seconds
+    accountStatusInterval = setInterval(checkAndHandleAccountStatus, 2000);
+  }
+}
+
+/**
+ * Stops the account status polling
+ */
+function stopAccountStatusPolling() {
+  if (accountStatusInterval) {
+    clearInterval(accountStatusInterval);
+    accountStatusInterval = null;
+  }
+}
+
+/**
+ * Checks account status and updates UI if there's an issue
+ */
+async function checkAndHandleAccountStatus() {
+  try {
+    const accountStatus = await checkAccountStatus();
+    if (!accountStatus.ok && accountStatus.error === 'zero_balance') {
+      // Show zero balance warning
+      setStatus("Connected wallet has 0 gas!", "error");
+      setInstructions(`
+                <p>The account <strong>${accountStatus.current_address}</strong> has <strong>zero balance</strong>.</p>
+                <p>Please connect to an account with funds in MetaMask.</p>
+            `);
+      showButtons(); // Hide all buttons while waiting
+    } else if (accountStatus.ok) {
+      // Account is good, stop polling for account status
+      stopAccountStatusPolling();
+      setStatus("Account connected successfully!", "success");
+      setInstructions("<p>Account has balance. Waiting for transactions from your script...</p>");
+      showButtons(); // Hide buttons - transactions will come automatically
+      startTransactionPolling();
+    }
+  } catch (error) {
+    console.error("Error checking account status:", error);
+  }
+}
+
+
+/**
+ * Checks the account status from the Python backend.
+ * @returns {Promise<Object>} - Returns the account status object.
+ */
+async function checkAccountStatus() {
+  try {
+    const response = await fetch("/check_account_status");
+    return await response.json();
+  } catch (error) {
+    console.error("Error checking account status:", error);
+    return { ok: false }; // Default to OK if we can't check
   }
 }

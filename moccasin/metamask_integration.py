@@ -8,16 +8,15 @@ import importlib.resources
 import json
 import socketserver
 import threading
-import webbrowser
 import time
+import webbrowser
+from pathlib import Path
+from queue import Empty, Queue
+from typing import Any, Dict, Optional
 
 from boa.util.abi import Address
-from eth_utils.address import to_checksum_address
-from moccasin.logging import logger
-from pathlib import Path
-from queue import Queue, Empty
-from typing import Optional, Dict, Any
 
+from moccasin.logging import logger
 
 ################################################################
 #          GLOBAL VARIABLES FOR SERVER COMMUNICATION           #
@@ -85,6 +84,7 @@ class MetamaskServerControl:
         self.browser_thread: Optional[threading.Thread] = None
         self.heartbeat_timeout_s = HEARTBEAT_TIMEOUT_SERVER_S
         self.boa_network_details: Dict[str, Any] = {}
+        self.account_status: Dict[str, Any] = {"ok": False}
 
 
 # Global instance of server control, managed by _setup_network_and_account_from_config_and_cli
@@ -260,6 +260,14 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps(control.boa_network_details).encode("utf-8"))
+        elif self.path == "/check_account_status":
+            # Return the current account status
+            account_status = getattr(control, "account_status", {"ok": True})
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            self.wfile.write(json.dumps(account_status).encode("utf-8"))
+            logger.debug(f"Sent account status: {account_status}")
         else:
             # @dev maybe not needed, but just in case?
             super().do_GET()
@@ -298,6 +306,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 # Update the MetaMask server control with the connected account address
                 control.connected_account_address = Address(connected_address)
                 control.connected_account_event.set()
+
                 # Notify the server that the account is connected
                 logger.info(f"Received connected MetaMask account: {connected_address}")
                 self.send_response(200)
