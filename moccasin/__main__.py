@@ -338,6 +338,11 @@ Use this command to prepare your contracts for deployment or testing.""",
         help="Do not install the requirements before running the script.",
         action="store_true",
     )
+    run_parser.add_argument(
+        "--prompt-metamask",
+        help="Prompt the user to connect to MetaMask for transactions. (Requires a browser.)",
+        action="store_true",
+    )
 
     add_network_args_to_parser(run_parser)
     add_account_args_to_parser(run_parser)
