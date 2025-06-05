@@ -346,7 +346,7 @@ def test_run_install_update_pip_and_gh(
         (
             [],
             ["snekmate", "moccasin", "PatrickAlphaC/test_repo"],
-            {"patrickalphac/test_repo": "0.1.1"},
+            {"patrickalphac/test_repo": "0.1.2"},
         ),
         # Change pip specification
         (
@@ -356,7 +356,7 @@ def test_run_install_update_pip_and_gh(
                 f"{PIP_PACKAGE_NAME}>={PACKAGE_VERSION}",
                 f"{MOCCASIN_LIB_NAME}==0.3.6",
             ],
-            {"patrickalphac/test_repo": "0.1.1"},
+            {"patrickalphac/test_repo": "0.1.2"},
         ),
         # Change gh specification
         (
