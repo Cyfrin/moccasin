@@ -364,7 +364,7 @@ def setup_network_and_account_for_metamask_ui(
 
         # Ensure the MetaMask account is added to the boa environment
         if active_network.is_local_or_forked_network():
-            boa.env.eoa = metamask_account_instance.addresss
+            boa.env.eoa = metamask_account_instance.address
         else:
             boa.env.add_account(
                 metamask_account_instance, force_eoa=True
