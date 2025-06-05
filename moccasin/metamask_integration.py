@@ -73,8 +73,8 @@ class MetamaskServerControl:
         self.port = port
         self.shutdown_flag = threading.Event()
         self.network_sync_event = threading.Event()
-        self.transaction_request_queue = Queue()  # CLI -> Browser
-        self.transaction_response_queue = Queue()  # Browser -> CLI
+        self.transaction_request_queue: Queue[dict] = Queue()  # CLI -> Browser
+        self.transaction_response_queue: Queue[str] = Queue()  # Browser -> CLI
         self.connected_account_event = threading.Event()
         self.connected_account_address: Optional[Address] = None
         self.last_heartbeat_time = time.time()
