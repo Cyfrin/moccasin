@@ -1,6 +1,6 @@
 [project]
 name = "moccasin"
-version = "0.4.0"
+version = "0.4.1"
 description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },
@@ -47,7 +47,10 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "Topic :: Utilities",
 ]
-license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+license-files = [
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+]
 
 [tool.uv]
 managed = true
