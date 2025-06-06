@@ -177,17 +177,22 @@
 
         <div class="buttons">
             <button id="switchNetworkButton" style="display:none;">Switch Network in MetaMask</button>
-            <button id="continueButton" style="display:none;">Continue Script</button>
+            <button id="connectButton" style="display:none;">Continue Script</button>
         </div>
 
         <div class="message-box">
             <p><strong>Heads Up:</strong> You might need to open your MetaMask extension (check for a pop-up or the fox
                 icon) to confirm or reject transactions initiated by Moccasin.</p>
             <p>If you close this tab or the MetaMask connection is lost, the Moccasin CLI operation may time out.</p>
+            <p><strong>Tips:</strong> If MetaMask pop-up doesn't appear or you encounter issues, please check their 
+                <a href="https://support.metamask.io/configure/troubleshooting/user-guide-troubleshooting/" target="_blank" style="color: rgb(248, 120, 42);">
+                    user guide
+                </a>
+            for troubleshooting.</p>
         </div>
     </div>
 
-    <script src="main.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 
 </html>

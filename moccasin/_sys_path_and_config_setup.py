@@ -2,7 +2,9 @@ import contextlib
 import os
 import sys
 import time
+import time
 from pathlib import Path
+from typing import Any, Dict, Iterator, List
 from typing import Any, Dict, Iterator, List
 
 import boa
@@ -14,11 +16,12 @@ from moccasin.constants.vars import (
     ERAVM,
     GITHUB,
     PYEVM,
+    PYEVM,
     PYPI,
     STARTING_BOA_BALANCE,
 )
 from moccasin.logging import logger
-from moccasin.metamask_integration import (
+from moccasin.metamask_cli_integration import (
     MetaMaskAccount,
     start_metamask_ui_server,
     stop_metamask_ui_server,
@@ -85,6 +88,8 @@ def _patch_sys_path(paths: List[Path]) -> Iterator[None]:
 # REVIEW: Might be best to just set this as **kwargs
 def _get_set_active_network_from_cli_and_config(
     config: Config,
+    network: str | None = None,
+    url: str | None = None,
     network: str | None = None,
     url: str | None = None,
     fork: bool | None = None,
@@ -286,6 +291,13 @@ def setup_network_and_account_for_metamask_ui(
                 f"MetaMask UI mode is not supported for {active_network.name} networks."
             )
             sys.exit(0)
+
+        # Ensure the active network has chain_id and url set
+        if active_network.chain_id is None or active_network.url is None:
+            logger.error(
+                "Active network is not properly configured. Please ensure chain_id and url are set."
+            )
+            sys.exit(1)
 
         # Proceed with MetaMask UI integration
         logger.info("MetaMask UI mode enabled. Initiating browser connection...")
