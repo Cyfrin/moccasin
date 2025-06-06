@@ -2,7 +2,9 @@ import contextlib
 import os
 import sys
 import time
+import time
 from pathlib import Path
+from typing import Any, Dict, Iterator, List
 from typing import Any, Dict, Iterator, List
 
 import boa
@@ -13,6 +15,7 @@ from moccasin.constants.vars import (
     ERA_DEFAULT_PRIVATE_KEY,
     ERAVM,
     GITHUB,
+    PYEVM,
     PYEVM,
     PYPI,
     STARTING_BOA_BALANCE,
@@ -85,6 +88,8 @@ def _patch_sys_path(paths: List[Path]) -> Iterator[None]:
 # REVIEW: Might be best to just set this as **kwargs
 def _get_set_active_network_from_cli_and_config(
     config: Config,
+    network: str | None = None,
+    url: str | None = None,
     network: str | None = None,
     url: str | None = None,
     fork: bool | None = None,

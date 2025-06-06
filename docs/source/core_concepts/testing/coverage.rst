@@ -1,10 +1,10 @@
 Coverage
 ########
 
-.. note:: See the `titanoboa gas-profiling documentation for more information. <https://titanoboa.readthedocs.io/en/latest/testing.html#coverage>`_
+.. note:: See the `titanoboa computing test coverage documentation for more information. <https://titanoboa.readthedocs.io/en/latest/guides/testing/coverage/>`_
 
 
-You can also run coverage tests, using the ``--coverage`` flag, and any flag the comes with `pytest-cov <https://pypi.org/project/pytest-cov/>`_. This also uses `titanoboa <https://titanoboa.readthedocs.io/en/latest/testing.html#coverage>`_ under the hood. 
+You can also run coverage tests, using the ``--coverage`` flag, and any flag the comes with `pytest-cov <https://pypi.org/project/pytest-cov/>`_. This also uses `titanoboa <https://titanoboa.readthedocs.io/en/latest/guides/testing/coverage/>`_ under the hood. 
 
 To run coverage tests, you can run:
 

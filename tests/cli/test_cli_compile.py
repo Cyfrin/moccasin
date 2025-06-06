@@ -11,9 +11,9 @@ def test_compile_help(mox_path):
     result = subprocess.run(
         [mox_path, "compile", "-h"], check=True, capture_output=True, text=True
     )
-    assert (
-        EXPECTED_HELP_TEXT in result.stdout
-    ), "Help output does not contain expected text"
+    assert EXPECTED_HELP_TEXT in result.stdout, (
+        "Help output does not contain expected text"
+    )
     assert result.returncode == 0
 
 
@@ -21,9 +21,9 @@ def test_build_help(mox_path):
     result = subprocess.run(
         [mox_path, "build", "-h"], check=True, capture_output=True, text=True
     )
-    assert (
-        EXPECTED_HELP_TEXT in result.stdout
-    ), "Help output does not contain expected text"
+    assert EXPECTED_HELP_TEXT in result.stdout, (
+        "Help output does not contain expected text"
+    )
     assert result.returncode == 0
 
 
