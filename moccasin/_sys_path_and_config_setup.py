@@ -18,7 +18,7 @@ from moccasin.constants.vars import (
     STARTING_BOA_BALANCE,
 )
 from moccasin.logging import logger
-from moccasin.metamask_integration import (
+from moccasin.metamask_cli_integration import (
     MetaMaskAccount,
     start_metamask_ui_server,
     stop_metamask_ui_server,
@@ -286,6 +286,13 @@ def setup_network_and_account_for_metamask_ui(
                 f"MetaMask UI mode is not supported for {active_network.name} networks."
             )
             sys.exit(0)
+
+        # Ensure the active network has chain_id and url set
+        if active_network.chain_id is None or active_network.url is None:
+            logger.error(
+                "Active network is not properly configured. Please ensure chain_id and url are set."
+            )
+            sys.exit(1)
 
         # Proceed with MetaMask UI integration
         logger.info("MetaMask UI mode enabled. Initiating browser connection...")
