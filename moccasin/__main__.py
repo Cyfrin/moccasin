@@ -32,6 +32,21 @@ def main(argv: list) -> int:
         print(get_version())
         return 0
 
+    # Special case for vyper command - pass all args through without parsing
+    if len(argv) > 0 and argv[0] == "vyper":
+        # Parse only for --no-install
+        vyper_parser = argparse.ArgumentParser(add_help=False)
+        vyper_parser.add_argument("--no-install", action="store_true")
+
+        try:
+            args, _ = vyper_parser.parse_known_args(["vyper"] + argv[1:])
+            args.command = "vyper"
+            logger.info("Running vyper command...")
+            return import_module("moccasin.commands.vyper").main(args)
+        except Exception as e:
+            logger.error(f"Error parsing Vyper command: {e}")
+            return 1
+    
     main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
 
     # ------------------------------------------------------------------
@@ -598,6 +613,29 @@ This command will attempt to use the environment variable ETHERSCAN_API_KEY as t
     )
     explorer_list_parser.add_argument(
         "--json", help="Format as json.", action="store_true"
+    )
+
+    # ------------------------------------------------------------------
+    #                        VYPER COMMAND
+    # ------------------------------------------------------------------
+    vyper_parser = sub_parsers.add_parser(
+        "vyper",
+        help="Run Vyper compiler commands with Moccasin's dependency resolution.",
+        description="""Pass commands directly to the Vyper compiler while resolving dependencies.
+This allows you to run any Vyper command (like vyper -f external_interface contract.vy)
+while ensuring that dependencies like snekmate are properly resolved.
+
+Example usage:
+    mox vyper -f external_interface src/MyContract.vy
+    mox vyper -f abi src/MyContract.vy
+    """,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        parents=[parent_parser],
+    )
+    vyper_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before running the command.",
+        action="store_true",
     )
 
     # ------------------------------------------------------------------
