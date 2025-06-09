@@ -90,8 +90,6 @@ def _get_set_active_network_from_cli_and_config(
     config: Config,
     network: str | None = None,
     url: str | None = None,
-    network: str | None = None,
-    url: str | None = None,
     fork: bool | None = None,
     account: str | None = None,
     password_file_path: Path | None = None,
