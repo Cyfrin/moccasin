@@ -75,6 +75,8 @@ class MetamaskServerControl:
         self.network_sync_event = threading.Event()
         self.transaction_request_queue: Queue[dict] = Queue()  # CLI -> Browser
         self.transaction_response_queue: Queue[str] = Queue()  # Browser -> CLI
+        self.message_signing_request_queue: Queue[dict] = Queue()  # CLI -> Browser for message signing
+        self.message_signing_response_queue: Queue[str] = Queue()  # Browser -> CLI for message signing
         self.connected_account_event = threading.Event()
         self.connected_account_address: Optional[Address] = None
         self.last_heartbeat_time = time.time()
@@ -197,6 +199,75 @@ class MetaMaskAccount:
             logger.error(f"Error during MetaMask UI transaction delegation: {e}")
             raise  # Re-raise the exception to propagate failure
 
+    def sign_message(self, encoded_message):
+        """Signs an encoded message using MetaMask.
+
+        This method delegates message signing to the MetaMask UI. It's designed to work
+        with the encoded output from encode_typed_data() which is used in ZkSync deployments.
+
+        :param encoded_message: The encoded message to sign (bytes from encode_typed_data)
+        :type encoded_message: bytes
+        :return: The signature as a hex string.
+        :rtype: str
+        :raises RuntimeError: If the MetaMask UI server is not running.
+        :raises TimeoutError: If the user does not sign the message in time.
+        :raises Exception: If the MetaMask UI message signing fails with an error.
+        """
+        control = get_server_control()
+        if not control.server_thread or not control.server_thread.is_alive():
+            raise RuntimeError(
+                "MetaMask UI server is not running. Cannot sign message via UI."
+            )
+
+        # Convert bytes to hex string for transmission to browser
+        if isinstance(encoded_message, bytes):
+            message_hex = "0x" + encoded_message.hex()
+        else:
+            # Handle case where it's already a string
+            message_hex = str(encoded_message)
+            if not message_hex.startswith("0x"):
+                message_hex = "0x" + message_hex
+
+        logger.info(
+            f"Delegating message signing to MetaMask UI for address {self.address}..."
+        )
+        try:
+            # Prepare message signing request
+            message_request = {
+                "type": "sign_message",
+                "message": message_hex,
+                "account": str(self.address)
+            }
+            
+            # Send message signing request to the browser
+            control.message_signing_request_queue.put(message_request)
+
+            # Wait for the browser to send back the signature
+            result_json = control.message_signing_response_queue.get(
+                timeout=control.heartbeat_timeout_s * 10  # Extended timeout for user interaction
+            )
+            result = json.loads(result_json)
+
+            if result.get("status") == "success":
+                signature = result["signature"]
+                logger.info(
+                    f"Message signed successfully by MetaMask. Signature: {signature[:10]}..."
+                )
+                return signature
+            else:
+                error_message = result.get("error", "Unknown MetaMask UI error")
+                error_code = result.get("code", "N/A")
+                raise Exception(
+                    f"MetaMask message signing failed: {error_message} (Code: {error_code})"
+                )
+        except Empty:
+            raise TimeoutError(
+                "Timed out waiting for MetaMask message signing response from UI. User did not sign in time."
+            )
+        except Exception as e:
+            logger.error(f"Error during MetaMask UI message signing delegation: {e}")
+            raise  # Re-raise the exception to propagate failure
+
     def __repr__(self):
         return f"<MetaMaskAccount {self.address}>"
 
@@ -268,6 +339,22 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(account_status).encode("utf-8"))
             logger.debug(f"Sent account status: {account_status}")
+        # Get pending message signing request from the queue
+        elif self.path == "/get_pending_message_signing":
+            try:
+                # Attempt to get the message signing request from the queue
+                message_request = control.message_signing_request_queue.get_nowait()
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                # Convert the message signing request to JSON and send it
+                self.wfile.write(json.dumps(message_request).encode("utf-8"))
+                logger.debug("Sent message signing request to browser.")
+            except Empty:
+                # If no message signing request is pending, respond with 204 No Content
+                self.send_response(204)
+                self.end_headers()
+                logger.debug("No pending message signing request for browser.")
         else:
             # @dev maybe not needed, but just in case?
             super().do_GET()
@@ -296,6 +383,16 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-type", "text/plain")
             self.end_headers()
             self.wfile.write(b"Result received.")
+
+        # API endpoint for reporting message signing results
+        # This is where the browser sends back the message signature after user confirmation
+        elif self.path == "/report_message_signing_result":
+            control.message_signing_response_queue.put(post_body)
+            logger.info(f"Received message signing result from browser: {post_body}")
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"Message signing result received.")
 
         # API endpoint for reporting connected MetaMask account
         # This is where the browser sends back the connected account address

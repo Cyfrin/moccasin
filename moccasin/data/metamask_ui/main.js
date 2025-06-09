@@ -459,6 +459,101 @@ async function fetchAndProcessTransaction() {
 }
 
 /**
+ * Fetches and processes pending message signing requests from the Python backend.
+ *
+ * This function polls the backend for message signing requests, prompts the user
+ * to sign the message via MetaMask, and reports the result back to the backend.
+ */
+async function fetchAndProcessMessageSigning() {
+  try {
+    const response = await fetch("/get_pending_message_signing");
+    if (response.status === 200) {
+      const messageRequest = await response.json();
+      console.log("Received message signing request:", messageRequest);
+
+      try {
+        setStatus("Please sign the message in MetaMask...", "default");
+        showSpinner();
+
+        // Use eth_sign for message signing
+        const signature = await window.ethereum.request({
+          method: "eth_sign",
+          params: [messageRequest.account, messageRequest.message],
+        });
+
+        console.log("Message signed. Signature: " + signature);
+        setStatus("Message signed successfully!", "success");
+
+        // Report the successful signature to the backend
+        reportMessageSigningResult({
+          status: "success",
+          signature: signature,
+          message: messageRequest.message,
+        });
+      } catch (signError) {
+        // Handle message signing errors
+        console.error("MetaMask message signing error:", signError);
+        hideSpinner();
+        
+        let errorMessage = signError.message || "Unknown message signing error.";
+        let errorCode = signError.code || "UNKNOWN_CODE";
+        let statusForBackend = "error"; // Default status for backend
+
+        if (signError.code === 4001) {
+          setStatus("Message signing rejected by user.", "error");
+          errorMessage = "Message signing rejected by user.";
+          statusForBackend = "rejected"; // More specific status for user rejection
+        } else {
+          setStatus(`Message signing failed: ${signError.message}`, "error");
+        }
+
+        // Report the message signing failure/rejection to the backend immediately
+        reportMessageSigningResult({
+          status: statusForBackend, // "rejected" or "error"
+          error: errorMessage,
+          code: errorCode,
+          message: messageRequest.message,
+        });
+      } finally {
+        hideSpinner();
+      }
+    } else if (response.status === 204) {
+      // No pending message signing request - keep quiet
+    } else {
+      console.error("Error fetching message signing request:", response.status);
+    }
+  } catch (error) {
+    // Handle network errors or other issues
+    console.error("Network error during message signing fetch:", error);
+  }
+}
+
+/**
+ * Reports the message signing result to the Python backend.
+ *
+ * @param {Object} result - The message signing result object.
+ */
+async function reportMessageSigningResult(result) {
+  try {
+    const response = await fetch("/report_message_signing_result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(result),
+    });
+    if (!response.ok) {
+      console.error(`Error reporting message signing result: ${response.status}`);
+    } else {
+      console.log("Message signing result reported to Python server.");
+    }
+  } catch (error) {
+    console.error(
+      "Network error reporting message signing result to Python:",
+      error
+    );
+  }
+}
+
+/**
  * Polls for the transaction receipt using the transaction hash.
  *
  * Retries up to maxAttempts with a delay between attempts.
@@ -585,8 +680,11 @@ document.addEventListener("DOMContentLoaded", () => {
  */
 function startTransactionPolling() {
   if (!pollingInterval) {
-    pollingInterval = setInterval(fetchAndProcessTransaction, 1000);
-    console.log("Started transaction polling.");
+    pollingInterval = setInterval(() => {
+      fetchAndProcessTransaction();
+      fetchAndProcessMessageSigning();
+    }, 1000);
+    console.log("Started transaction and message signing polling.");
   }
 }
 
