@@ -88,11 +88,6 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             # Reset the signal after sending it, so it's not repeatedly sent
             control.signal_disconnect_frontend = False
         else:
-            # Set cache-control headers for all static files to prevent caching
-            #    @dev best for CLI usage where we want the latest files
-            self.send_response(200)
-            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
-
             # Call the base class method to serve the file
             super().do_GET()
 
