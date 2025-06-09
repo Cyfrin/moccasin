@@ -9,6 +9,7 @@ INSTALL_PROJECT_PATH = Path(__file__).parent.joinpath("data/installation_project
 NO_CONFIG_PROJECT_PATH = Path(__file__).parent.joinpath("data/no_config_project/")
 PURGE_PROJECT_PATH = Path(__file__).parent.joinpath("data/purge_project/")
 TESTS_CONFIG_PROJECT_PATH = Path(__file__).parent.joinpath("data/tests_project/")
+VVM_ERROR_PROJECT_PATH = Path(__file__).parent.joinpath("data/vvm_error_project/")
 ZKSYNC_PROJECT_PATH = Path(__file__).parent.joinpath("data/zksync_project/")
 
 # ------------------------------------------------------------------
