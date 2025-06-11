@@ -18,7 +18,7 @@ from moccasin.constants.vars import (
     STARTING_BOA_BALANCE,
 )
 from moccasin.logging import logger
-from moccasin.metamask_integration import (
+from moccasin.metamask_cli_integration import (
     MetaMaskAccount,
     start_metamask_ui_server,
     stop_metamask_ui_server,
