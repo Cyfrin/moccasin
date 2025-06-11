@@ -35,7 +35,7 @@ The `metamask_cli_integration` module is carefully organized into several smalle
 
 - **`CustomHandler` (in `http_handler.py`):** An extension of Python's `SimpleHTTPRequestHandler`, responsible for serving static UI files and handling specific API endpoints for MetaMask interactions (e.g., `heartbeat`, `report_transaction_result`, `api/network-synced`).
 
-- **`MetaMaskAccount` (in `account.py`):** A custom account class that implements the `send_transaction` method expected by Boa, but delegates the actual signing and broadcasting to the MetaMask UI. It does not store private keys.
+- **`MetaMaskAccount` (in `account.py`):** A custom account class that implements the `send_transaction` and `sign_typed_data` methods. It interacts with the MetaMask UI to sign transactions and typed data, returning results or errors as needed.
 
 - **Lifecycle Functions (in `server_lifecycle.py`):**
 

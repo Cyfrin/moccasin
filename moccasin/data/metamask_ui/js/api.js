@@ -1,8 +1,11 @@
-// js/api.js
 // Handles all communication with the Python backend.
 
-import { setInstructions, setStatus } from "./ui.js";
-import { state } from "./state.js"; // To update boaNetworkDetails directly here
+import { setStatus } from "./ui.js";
+import { state } from "./state.js";
+
+// ################################################################
+// #                         GET REQUESTS                         #
+// ################################################################
 
 /**
  * Fetches the active network details from the Python backend.
@@ -11,7 +14,7 @@ import { state } from "./state.js"; // To update boaNetworkDetails directly here
  */
 export async function getBoaNetworkDetails() {
   try {
-    const response = await fetch("/api/boa-network-details");
+    const response = await fetch("/api/boa-network-details"); // GET by default
     if (!response.ok) {
       console.error(`HTTP error! status: ${response.status}`);
       throw new Error(
@@ -37,28 +40,6 @@ export async function getBoaNetworkDetails() {
 }
 
 /**
- * Signals the Python backend that the network is synchronized.
- */
-export async function signalPythonBackendNetworkSynced() {
-  try {
-    const response = await fetch("/api/network-synced", { method: "POST" });
-    if (!response.ok) {
-      console.error(`HTTP error! status: ${response.status}`);
-      throw new Error(`Failed to signal network synced: ${response.status}`);
-    }
-    console.log("Signaled Python backend that network is synced.");
-    return true;
-  } catch (error) {
-    console.error("Failed to signal Python backend network sync:", error);
-    setStatus(
-      "Failed to signal backend network sync. Critical error.",
-      "error"
-    );
-    return false;
-  }
-}
-
-/**
  * Sends a heartbeat to the Python backend to check if it's still alive.
  * @returns {Promise<boolean>} - True if heartbeat successful, false otherwise.
  */
@@ -78,7 +59,7 @@ export async function sendHeartbeat() {
  */
 export async function pollForDisconnectSignal() {
   try {
-    const response = await fetch("/api/check_disconnect_signal");
+    const response = await fetch("/api/check_disconnect_signal"); // GET by default
     if (!response.ok) {
       console.warn(
         "Failed to poll for disconnect signal, backend might be down."
@@ -99,7 +80,7 @@ export async function pollForDisconnectSignal() {
  */
 export async function checkAccountStatus() {
   try {
-    const response = await fetch("/check_account_status");
+    const response = await fetch("/check_account_status"); // GET by default
     if (!response.ok) {
       console.error(`Error checking account status: ${response.status}`);
       return { ok: false, error: "backend_error" };
@@ -117,7 +98,7 @@ export async function checkAccountStatus() {
  */
 export async function fetchPendingTransaction() {
   try {
-    const response = await fetch("/get_pending_transaction");
+    const response = await fetch("/get_pending_transaction"); // GET by default
     if (response.status === 200) {
       return await response.json();
     } else if (response.status === 204) {
@@ -130,6 +111,59 @@ export async function fetchPendingTransaction() {
   } catch (error) {
     console.error("Network error during transaction fetch:", error);
     return null;
+  }
+}
+
+/**
+ * Fetches pending message signing requests from the Python backend.
+ *
+ * This function polls the backend for message signing requests.
+ * @returns {Promise<Object|null>} - Signing request object (containing type, account, payload/message) or null if no pending request.
+ */
+export async function fetchPendingMessageSigning() {
+  try {
+    const response = await fetch("/get_pending_message_signing");
+    if (response.status === 200) {
+      const signingRequest = await response.json(); // Python sends { type: "...", payload: {...}, account: "..." }
+      console.log("Received signing request from backend:", signingRequest);
+      return signingRequest; // Return the full request object
+    } else if (response.status === 204) {
+      return null; // No pending request
+    } else {
+      console.error("Error fetching signing request:", response.status);
+      setStatus(`Error from CLI: ${response.status}`, "error");
+      return null;
+    }
+  } catch (error) {
+    // Handle network errors or other issues
+    console.error("Network error during signing request fetch:", error);
+    return null;
+  }
+}
+
+// ################################################################
+// #                        POST REQUESTS                         #
+// ################################################################
+
+/**
+ * Signals the Python backend that the network is synchronized.
+ */
+export async function signalPythonBackendNetworkSynced() {
+  try {
+    const response = await fetch("/api/network-synced", { method: "POST" });
+    if (!response.ok) {
+      console.error(`HTTP error! status: ${response.status}`);
+      throw new Error(`Failed to signal network synced: ${response.status}`);
+    }
+    console.log("Signaled Python backend that network is synced.");
+    return true;
+  } catch (error) {
+    console.error("Failed to signal Python backend network sync:", error);
+    setStatus(
+      "Failed to signal backend network sync. Critical error.",
+      "error"
+    );
+    return false;
   }
 }
 
@@ -183,5 +217,33 @@ export async function reportAccountConnectionStatus(account, status) {
     }
   } catch (error) {
     console.error("Network error reporting account status to Python:", error);
+  }
+}
+
+/**
+ * Reports the message signing result to the Python backend.
+ *
+ * @param {Object} result - The message signing result object.
+ * Expected format: { status: string, signature?: string, error?: string, code?: number, message?: string, payload?: object, requestMethod?: string }
+ */
+export async function reportMessageSigningResult(result) {
+  try {
+    const response = await fetch("/report_message_signing_result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(result),
+    });
+    if (!response.ok) {
+      console.error(
+        `Error reporting message signing result: ${response.status}`
+      );
+    } else {
+      console.log("Message signing result reported to Python server.");
+    }
+  } catch (error) {
+    console.error(
+      "Network error reporting message signing result to Python:",
+      error
+    );
   }
 }

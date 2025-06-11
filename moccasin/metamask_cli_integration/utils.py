@@ -3,6 +3,8 @@ import time
 import webbrowser
 from pathlib import Path
 
+from eth_utils import encode_hex
+from hexbytes import HexBytes
 from moccasin.logging import logger
 from moccasin.metamask_cli_integration.http_handler import CustomHandler
 from moccasin.metamask_cli_integration.server_control import (
@@ -106,3 +108,18 @@ def run_http_server(port: int, ui_files_path: Path, control: MetamaskServerContr
         # Ensure the server is properly closed on shutdown
         logger.debug("MetaMask UI server stopped.")
         control.shutdown_flag.set()
+
+
+# Define the recursive conversion function
+def convert_json_serializable_types(obj):
+    """
+    Recursively converts non-JSON-serializable types (like HexBytes, bytes)
+    into JSON-serializable strings (0x-prefixed hex).
+    """
+    if isinstance(obj, (bytes, HexBytes)):
+        return encode_hex(obj)
+    elif isinstance(obj, dict):
+        return {k: convert_json_serializable_types(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_json_serializable_types(elem) for elem in obj]
+    return obj

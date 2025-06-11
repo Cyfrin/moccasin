@@ -1,4 +1,3 @@
-// js/elements.js
 // Exports references to HTML elements.
 
 export const statusElement = document.getElementById("status-message");

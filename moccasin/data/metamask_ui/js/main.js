@@ -1,4 +1,3 @@
-// js/main.js
 // The main application entry point and orchestrator.
 
 import { setStatus, setInstructions, hideSpinner } from "./ui.js";
@@ -68,6 +67,7 @@ async function updateUI() {
       "<p>Ensure your MetaMask extension is installed, unlocked, and click 'Connect' if prompted.</p>"
     );
     polling.stopAccountStatusPolling();
+    polling.stopMessageSigningPolling();
     polling.stopTransactionPolling();
     return;
   }
@@ -77,6 +77,7 @@ async function updateUI() {
   if (!boaDetailsFetched) {
     // Stop specific polling, but keep heartbeat/disconnect
     polling.stopAccountStatusPolling();
+    polling.stopMessageSigningPolling();
     polling.stopTransactionPolling();
     return;
   }
@@ -91,6 +92,7 @@ async function updateUI() {
     );
     // Stop specific polling, but keep heartbeat/disconnect
     polling.stopAccountStatusPolling();
+    polling.stopMessageSigningPolling();
     polling.stopTransactionPolling();
     return;
   }
@@ -158,6 +160,7 @@ async function updateUI() {
         `);
     // Stop specific polling, but keep heartbeat/disconnect
     polling.stopAccountStatusPolling();
+    polling.stopMessageSigningPolling();
     polling.stopTransactionPolling();
   }
 }

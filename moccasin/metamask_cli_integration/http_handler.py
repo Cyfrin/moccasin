@@ -54,6 +54,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_response(204)
                 self.end_headers()
                 logger.debug("No pending transaction request for browser.")
+
         # Heartbeat endpoint to keep the server alive
         elif self.path == "/heartbeat":
             # Update the last heartbeat time to keep the server alive
@@ -62,6 +63,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-type", "text/plain")
             self.end_headers()
             self.wfile.write(b"OK")
+
         # Network details endpoint for MetaMask UI
         elif self.path == "/api/boa-network-details":
             # Use the network details stored in the MetaMask server control
@@ -69,6 +71,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(json.dumps(control.boa_network_details).encode("utf-8"))
+
         # Check account status endpoint
         elif self.path == "/check_account_status":
             # Return the current account status
@@ -78,6 +81,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(account_status).encode("utf-8"))
             logger.debug(f"Sent account status: {account_status}")
+
         # Endpoint for checking disconnect signal
         elif self.path == "/api/check_disconnect_signal":
             self.send_response(200)
@@ -87,6 +91,23 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps(response_data).encode("utf-8"))
             # Reset the signal after sending it, so it's not repeatedly sent
             control.signal_disconnect_frontend = False
+
+        # Get pending message signing request from the queue
+        elif self.path == "/get_pending_message_signing":
+            try:
+                # Attempt to get the message signing request from the queue
+                message_request = control.message_signing_request_queue.get_nowait()
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                # Convert the message signing request to JSON and send it
+                self.wfile.write(json.dumps(message_request).encode("utf-8"))
+                logger.debug("Sent message signing request to browser.")
+            except Empty:
+                # If no message signing request is pending, respond with 204 No Content
+                self.send_response(204)
+                self.end_headers()
+                logger.debug("No pending message signing request for browser.")
         else:
             # Call the base class method to serve the file
             super().do_GET()
@@ -115,6 +136,16 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-type", "text/plain")
             self.end_headers()
             self.wfile.write(b"Result received.")
+
+        # API endpoint for reporting message signing results
+        # This is where the browser sends back the message signature after user confirmation
+        elif self.path == "/report_message_signing_result":
+            control.message_signing_response_queue.put(post_body)
+            logger.info(f"Received message signing result from browser: {post_body}")
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"Message signing result received.")
 
         # Handle account connection status reports (including rejections)
         elif self.path == "/report_account_connection_status":
@@ -210,6 +241,7 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             except Exception as e:
                 logger.error(f"Error handling /browser_closing: {e}")
                 self.send_error(500, "Internal server error.")
+
         else:
             # Default behavior
             super().do_POST()

@@ -1,4 +1,3 @@
-// js/ui.js
 // Handles updating the UI.
 
 import {

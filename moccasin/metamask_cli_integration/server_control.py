@@ -60,6 +60,12 @@ class MetamaskServerControl:
         self.network_sync_event = threading.Event()
         self.transaction_request_queue: Queue[dict] = Queue()  # CLI -> Browser
         self.transaction_response_queue: Queue[str] = Queue()  # Browser -> CLI
+        self.message_signing_request_queue: Queue[dict] = (
+            Queue()
+        )  # CLI -> Browser for message signing
+        self.message_signing_response_queue: Queue[str] = (
+            Queue()
+        )  # Browser -> CLI for message signing
         self.connected_account_event = threading.Event()
         self.connected_account_address: Optional[Address] = None
         # Initialize last_heartbeat_time at a very early point, will be updated when browser opens

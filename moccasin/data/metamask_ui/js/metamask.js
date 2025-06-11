@@ -1,7 +1,5 @@
-// js/metamask.js
 // Handles direct interactions with the MetaMask provider (window.ethereum).
 
-import { setStatus, showSpinner, hideSpinner } from "./ui.js";
 import {
   reportTransactionResult,
   reportAccountConnectionStatus,
@@ -38,6 +36,7 @@ export async function getMetaMaskChainId() {
  */
 export async function requestMetaMaskAccounts() {
   if (!isMetaMaskAvailable()) {
+    // You might want to set a 'not available' status here
     return false;
   }
   try {
@@ -47,11 +46,9 @@ export async function requestMetaMaskAccounts() {
     if (accounts.length > 0) {
       state.currentAccount = accounts[0];
       state.isMetaMaskConnected = true;
-      // Report success
       await reportAccountConnectionStatus(state.currentAccount, "connected");
       return true;
     } else {
-      setStatus("No accounts returned from MetaMask.", "error");
       state.currentAccount = null;
       state.isMetaMaskConnected = false;
       await reportAccountConnectionStatus(null, "error");
@@ -62,13 +59,8 @@ export async function requestMetaMaskAccounts() {
     state.isMetaMaskConnected = false;
 
     if (error.code === 4001) {
-      setStatus(
-        "MetaMask connection rejected by user. Shutting down.",
-        "error"
-      ); // Update UI message
       await reportAccountConnectionStatus(null, "rejected");
     } else {
-      setStatus(`MetaMask connection error: ${error.message}`, "error");
       await reportAccountConnectionStatus(null, "error");
     }
     return false;
@@ -77,11 +69,16 @@ export async function requestMetaMaskAccounts() {
 
 /**
  * Sends a transaction via MetaMask.
+ *
  * @param {Object} txParams - Transaction parameters.
  * @returns {Promise<string|null>} - Transaction hash on success, null on failure/rejection.
+ * @dev This function *still* reports results immediately because transaction *sending*
+ * can fail before a receipt is even available for polling.
  */
 export async function sendMetaMaskTransaction(txParams) {
   if (!isMetaMaskAvailable()) {
+    // Ideally, polling should prevent this call if MetaMask isn't available.
+    // Consider throwing an error here instead of returning null for cleaner error propagation.
     return null;
   }
   try {
@@ -95,8 +92,6 @@ export async function sendMetaMaskTransaction(txParams) {
       );
       txParams.from = state.currentAccount;
     }
-    setStatus("Please confirm transaction in MetaMask...", "default");
-    showSpinner();
     const txHash = await window.ethereum.request({
       method: "eth_sendTransaction",
       params: [txParams],
@@ -104,27 +99,20 @@ export async function sendMetaMaskTransaction(txParams) {
     console.log("Transaction sent. Hash: " + txHash);
     return txHash;
   } catch (txError) {
-    hideSpinner();
     console.error("MetaMask transaction error:", txError);
 
     let errorMessage = txError.message || "Unknown transaction error.";
     let errorCode = txError.code || "UNKNOWN_CODE";
-    let statusForBackend = "error"; // Default status for backend
+    let statusForBackend = "error";
 
     if (txError.code === 4001) {
-      setStatus("Transaction rejected by user.", "error");
       errorMessage = "Transaction rejected by user.";
-      statusForBackend = "rejected"; // More specific status for user rejection
-    } else if (txError.code === -32603) {
-      setStatus(
-        `Transaction error: ${txError.message}. Check gas limit or funds.`,
-        "error"
-      );
-    } else {
-      setStatus(`Transaction failed: ${txError.message}`, "error");
+      statusForBackend = "rejected";
     }
 
-    // Report the transaction failure/rejection to the backend immediately
+    // Report the transaction sending failure/rejection to the backend immediately.
+    // This is important because the polling module relies on txHash being non-null
+    // to continue to receipt polling. If sending fails, we need to report that.
     await reportTransactionResult({
       status: statusForBackend, // "rejected" or "error"
       error: errorMessage,
@@ -133,6 +121,46 @@ export async function sendMetaMaskTransaction(txParams) {
     });
 
     return null;
+  }
+}
+
+/**
+ * Requests a signature via MetaMask for either a personal message or typed data.
+ *
+ * @param {string} requestMethod - The MetaMask RPC method to use ("personal_sign" or "eth_signTypedData_v4").
+ * @param {string} account - The account to sign from.
+ * @param {string|object} dataToSign - The message string for personal_sign, or the EIP-712 typed data object for eth_signTypedData_v4.
+ * @returns {Promise<string>} - The signature on success.
+ * @throws {Error} - Throws an error object if signing fails or is rejected by the user.
+ */
+export async function signWithMetaMask(requestMethod, account, dataToSign) {
+  if (!isMetaMaskAvailable()) {
+    throw new Error("MetaMask is not available."); // Throw instead of returning null for clarity
+  }
+  try {
+    let signature;
+
+    if (requestMethod === "eth_signTypedData_v4") {
+      console.log("Requesting eth_signTypedData_v4 with payload:", dataToSign);
+      signature = await window.ethereum.request({
+        method: "eth_signTypedData_v4",
+        params: [account, dataToSign], // dataToSign must be the EIP-712 object
+      });
+    } else if (requestMethod === "personal_sign") {
+      console.log("Requesting personal_sign with message:", dataToSign);
+      signature = await window.ethereum.request({
+        method: "personal_sign",
+        params: [dataToSign, account], // Order for personal_sign is message, account
+      });
+    } else {
+      throw new Error(`Unsupported signing method: ${requestMethod}`);
+    }
+
+    console.log("Message signed. Signature: " + signature);
+    return signature; // Return signature on success
+  } catch (signError) {
+    console.error("MetaMask signing error (propagating):", signError);
+    throw signError; // Re-throw the error so polling.js can catch and handle it.
   }
 }
 
@@ -180,7 +208,7 @@ export async function pollForTransactionReceipt(
     attempts++;
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
-  setStatus(`Timeout waiting for transaction receipt: ${txHash}`, "error");
+  // Removed setStatus: Polling module will manage UI for the final outcome
   return null;
 }
 

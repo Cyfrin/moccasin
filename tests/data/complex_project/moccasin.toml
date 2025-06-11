@@ -44,11 +44,12 @@ save_to_db = true                              # The default is true for non-loc
 chain_id = 31337
 
 [networks.anvil-fork]
-url = "http://127.0.0.1:8546"
+url = "http://127.0.0.1:8545"
 unsafe_password_file = "$ANVIL1_PASSWORD_FILE"
 default_account_name = "anvil1"
 prompt_live = false
 save_to_db = false
+chain_id = 31337
 
 [networks.anvil-live]
 url = "http://127.0.0.1:8545"

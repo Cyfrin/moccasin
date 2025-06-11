@@ -1,4 +1,3 @@
-// js/state.js
 // Manages global application state.
 
 let currentAccount = null;
