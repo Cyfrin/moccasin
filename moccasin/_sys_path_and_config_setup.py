@@ -10,7 +10,7 @@ from boa.util.abi import Address
 
 from moccasin.config import Config, Network, get_config
 from moccasin.constants.vars import (
-    ERA_DEFAULT_PRIVATE_KEY,
+    DEFAULT_ANVIL_PRIVATE_KEY,
     ERAVM,
     GITHUB,
     PYEVM,
@@ -198,14 +198,15 @@ def _setup_network_and_account_from_config_and_cli(
         )
 
     if mox_account:
-        if active_network.is_local_or_forked_network():
+        if active_network.is_local_or_forked_network() and not active_network.is_zksync:
             boa.env.eoa = mox_account.address
         else:
+            # @dev boa_zksync always request to use add_account
             boa.env.add_account(mox_account, force_eoa=True)
 
-    # Once the anvil-zksync gets pranking support, we'll have to update this.
-    if not mox_account and active_network.name is ERAVM:
-        boa.env.add_account(MoccasinAccount(private_key=ERA_DEFAULT_PRIVATE_KEY))
+    # Add default account anvil-zksync if not provided
+    if not mox_account and active_network.is_zksync and active_network.is_local_or_forked_network():
+        boa.env.add_account(MoccasinAccount(private_key=DEFAULT_ANVIL_PRIVATE_KEY))
 
     # Check if it's a fork, pyevm, or eravm
     if not active_network.is_local_or_forked_network():
