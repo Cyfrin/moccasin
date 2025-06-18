@@ -33,6 +33,9 @@ Moccasin
     :maxdepth: 3
 
     Contract Verification <how-tos/verify_contracts.rst>
+    Deploy with MetaMask <how-tos/metamask_deployment.rst>
+    Using Vyper Commands <how-tos/vyper_subcommand.rst>
+    Format Code <how-tos/code_formatting.rst>
     Stateless Fuzzing <how-tos/stateless_fuzzing.rst>
     Stateful Fuzzing <how-tos/stateful_fuzzing.rst>
     how-tos/juypter_notebooks.rst

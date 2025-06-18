@@ -15,13 +15,12 @@ Moccasin is a fast, pythonic smart contract development framework heavily powere
 
 .. code-block:: console 
      
-    usage: Moccasin CLI [-h] [-d] [-q]
-                    {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect,deployments,utils,u,util} ...
+    usage: Moccasin CLI [-h] [-d] [-q] {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,vyper,inspect,deployments,utils,u,util} ...
 
     🐍 Pythonic Smart Contract Development Framework
 
     positional arguments:
-    {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,inspect,deployments,utils,u,util}
+    {init,compile,build,test,run,script,deploy,wallet,console,install,purge,config,explorer,vyper,inspect,deployments,utils,u,util}
         init                Initialize a new project.
         compile (build)     Compiles the project.
         test                Runs all tests in the project.
@@ -33,9 +32,10 @@ Moccasin is a fast, pythonic smart contract development framework heavily powere
         purge               Purge a given dependency
         config              View the Moccasin configuration.
         explorer            Work with block explorers to get data.
+        vyper               Run Vyper compiler commands with Moccasin's dependency resolution.
         inspect             Inspect compiler data of a contract.
         deployments         View deployments of the project from your DB.
-        utils (u, util)     Helpful utilities - currently only one is available.
+        utils (u, util)     Helpful utilities - right now it's just the one.
 
     options:
     -h, --help            show this help message and exit

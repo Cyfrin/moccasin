@@ -1,6 +1,6 @@
 [project]
 name = "moccasin"
-version = "0.4.1rc1"
+version = "0.4.1"
 description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },

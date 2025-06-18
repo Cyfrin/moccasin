@@ -31,6 +31,12 @@ def main(argv: list) -> int:
     if "--version" in argv or "version" in argv:
         print(get_version())
         return 0
+    
+    # Handle 'help' command same as --help
+    if len(argv) > 0 and argv[0] == "help":
+        main_parser, _ = generate_main_parser_and_sub_parsers()
+        main_parser.print_help()
+        return 0
 
     # Special case for vyper command - pass all args through without parsing
     if len(argv) > 0 and argv[0] == "vyper":
