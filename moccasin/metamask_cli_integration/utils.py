@@ -5,6 +5,7 @@ from pathlib import Path
 
 from eth_utils import encode_hex
 from hexbytes import HexBytes
+
 from moccasin.logging import logger
 from moccasin.metamask_cli_integration.http_handler import CustomHandler
 from moccasin.metamask_cli_integration.server_control import (

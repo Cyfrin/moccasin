@@ -3,6 +3,7 @@ from queue import Empty
 from typing import Dict
 
 from eth_typing import Address
+
 from moccasin.logging import logger
 from moccasin.metamask_cli_integration.constants import (
     TRANSACTION_CONFIRMATION_TIMEOUT_S,
