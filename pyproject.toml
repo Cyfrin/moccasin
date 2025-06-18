@@ -62,6 +62,7 @@ dev-dependencies = [
     "vyper>=0.4.1",
     "ruff>=0.6.3",
     "moccasin",
+    "mamushi>=0.0.5",
 ]
 
 [project.urls]

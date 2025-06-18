@@ -10,6 +10,7 @@ initializes: UninitializedAuth[auth := auth]
 # export all external functions
 exports: UninitializedAuth.__interface__
 
+
 @deploy
 def __init__():
     auth.__init__()
