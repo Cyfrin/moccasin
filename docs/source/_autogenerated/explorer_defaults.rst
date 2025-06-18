@@ -94,11 +94,6 @@ explorer_type = "blockscout"
 multicall2 = "None"
 chain_id = 122
 
-[heco]
-explorer_uri = "None"
-multicall2 = "None"
-chain_id = 128
-
 [shimmer_evm]
 explorer_uri = "https://explorer.evm.shimmer.network/"
 explorer_type = "blockscout"
@@ -123,21 +118,11 @@ explorer_type = "blockscout"
 multicall2 = "None"
 chain_id = 248
 
-[omax]
-explorer_uri = "https://omaxscan.com/"
-multicall2 = "None"
-chain_id = 311
-
 [filecoin]
 explorer_uri = "https://filecoin.blockscout.com/"
 explorer_type = "blockscout"
 multicall2 = "None"
 chain_id = 314
-
-[kucoin]
-explorer_uri = "https://scan.kcc.io/"
-multicall2 = "None"
-chain_id = 321
 
 [zksync-era]
 explorer_uri = "https://zksync2-mainnet-explorer.zksync.io"
@@ -199,11 +184,6 @@ explorer_type = "blockscout"
 multicall2 = "None"
 chain_id = 1101
 
-[core]
-explorer_uri = "None"
-multicall2 = "None"
-chain_id = 1116
-
 [lisk]
 explorer_uri = "https://blockscout.lisk.com/"
 explorer_type = "blockscout"
@@ -221,11 +201,6 @@ explorer_uri = "https://explorer.onuschain.io/"
 explorer_type = "blockscout"
 multicall2 = "None"
 chain_id = 1975
-
-[hubblenet]
-explorer_uri = "None"
-multicall2 = "None"
-chain_id = 1992
 
 [sanko]
 explorer_uri = "https://explorer.sanko.xyz/"
