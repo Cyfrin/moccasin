@@ -213,7 +213,7 @@ You can now navigate to the ``mox-project`` folder and install Moccasin:
         The current project's supported Python range (>=3.12) is not compatible with some of the required packages Python requirement:
         - moccasin requires Python <=3.13,>=3.11, so it will not be satisfied for Python >3.13
 
-        Because no versions of moccasin match >0.3.6,<0.4.1
+        Because no versions of moccasin match >0.3.6,<0.4.2
         and moccasin (0.3.6) requires Python <=3.13,>=3.11, moccasin is forbidden.
         So, because mox-project depends on moccasin (^0.3.6), version solving failed.
 
