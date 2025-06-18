@@ -49,6 +49,7 @@ unsafe_password_file = "$ANVIL1_PASSWORD_FILE"
 default_account_name = "anvil1"
 prompt_live = false
 save_to_db = false
+chain_id = 31337
 
 [networks.anvil-live]
 url = "http://127.0.0.1:8545"
