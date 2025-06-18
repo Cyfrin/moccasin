@@ -205,7 +205,11 @@ def _setup_network_and_account_from_config_and_cli(
             boa.env.add_account(mox_account, force_eoa=True)
 
     # Add default account anvil-zksync if not provided
-    if not mox_account and active_network.is_zksync and active_network.is_local_or_forked_network():
+    if (
+        not mox_account
+        and active_network.is_zksync
+        and active_network.is_local_or_forked_network()
+    ):
         boa.env.add_account(MoccasinAccount(private_key=DEFAULT_ANVIL_PRIVATE_KEY))
 
     # Check if it's a fork, pyevm, or eravm

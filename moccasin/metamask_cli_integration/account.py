@@ -2,7 +2,8 @@ import json
 from queue import Empty
 from typing import Dict
 
-from eth_typing import Address
+from eth_typing import ChecksumAddress, HexAddress
+from eth_utils.address import to_checksum_address
 
 from moccasin.logging import logger
 from moccasin.metamask_cli_integration.constants import (
@@ -22,18 +23,20 @@ class MetaMaskAccount:
     :param address: The MetaMask account address as a string.
     :type address: str
 
-    :ivar _address_boa: The account address as a boa.util.abi.Address object.
-    :vartype _address_boa: Address
+    :ivar _address_boa: The account address as a ChecksumAddress object.
+    :vartype _address_boa: ChecksumAddress
     """
 
-    def __init__(self, address: str):
-        # Convert hex string to bytes for Address type
-        address_bytes = bytes.fromhex(address.replace('0x', ''))
-        self._address_boa = Address(address_bytes)
+    def __init__(self, address: str | HexAddress):
+        # Store as ChecksumAddress type
+        if isinstance(address, str):
+            self._address_boa = to_checksum_address(address)
+        else:
+            self._address_boa = ChecksumAddress(address)
 
     @property
-    def address(self) -> Address:  # Returns boa.util.abi.Address
-        """Returns the account address as boa.util.abi.Address."""
+    def address(self) -> ChecksumAddress:
+        """Returns the account address as ChecksumAddress."""
         return self._address_boa
 
     def send_transaction(self, raw_tx_data: dict) -> Dict[str, str]:
@@ -56,7 +59,7 @@ class MetaMaskAccount:
             )
 
         logger.info(
-            f"Delegating transaction to MetaMask UI for address {self.address.hex()}..."
+            f"Delegating transaction to MetaMask UI for address {self.address}..."
         )
         try:
             # Send raw_tx_data to the browser for signing/broadcasting
@@ -118,7 +121,7 @@ class MetaMaskAccount:
             )
 
         logger.info(
-            f"Delegating typed data signing to MetaMask UI for address {self.address.hex()}..."
+            f"Delegating typed data signing to MetaMask UI for address {self.address}..."
         )
         try:
             # Apply the recursive conversion here, BEFORE it's put into message_request
