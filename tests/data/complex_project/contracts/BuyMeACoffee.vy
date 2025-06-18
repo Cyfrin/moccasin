@@ -9,6 +9,7 @@
 """
 
 from interfaces import AggregatorV3Interface
+
 # interface AggregatorV3Interface:
 #     def decimals() -> uint8: view
 #     def description() -> String[1000]: view
@@ -25,6 +26,7 @@ some_value: public(decimal)
 funders: public(DynArray[address, 100])
 address_to_amount_funded: public(HashMap[address, uint256])
 price_feed: public(AggregatorV3Interface)
+
 
 @deploy
 def __init__(price_feed: address):

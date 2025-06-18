@@ -8,14 +8,17 @@ uses: auth
 
 pending_owner: address
 
+
 @deploy
 def __init__():
     pass
+
 
 @external
 def begin_transfer(new_owner: address):
     auth._check_owner()
     self.pending_owner = new_owner
+
 
 @external
 def accept_transfer():

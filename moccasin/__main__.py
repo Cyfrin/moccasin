@@ -46,6 +46,18 @@ def main(argv: list) -> int:
         except Exception as e:
             logger.error(f"Error parsing Vyper command: {e}")
             return 1
+
+    # Special case for format command - pass all args through to mamushi
+    if len(argv) > 0 and argv[0] == "format":
+        try:
+            args = argparse.Namespace()
+            args.command = "format"
+            args.format_args = argv[1:]  # Pass all remaining args to mamushi
+            logger.info("Running format command...")
+            return import_module("moccasin.commands.format").main(args)
+        except Exception as e:
+            logger.error(f"Error running format command: {e}")
+            return 1
     
     main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
 
