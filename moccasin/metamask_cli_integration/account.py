@@ -27,7 +27,9 @@ class MetaMaskAccount:
     """
 
     def __init__(self, address: str):
-        self._address_boa = Address(address)
+        # Convert hex string to bytes for Address type
+        address_bytes = bytes.fromhex(address.replace('0x', ''))
+        self._address_boa = Address(address_bytes)
 
     @property
     def address(self) -> Address:  # Returns boa.util.abi.Address
@@ -54,7 +56,7 @@ class MetaMaskAccount:
             )
 
         logger.info(
-            f"Delegating transaction to MetaMask UI for address {self.address}..."
+            f"Delegating transaction to MetaMask UI for address {self.address.hex()}..."
         )
         try:
             # Send raw_tx_data to the browser for signing/broadcasting
@@ -116,7 +118,7 @@ class MetaMaskAccount:
             )
 
         logger.info(
-            f"Delegating typed data signing to MetaMask UI for address {self.address}..."
+            f"Delegating typed data signing to MetaMask UI for address {self.address.hex()}..."
         )
         try:
             # Apply the recursive conversion here, BEFORE it's put into message_request
