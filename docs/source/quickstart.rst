@@ -6,36 +6,52 @@ Quickstart
 Creating a new project 
 ======================
 
-To create a new project, you can run the following command:
+To create a new project, you have different options:
 
-.. code-block:: bash
+.. tabs::
 
-    mox init my_project
+  .. tab:: VSCode & Pyproject
 
-And this will create a new project in a new ``my_project`` directory. If you want to create a project in a directory that already has files/folders in it, run:
+        .. code-block:: bash
+            
+            # Recommanded with VSCode and new projects
+            mox init my_project --vscode --pyproject
 
-.. code-block:: bash
+  .. tab:: Pyproject
 
-    mox init my_project --force
+        .. code-block:: bash
 
-.. hint::
+            # Other IDEs and new projects
+            mox init my_project --pyproject
+
+  .. tab:: Simple
+
+        .. code-block:: bash
+            
+            mox init my_project
+
+And this will create a new project in a new ``my_project`` directory. 
+
+.. tip::
+
+    If you want to create a project in the current directory, you can use ``.`` as the project name:
+
+    .. code-block:: bash
+
+        mox init .
+
+    This will create a new project in the current directory.
     
-    For ``poetry``, it is recommanded to use ``--force`` inside the subfolder of your project to get the moccasin architecture. For example, here it will be ``mox_project`` and not ``mox-project``
+    If you want to create a project in a directory that already has files/folders in it, you can add the ``--force`` option to the command:
 
-    .. code-block:: console
-        
-        .
-        ├── mox-project
-        │   ├── mox_project
+    .. code-block:: bash
 
-If you use VSCode, you can also use:
+        mox init my_project --force
+    
+    .. danger:: 
 
-.. code-block:: bash
-
-    mox init my_project --vscode
-
-Which will create a ``.vscode`` folder to help make working with VSCode easier. 
-
+        This will overwrite any existing files/folders in the directory, so use it with caution!
+    
 Let's check out the files and folders ``moccasin`` has created:
 
 .. note::
@@ -78,6 +94,78 @@ If you run ``tree . -a``, you'll also see the "hidden" files.
 - ``.gitignore`` is a file that tells git which files to ignore.
 - ``.gitattributes`` is a file that tells git how to handle line endings.
 - ``.coveragerc`` is a file that tells ``pytest`` how to handle coverage.
+
+
+Let's look at the different options available to us when creating a new project.
+
+.. _vscode-option:
+
+VSCode option
+-------------
+    
+.. hint::
+
+    If you want to use the ``--vscode`` option, you need to have the `Vyper VSCode extension <https://marketplace.visualstudio.com/items?itemName=tintinweb.vscode-vyper>`_ installed.
+
+The ``--vscode`` option will create a new project with a ``.vscode`` folder that contains a ``settings.json`` file. 
+
+.. code-block:: console
+
+    └── .vscode
+        └── settings.json
+
+This file contains settings that are specific to VSCode and will help you work with your project more easily.
+
+.. code-block:: json
+
+    {
+        "files.exclude": {
+            "**/__pycache__": true
+        },
+        "files.associations": {
+            ".coveragerc": "toml"
+        },
+        "vyper.command": "vyper -p ./lib/github -p ./lib/pypi"
+    }
+
+.. tip::
+
+    You can modify ``"vyper.command": "vyper -p ./lib/github -p ./lib/pypi"`` to chose which vyper compiler to use.
+    For example, if you want to use the `vyper` compiler from your virtual environment, you can change it to:
+
+    .. code-block:: json
+
+        "vyper.command": "./.venv/bin/vyper -p ./lib/github -p ./lib/pypi"
+
+.. _pyproject-option:
+Pyproject option
+----------------
+The ``--pyproject`` option will create a new project with a ``pyproject.toml`` file.
+
+.. code-block:: console
+
+    └── pyproject.toml
+
+This file is used to manage the project's dependencies and settings. It is a standard file used by many Python projects, and it is recommended to use it if you are using a package manager like `uv`.
+
+.. hint::
+
+    It is very useful when you want to use a specific version of a library, like `vyper` or `titanoboa` with moccasin. Check :ref:`Working with python dependencies doc <virtual_environments>` for more information.
+
+.. _with-poetry:
+
+With poetry
+-------------
+
+
+    
+For ``poetry``, it is recommanded to use ``--force`` inside the subfolder of your project to get the moccasin architecture. For example, here it will be ``mox_project`` and not ``mox-project``
+
+.. code-block:: console
+    
+    .
+    ├── mox-project
+    │   ├── mox_project
 
 
 Deploying a contract 
