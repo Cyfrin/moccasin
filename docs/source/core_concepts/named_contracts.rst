@@ -94,7 +94,7 @@ Let's break these down:
     - A "raw" ABI string
 - ``abi_from_explorer``: If you want to get the ABI from an explorer. This is useful if you don't have the ABI and you want to get it from a public source. You'll need to set a ``explorer_api_key`` in your ``moccasin.toml``, or an ``EXPLORER_API_KEY`` environment variable.
 - ``deployment_script``: The path to the :doc:`deployment script </core_concepts/scripting/deploy>` for this named contract, this will be a shorthand for deploying in the future. 
-- ``force_deploy```: If you want to force deploy the contract when :ref:`manifesting <manifesting>` the contract.
+- ``force_deploy``: If you want to force deploy the contract when :ref:`manifesting <manifesting>` the contract.
 
 As we know, to interact with a contract, one of the most important things is the ABI. For us to interact with any named contract, we give it an ABI, and we can start interacting with that named contract using the ``manifest_named`` function. 
 

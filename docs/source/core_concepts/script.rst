@@ -87,6 +87,8 @@ You can directly import contracts from the ``src`` folder into your scripts, and
 
     deploy()
 
+Under the hood, the contract is imported as a `Titanoboa VyperDeployer instance <https://titanoboa.readthedocs.io/en/latest/api/vyper_deployer/overview/>`_, which allows you to use ``Counter.deploy()`` to get a `Titanoboa VyperContract instance <https://titanoboa.readthedocs.io/en/latest/api/vyper_deployer/overview/>`_ and interact with it.
+
 Networking 
 ==========
 
