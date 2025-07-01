@@ -6,6 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
+import datetime
 import os
 import sys
 
@@ -14,7 +15,7 @@ import moccasin
 sys.path.insert(0, os.path.abspath("."))
 
 project = "moccasin"
-copyright = "2024, Patrick Collins, Charles Cooper"
+copyright = f"2024-{datetime.date.today().year}, Patrick Collins, Charles Cooper"
 author = "Patrick Collins, Charles Cooper"
 
 # -- General configuration ---------------------------------------------------

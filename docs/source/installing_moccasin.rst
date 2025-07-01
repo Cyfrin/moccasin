@@ -26,7 +26,7 @@ There are a few things you'll need on your machine before you can install Moccas
 Prerequisites
 #############
 
-1. Python 3.11 or later
+1. Python 3.11 or later ``(">= 3.11, <= 3.13")``
 
 .. _installation-with-uv:
 
@@ -58,6 +58,11 @@ But you can head over to the `uv installation instructions <https://docs.astral.
 .. code-block:: bash
 
     uv python install 3.11
+
+.. hint::
+
+    You can do the same with Python 3.12 or 3.13. Moccasin is currently only compatible with Python 3.11, 3.12, and 3.13.
+
 
 .. _isolated_uv:
 
