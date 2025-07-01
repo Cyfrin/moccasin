@@ -138,6 +138,7 @@ This file contains settings that are specific to VSCode and will help you work w
         "vyper.command": "./.venv/bin/vyper -p ./lib/github -p ./lib/pypi"
 
 .. _pyproject-option:
+
 Pyproject option
 ----------------
 The ``--pyproject`` option will create a new project with a ``pyproject.toml`` file.
