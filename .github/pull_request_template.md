@@ -43,3 +43,7 @@ If any new functionality was added or changed, were tests included?
 _Optional: Add anything important for the reviewer to know like edge cases, decisions made, etc._
 
 _Note: Keep changes focused. If unrelated improvements or issues are discovered, consider opening a separate PR to maintain clarity and reviewability._
+
+## Final Notes
+
+Consider adding an uplifting comment like "I hope you do your best to make today an outstanding day!" or adding an image of a cute frog/snek.
