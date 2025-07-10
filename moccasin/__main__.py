@@ -1,6 +1,10 @@
 import argparse
+import cProfile
+import io
+import pstats
 import sys
 import tomllib
+
 from importlib import import_module, metadata
 from pathlib import Path
 from typing import Tuple
@@ -854,6 +858,9 @@ def create_parent_parser():
     parser.add_argument("-d", "--debug", action="store_true", help="Run in debug mode")
     parser.add_argument(
         "-q", "--quiet", action="store_true", help="Suppress all output except errors"
+    )
+    parser.add_argument(
+        "-p", "--profile", action="store_true", help="Run the command with cProfile for performance analysis"
     )
     return parser
 
