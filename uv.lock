@@ -1072,7 +1072,6 @@ dependencies = [
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "python-dotenv" },
-    { name = "snakeviz" },
     { name = "titanoboa" },
     { name = "titanoboa-zksync" },
     { name = "tomli-w" },
@@ -1100,6 +1099,7 @@ dev = [
     { name = "mypy" },
     { name = "pytest" },
     { name = "ruff" },
+    { name = "snakeviz" },
     { name = "snekmate" },
     { name = "vyper" },
 ]
@@ -1111,7 +1111,6 @@ requires-dist = [
     { name = "pytest-xdist", specifier = ">=3.6.1" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "shibuya", marker = "extra == 'docs'", specifier = ">=2024.8.30" },
-    { name = "snakeviz", specifier = ">=2.2.2" },
     { name = "sphinx", marker = "extra == 'docs'", specifier = ">=8.0.2" },
     { name = "sphinx-argparse", marker = "extra == 'docs'", specifier = ">=0.5.2" },
     { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
@@ -1135,6 +1134,7 @@ dev = [
     { name = "mypy", specifier = ">=1.11.0" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "ruff", specifier = ">=0.6.3" },
+    { name = "snakeviz", specifier = ">=2.2.2" },
     { name = "snekmate", specifier = ">=0.1.1" },
     { name = "vyper", specifier = ">=0.4.1" },
 ]

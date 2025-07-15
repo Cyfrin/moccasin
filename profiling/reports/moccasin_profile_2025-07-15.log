@@ -1,0 +1,332 @@
+=== Moccasin CLI Profiling Report ===
+
+Command: compile profiling/contracts/counter.vy --no-install
+Profiling report generated at 2025-07-15
+
+### Cumulative Stats ###
+         1957091 function calls (1871506 primitive calls) in 1.012 seconds
+
+   Ordered by: cumulative time
+   List reduced from 6833 to 100 due to restriction <100>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    1.013    1.013 /home/s3bc40/gh-projects/moccasin/moccasin/__main__.py:29(main)
+     49/2    0.000    0.000    0.990    0.495 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/importlib/__init__.py:108(import_module)
+     50/2    0.000    0.000    0.990    0.495 <frozen importlib._bootstrap>:1192(_gcd_import)
+   1223/2    0.004    0.000    0.990    0.495 <frozen importlib._bootstrap>:1165(_find_and_load)
+   1183/1    0.003    0.000    0.990    0.990 <frozen importlib._bootstrap>:1120(_find_and_load_unlocked)
+   2496/3    0.001    0.000    0.990    0.330 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+   1142/2    0.003    0.000    0.990    0.495 <frozen importlib._bootstrap>:666(_load_unlocked)
+   1101/2    0.001    0.000    0.990    0.495 <frozen importlib._bootstrap_external>:934(exec_module)
+   1745/2    0.035    0.000    0.990    0.495 {built-in method builtins.exec}
+        1    0.000    0.000    0.990    0.990 /home/s3bc40/gh-projects/moccasin/moccasin/commands/compile.py:1(<module>)
+        1    0.000    0.000    0.878    0.878 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/boa/__init__.py:1(<module>)
+   180/38    0.000    0.000    0.878    0.023 {built-in method builtins.__import__}
+        1    0.000    0.000    0.691    0.691 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/boa/explorer.py:1(<module>)
+        1    0.000    0.000    0.622    0.622 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/boa/util/abi.py:1(<module>)
+        1    0.000    0.000    0.617    0.617 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/__init__.py:1(<module>)
+        1    0.000    0.000    0.616    0.616 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/chains/__init__.py:1(<module>)
+        1    0.000    0.000    0.614    0.614 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/chains/base.py:1(<module>)
+ 1052/784    0.001    0.000    0.553    0.001 <frozen importlib._bootstrap>:1207(_handle_fromlist)
+        1    0.000    0.000    0.474    0.474 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/consensus/__init__.py:1(<module>)
+        1    0.000    0.000    0.474    0.474 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/consensus/clique/__init__.py:1(<module>)
+        1    0.000    0.000    0.474    0.474 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/consensus/clique/clique.py:1(<module>)
+        1    0.000    0.000    0.472    0.472 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/db/chain.py:1(<module>)
+        1    0.000    0.000    0.464    0.464 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/db/header.py:1(<module>)
+        1    0.000    0.000    0.463    0.463 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/vm/header.py:1(<module>)
+        1    0.000    0.000    0.463    0.463 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/vm/forks/__init__.py:1(<module>)
+        1    0.000    0.000    0.393    0.393 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/vm/forks/tangerine_whistle/__init__.py:1(<module>)
+        1    0.000    0.000    0.389    0.389 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/vm/forks/homestead/__init__.py:1(<module>)
+        1    0.000    0.000    0.384    0.384 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/vm/forks/frontier/__init__.py:1(<module>)
+        1    0.000    0.000    0.379    0.379 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/vm/forks/frontier/state.py:1(<module>)
+        1    0.000    0.000    0.373    0.373 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/vm/forks/frontier/computation.py:1(<module>)
+        1    0.000    0.000    0.368    0.368 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/precompiles/__init__.py:1(<module>)
+        1    0.000    0.000    0.325    0.325 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/precompiles/bls12_381/__init__.py:1(<module>)
+        1    0.000    0.000    0.324    0.324 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/precompiles/bls12_381/bls12_381_g1.py:1(<module>)
+        1    0.000    0.000    0.324    0.324 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/bls/__init__.py:1(<module>)
+        1    0.000    0.000    0.324    0.324 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/bls/ciphersuites.py:1(<module>)
+       34    0.006    0.000    0.279    0.008 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:325(__pow__)
+        1    0.000    0.000    0.274    0.274 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bls12_381/__init__.py:1(<module>)
+    15317    0.201    0.000    0.273    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:280(__mul__)
+        1    0.000    0.000    0.272    0.272 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bls12_381/optimized_pairing.py:1(<module>)
+        1    0.000    0.000    0.229    0.229 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bls12_381/optimized_pairing.py:235(<listcomp>)
+2540/2477    0.017    0.000    0.138    0.000 {built-in method builtins.__build_class__}
+        1    0.000    0.000    0.102    0.102 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_utils/__init__.py:1(<module>)
+        1    0.000    0.000    0.090    0.090 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/boa/test/__init__.py:1(<module>)
+        1    0.000    0.000    0.089    0.089 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/boa/test/strategies.py:1(<module>)
+        1    0.000    0.000    0.089    0.089 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/hypothesis/__init__.py:1(<module>)
+        1    0.000    0.000    0.089    0.089 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_utils/applicators.py:1(<module>)
+     1101    0.005    0.000    0.087    0.000 <frozen importlib._bootstrap_external>:1007(get_code)
+        1    0.000    0.000    0.079    0.079 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/vyper/__init__.py:1(<module>)
+104702/80556    0.007    0.000    0.076    0.000 {built-in method builtins.hasattr}
+        1    0.000    0.000    0.075    0.075 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/vyper/compiler/__init__.py:1(<module>)
+        1    0.000    0.000    0.071    0.071 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_utils/pydantic.py:1(<module>)
+        1    0.000    0.000    0.058    0.058 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/boa/rpc.py:1(<module>)
+        1    0.000    0.000    0.058    0.058 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/boa/network.py:1(<module>)
+        1    0.000    0.000    0.058    0.058 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/requests/__init__.py:1(<module>)
+        1    0.000    0.000    0.056    0.056 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_account/__init__.py:1(<module>)
+      150    0.000    0.000    0.055    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/dataclasses.py:1221(wrap)
+      150    0.004    0.000    0.055    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/dataclasses.py:884(_process_class)
+        1    0.000    0.000    0.055    0.055 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_account/account.py:1(<module>)
+     1166    0.006    0.000    0.054    0.000 <frozen importlib._bootstrap>:1054(_find_spec)
+    38308    0.031    0.000    0.051    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:82(__mul__)
+     1025    0.001    0.000    0.051    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/__init__.py:272(_compile)
+        1    0.000    0.000    0.050    0.050 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/bls/g2_primitives.py:1(<module>)
+        1    0.000    0.000    0.049    0.049 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/bls/point_compression.py:1(<module>)
+        1    0.000    0.000    0.049    0.049 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/vyper/codegen/core.py:1(<module>)
+        1    0.000    0.000    0.049    0.049 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/bls/constants.py:1(<module>)
+        9    0.000    0.000    0.049    0.005 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/bls/constants.py:10(<genexpr>)
+      452    0.000    0.000    0.049    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/__init__.py:225(compile)
+        1    0.000    0.000    0.049    0.049 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/vyper/codegen/context.py:1(<module>)
+      144    0.000    0.000    0.048    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_compiler.py:740(compile)
+     1101    0.002    0.000    0.047    0.000 <frozen importlib._bootstrap_external>:727(_compile_bytecode)
+        1    0.000    0.000    0.047    0.047 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/vyper/codegen/ir_node.py:1(<module>)
+     1101    0.045    0.000    0.045    0.000 {built-in method marshal.loads}
+        1    0.000    0.000    0.043    0.043 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/hypothesis/_settings.py:1(<module>)
+    767/4    0.001    0.000    0.043    0.011 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bls12_381/optimized_curve.py:133(multiply)
+     1145    0.001    0.000    0.043    0.000 <frozen importlib._bootstrap_external>:1499(find_spec)
+     1145    0.002    0.000    0.042    0.000 <frozen importlib._bootstrap_external>:1467(_get_spec)
+        1    0.000    0.000    0.041    0.041 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth/precompiles/ecadd.py:1(<module>)
+3818/3589    0.002    0.000    0.040    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:373(inner)
+        1    0.000    0.000    0.040    0.040 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/__init__.py:35(__getattr__)
+        1    0.000    0.000    0.040    0.040 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/__init__.py:29(_import_module)
+        1    0.000    0.000    0.040    0.040 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bn128/__init__.py:1(<module>)
+ 22684/15    0.017    0.000    0.039    0.003 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:128(deepcopy)
+  1897/14    0.004    0.000    0.039    0.003 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:227(_deepcopy_dict)
+        1    0.000    0.000    0.037    0.037 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/hypothesis/core.py:1(<module>)
+        1    0.000    0.000    0.036    0.036 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bn128/optimized_pairing.py:1(<module>)
+     1435    0.008    0.000    0.036    0.000 <frozen importlib._bootstrap_external>:1607(find_spec)
+    15434    0.022    0.000    0.036    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:235(__init__)
+    764/4    0.001    0.000    0.035    0.009 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bn128/optimized_curve.py:125(multiply)
+        1    0.000    0.000    0.033    0.033 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/hypothesis/strategies/__init__.py:1(<module>)
+        1    0.000    0.000    0.033    0.033 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/hypothesis/internal/conjecture/providers.py:1(<module>)
+     7414    0.005    0.000    0.033    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:461(__init__)
+        1    0.000    0.000    0.032    0.032 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_account/account_local_actions.py:1(<module>)
+        1    0.000    0.000    0.032    0.032 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_account/messages.py:1(<module>)
+      144    0.000    0.000    0.032    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:979(parse)
+        1    0.000    0.000    0.032    0.032 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_account/_utils/encode_typed_data/__init__.py:1(<module>)
+        1    0.000    0.000    0.031    0.031 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/vyper/ast/__init__.py:1(<module>)
+      575    0.002    0.000    0.031    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/dataclasses.py:413(_create_fn)
+        1    0.000    0.000    0.031    0.031 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_account/_utils/encode_typed_data/encoding_and_hashing.py:1(<module>)
+  689/144    0.002    0.000    0.031    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:456(_parse_sub)
+        1    0.000    0.000    0.031    0.031 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_abi/__init__.py:1(<module>)
+
+
+### Time Stats ###
+         1957091 function calls (1871506 primitive calls) in 1.012 seconds
+
+   Ordered by: internal time
+   List reduced from 6833 to 100 due to restriction <100>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    15317    0.201    0.000    0.273    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:280(__mul__)
+     1101    0.045    0.000    0.045    0.000 {built-in method marshal.loads}
+   1745/2    0.035    0.000    0.990    0.495 {built-in method builtins.exec}
+    38308    0.031    0.000    0.051    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:82(__mul__)
+      936    0.023    0.000    0.023    0.000 {built-in method builtins.compile}
+    15434    0.022    0.000    0.036    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:235(__init__)
+2540/2477    0.017    0.000    0.138    0.000 {built-in method builtins.__build_class__}
+    49566    0.017    0.000    0.024    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:57(__init__)
+317385/317369    0.017    0.000    0.018    0.000 {built-in method builtins.isinstance}
+ 22684/15    0.017    0.000    0.039    0.003 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:128(deepcopy)
+     4970    0.014    0.000    0.014    0.000 {built-in method posix.stat}
+        1    0.014    0.014    0.014    0.014 {method 'load_verify_locations' of '_ssl._SSLContext' objects}
+ 1130/156    0.013    0.000    0.031    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:516(_parse)
+    15317    0.013    0.000    0.013    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:296(<listcomp>)
+6578/4811    0.010    0.000    0.023    0.000 {built-in method __new__ of type object at 0x58b51fd72b50}
+   120442    0.009    0.000    0.009    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:247(<genexpr>)
+     1101    0.009    0.000    0.009    0.000 {built-in method io.open_code}
+     1104    0.008    0.000    0.008    0.000 {method 'read' of '_io.BufferedReader' objects}
+     1435    0.008    0.000    0.036    0.000 <frozen importlib._bootstrap_external>:1607(find_spec)
+     1765    0.008    0.000    0.013    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/enum.py:242(__set_name__)
+104702/80556    0.007    0.000    0.076    0.000 {built-in method builtins.hasattr}
+  783/619    0.007    0.000    0.020    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/inspect.py:2435(_signature_from_callable)
+31227/31223    0.006    0.000    0.007    0.000 {built-in method builtins.getattr}
+       34    0.006    0.000    0.279    0.008 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:325(__pow__)
+     1166    0.006    0.000    0.054    0.000 <frozen importlib._bootstrap>:1054(_find_spec)
+     8020    0.006    0.000    0.021    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:428(__init__)
+     7414    0.005    0.000    0.033    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:461(__init__)
+     1101    0.005    0.000    0.087    0.000 <frozen importlib._bootstrap_external>:1007(get_code)
+91029/88885    0.005    0.000    0.006    0.000 {built-in method builtins.len}
+ 1832/144    0.005    0.000    0.014    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_compiler.py:37(_compile)
+     3377    0.005    0.000    0.016    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:168(_type_check)
+     7414    0.005    0.000    0.005    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:465(<listcomp>)
+     9519    0.005    0.000    0.010    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:112(__sub__)
+1968/1934    0.005    0.000    0.030    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:259(_reconstruct)
+     2202    0.004    0.000    0.013    0.000 <frozen importlib._bootstrap_external>:437(cache_from_source)
+     9977    0.004    0.000    0.009    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:1320(__setattr__)
+     8434    0.004    0.000    0.011    0.000 <frozen importlib._bootstrap_external>:126(_path_join)
+    67047    0.004    0.000    0.004    0.000 {method 'get' of 'dict' objects}
+     8434    0.004    0.000    0.005    0.000 <frozen importlib._bootstrap_external>:128(<listcomp>)
+  1897/14    0.004    0.000    0.039    0.003 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:227(_deepcopy_dict)
+   1223/2    0.004    0.000    0.990    0.495 <frozen importlib._bootstrap>:1165(_find_and_load)
+      150    0.004    0.000    0.055    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/dataclasses.py:884(_process_class)
+      764    0.004    0.000    0.026    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bls12_381/optimized_curve.py:87(double)
+    20269    0.004    0.000    0.004    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:240(__next)
+   5655/3    0.004    0.000    0.009    0.003 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/parsimonious/expressions.py:161(match_core)
+     1988    0.004    0.000    0.007    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/enum.py:367(__setitem__)
+      764    0.003    0.000    0.005    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_compiler.py:243(_optimize_charset)
+    90127    0.003    0.000    0.003    0.000 {method 'pop' of 'list' objects}
+   1183/1    0.003    0.000    0.990    0.990 <frozen importlib._bootstrap>:1120(_find_and_load_unlocked)
+     1343    0.003    0.000    0.020    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:1376(__init__)
+      619    0.003    0.000    0.010    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/inspect.py:2331(_signature_from_function)
+        4    0.003    0.001    0.003    0.001 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/json/decoder.py:343(raw_decode)
+      761    0.003    0.000    0.023    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bn128/optimized_curve.py:79(double)
+    17303    0.003    0.000    0.006    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:261(get)
+    55107    0.003    0.000    0.003    0.000 {method 'append' of 'list' objects}
+     1142    0.003    0.000    0.017    0.000 <frozen importlib._bootstrap>:493(_init_module_attrs)
+      179    0.003    0.000    0.003    0.000 {built-in method posix.listdir}
+15106/15038    0.003    0.000    0.003    0.000 {method 'join' of 'str' objects}
+   1142/2    0.003    0.000    0.990    0.495 <frozen importlib._bootstrap>:666(_load_unlocked)
+      458    0.003    0.000    0.016    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bls12_381/optimized_curve.py:103(add)
+    10549    0.003    0.000    0.005    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:1266(_is_dunder)
+     1582    0.003    0.000    0.004    0.000 <frozen importlib._bootstrap>:179(_get_module_lock)
+    12566    0.003    0.000    0.003    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:168(__getitem__)
+    21774    0.002    0.000    0.002    0.000 {method 'startswith' of 'str' objects}
+     1188    0.002    0.000    0.002    0.000 {method '__exit__' of '_io._IOBase' objects}
+     9971    0.002    0.000    0.015    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:94(__rmul__)
+    15074    0.002    0.000    0.004    0.000 {built-in method builtins.setattr}
+      351    0.002    0.000    0.012    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/optimized_bn128/optimized_curve.py:95(add)
+     4541    0.002    0.000    0.004    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/enum.py:688(__call__)
+    15/14    0.002    0.000    0.003    0.000 {built-in method _imp.create_dynamic}
+     8261    0.002    0.000    0.004    0.000 {built-in method builtins.max}
+ 2056/392    0.002    0.000    0.003    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:178(getwidth)
+3818/3589    0.002    0.000    0.040    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:373(inner)
+     1891    0.002    0.000    0.004    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/inspect.py:2669(__init__)
+     1145    0.002    0.000    0.042    0.000 <frozen importlib._bootstrap_external>:1467(_get_spec)
+1924/1896    0.002    0.000    0.006    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/eth_utils/functional.py:45(inner)
+    40525    0.002    0.000    0.002    0.000 {built-in method builtins.id}
+      492    0.002    0.000    0.015    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:679(Union)
+   2311/3    0.002    0.000    0.007    0.002 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/parsimonious/nodes.py:194(visit)
+     2202    0.002    0.000    0.005    0.000 <frozen importlib._bootstrap_external>:132(_path_split)
+     1216    0.002    0.000    0.007    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/typing_extensions.py:3171(_collect_parameters)
+      575    0.002    0.000    0.031    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/dataclasses.py:413(_create_fn)
+     1582    0.002    0.000    0.002    0.000 <frozen importlib._bootstrap>:100(acquire)
+     1582    0.002    0.000    0.002    0.000 <frozen importlib._bootstrap>:125(release)
+  689/144    0.002    0.000    0.031    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:456(_parse_sub)
+       21    0.002    0.000    0.002    0.000 {built-in method _imp.exec_builtin}
+     1101    0.002    0.000    0.020    0.000 <frozen importlib._bootstrap_external>:1127(get_data)
+     1116    0.002    0.000    0.003    0.000 <frozen importlib._bootstrap_external>:778(spec_from_file_location)
+    21287    0.002    0.000    0.002    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/rlp/sedes/serializable.py:344(_get_class_namespace)
+1903/1849    0.002    0.000    0.019    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:210(_deepcopy_tuple)
+    19703    0.002    0.000    0.006    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/rlp/sedes/serializable.py:433(<genexpr>)
+     5723    0.002    0.000    0.002    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:243(_keep_alive)
+     8760    0.002    0.000    0.002    0.000 <frozen importlib._bootstrap>:244(_verbose_message)
+       94    0.002    0.000    0.015    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/rlp/sedes/serializable.py:353(__new__)
+       88    0.002    0.000    0.002    0.000 {built-in method builtins.eval}
+     8020    0.002    0.000    0.002    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:432(<listcomp>)
+        1    0.002    0.002    0.005    0.005 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/regex/_regex_core.py:1(<module>)
+     3644    0.002    0.000    0.008    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:159(_type_convert)
+     1101    0.002    0.000    0.047    0.000 <frozen importlib._bootstrap_external>:727(_compile_bytecode)
+      519    0.002    0.000    0.003    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/dataclasses.py:723(_get_field)
+
+
+### Function Calls Stats ###
+         1957091 function calls (1871506 primitive calls) in 1.012 seconds
+
+   Ordered by: call count
+   List reduced from 6833 to 100 due to restriction <100>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+317385/317369    0.017    0.000    0.018    0.000 {built-in method builtins.isinstance}
+   120442    0.009    0.000    0.009    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:247(<genexpr>)
+104702/80556    0.007    0.000    0.076    0.000 {built-in method builtins.hasattr}
+91029/88885    0.005    0.000    0.006    0.000 {built-in method builtins.len}
+    90127    0.003    0.000    0.003    0.000 {method 'pop' of 'list' objects}
+    67047    0.004    0.000    0.004    0.000 {method 'get' of 'dict' objects}
+    55107    0.003    0.000    0.003    0.000 {method 'append' of 'list' objects}
+    49566    0.017    0.000    0.024    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:57(__init__)
+    40525    0.002    0.000    0.002    0.000 {built-in method builtins.id}
+    38308    0.031    0.000    0.051    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:82(__mul__)
+31227/31223    0.006    0.000    0.007    0.000 {built-in method builtins.getattr}
+ 22684/15    0.017    0.000    0.039    0.003 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:128(deepcopy)
+    21774    0.002    0.000    0.002    0.000 {method 'startswith' of 'str' objects}
+    21287    0.002    0.000    0.002    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/rlp/sedes/serializable.py:344(_get_class_namespace)
+    20269    0.004    0.000    0.004    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:240(__next)
+    20092    0.001    0.000    0.001    0.000 {method 'rstrip' of 'str' objects}
+    19703    0.002    0.000    0.006    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/rlp/sedes/serializable.py:433(<genexpr>)
+    17303    0.003    0.000    0.006    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:261(get)
+    16927    0.001    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:182(_deepcopy_atomic)
+    15434    0.022    0.000    0.036    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:235(__init__)
+    15317    0.201    0.000    0.273    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:280(__mul__)
+    15317    0.013    0.000    0.013    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:296(<listcomp>)
+15106/15038    0.003    0.000    0.003    0.000 {method 'join' of 'str' objects}
+    15074    0.002    0.000    0.004    0.000 {built-in method builtins.setattr}
+    12566    0.003    0.000    0.003    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:168(__getitem__)
+    11935    0.001    0.000    0.001    0.000 {method 'get' of 'mappingproxy' objects}
+    10549    0.003    0.000    0.005    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:1266(_is_dunder)
+     9977    0.004    0.000    0.009    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:1320(__setattr__)
+     9971    0.002    0.000    0.015    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:94(__rmul__)
+     9571    0.001    0.000    0.001    0.000 {method 'endswith' of 'str' objects}
+     9519    0.005    0.000    0.010    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:112(__sub__)
+     8760    0.002    0.000    0.002    0.000 <frozen importlib._bootstrap>:244(_verbose_message)
+     8434    0.004    0.000    0.005    0.000 <frozen importlib._bootstrap_external>:128(<listcomp>)
+     8434    0.004    0.000    0.011    0.000 <frozen importlib._bootstrap_external>:126(_path_join)
+     8422    0.001    0.000    0.001    0.000 {built-in method builtins.issubclass}
+     8261    0.002    0.000    0.004    0.000 {built-in method builtins.max}
+     8020    0.002    0.000    0.002    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:432(<listcomp>)
+     8020    0.006    0.000    0.021    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:428(__init__)
+     7753    0.001    0.000    0.001    0.000 {method 'rpartition' of 'str' objects}
+     7414    0.005    0.000    0.005    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:465(<listcomp>)
+     7414    0.005    0.000    0.033    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:461(__init__)
+     7373    0.001    0.000    0.001    0.000 {built-in method _imp.acquire_lock}
+     7373    0.001    0.000    0.001    0.000 {built-in method _imp.release_lock}
+     7063    0.001    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:916(__eq__)
+     6680    0.001    0.000    0.002    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:256(match)
+6578/4811    0.010    0.000    0.023    0.000 {built-in method __new__ of type object at 0x58b51fd72b50}
+     6438    0.000    0.000    0.000    0.000 {method 'lower' of 'str' objects}
+     5910    0.001    0.000    0.001    0.000 {method 'items' of 'dict' objects}
+     5723    0.002    0.000    0.002    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:243(_keep_alive)
+   5655/3    0.004    0.000    0.009    0.003 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/parsimonious/expressions.py:161(match_core)
+     5066    0.000    0.000    0.000    0.000 {built-in method posix.fspath}
+     4970    0.014    0.000    0.014    0.000 {built-in method posix.stat}
+     4907    0.000    0.000    0.000    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/inspect.py:2734(kind)
+     4623    0.001    0.000    0.001    0.000 <frozen importlib._bootstrap>:1026(__enter__)
+     4623    0.001    0.000    0.001    0.000 <frozen importlib._bootstrap>:1030(__exit__)
+     4541    0.001    0.000    0.002    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/enum.py:1095(__new__)
+     4541    0.002    0.000    0.004    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/enum.py:688(__call__)
+     4500    0.001    0.000    0.014    0.000 <frozen importlib._bootstrap_external>:140(_path_stat)
+     4423    0.000    0.000    0.000    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:1381(<genexpr>)
+     4404    0.001    0.000    0.002    0.000 <frozen importlib._bootstrap_external>:134(<genexpr>)
+     4367    0.000    0.000    0.000    0.000 {built-in method builtins.min}
+     4263    0.001    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:164(__len__)
+     3968    0.001    0.000    0.003    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/copy.py:264(<genexpr>)
+3818/3589    0.002    0.000    0.040    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:373(inner)
+     3772    0.000    0.000    0.000    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/inspect.py:2722(name)
+     3754    0.000    0.000    0.000    0.000 {built-in method builtins.ord}
+     3644    0.002    0.000    0.008    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:159(_type_convert)
+     3377    0.005    0.000    0.016    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:168(_type_check)
+     3362    0.000    0.000    0.000    0.000 {method 'setdefault' of 'dict' objects}
+     3319    0.001    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/enum.py:1507(_get_value)
+     3318    0.000    0.000    0.000    0.000 {built-in method from_bytes}
+     3303    0.001    0.000    0.002    0.000 <frozen importlib._bootstrap_external>:84(_unpack_uint32)
+     3292    0.001    0.000    0.001    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/py_ecc/fields/optimized_field_elements.py:171(__eq__)
+     3268    0.001    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/typing.py:1388(__eq__)
+     3260    0.001    0.000    0.001    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/vyper/evm/opcodes.py:211(_gas)
+     3169    0.000    0.000    0.000    0.000 {built-in method _thread.get_ident}
+     3165    0.000    0.000    0.000    0.000 {method '__exit__' of '_thread.lock' objects}
+     3104    0.000    0.000    0.000    0.000 {built-in method builtins.iter}
+     3072    0.001    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:176(append)
+     3023    0.001    0.000    0.001    0.000 {method 'match' of 're.Pattern' objects}
+     2946    0.000    0.000    0.000    0.000 {method 'add' of 'set' objects}
+     2845    0.000    0.000    0.000    0.000 {method 'pop' of 'dict' objects}
+     2697    0.001    0.000    0.001    0.000 {method 'rfind' of 'str' objects}
+     2679    0.000    0.000    0.000    0.000 {method 'isidentifier' of 'str' objects}
+     2631    0.001    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/re/_parser.py:293(tell)
+     2624    0.000    0.000    0.000    0.000 {method 'find' of 'bytearray' objects}
+2540/2477    0.017    0.000    0.138    0.000 {built-in method builtins.__build_class__}
+     2510    0.000    0.000    0.000    0.000 {method 'popleft' of 'collections.deque' objects}
+   2496/3    0.001    0.000    0.990    0.330 <frozen importlib._bootstrap>:233(_call_with_frames_removed)
+     2463    0.000    0.000    0.000    0.000 {built-in method builtins.callable}
+     2458    0.000    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/email/feedparser.py:127(__next__)
+     2458    0.001    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/email/feedparser.py:77(readline)
+     2444    0.001    0.000    0.001    0.000 <frozen importlib._bootstrap>:405(parent)
+     2341    0.001    0.000    0.001    0.000 {built-in method _thread.allocate_lock}
+     2326    0.000    0.000    0.000    0.000 {method '__contains__' of 'frozenset' objects}
+     2324    0.001    0.000    0.001    0.000 /home/s3bc40/.local/share/uv/python/cpython-3.11.13-linux-x86_64-gnu/lib/python3.11/enum.py:48(_is_dunder)
+     2311    0.000    0.000    0.000    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/parsimonious/nodes.py:52(__iter__)
+   2311/3    0.001    0.000    0.007    0.002 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/parsimonious/nodes.py:213(<listcomp>)
+     2311    0.000    0.000    0.000    0.000 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/parsimonious/nodes.py:47(expr_name)
+   2311/3    0.002    0.000    0.007    0.002 /home/s3bc40/gh-projects/moccasin/.venv/lib/python3.11/site-packages/parsimonious/nodes.py:194(visit)
+
+

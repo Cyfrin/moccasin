@@ -6,5 +6,5 @@
     "files.exclude": {
         "**/__pycache__": true
     },
-    "python.terminal.executeInFileDir": true
+    "python.terminal.executeInFileDir": true,
 }
