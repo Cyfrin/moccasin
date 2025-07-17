@@ -1,0 +1,13 @@
+"""
+@license MIT
+@title i_decentralized_stablecoin
+@author You!
+"""
+@external
+def burn_from(owner: address, amount: uint256):
+    ...
+
+
+@external
+def mint(owner: address, amount: uint256):
+    ...

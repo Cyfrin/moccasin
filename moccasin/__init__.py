@@ -2,23 +2,13 @@ import sys
 from pathlib import Path
 
 from moccasin import __main__
-from profiling.cli_profiler import MoccasinProfiler
 
 
 def main():
-    argv = sys.argv[1:]
-    # Check for either --profile or -p
-    if any(flag in argv for flag in ("--profile", "-p")):
-        argv = [arg for arg in argv if arg not in ("--profile", "-p")]
-        # Run mox profile for the main function
-        with MoccasinProfiler(argv):
-            exit_code = __main__.main(argv)
-        sys.exit(exit_code)
-    # If not profiling, just run the main function normally
-    __main__.main(argv)
+    __main__.main(sys.argv[1:])
 
 
-def version() -> str:  #
+def version() -> str:
     return __main__.get_version()
 
 

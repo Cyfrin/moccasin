@@ -1,6 +1,6 @@
 import cProfile
-from datetime import datetime
 import io
+from datetime import datetime
 from pathlib import Path
 from pstats import SortKey, Stats
 
@@ -11,7 +11,7 @@ class MoccasinProfiler:
     It uses cProfile to profile main commands and provides a way to save and analyze the profiling data.
     """
 
-    MAX_PRINT_LINES = 100
+    MAX_PRINT_LINES = 10
 
     def __init__(self, argv: list[str]):
         self.pr = cProfile.Profile()
@@ -51,28 +51,18 @@ class MoccasinProfiler:
         """
         Write the profiling statistics sections (cumulative, time, and function calls) to the report.
         """
-        self.io.write("### Cumulative Stats ###\n")
-        ps.sort_stats(SortKey.CUMULATIVE).print_stats(self.MAX_PRINT_LINES)
-
-        self.io.write("### Time Stats ###\n")
-        ps.sort_stats(SortKey.TIME).print_stats(self.MAX_PRINT_LINES)
-
-        self.io.write("### Function Calls Stats ###\n")
-        ps.sort_stats(SortKey.CALLS).print_stats(self.MAX_PRINT_LINES)
+        ps.sort_stats(SortKey.CUMULATIVE).strip_dirs().print_stats(self.MAX_PRINT_LINES)
 
     def _save_reports(self, timestamp: str):
         """
         Save the profiling report and raw profile data to files in the report directory.
         """
-        self.report_path.mkdir(parents=True, exist_ok=True)
-        report_file = self.report_path / f"moccasin_profile_{timestamp}.log"
-        with open(report_file, "w") as f:
-            f.write(self.io.getvalue())
-        print(f"Profiling report saved to {report_file}")
-
-        profile_file = self.report_path / f"moccasin_profile_{timestamp}.prof"
+        profile_file = self.report_path / f"moccasin_profile_{timestamp}.stats"
         self.pr.dump_stats(profile_file)
         print(f"Profiling data saved to {profile_file}.\n")
         print(
             "You can analyze it with 'uv run snakeviz' or 'uv run python -m pstats'.\n"
         )
+
+
+# @TODO Implement main function with arg to pass a custom command for profiling
