@@ -223,7 +223,7 @@ def _deposit_collateral(
     self.user_to_token_address_to_amount_deposited[msg.sender][
         token_collateral_address
     ] += amount_collateral
-    log CollateralDeposited(msg.sender, amount_collateral)
+    log CollateralDeposited(user=msg.sender, amount=amount_collateral)
     success: bool = extcall IERC20(token_collateral_address).transferFrom(
         msg.sender, self, amount_collateral
     )
@@ -249,7 +249,7 @@ def _redeem_collateral(
     self.user_to_token_address_to_amount_deposited[_from][
         token_collateral_address
     ] -= amount_collateral
-    log CollateralRedeemed(token_collateral_address, amount_collateral, _from, _to)
+    log CollateralRedeemed(token=token_collateral_address, amount_collateral=amount_collateral, _from=_from, _to=_to)
     success: bool = extcall IERC20(token_collateral_address).transfer(
         _to, amount_collateral
     )

@@ -855,6 +855,9 @@ def create_parent_parser():
     parser.add_argument(
         "-q", "--quiet", action="store_true", help="Suppress all output except errors"
     )
+    parser.add_argument(
+        "--profile", action="store_true", help="Enable profiling for the command."
+    )
     return parser
 
 
