@@ -1,7 +1,7 @@
 import cProfile
 import io
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from pstats import SortKey, Stats
 
 

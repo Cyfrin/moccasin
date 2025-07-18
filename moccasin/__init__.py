@@ -5,15 +5,7 @@ from moccasin import __main__
 
 
 def main():
-    args = sys.argv[1:]
-    if "--profile" in args:
-        from profiling.moccasin_profiler import MoccasinProfiler
-
-        with MoccasinProfiler():
-            __main__.main(args)
-    else:
-        # If not profiling, just run the main function directly
-        __main__.main(args)
+    __main__.main(sys.argv[1:])
 
 
 def version() -> str:

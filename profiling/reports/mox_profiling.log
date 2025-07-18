@@ -1,138 +1,46 @@
 =========================================================
 
-=== Mox CLI Profiling Results - 2025-07-18_13-11-13 ===
+=== Mox CLI Profiling Results - 2025-07-18_19-26-16 ===
 
-Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --profile --quiet
-
-Profiling Output:
-
-=== Moccasin CLI Profiling Report ===
-
-Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --profile --quiet
-Profiling report generated at 2025-07-18_13-11-13
-
-         2138731 function calls (2039596 primitive calls) in 4.099 seconds
-
-   Ordered by: internal time, cumulative time
-   List reduced from 6414 to 25 due to restriction <25>
-
-   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-     2182    2.325    0.001    2.325    0.001 {built-in method time.sleep}
-    15317    0.347    0.000    0.462    0.000 optimized_field_elements.py:280(__mul__)
-     1107    0.070    0.000    0.070    0.000 {built-in method marshal.loads}
-        4    0.062    0.015    0.062    0.015 {method 'poll' of 'select.poll' objects}
-   1751/6    0.056    0.000    1.559    0.260 {built-in method builtins.exec}
-    38308    0.052    0.000    0.086    0.000 optimized_field_elements.py:82(__mul__)
- 31710/28    0.036    0.000    0.088    0.003 copy.py:128(deepcopy)
-    15434    0.035    0.000    0.056    0.000 optimized_field_elements.py:235(__init__)
-      935    0.034    0.000    0.034    0.000 {built-in method builtins.compile}
-2571/2508    0.029    0.000    0.214    0.000 {built-in method builtins.__build_class__}
-    49566    0.028    0.000    0.039    0.000 optimized_field_elements.py:57(__init__)
-320703/320687    0.028    0.000    0.031    0.000 {built-in method builtins.isinstance}
-        1    0.024    0.024    0.024    0.024 {method 'load_verify_locations' of '_ssl._SSLContext' objects}
-    15317    0.021    0.000    0.021    0.000 optimized_field_elements.py:296(<listcomp>)
-     5013    0.020    0.000    0.020    0.000 {built-in method posix.stat}
- 1166/178    0.019    0.000    0.045    0.000 _parser.py:516(_parse)
-6899/5132    0.017    0.000    0.037    0.000 {built-in method __new__ of type object at 0x5d7a18a85b50}
-   120442    0.015    0.000    0.015    0.000 optimized_field_elements.py:247(<genexpr>)
-     1107    0.013    0.000    0.013    0.000 {built-in method io.open_code}
-     1451    0.012    0.000    0.052    0.000 <frozen importlib._bootstrap_external>:1607(find_spec)
-        1    0.012    0.012    2.376    2.376 compile.py:89(compile_project)
-105417/81271    0.012    0.000    0.119    0.000 {built-in method builtins.hasattr}
-3013/2095    0.012    0.000    0.076    0.000 copy.py:259(_reconstruct)
-     1765    0.011    0.000    0.019    0.000 enum.py:242(__set_name__)
-       32    0.011    0.000    0.011    0.000 {built-in method posix.waitpid}
-
-
-=========================================================
-
-=== Mox CLI Profiling Results - 2025-07-18_13-15-14 ===
-
-Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --profile --quiet
+Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --quiet
 
 Profiling Output:
 
 === Moccasin CLI Profiling Report ===
 
-Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --profile --quiet
-Profiling report generated at 2025-07-18_13-15-14
+Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --quiet
+Profiling report generated at 2025-07-18_19-26-16
 
-         2219193 function calls (2120058 primitive calls) in 10.937 seconds
-
-   Ordered by: internal time, cumulative time
-   List reduced from 6414 to 25 due to restriction <25>
-
-   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-     7634    8.404    0.001    8.404    0.001 {built-in method time.sleep}
-    15317    0.322    0.000    0.429    0.000 optimized_field_elements.py:280(__mul__)
-        1    0.169    0.169    8.730    8.730 compile.py:89(compile_project)
-     1107    0.110    0.000    0.110    0.000 {built-in method marshal.loads}
-   1751/6    0.108    0.000    2.054    0.342 {built-in method builtins.exec}
-    30956    0.076    0.000    0.101    0.000 pool.py:756(ready)
-2571/2508    0.054    0.000    0.352    0.000 {built-in method builtins.__build_class__}
- 1166/178    0.050    0.000    0.113    0.001 _parser.py:516(_parse)
-    38308    0.046    0.000    0.077    0.000 optimized_field_elements.py:82(__mul__)
-      935    0.036    0.000    0.036    0.000 {built-in method builtins.compile}
-     5013    0.035    0.000    0.035    0.000 {built-in method posix.stat}
- 31710/28    0.035    0.000    0.083    0.003 copy.py:128(deepcopy)
-320703/320687    0.034    0.000    0.038    0.000 {built-in method builtins.isinstance}
-    15434    0.033    0.000    0.053    0.000 optimized_field_elements.py:235(__init__)
-        1    0.032    0.032    0.032    0.032 {method 'load_verify_locations' of '_ssl._SSLContext' objects}
-    89236    0.027    0.000    0.027    0.000 {method 'append' of 'list' objects}
-    49566    0.026    0.000    0.036    0.000 optimized_field_elements.py:57(__init__)
-    30967    0.025    0.000    0.025    0.000 threading.py:575(is_set)
-     1107    0.022    0.000    0.022    0.000 {built-in method io.open_code}
-102435/100241    0.022    0.000    0.023    0.000 {built-in method builtins.len}
-     1112    0.020    0.000    0.020    0.000 {method 'read' of '_io.BufferedReader' objects}
-     1451    0.020    0.000    0.086    0.000 <frozen importlib._bootstrap_external>:1607(find_spec)
-6899/5132    0.020    0.000    0.044    0.000 {built-in method __new__ of type object at 0x5ec62f2c6b50}
-    15317    0.020    0.000    0.020    0.000 optimized_field_elements.py:296(<listcomp>)
- 1884/166    0.017    0.000    0.046    0.000 _compiler.py:37(_compile)
-
-
-=========================================================
-
-=== Mox CLI Profiling Results - 2025-07-18_13-16-55 ===
-
-Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --profile --quiet
-
-Profiling Output:
-
-=== Moccasin CLI Profiling Report ===
-
-Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --profile --quiet
-Profiling report generated at 2025-07-18_13-16-55
-
-         2228569 function calls (2129434 primitive calls) in 11.617 seconds
+         2169412 function calls (2070359 primitive calls) in 8.762 seconds
 
    Ordered by: internal time, cumulative time
-   List reduced from 6415 to 25 due to restriction <25>
+   List reduced from 6318 to 25 due to restriction <25>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-     8507    9.511    0.001    9.511    0.001 {built-in method time.sleep}
-    15317    0.336    0.000    0.448    0.000 optimized_field_elements.py:280(__mul__)
-        1    0.190    0.190    9.875    9.875 compile.py:89(compile_project)
-    33516    0.083    0.000    0.111    0.000 pool.py:756(ready)
-     1107    0.078    0.000    0.078    0.000 {built-in method marshal.loads}
-   1751/6    0.059    0.000    1.630    0.272 {built-in method builtins.exec}
-    38308    0.055    0.000    0.091    0.000 optimized_field_elements.py:82(__mul__)
+     6171    6.907    0.001    6.907    0.001 {built-in method time.sleep}
+    15317    0.312    0.000    0.417    0.000 optimized_field_elements.py:280(__mul__)
+        1    0.126    0.126    7.147    7.147 compile.py:89(compile_project)
+     1107    0.072    0.000    0.072    0.000 {built-in method marshal.loads}
+   1751/6    0.059    0.000    1.533    0.255 {built-in method builtins.exec}
+    23422    0.052    0.000    0.070    0.000 pool.py:756(ready)
+    38308    0.051    0.000    0.084    0.000 optimized_field_elements.py:82(__mul__)
  31710/28    0.036    0.000    0.087    0.003 copy.py:128(deepcopy)
-      935    0.035    0.000    0.035    0.000 {built-in method builtins.compile}
-    15434    0.035    0.000    0.055    0.000 optimized_field_elements.py:235(__init__)
-2571/2508    0.032    0.000    0.228    0.000 {built-in method builtins.__build_class__}
-    49566    0.030    0.000    0.042    0.000 optimized_field_elements.py:57(__init__)
-320688/320672    0.029    0.000    0.033    0.000 {built-in method builtins.isinstance}
-    33527    0.028    0.000    0.028    0.000 threading.py:575(is_set)
+      935    0.034    0.000    0.034    0.000 {built-in method builtins.compile}
+    15434    0.031    0.000    0.051    0.000 optimized_field_elements.py:235(__init__)
+2571/2508    0.029    0.000    0.218    0.000 {built-in method builtins.__build_class__}
+319032/319016    0.027    0.000    0.030    0.000 {built-in method builtins.isinstance}
+    49566    0.027    0.000    0.038    0.000 optimized_field_elements.py:57(__init__)
         1    0.025    0.025    0.025    0.025 {method 'load_verify_locations' of '_ssl._SSLContext' objects}
-    91796    0.025    0.000    0.025    0.000 {method 'append' of 'list' objects}
-     5013    0.021    0.000    0.021    0.000 {built-in method posix.stat}
-    15317    0.021    0.000    0.021    0.000 optimized_field_elements.py:296(<listcomp>)
- 1166/178    0.020    0.000    0.048    0.000 _parser.py:516(_parse)
-103308/101114    0.020    0.000    0.020    0.000 {built-in method builtins.len}
-6899/5132    0.018    0.000    0.040    0.000 {built-in method __new__ of type object at 0x598fc41ecb50}
-     1107    0.015    0.000    0.015    0.000 {built-in method io.open_code}
-   120442    0.015    0.000    0.015    0.000 optimized_field_elements.py:247(<genexpr>)
-     1451    0.013    0.000    0.056    0.000 <frozen importlib._bootstrap_external>:1607(find_spec)
-     1765    0.013    0.000    0.021    0.000 enum.py:242(__set_name__)
+    15317    0.020    0.000    0.020    0.000 optimized_field_elements.py:296(<listcomp>)
+     4693    0.019    0.000    0.019    0.000 {built-in method posix.stat}
+ 1151/168    0.019    0.000    0.046    0.000 _parser.py:516(_parse)
+6898/5131    0.018    0.000    0.038    0.000 {built-in method __new__ of type object at 0x6528b526ab50}
+    23433    0.017    0.000    0.017    0.000 threading.py:575(is_set)
+    79228    0.017    0.000    0.017    0.000 {method 'append' of 'list' objects}
+100335/98168    0.015    0.000    0.016    0.000 {built-in method builtins.len}
+   120442    0.014    0.000    0.014    0.000 optimized_field_elements.py:247(<genexpr>)
+     1107    0.013    0.000    0.013    0.000 {built-in method io.open_code}
+     1451    0.012    0.000    0.053    0.000 <frozen importlib._bootstrap_external>:1607(find_spec)
+     1765    0.012    0.000    0.020    0.000 enum.py:242(__set_name__)
 
 

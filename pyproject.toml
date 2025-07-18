@@ -19,6 +19,8 @@ dependencies = [
     "pytest-xdist>=3.6.1",
     "vyper>=0.4.1",
     "ipykernel>=6.29.5",
+    "tool>=0.8.0",
+    "snakeviz>=2.2.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, <= 3.13"
@@ -60,7 +62,6 @@ dev-dependencies = [
     "ruff>=0.6.3",
     "moccasin",
     "mamushi>=0.0.5",
-    "snakeviz>=2.2.2",
 ]
 
 [project.urls]

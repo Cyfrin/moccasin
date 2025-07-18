@@ -39,6 +39,17 @@ python profiling/mox_timeit.py --number 3 --commands "compile;deploy MyContract"
 
 Output is saved to `profiling/reports/mox_timeit.log` as a clean, aligned table.
 
+```console
+=== Mox CLI Timeit Results - 2025-07-18 19:33:05 ===
+
+Command              | Run 1  | Run 2  | Run 3
+---------------------+--------+--------+-------
+install              | 1.0665 | 0.9258 | 1.0136
+compile --no-install | 4.5361 | 2.0332 | 1.8549
+run deploy           | 2.1196 | 2.7561 | 1.8999
+=========================================================
+```
+
 ### 2. Profile a CLI Command in a Temporary Directory
 
 Use `mox_profiling.py` to run and profile any `mox` CLI command in a temporary directory with a mock project tree:
@@ -50,51 +61,48 @@ python profiling/mox_profiling.py --command "compile"
 ```console
 =========================================================
 
-=== Mox CLI Profiling Results - 2025-07-18_13-11-13 ===
+=== Mox CLI Profiling Results - 2025-07-18_19-26-16 ===
 
-Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --profile --quiet
+Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --quiet
 
 Profiling Output:
 
 === Moccasin CLI Profiling Report ===
 
-Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --profile --quiet
-Profiling report generated at 2025-07-18_13-11-13
+Command line: /home/s3bc40/gh-projects/moccasin/.venv/bin/mox compile --quiet
+Profiling report generated at 2025-07-18_19-26-16
 
-         2138731 function calls (2039596 primitive calls) in 4.099 seconds
+         2169412 function calls (2070359 primitive calls) in 8.762 seconds
 
    Ordered by: internal time, cumulative time
-   List reduced from 6414 to 25 due to restriction <25>
+   List reduced from 6318 to 25 due to restriction <25>
 
    ncalls  tottime  percall  cumtime  percall filename:lineno(function)
-     2182    2.325    0.001    2.325    0.001 {built-in method time.sleep}
-    15317    0.347    0.000    0.462    0.000 optimized_field_elements.py:280(__mul__)
-     1107    0.070    0.000    0.070    0.000 {built-in method marshal.loads}
-        4    0.062    0.015    0.062    0.015 {method 'poll' of 'select.poll' objects}
-   1751/6    0.056    0.000    1.559    0.260 {built-in method builtins.exec}
-    38308    0.052    0.000    0.086    0.000 optimized_field_elements.py:82(__mul__)
- 31710/28    0.036    0.000    0.088    0.003 copy.py:128(deepcopy)
-    15434    0.035    0.000    0.056    0.000 optimized_field_elements.py:235(__init__)
+     6171    6.907    0.001    6.907    0.001 {built-in method time.sleep}
+    15317    0.312    0.000    0.417    0.000 optimized_field_elements.py:280(__mul__)
+        1    0.126    0.126    7.147    7.147 compile.py:89(compile_project)
+     1107    0.072    0.000    0.072    0.000 {built-in method marshal.loads}
+   1751/6    0.059    0.000    1.533    0.255 {built-in method builtins.exec}
+    23422    0.052    0.000    0.070    0.000 pool.py:756(ready)
+    38308    0.051    0.000    0.084    0.000 optimized_field_elements.py:82(__mul__)
+ 31710/28    0.036    0.000    0.087    0.003 copy.py:128(deepcopy)
       935    0.034    0.000    0.034    0.000 {built-in method builtins.compile}
-2571/2508    0.029    0.000    0.214    0.000 {built-in method builtins.__build_class__}
-    49566    0.028    0.000    0.039    0.000 optimized_field_elements.py:57(__init__)
-320703/320687    0.028    0.000    0.031    0.000 {built-in method builtins.isinstance}
-        1    0.024    0.024    0.024    0.024 {method 'load_verify_locations' of '_ssl._SSLContext' objects}
-    15317    0.021    0.000    0.021    0.000 optimized_field_elements.py:296(<listcomp>)
-     5013    0.020    0.000    0.020    0.000 {built-in method posix.stat}
- 1166/178    0.019    0.000    0.045    0.000 _parser.py:516(_parse)
-6899/5132    0.017    0.000    0.037    0.000 {built-in method __new__ of type object at 0x5d7a18a85b50}
-   120442    0.015    0.000    0.015    0.000 optimized_field_elements.py:247(<genexpr>)
+    15434    0.031    0.000    0.051    0.000 optimized_field_elements.py:235(__init__)
+2571/2508    0.029    0.000    0.218    0.000 {built-in method builtins.__build_class__}
+319032/319016    0.027    0.000    0.030    0.000 {built-in method builtins.isinstance}
+    49566    0.027    0.000    0.038    0.000 optimized_field_elements.py:57(__init__)
+        1    0.025    0.025    0.025    0.025 {method 'load_verify_locations' of '_ssl._SSLContext' objects}
+    15317    0.020    0.000    0.020    0.000 optimized_field_elements.py:296(<listcomp>)
+     4693    0.019    0.000    0.019    0.000 {built-in method posix.stat}
+ 1151/168    0.019    0.000    0.046    0.000 _parser.py:516(_parse)
+6898/5131    0.018    0.000    0.038    0.000 {built-in method __new__ of type object at 0x6528b526ab50}
+    23433    0.017    0.000    0.017    0.000 threading.py:575(is_set)
+    79228    0.017    0.000    0.017    0.000 {method 'append' of 'list' objects}
+100335/98168    0.015    0.000    0.016    0.000 {built-in method builtins.len}
+   120442    0.014    0.000    0.014    0.000 optimized_field_elements.py:247(<genexpr>)
      1107    0.013    0.000    0.013    0.000 {built-in method io.open_code}
-     1451    0.012    0.000    0.052    0.000 <frozen importlib._bootstrap_external>:1607(find_spec)
-        1    0.012    0.012    2.376    2.376 compile.py:89(compile_project)
-105417/81271    0.012    0.000    0.119    0.000 {built-in method builtins.hasattr}
-3013/2095    0.012    0.000    0.076    0.000 copy.py:259(_reconstruct)
-     1765    0.011    0.000    0.019    0.000 enum.py:242(__set_name__)
-       32    0.011    0.000    0.011    0.000 {built-in method posix.waitpid}
-
-
-=========================================================
+     1451    0.012    0.000    0.053    0.000 <frozen importlib._bootstrap_external>:1607(find_spec)
+     1765    0.012    0.000    0.020    0.000 enum.py:242(__set_name__)
 
 ```
 
@@ -105,34 +113,32 @@ Profiling report generated at 2025-07-18_13-11-13
   python profiling/mox_profiling.py --command "deploy MyContract"
   ```
 
-### 3. Profile the Main CLI (Advanced)
-
-You can also profile the CLI by running it with the `--profile` flag:
-
-```sh
-moccasin --profile <other-args>
-```
-
-- This will profile the full CLI process and save results to `profiling/reports/`.
-- The profiling context is managed by `MoccasinProfiler`.
-
-> ⚠️ If you run it on your own, it will not use the mock project tree, so ensure you have a valid project structure in the current directory.
+Behind the scenes, `moccasin_profiling.py` will set the `MOX_PROFILE` environment variable to `1` before running the command, which enables profiling in the Moccasin CLI. In the `__main__.py` file, the `MoccasinProfiler` context manager is used to wrap the command execution, capturing profiling data.
 
 ## Output
 
-- **profiling/reports/mox_profiling.stats**: Raw cProfile stats (for use with `snakeviz`, `gprof2dot`, etc.)
+**For profiling/mox_timeit.py:**
+
+- **profiling/reports/mox_timeit.log**: A clean, aligned table of command execution times across multiple runs.
+
+**For profiling/mox_profiling.py:**
+
+- **profiling/reports/mox_profiling.stats**: Raw cProfile stats (for use with `snakeviz`, `pstats`, etc.)
 - **profiling/reports/mox_profiling.log**: Human-readable summary of the top functions by time and cumulative time.
 
-## Custom Profiling
+To read the profiling stats, you can use `pstats` in the terminal:
 
-You can use the `MoccasinProfiler` context manager in your own scripts:
+```sh
+python -m pstats profiling/reports/mox_profiling.stats
+```
 
-```python
-from profiling.moccasin_profiler import MoccasinProfiler
+You can also visualize the profiling data using tools like `snakeviz`:
 
-with MoccasinProfiler():
-    # Your code here
-    ...
+```sh
+# Install snakeviz in its own venv
+uv add tool snakeviz
+# Then visualize the profiling stats
+snakeviz profiling/reports/mox_profiling.stats
 ```
 
 ---
