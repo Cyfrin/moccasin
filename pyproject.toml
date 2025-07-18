@@ -47,10 +47,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "Topic :: Utilities",
 ]
-license-files = [
-    "LICENSE-MIT",
-    "LICENSE-APACHE",
-]
+license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
 
 [tool.uv]
 managed = true
@@ -74,9 +71,7 @@ Releases = "https://github.com/Cyfrin/moccasin/releases"
 moccasin = { workspace = true }
 
 [tool.uv.workspace]
-members = [
-    "tests/data/project_no_config",
-]
+members = ["tests/data/project_no_config"]
 
 [project.scripts]
 "mox" = "moccasin:main"
@@ -94,18 +89,14 @@ docs = [
 ]
 
 [build-system]
-requires = [
-    "hatchling",
-]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = [
-    "moccasin",
-]
+packages = ["moccasin"]
 
 [tool.mypy]
 disable_error_code = 'type-arg, attr-defined'

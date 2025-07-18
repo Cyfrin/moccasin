@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 import tomllib
 from importlib import import_module, metadata
@@ -31,7 +32,7 @@ def main(argv: list) -> int:
     if "--version" in argv or "version" in argv:
         print(get_version())
         return 0
-    
+
     # Handle 'help' command same as --help
     if len(argv) > 0 and argv[0] == "help":
         main_parser, _ = generate_main_parser_and_sub_parsers()
@@ -64,7 +65,7 @@ def main(argv: list) -> int:
         except Exception as e:
             logger.error(f"Error running format command: {e}")
             return 1
-    
+
     main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
 
     # ------------------------------------------------------------------
@@ -88,7 +89,14 @@ def main(argv: list) -> int:
     if args.command:
         command_to_run = ALIAS_TO_COMMAND.get(args.command, args.command)
         logger.info(f"Running {command_to_run} command...")
-        import_module(f"moccasin.commands.{command_to_run}").main(args)
+        # If profiling is enabled, use the MoccasinProfiler context manager
+        if os.environ.get("MOX_PROFILE") == "1":
+            from profiling.moccasin_profiler import MoccasinProfiler
+
+            with MoccasinProfiler():
+                import_module(f"moccasin.commands.{command_to_run}").main(args)
+        else:
+            import_module(f"moccasin.commands.{command_to_run}").main(args)
     else:
         main_parser.print_help()
     return 0
@@ -854,6 +862,9 @@ def create_parent_parser():
     parser.add_argument("-d", "--debug", action="store_true", help="Run in debug mode")
     parser.add_argument(
         "-q", "--quiet", action="store_true", help="Suppress all output except errors"
+    )
+    parser.add_argument(
+        "--profile", action="store_true", help="Enable profiling for the command."
     )
     return parser
 

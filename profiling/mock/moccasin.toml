@@ -1,0 +1,80 @@
+[project]
+src = "src"
+out = "out"
+dot_env = ".env"
+name = "moccasin_project"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = ["snekmate==0.1.1rc1"]
+
+# ------------------------------------------------------------------
+#                           DEPLOYERS
+# ------------------------------------------------------------------
+[networks.contracts.eth_usd_price_feed]
+deployer_script = "script/mocks/deploy_price_feed.py"
+
+[networks.contracts.btc_usd_price_feed]
+deployer_script = "script/mocks/deploy_price_feed.py"
+
+[networks.contracts.weth]
+deployer_script = "script/mocks/deploy_collateral.py"
+
+[networks.contracts.wbtc]
+deployer_script = "script/mocks/deploy_collateral.py"
+
+[networks.contracts.decentralized_stable_coin]
+deployer_script = "script/deploy_dsc.py"
+
+# ------------------------------------------------------------------
+#                            NETWORKS
+# ------------------------------------------------------------------
+[networks.anvil]
+url = "http://127.0.0.1:8545"
+prompt_live = false
+save_to_db = false
+chain_id = 31337
+
+# TODO: Deploy this
+[networks.zksync-sepolia]
+url = "https://sepolia.era.zksync.dev"
+chain_id = 300
+is_zksync = true
+prompt_live = true
+explorer_type = "zksyncexplorer"
+explorer_url = "https://explorer.sepolia.era.zksync.dev"
+default_account_name = "smalltestnet"
+unsafe_password_file = "$SMALLTESTNET_PASSWORD_FILE"
+
+[networks.zksync-fork]
+url = "$ZKSYNC_RPC_URL"
+chain_id = 324
+is_zksync = true
+prompt_live = true
+fork = true
+explorer_type = "zksyncexplorer"
+explorer_url = "https://zksync2-mainnet-explorer.zksync.io"
+
+[networks.sepolia-fork]
+url = "$SEPOLIA_RPC_URL"
+chain_id = 11155111
+prompt_live = false
+fork = true
+
+# ------------------------------------------------------------------
+#                       NETWORK CONTRACTS
+# ------------------------------------------------------------------
+[networks.zksync-sepolia.contracts]
+eth_usd_price_feed = { address = "0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF" }
+btc_usd_price_feed = { address = "0x95Bc57e794aeb02E4a16eff406147f3ce2531F83" }
+weth = { address = "0xdd13E55209Fd76AfE204dBda4007C227904f0a81" }
+wbtc = { address = "0xE544cAd11e108775399358Bd0790bb72c9e3AD9E" }
+
+[networks.zksync.contracts]
+eth_usd_price_feed = { address = "0xfEefF7c3fB57d18C5C6Cdd71e45D2D0b4F9377bF" }
+btc_usd_price_feed = { address = "0x95Bc57e794aeb02E4a16eff406147f3ce2531F83" }
+weth = { address = "0xf00DAD97284D0c6F06dc4Db3c32454D4292c6813" }
+wbtc = { address = "0xBBeB516fb02a01611cBBE0453Fe3c580D7281011" }
+
+# You can view all configuration options at https://cyfrin.github.io/moccasin/all_moccasin_toml_parameters.html
