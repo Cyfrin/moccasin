@@ -1,4 +1,4 @@
-is_zksync = "true"
+is_zksync = "false"
 prompt_live = "false"
 save_to_db = "false"
 live_or_staging = "false"
