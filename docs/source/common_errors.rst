@@ -1,8 +1,6 @@
 Common Errors
 =============
 
-----
-
 Value Error: Account Not Defined
 --------------------------------
 
