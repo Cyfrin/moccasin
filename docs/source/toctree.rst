@@ -47,6 +47,7 @@ Moccasin
     :maxdepth: 3
 
     ZKsync <tutorials/zksync-getting-started.rst>
+    Guided Moccasin tutorials <tutorials/index.rst>
 
 .. toctree::
     :caption: Reference
