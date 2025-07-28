@@ -19,6 +19,7 @@ dependencies = [
     "pytest-xdist>=3.6.1",
     "vyper>=0.4.1",
     "ipykernel>=6.29.5",
+    "safe-eth-py>=7.8.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, <= 3.13"
