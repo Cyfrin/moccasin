@@ -1,10 +1,19 @@
 from argparse import Namespace
+from enum import Enum
 from eth_typing import ChecksumAddress
-from eth_utils import to_checksum_address, is_hex_address
+from eth_utils import (
+    to_bytes,
+    to_checksum_address,
+    is_address,
+    is_hex,
+    function_signature_to_4byte_selector,
+)
 from eth.constants import ZERO_ADDRESS
 
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.shortcuts import clear as prompt_clear
+from prompt_toolkit.validation import Validator
 
 from moccasin.logging import logger
 
@@ -13,10 +22,17 @@ from safe_eth.safe import Safe
 from safe_eth.safe.multi_send import MultiSend, MultiSendTx, MultiSendOperation
 
 
+# --- Enums ---
+class TransactionType(Enum):
+    CONTRACT_CALL = 0
+    ERC20_TRANSFER = 1
+    RAW = 2
+
+
 # --- Core Validators ---
 def is_valid_address(address: str) -> bool:
     """Check if the provided address is a valid address."""
-    return is_hex_address(address)
+    return is_address(address)
 
 
 def is_valid_rpc_url(rpc_url: str) -> bool:
@@ -26,7 +42,12 @@ def is_valid_rpc_url(rpc_url: str) -> bool:
 
 def is_valid_number(value: str) -> bool:
     """Check if the provided value is a valid number."""
-    return value.isdigit()
+    return value.isdigit() and int(value) >= 0
+
+
+def is_valid_not_zero_number(value: str) -> bool:
+    """Check if the provided value is a valid positive number."""
+    return value.isdigit() and int(value) > 0
 
 
 def is_valid_operation(value: str) -> bool:
@@ -34,6 +55,105 @@ def is_valid_operation(value: str) -> bool:
     return value.isdigit() and int(value) in [op.value for op in MultiSendOperation]
 
 
+def is_valid_data(data: str) -> bool:
+    """Check if the provided data is a valid hex string for calldata using eth_utils.is_hex."""
+    return is_hex(data)
+
+
+def is_valid_transaction_type(value: str) -> bool:
+    """Check if the provided value is a valid transaction type."""
+    return value.isdigit() and int(value) in [tx.value for tx in TransactionType]
+
+
+def is_valid_function_signature(sig: str) -> bool:
+    """Check if the provided function signature is valid by trying to get its 4-byte selector."""
+    try:
+        function_signature_to_4byte_selector(sig)
+        return True
+    except Exception:
+        return False
+
+
+# --- Error constants ---
+ERROR_INVALID_ADDRESS = "Invalid address format. Please enter a valid checksum address."
+ERROR_INVALID_RPC_URL = "Invalid RPC URL format. Please enter a valid URL starting with http:// or https://."
+ERROR_INVALID_NUMBER = "Invalid number format. Please enter a valid integer."
+ERROR_INVALID_NOT_ZERO_NUMBER = (
+    "Invalid non zero number format. Please enter a valid non zero positive integer."
+)
+ERROR_INVALID_OPERATION = "Invalid operation type. Please enter a valid operation type (0 for call, 1 for delegate call)."
+ERROR_INVALID_DATA = (
+    "Invalid data format. Please enter a valid hex string for calldata."
+)
+ERROR_INVALID_TRANSACTION_TYPE = "Invalid transaction type. Please enter a valid transaction type (0 for contract call, 1 for ERC20 transfer, 2 for raw)."
+ERROR_INVALID_FUNCTION_SIGNATURE = (
+    "Invalid function signature. Example: transfer(address,uint256)"
+)
+
+
+# --- Prompt Validators ---
+def allow_empty(core_validator):
+    """Decorator to allow empty input for a validator."""
+
+    def wrapper(value):
+        if value == "":
+            return True
+        return core_validator(value)
+
+    return wrapper
+
+
+validator_address = Validator.from_callable(
+    allow_empty(is_valid_address),
+    error_message=ERROR_INVALID_ADDRESS,
+    move_cursor_to_end=True,
+)
+
+validator_safe_address = Validator.from_callable(
+    is_valid_address, error_message=ERROR_INVALID_ADDRESS, move_cursor_to_end=True
+)
+
+validator_rpc_url = Validator.from_callable(
+    is_valid_rpc_url, error_message=ERROR_INVALID_RPC_URL, move_cursor_to_end=True
+)
+
+validator_number = Validator.from_callable(
+    allow_empty(is_valid_number),
+    error_message=ERROR_INVALID_NUMBER,
+    move_cursor_to_end=True,
+)
+
+validator_not_zero_number = Validator.from_callable(
+    allow_empty(is_valid_not_zero_number),
+    error_message=ERROR_INVALID_NOT_ZERO_NUMBER,
+    move_cursor_to_end=True,
+)
+
+validator_transaction_type = Validator.from_callable(
+    allow_empty(is_valid_transaction_type),
+    error_message=ERROR_INVALID_TRANSACTION_TYPE,
+    move_cursor_to_end=True,
+)
+
+validator_operation = Validator.from_callable(
+    allow_empty(is_valid_operation),
+    error_message=ERROR_INVALID_OPERATION,
+    move_cursor_to_end=True,
+)
+
+validator_data = Validator.from_callable(
+    is_valid_data, error_message=ERROR_INVALID_DATA, move_cursor_to_end=True
+)
+
+
+validator_function_signature = Validator.from_callable(
+    is_valid_function_signature,
+    error_message=ERROR_INVALID_FUNCTION_SIGNATURE,
+    move_cursor_to_end=True,
+)
+
+
+# --- Main Function ---
 def main(args: Namespace) -> int:
     if args.msig_command == "tx":
         # Base parameter for a Safe instantiation
@@ -57,6 +177,7 @@ def main(args: Namespace) -> int:
         )
 
         # Intitialize Safe instance
+        prompt_clear()
         print_formatted_text(
             HTML("\n<b><magenta>Initializing Safe instance...</magenta></b>\n")
         )
@@ -66,11 +187,19 @@ def main(args: Namespace) -> int:
                 try:
                     if not rpc_url:
                         rpc_url = prompt_session.prompt(
-                            HTML("<orange>#init Safe ></orange> Enter RPC URL: ")
+                            HTML("<orange>#init Safe ></orange> Enter RPC URL: "),
+                            validator=validator_rpc_url,
+                            placeholder=HTML(
+                                "<grey>e.g. https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID</grey>"
+                            ),
                         )
                     if not safe_address:
                         safe_address = prompt_session.prompt(
-                            HTML("<orange>#init_safe ></orange> Enter Safe address: ")
+                            HTML("<orange>#init_safe ></orange> Enter Safe address: "),
+                            validator=validator_address,
+                            placeholder=HTML(
+                                "<grey>e.g. 0x1234567890abcdef1234567890abcdef12345678</grey>"
+                            ),
                         )
                     if rpc_url and safe_address:
                         # Create a Safe instance with the provided RPC URL and address
@@ -118,9 +247,9 @@ def main(args: Namespace) -> int:
                 # Prompt for SafeTx parameters
                 if not safe_nonce:
                     safe_nonce = prompt_session.prompt(
-                        HTML(
-                            "<orange>#tx_builder ></orange> Enter Safe nonce (or press Enter to set it automatically): "
-                        )
+                        HTML("<orange>#tx_builder ></orange> Enter Safe nonce: "),
+                        validator=validator_number,
+                        placeholder=HTML("<grey>[default: auto retrieval]</grey>"),
                     )
                     if safe_nonce:
                         safe_nonce = int(safe_nonce)
@@ -131,7 +260,9 @@ def main(args: Namespace) -> int:
                     gas_token = prompt_session.prompt(
                         HTML(
                             "<orange>#tx_builder ></orange> Enter gas token address (or press Enter to use ZERO_ADDRESS): "
-                        )
+                        ),
+                        validator=validator_address,
+                        placeholder=HTML("<grey>[default: 0x...]</grey>"),
                     )
                     if gas_token:
                         gas_token = ChecksumAddress(gas_token)
@@ -143,8 +274,10 @@ def main(args: Namespace) -> int:
                     internal_txs = []
                     nb_internal_txs = prompt_session.prompt(
                         HTML(
-                            "<orange>#tx_builder ></orange> Enter number of internal transactions (or press Enter to set to 1): "
-                        )
+                            "<orange>#tx_builder ></orange> Enter number of internal transactions: "
+                        ),
+                        validator=validator_not_zero_number,
+                        placeholder=HTML("<grey>[default: 1]</grey>"),
                     )
                     if nb_internal_txs:
                         nb_internal_txs = int(nb_internal_txs)
@@ -159,8 +292,12 @@ def main(args: Namespace) -> int:
                         )
                         tx_type = prompt_session.prompt(
                             HTML(
-                                "<orange>#tx_builder:internal_txs ></orange> Type of transaction (0 for call_contract [default], 1 for erc20_transfer, 2 for raw): "
-                            )
+                                "<orange>#tx_builder:internal_txs ></orange> Type of transaction (0 for call_contract, 1 for erc20_transfer, 2 for raw): "
+                            ),
+                            validator=validator_transaction_type,
+                            placeholder=HTML(
+                                "<grey>[default: 0 for call_contract]</grey>"
+                            ),
                         )
                         if tx_type:
                             tx_type = int(tx_type)
@@ -177,8 +314,10 @@ def main(args: Namespace) -> int:
                             # Prompt for contract address
                             tx_to = prompt_session.prompt(
                                 HTML(
-                                    "<orange>#tx_builder:internal_txs ></orange> Contract address (or press Enter to use ZERO_ADDRESS): "
-                                )
+                                    "<orange>#tx_builder:internal_txs ></orange> Contract address: "
+                                ),
+                                validator=validator_address,
+                                placeholder=HTML("<grey>[default: 0x...]</grey>"),
                             )
                             if tx_to:
                                 tx_to = ChecksumAddress(tx_to)
@@ -188,8 +327,10 @@ def main(args: Namespace) -> int:
                             # Prompt for value
                             tx_value = prompt_session.prompt(
                                 HTML(
-                                    "<orange>#tx_builder:internal_txs ></orange> Value in wei (or press Enter to use 0): "
-                                )
+                                    "<orange>#tx_builder:internal_txs ></orange> Value in wei: "
+                                ),
+                                validator=validator_number,
+                                placeholder=HTML("<grey>[default: 0]</grey>"),
                             )
                             if tx_value:
                                 tx_value = int(tx_value)
@@ -199,8 +340,10 @@ def main(args: Namespace) -> int:
                             # Prompt for operation type
                             tx_operation = prompt_session.prompt(
                                 HTML(
-                                    "<orange>#tx_builder:internal_txs ></orange> Operation type (0 for call [default], 1 for delegate call): "
-                                )
+                                    "<orange>#tx_builder:internal_txs ></orange> Operation type (0 for call, 1 for delegate call): "
+                                ),
+                                validator=validator_operation,
+                                placeholder=HTML("<grey>[default: 0 for call]</grey>"),
                             )
                             if tx_operation:
                                 tx_operation = int(tx_operation)
@@ -210,9 +353,12 @@ def main(args: Namespace) -> int:
                             # Prompt for function signature
                             function_signature: str = prompt_session.prompt(
                                 HTML(
-                                    "<orange>#tx_builder:internal_txs ></orange> Function signature (e.g. transfer(address,uint256) [default]): "
+                                    "<orange>#tx_builder:internal_txs ></orange> Function signature: "
                                 ),
-                                default="transfer(address,uint256)",
+                                validator=validator_function_signature,
+                                placeholder=HTML(
+                                    "<grey>e.g. transfer(address,uint256)</grey>"
+                                ),
                             )
                             func_name, params = function_signature.strip().split("(")
                             param_types = (
@@ -263,12 +409,12 @@ def main(args: Namespace) -> int:
 
                         # Handle raw transaction
                         elif tx_type == 2:
-                            from eth_utils import to_bytes
-
                             tx_data_hex = prompt_session.prompt(
                                 HTML(
                                     "<orange>#tx_builder:internal_txs ></orange> Raw data (hex): "
-                                )
+                                ),
+                                validator=validator_data,
+                                placeholder=HTML("<grey>e.g. 0x...</grey>"),
                             )
                             tx_data = to_bytes(hexstr=tx_data_hex)
 
@@ -395,6 +541,7 @@ def main(args: Namespace) -> int:
                 break
             except Exception as e:
                 logger.error(f"An error occurred: {e}")
+                break
 
     # Unknown command handling
     else:
