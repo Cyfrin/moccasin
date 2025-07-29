@@ -1,5 +1,6 @@
-from argparse import Namespace
+from argparse import ArgumentParser, Namespace
 from enum import Enum
+import re
 from eth_typing import ChecksumAddress
 from eth_utils import (
     to_bytes,
@@ -153,6 +154,72 @@ validator_function_signature = Validator.from_callable(
 )
 
 
+# --- Argparse Validators ---
+def validate_address(value: str) -> ChecksumAddress:
+    """Validate and return a checksum address."""
+    if not is_valid_address(value):
+        raise ValueError(ERROR_INVALID_ADDRESS)
+    return to_checksum_address(value)
+
+
+def validate_rpc_url(value: str) -> str:
+    """Validate and return a valid RPC URL."""
+    if not is_valid_rpc_url(value):
+        raise ValueError(ERROR_INVALID_RPC_URL)
+    return value
+
+
+def validate_number(value: str) -> int:
+    """Validate and return a valid number."""
+    if not is_valid_number(value):
+        raise ValueError(ERROR_INVALID_NUMBER)
+    return int(value)
+
+
+def validate_data(value: str) -> bytes:
+    """Validate and return a valid hex string for calldata."""
+    if not is_valid_data(value):
+        raise ValueError(ERROR_INVALID_DATA)
+    return to_bytes(hexstr=value)
+
+
+def add_tx_builder_args(parser: ArgumentParser):
+    """Add transaction builder arguments to the parser."""
+    parser.add_argument(
+        "--rpc-url",
+        help="RPC URL to get the Safe contract from.",
+        type=validate_rpc_url,
+    )
+    parser.add_argument(
+        "--safe-address",
+        help="Address of the Safe contract to build the transaction for.",
+        type=validate_address,
+    )
+    parser.add_argument(
+        "--to", help="Address of the contract to call.", type=validate_address
+    )
+    parser.add_argument(
+        "--value",
+        help="Value to send with the transaction, in wei.",
+        type=validate_number,
+    )
+    parser.add_argument(
+        "--data",
+        help="Data to send with the transaction, in hex format.",
+        type=validate_data,
+    )
+    parser.add_argument(
+        "--safe-nonce",
+        help="Nonce of the Safe contract to use for the transaction.",
+        type=validate_number,
+    )
+    parser.add_argument(
+        "--gas-token",
+        help="Token to use for gas, defaults to the native token of the network.",
+        type=validate_address,
+    )
+
+
 # --- Main Function ---
 def main(args: Namespace) -> int:
     if args.msig_command == "tx":
@@ -165,7 +232,7 @@ def main(args: Namespace) -> int:
         to: ChecksumAddress = getattr(args, "to", None)
         value: int = getattr(args, "value", 0)
         operation: int = getattr(args, "operation", 0)
-        safe_nonce: int = getattr(args, "nonce", 0)
+        safe_nonce: int = getattr(args, "safe_nonce", 0)
         data: bytes = getattr(args, "data", b"")
         gas_token: ChecksumAddress = getattr(args, "gas_token", None)
 
@@ -181,60 +248,59 @@ def main(args: Namespace) -> int:
         print_formatted_text(
             HTML("\n<b><magenta>Initializing Safe instance...</magenta></b>\n")
         )
-        # Prompt for RPC URL and Safe address if not provided
-        if not rpc_url or not safe_address:
-            while True:
-                try:
-                    if not rpc_url:
-                        rpc_url = prompt_session.prompt(
-                            HTML("<orange>#init Safe ></orange> Enter RPC URL: "),
-                            validator=validator_rpc_url,
-                            placeholder=HTML(
-                                "<grey>e.g. https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID</grey>"
-                            ),
-                        )
-                    if not safe_address:
-                        safe_address = prompt_session.prompt(
-                            HTML("<orange>#init_safe ></orange> Enter Safe address: "),
-                            validator=validator_address,
-                            placeholder=HTML(
-                                "<grey>e.g. 0x1234567890abcdef1234567890abcdef12345678</grey>"
-                            ),
-                        )
-                    if rpc_url and safe_address:
-                        # Create a Safe instance with the provided RPC URL and address
-                        try:
-                            # Set Ethereum client URL and Safe address
-                            rpc_url = rpc_url
-                            ethereum_client = EthereumClient(rpc_url)
-                            safe_address = ChecksumAddress(safe_address)
 
-                            safe_instance = Safe(
-                                address=safe_address, ethereum_client=ethereum_client
-                            )
-                            # If the Safe instance is initialized successfully, break the loop
-                            if safe_instance:
-                                print_formatted_text(
-                                    HTML(
-                                        "\n<b><green>Safe instance initialized successfully!</green></b>\n"
-                                    )
-                                )
-                                break
-                            else:
-                                logger.error("Failed to initialize Safe instance.")
-                                rpc_url = None
-                                safe_address = None
-                                continue
-                        # If initialization fails, log the error and prompt again
-                        except Exception as e:
-                            logger.error(f"Failed to initialize Safe instance: {e}")
-                            continue
-                except KeyboardInterrupt:
-                    logger.info("Exiting initialization.")
-                    return 0
-                except Exception as e:
-                    logger.error(f"An error occurred: {e}")
-                    continue
+        def _try_initialize_safe_instance(rpc_url, safe_address):
+            """Try to initialize a Safe instance with the provided RPC URL and Safe address."""
+            try:
+                ethereum_client = EthereumClient(rpc_url)
+                safe_address = ChecksumAddress(safe_address)
+                safe_instance = Safe(
+                    address=safe_address, ethereum_client=ethereum_client
+                )
+                print_formatted_text(
+                    HTML(
+                        "\n<b><green>Safe instance initialized successfully!</green></b>\n"
+                    )
+                )
+                return safe_instance
+            except Exception as e:
+                logger.error(f"Failed to initialize Safe instance: {e}")
+                return None
+
+        # If RPC URL and Safe address are provided, try to initialize the Safe instance
+        if rpc_url and safe_address:
+            safe_instance = _try_initialize_safe_instance(rpc_url, safe_address)
+
+        # If that failed, or values are missing, prompt interactively
+        while not safe_instance:
+            try:
+                if not rpc_url:
+                    rpc_url = prompt_session.prompt(
+                        HTML("<orange>#init Safe ></orange> Enter RPC URL: "),
+                        validator=validator_rpc_url,
+                        placeholder=HTML(
+                            "<grey>e.g. https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID</grey>"
+                        ),
+                    )
+                if not safe_address:
+                    safe_address = prompt_session.prompt(
+                        HTML("<orange>#init_safe ></orange> Enter Safe address: "),
+                        validator=validator_address,
+                        placeholder=HTML(
+                            "<grey>e.g. 0x1234567890abcdef1234567890abcdef12345678</grey>"
+                        ),
+                    )
+                safe_instance = _try_initialize_safe_instance(rpc_url, safe_address)
+                if not safe_instance:
+                    # Reset values to force re-prompt
+                    rpc_url = None
+                    safe_address = None
+            except KeyboardInterrupt:
+                logger.info("Exiting initialization.")
+                return 0
+            except Exception as e:
+                logger.error(f"An error occurred: {e}")
+                return 1
 
         # Start the interactive session for multisig transactions
         print_formatted_text(
@@ -430,7 +496,7 @@ def main(args: Namespace) -> int:
 
                     # If more than one internal tx, use MultiSend
                     if len(internal_txs) > 1:
-                        multi_send = MultiSend(ethereum_client=ethereum_client)
+                        multi_send = MultiSend(ethereum_client=EthereumClient(rpc_url))
                         data = multi_send.build_tx_data(internal_txs)
                         to = multi_send.address
                         value = 0
@@ -446,11 +512,12 @@ def main(args: Namespace) -> int:
 
                 print_formatted_text(
                     HTML(
-                        "\n\t<b><green>MultiSend transaction created successfully!</green></b>\n"
+                        "\n<b><green>MultiSend transaction created successfully!</green></b>\n"
                     )
                 )
 
                 # Create the SafeTx instance
+                # @FIXME: if to not provided in argpars, then 0 address in SafeTx
                 try:
                     safe_tx = safe_instance.build_multisig_tx(
                         to=to,
@@ -461,6 +528,7 @@ def main(args: Namespace) -> int:
                         gas_token=gas_token,
                     )
                     # Print the SafeTx instance
+                    prompt_clear()
                     print_formatted_text(
                         HTML(
                             "\n<b><green>SafeTx instance created successfully!</green></b>\n"
@@ -541,7 +609,7 @@ def main(args: Namespace) -> int:
                 break
             except Exception as e:
                 logger.error(f"An error occurred: {e}")
-                break
+                return 1
 
     # Unknown command handling
     else:

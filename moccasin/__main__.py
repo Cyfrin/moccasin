@@ -5,6 +5,7 @@ from importlib import import_module, metadata
 from pathlib import Path
 from typing import Tuple
 
+from moccasin.commands.msig import add_tx_builder_args
 from moccasin.constants.vars import CONFIG_NAME
 from moccasin.logging import logger, set_log_level
 
@@ -775,7 +776,7 @@ Example usage:
 
     msig_parsers = msig_parser.add_subparsers(dest="msig_command")
 
-    # Tx builder command
+    # --- Tx builder command ---
     msig_tx_parser = msig_parsers.add_parser(
         "tx",
         help="Build a multisig transaction.",
@@ -784,11 +785,8 @@ Example usage:
         """,
         parents=[parent_parser],
     )
-    msig_tx_parser.add_argument(
-        "--interactive",
-        action="store_true",
-        help="Run the multisig transaction builder in interactive mode.",
-    )
+    # Add arguments for the multisig transaction builder
+    add_tx_builder_args(msig_tx_parser)
 
     # @TODO: Add more msig commands as needed
 
