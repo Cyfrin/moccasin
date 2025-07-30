@@ -319,3 +319,17 @@ def pytest_collection_modifyitems(config, items: List[Any]):
                 for marker in test.own_markers
                 if marker.name not in ("skip", "skipif")
             ]
+
+
+# ------------------------------------------------------------------
+#                        MSIG FIXTURES
+# ------------------------------------------------------------------
+@pytest.fixture
+def pt_session():
+    from prompt_toolkit.application import create_app_session
+    from prompt_toolkit.input import create_pipe_input
+    from prompt_toolkit.output import DummyOutput
+
+    with create_pipe_input() as pipe_input:
+        with create_app_session(input=pipe_input, output=DummyOutput()):
+            yield pipe_input

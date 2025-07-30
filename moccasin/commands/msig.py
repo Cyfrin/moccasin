@@ -1,6 +1,5 @@
 from argparse import ArgumentParser, Namespace
 from enum import Enum
-import re
 from eth_typing import ChecksumAddress
 from eth_utils import (
     to_bytes,
@@ -73,6 +72,17 @@ def is_valid_function_signature(sig: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def is_valid_boolean(value: str) -> bool:
+    """Check if the provided value is a valid boolean."""
+    return value in ("true", "false")
+
+
+# Generic non-empty validator
+def is_not_empty(value: str) -> bool:
+    """Generic non-empty validator."""
+    return value != ""
 
 
 # --- Error constants ---
@@ -152,6 +162,26 @@ validator_function_signature = Validator.from_callable(
     error_message=ERROR_INVALID_FUNCTION_SIGNATURE,
     move_cursor_to_end=True,
 )
+
+validator_boolean = Validator.from_callable(
+    is_valid_boolean,
+    error_message="Invalid boolean value. Please enter true/false",
+    move_cursor_to_end=True,
+)
+
+validator_not_empty = Validator.from_callable(
+    is_not_empty, error_message="Value cannot be empty.", move_cursor_to_end=True
+)
+
+# --- Type-based prompt validation for function parameters ---
+param_type_validators = {
+    "address": validator_address,
+    "uint256": validator_number,
+    "uint": validator_number,
+    "int256": validator_number,
+    "int": validator_number,
+    "bool": validator_boolean,
+}
 
 
 # --- Argparse Validators ---
@@ -432,12 +462,17 @@ def main(args: Namespace) -> int:
                                 if params.rstrip(")")
                                 else []
                             )
+
                             param_values = []
                             for i, typ in enumerate(param_types):
+                                validator = param_type_validators.get(
+                                    typ, validator_not_empty
+                                )
                                 val: str = prompt_session.prompt(
                                     HTML(
                                         f"<yellow>#tx_builder:internal_txs ></yellow> Parameter #{i + 1} ({typ}): "
-                                    )
+                                    ),
+                                    validator=validator,
                                 )
                                 param_values.append(val)
                             # Import eth_abi.abi.encode for ABI encoding
@@ -516,8 +551,76 @@ def main(args: Namespace) -> int:
                     )
                 )
 
+                # --- MultiSend batch detection and 'to' override logic ---
+                if data:
+                    try:
+                        decoded_batch = MultiSend.from_transaction_data(data)
+                    except Exception as e:
+                        decoded_batch = []
+                        logger.warning(f"Could not decode data as MultiSend batch: {e}")
+
+                    # If decoded batch is found, override 'to' with MultiSend address
+                    if decoded_batch:
+                        # Check if it contains delegate calls
+                        has_delegate = any(
+                            tx.operation == MultiSendOperation.DELEGATE_CALL
+                            for tx in decoded_batch
+                        )
+                        multi_send = MultiSend(
+                            ethereum_client=EthereumClient(rpc_url),
+                            call_only=not has_delegate,
+                        )
+                        multi_send_address = multi_send.address
+
+                        # Override 'to' if provided or if it was not set
+                        if to and to != multi_send_address:
+                            print_formatted_text(
+                                HTML(
+                                    f"<b><yellow>Warning:</yellow></b> Overriding provided --to address with MultiSend address: {multi_send_address}"
+                                )
+                            )
+                        to = multi_send_address
+
+                        # Show decoded batch to user for confirmation
+                        print_formatted_text(
+                            HTML("<b><magenta>Decoded MultiSend batch:</magenta></b>")
+                        )
+                        for idx, tx in enumerate(decoded_batch, 1):
+                            print_formatted_text(
+                                HTML(
+                                    f"<b>Tx {idx}:</b> "
+                                    f"operation={tx.operation.name}, "
+                                    f"to={tx.to}, "
+                                    f"value={tx.value}, "
+                                    f"data={tx.data.hex()[:20]}{'...' if len(tx.data) > 10 else ''}"
+                                )
+                            )
+                        confirm = prompt_session.prompt(
+                            HTML(
+                                "<orange>Does this batch look correct? (y/n): </orange>"
+                            ),
+                            placeholder="y/n, yes/no",
+                        )
+                        if confirm.lower() not in ("y", "yes"):
+                            print_formatted_text(
+                                HTML(
+                                    "<b><red>Aborting due to user rejection of decoded batch.</red></b>"
+                                )
+                            )
+                            return 1
+
+                    # Not a MultiSend batch, prompt for 'to'
+                    elif not to:
+                        to = prompt_session.prompt(
+                            HTML(
+                                "<orange>#tx_builder ></orange> Enter target contract address (to): "
+                            ),
+                            validator=validator_address,
+                            placeholder=HTML("<grey>e.g. 0x...</grey>"),
+                        )
+                        to = ChecksumAddress(to)
+
                 # Create the SafeTx instance
-                # @FIXME: if to not provided in argpars, then 0 address in SafeTx
                 try:
                     safe_tx = safe_instance.build_multisig_tx(
                         to=to,
