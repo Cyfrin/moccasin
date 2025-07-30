@@ -1,13 +1,13 @@
+import re
+import json
+
 from argparse import ArgumentParser, Namespace
 from enum import Enum
+from pathlib import Path
+
+from eth_abi.abi import is_encodable_type
 from eth_typing import ChecksumAddress
-from eth_utils import (
-    to_bytes,
-    to_checksum_address,
-    is_address,
-    is_hex,
-    function_signature_to_4byte_selector,
-)
+from eth_utils import to_bytes, to_checksum_address, is_address, is_hex, is_0x_prefixed
 from eth.constants import ZERO_ADDRESS
 
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
@@ -57,7 +57,7 @@ def is_valid_operation(value: str) -> bool:
 
 def is_valid_data(data: str) -> bool:
     """Check if the provided data is a valid hex string for calldata using eth_utils.is_hex."""
-    return is_hex(data)
+    return is_0x_prefixed(data) and is_hex(data)
 
 
 def is_valid_transaction_type(value: str) -> bool:
@@ -66,17 +66,32 @@ def is_valid_transaction_type(value: str) -> bool:
 
 
 def is_valid_function_signature(sig: str) -> bool:
-    """Check if the provided function signature is valid by trying to get its 4-byte selector."""
-    try:
-        function_signature_to_4byte_selector(sig)
-        return True
-    except Exception:
+    """Check if the provided function signature is valid.
+
+    Must match: name(args) where name is a valid identifier and args can be empty or comma-separated types.
+    """
+    # Use a raw string and single backslashes for regex
+    m = re.match(r"^([a-zA-Z_][a-zA-Z0-9_]*)\(([^()]*)\)$", sig)
+    if not m:
         return False
+    types = m.group(2)
+    if types.strip() == "":
+        return True
+    for typ in types.split(","):
+        if not is_encodable_type(typ.strip()):
+            return False
+    return True
 
 
 def is_valid_boolean(value: str) -> bool:
     """Check if the provided value is a valid boolean."""
     return value in ("true", "false")
+
+
+def is_json_file(value: str) -> bool:
+    """Check if the provided value is a valid JSON file path (ends with .json and not a directory)."""
+    path = Path(value)
+    return value.lower().endswith(".json") and not path.is_dir()
 
 
 # Generic non-empty validator
@@ -100,6 +115,8 @@ ERROR_INVALID_TRANSACTION_TYPE = "Invalid transaction type. Please enter a valid
 ERROR_INVALID_FUNCTION_SIGNATURE = (
     "Invalid function signature. Example: transfer(address,uint256)"
 )
+ERROR_INVALID_BOOLEAN = "Invalid boolean value. Please enter true/false"
+ERROR_INVALID_JSON_FILE = "Invalid JSON file path. Please provide a valid .json file."
 
 
 # --- Prompt Validators ---
@@ -164,13 +181,15 @@ validator_function_signature = Validator.from_callable(
 )
 
 validator_boolean = Validator.from_callable(
-    is_valid_boolean,
-    error_message="Invalid boolean value. Please enter true/false",
-    move_cursor_to_end=True,
+    is_valid_boolean, error_message=ERROR_INVALID_BOOLEAN, move_cursor_to_end=True
 )
 
 validator_not_empty = Validator.from_callable(
     is_not_empty, error_message="Value cannot be empty.", move_cursor_to_end=True
+)
+
+validator_json_file = Validator.from_callable(
+    is_json_file, error_message=ERROR_INVALID_JSON_FILE, move_cursor_to_end=True
 )
 
 # --- Type-based prompt validation for function parameters ---
@@ -181,6 +200,7 @@ param_type_validators = {
     "int256": validator_number,
     "int": validator_number,
     "bool": validator_boolean,
+    # @TODO Add more complex types like bytes, arrays, etc.
 }
 
 
@@ -213,8 +233,20 @@ def validate_data(value: str) -> bytes:
     return to_bytes(hexstr=value)
 
 
+def validate_json_file(value: str) -> Path:
+    """Validate and return a valid JSON file path."""
+    if not is_json_file(value):
+        raise ValueError("Invalid JSON file path. Please provide a valid .json file.")
+    return Path(value)
+
+
 def add_tx_builder_args(parser: ArgumentParser):
     """Add transaction builder arguments to the parser."""
+    parser.add_argument(
+        "--json-output",
+        help="Output file to save the EIP-712 structured data as JSON.",
+        type=validate_json_file,
+    )
     parser.add_argument(
         "--rpc-url",
         help="RPC URL to get the Safe contract from.",
@@ -265,6 +297,7 @@ def main(args: Namespace) -> int:
         safe_nonce: int = getattr(args, "safe_nonce", 0)
         data: bytes = getattr(args, "data", b"")
         gas_token: ChecksumAddress = getattr(args, "gas_token", None)
+        eip712_json_out: Path = getattr(args, "json_output", None)
 
         # Create a prompt session with auto-suggest and a bottom toolbar
         prompt_session = PromptSession(
@@ -643,6 +676,11 @@ def main(args: Namespace) -> int:
                     print_formatted_text(HTML("<b>SafeTx</b>"))
                     print_formatted_text(
                         HTML(
+                            f"\t<b><orange>SafeTx Hash:</orange></b> {to_0x_hex_str(safe_tx.safe_tx_hash)}"
+                        )
+                    )
+                    print_formatted_text(
+                        HTML(
                             f"\t<b><orange>Safe Address:</orange></b> {safe_tx.safe_address}"
                         )
                     )
@@ -701,6 +739,51 @@ def main(args: Namespace) -> int:
                     print_formatted_text(
                         HTML(f"\t<b><orange>Chain ID:</orange></b> {safe_tx.chain_id}")
                     )
+
+                    # Optionally save EIP-712 structured data to JSON
+                    eip712_struct = safe_tx.eip712_structured_data
+                    eip712_struct["message"]["data"] = to_0x_hex_str(
+                        eip712_struct["message"]["data"]
+                    )
+                    if eip712_json_out:
+                        with open(eip712_json_out, "w") as f:
+                            json.dump(eip712_struct, f, indent=2, default=str)
+                        print_formatted_text(
+                            HTML(
+                                f"\n<b><green>EIP-712 structured data saved to:</green></b> {eip712_json_out}\n"
+                            )
+                        )
+                    else:
+                        # Prompt user if they want to save
+                        save = prompt_session.prompt(
+                            HTML(
+                                "\n<orange>Save EIP-712 structured data to a .json file? (y/n): </orange>"
+                            ),
+                            placeholder="y/n, yes/no",
+                        )
+                        if save.lower() in ("y", "yes"):
+                            filename = prompt_session.prompt(
+                                HTML(
+                                    "<orange>Enter output path with filename (e.g. ./safe-tx.json): </orange>"
+                                ),
+                                placeholder="./safe-tx.json",
+                                default="./safe-tx.json",
+                                validator=validator_json_file,
+                            )
+                            with open(filename, "w") as f:
+                                json.dump(eip712_struct, f, indent=2, default=str)
+                            print_formatted_text(
+                                HTML(
+                                    f"\n<b><green>EIP-712 structured data saved to:</green></b> {filename}\n"
+                                )
+                            )
+                        else:
+                            print_formatted_text(
+                                HTML(
+                                    "\n<b><yellow>Not saving EIP-712 structured data.</yellow></b>\n"
+                                )
+                            )
+
                     # Break the loop after successful creation
                     break
                 except Exception as e:

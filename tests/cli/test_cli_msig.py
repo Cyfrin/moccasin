@@ -2,6 +2,7 @@ import subprocess
 import sys
 
 
+# @FIXME: make tests for CLI and arguments
 def test_cli_tx_builder():
     user_input = (
         "0x1234567890abcdef1234567890abcdef12345678\n"
