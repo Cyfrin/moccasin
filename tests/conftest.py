@@ -326,6 +326,7 @@ def pytest_collection_modifyitems(config, items: List[Any]):
 # ------------------------------------------------------------------
 @pytest.fixture
 def pt_session():
+    """Create a prompt_toolkit session for testing."""
     from prompt_toolkit.application import create_app_session
     from prompt_toolkit.input import create_pipe_input
     from prompt_toolkit.output import DummyOutput
@@ -333,3 +334,15 @@ def pt_session():
     with create_pipe_input() as pipe_input:
         with create_app_session(input=pipe_input, output=DummyOutput()):
             yield pipe_input
+
+
+@pytest.fixture
+def temp_msig_workdir(tmp_path, monkeypatch):
+    """Create a temporary working directory for tests.
+
+    @dev The tmp_path argument in your fixture is a built-in pytest fixture.
+    When you use pytest for testing, it provides tmp_path automatically
+    to your test functions and fixtures.
+    """
+    monkeypatch.chdir(tmp_path)
+    return tmp_path

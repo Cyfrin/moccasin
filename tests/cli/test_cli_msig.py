@@ -7,22 +7,9 @@ import pytest
 MOX_CMD = ["mox", "msig", "tx"]
 
 
-# Fixture for a temporary working directory
-@pytest.fixture
-def temp_workdir(tmp_path, monkeypatch):
-    """Create a temporary working directory for tests.
-
-    @dev The tmp_path argument in your fixture is a built-in pytest fixture.
-    When you use pytest for testing, it provides tmp_path automatically
-    to your test functions and fixtures.
-    """
-    monkeypatch.chdir(tmp_path)
-    return tmp_path
-
-
-def test_cli_tx_builder_interactive(temp_workdir):
+def test_cli_tx_builder_interactive(temp_msig_workdir):
     """Test fully interactive session (all prompts, user saves JSON)."""
-    json_path = temp_workdir / "safe-tx.json"
+    json_path = temp_msig_workdir / "safe-tx.json"
     user_input = (
         "https://sepolia.drpc.org\n"
         "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C\n"
@@ -58,7 +45,7 @@ def test_cli_tx_builder_interactive(temp_workdir):
     os.remove(json_path)
 
 
-def test_cli_tx_builder_args_only(temp_workdir):
+def test_cli_tx_builder_args_only(temp_msig_workdir):
     """Test all args provided, no prompts, no JSON output."""
     args = [
         "--rpc-url",
@@ -82,9 +69,9 @@ def test_cli_tx_builder_args_only(temp_workdir):
     assert "SafeTx instance created successfully!" in result.stdout
 
 
-def test_cli_tx_builder_args_with_json_output(temp_workdir):
+def test_cli_tx_builder_args_with_json_output(temp_msig_workdir):
     """Test all args provided, with --json-output, file is created and valid."""
-    json_path = temp_workdir / "test-tx.json"
+    json_path = temp_msig_workdir / "test-tx.json"
     args = [
         "--rpc-url",
         "https://sepolia.drpc.org",
@@ -117,7 +104,7 @@ def test_cli_tx_builder_args_with_json_output(temp_workdir):
     os.remove(json_path)
 
 
-def test_cli_tx_builder_invalid_json_output(temp_workdir):
+def test_cli_tx_builder_invalid_json_output(temp_msig_workdir):
     """Test invalid JSON output path (should fail)."""
     args = [
         "--rpc-url",

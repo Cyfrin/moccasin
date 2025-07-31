@@ -5,7 +5,7 @@ from importlib import import_module, metadata
 from pathlib import Path
 from typing import Tuple
 
-from moccasin.commands.msig import add_tx_builder_args
+from moccasin.msig_cli.validators import add_tx_builder_args
 from moccasin.constants.vars import CONFIG_NAME
 from moccasin.logging import logger, set_log_level
 
@@ -20,7 +20,7 @@ ALIAS_TO_COMMAND = {
     "util": "utils",
 }
 
-PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer", "deployments", "msig"]
+PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer", "deployments"]
 
 
 def main(argv: list) -> int:
