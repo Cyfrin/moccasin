@@ -1,4 +1,3 @@
-import json
 from typing import Optional
 
 from eth_typing import ChecksumAddress
@@ -11,18 +10,19 @@ from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
 from safe_eth.util.util import to_0x_hex_str
 
 from moccasin.logging import logger
-from moccasin.msig_cli.utils import GoBackToPrompt
 from moccasin.msig_cli.prompts import (
     prompt_safe_nonce,
     prompt_gas_token,
     prompt_internal_txs,
     prompt_single_internal_tx,
+    prompt_save_eip712_json,
 )
+from moccasin.msig_cli.utils import GoBackToPrompt
 from moccasin.msig_cli.utils import pretty_print_safe_tx
 
 
-def handle_multisend_batch(prompt_session, safe_instance, data, to):
-    prompt_session = prompt_session
+def handle_multisend_batch(prompt_session, safe_instance, data, to) -> ChecksumAddress:
+    """Handle the MultiSend batch decoding and confirmation using prompt helpers."""
     try:
         decoded_batch = MultiSend.from_transaction_data(data)
     except Exception as e:
@@ -36,79 +36,31 @@ def handle_multisend_batch(prompt_session, safe_instance, data, to):
             ethereum_client=safe_instance.ethereum_client, call_only=not has_delegate
         )
         multi_send_address = multi_send.address
-        if to and to != multi_send_address:
-            print_formatted_text(
-                HTML(
-                    f"<b><yellow>Warning:</yellow></b> Overriding provided --to address with MultiSend address: {multi_send_address}"
-                )
-            )
-        to = multi_send_address
-        print_formatted_text(HTML("<b><magenta>Decoded MultiSend batch:</magenta></b>"))
-        for idx, tx in enumerate(decoded_batch, 1):
-            print_formatted_text(
-                HTML(
-                    f"<b>Tx {idx}:</b> operation={tx.operation.name}, to={tx.to}, value={tx.value}, data={tx.data.hex()[:20]}{'...' if len(tx.data) > 10 else ''}"
-                )
-            )
-        confirm = prompt_session.prompt(
-            HTML("<orange>Does this batch look correct? (y/n): </orange>"),
-            placeholder="y/n, yes/no",
-        )
-        if confirm.lower() not in ("y", "yes"):
+        from moccasin.msig_cli.prompts import prompt_multisend_batch_confirmation
+
+        if not prompt_multisend_batch_confirmation(
+            prompt_session, decoded_batch, multi_send_address, to
+        ):
+            from moccasin.msig_cli.utils import GoBackToPrompt
+
             print_formatted_text(
                 HTML(
                     "<b><red>Aborting due to user rejection of decoded batch.</red></b>"
                 )
             )
             raise GoBackToPrompt
+        to = multi_send_address
     elif not to:
-        to = prompt_session.prompt(
-            HTML("<orange>#tx_builder ></orange> Enter target contract address (to): "),
-            placeholder=HTML("<grey>e.g. 0x...</grey>"),
-        )
+        from moccasin.msig_cli.prompts import prompt_target_contract_address
+
+        to = prompt_target_contract_address(prompt_session)
         to = ChecksumAddress(to)
     return to
 
 
 def save_eip712_json(prompt_session, eip712_struct, eip712_json_out=None):
-    from moccasin.msig_cli.validators import validator_json_file, validator_not_empty
-    from prompt_toolkit import HTML, print_formatted_text
-
-    if eip712_json_out:
-        with open(eip712_json_out, "w") as f:
-            json.dump(eip712_struct, f, indent=2, default=str)
-        print_formatted_text(
-            HTML(
-                f"\n<b><green>EIP-712 structured data saved to:</green></b> {eip712_json_out}\n"
-            )
-        )
-    else:
-        save = prompt_session.prompt(
-            HTML(
-                "\n<orange>Save EIP-712 structured data to a .json file? (y/n): </orange>"
-            ),
-            placeholder="y/n, yes/no",
-            validator=validator_not_empty,
-        )
-        if save.lower() in ("y", "yes"):
-            filename = prompt_session.prompt(
-                HTML(
-                    "<orange>Enter output path with filename (e.g. ./safe-tx.json): </orange>"
-                ),
-                placeholder="./safe-tx.json",
-                validator=validator_json_file,
-            )
-            with open(filename, "w") as f:
-                json.dump(eip712_struct, f, indent=2, default=str)
-            print_formatted_text(
-                HTML(
-                    f"\n<b><green>EIP-712 structured data saved to:</green></b> {filename}\n"
-                )
-            )
-        else:
-            print_formatted_text(
-                HTML("\n<b><yellow>Not saving EIP-712 structured data.</yellow></b>\n")
-            )
+    """Save the EIP-712 structured data to a JSON file using prompt helper."""
+    prompt_save_eip712_json(prompt_session, eip712_struct, eip712_json_out)
 
 
 # --- Main entrypoint ---
@@ -123,6 +75,21 @@ def run(
     gas_token: Optional[str] = None,
     eip712_json_out: Optional[str] = None,
 ) -> SafeTx:
+    """Run the transaction builder with interactive prompts.
+
+    :param prompt_session: Prompt session for user input.
+    :param safe_instance: Safe instance to build the transaction for.
+    :param to: Address of the contract to call.
+    :param value: Value to send with the transaction, in wei.
+    :param operation: Operation type (0 for call, 1 for delegate call).
+    :param safe_nonce: Nonce of the Safe contract to use for the transaction.
+    :param data: Data to send with the transaction, in hex format.
+    :param gas_token: Token to use for gas, defaults to the native token of the network.
+    :param eip712_json_out: Output file to save the EIP-712 structured data as JSON.
+
+    :return: An instance of SafeTx.
+    :raises GoBackToPrompt: If we ne to go back to the main CLI prompt.
+    """
     safe_nonce = prompt_safe_nonce(prompt_session, safe_instance, safe_nonce)
     gas_token = prompt_gas_token(prompt_session, gas_token)
     if not data:

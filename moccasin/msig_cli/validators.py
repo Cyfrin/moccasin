@@ -226,11 +226,6 @@ def validate_json_file(value: str) -> Path:
 def add_tx_builder_args(parser: ArgumentParser):
     """Add transaction builder arguments to the parser."""
     parser.add_argument(
-        "--json-output",
-        help="Output file to save the EIP-712 structured data as JSON.",
-        type=validate_json_file,
-    )
-    parser.add_argument(
         "--rpc-url",
         help="RPC URL to get the Safe contract from.",
         type=validate_rpc_url,
@@ -262,4 +257,9 @@ def add_tx_builder_args(parser: ArgumentParser):
         "--gas-token",
         help="Token to use for gas, defaults to the native token of the network.",
         type=validate_address,
+    )
+    parser.add_argument(
+        "--json-output",
+        help="Output file to save the EIP-712 structured data as JSON.",
+        type=validate_json_file,
     )

@@ -18,6 +18,3 @@ def main(args: Namespace) -> int:
     elif args.msig_command == "broadcast":
         # Handle broadcasting-related commands
         return msig_cli.commands["tx_broadcast"](args)
-    else:
-        # Handle default mode
-        return msig_cli.run()

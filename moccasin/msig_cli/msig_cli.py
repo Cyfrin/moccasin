@@ -6,6 +6,7 @@ from prompt_toolkit.shortcuts import clear as prompt_clear
 from moccasin.logging import logger
 from moccasin.msig_cli import tx_builder
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
+from moccasin.msig_cli.prompts import prompt_rpc_url, prompt_safe_address
 from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
 from moccasin.msig_cli.utils import GoBackToPrompt
 
@@ -24,47 +25,78 @@ class MsigCli:
         )
         self.safe_instance: Safe = None
         self.safe_tx: SafeTx = None
-        # Register commands as methods or external functions, passing self and session
+
+        # @FIXME: Test broken need to check command handling and args passing
         self.commands = {
             "tx_builder": self._tx_builder_command,
             "tx_signer": self._tx_signer_command,
             "tx_broadcast": self._tx_broadcast_command,
         }
 
-    def run(self, cmd: str = None, args=None):
-        """Main CLI loop. If cmd is given, run it once as a shortcut, then enter the prompt loop.
-        Optionally pass argparse args to the command handler.
-        """
-        if cmd:
+    def run(self, cmd: str = None, **kwargs):
+        """Run a specific command (tx_builder, tx_signer, tx_broadcast) in order. After each, prompt to continue or quit."""
+        command_order = ["tx_builder", "tx_signer", "tx_broadcast"]
+        if cmd is None:
+            print_formatted_text(
+                HTML(
+                    "<b><red>No command specified. Please use one of: tx_builder, tx_signer, tx_broadcast.</red></b>"
+                )
+            )
+            self._display_help()
+            return
+        if cmd not in command_order:
+            print_formatted_text(HTML(f"<b><red>Unknown command: {cmd}</red></b>"))
+            self._display_help()
+            return
+        idx = command_order.index(cmd)
+        while idx < len(command_order):
+            current_cmd = command_order[idx]
             try:
-                self._handle_command(cmd, args=args)
+                self._handle_command(
+                    current_cmd, args=args if idx == command_order.index(cmd) else None
+                )
             except GoBackToPrompt:
+                # GoBackToPrompt signals early exit from the current command,
+                # but we still prompt the user whether to continue to the next step or quit.
                 pass
-        while True:
-            self._display_status()
-            try:
-                user_cmd = self.prompt_session.prompt(
-                    HTML("<b><orange>msig></orange></b> Enter command (or 'help'): ")
-                ).strip()
-            except (EOFError, KeyboardInterrupt):
-                print_formatted_text(HTML("\n<b><red>Exiting msig CLI.</red></b>"))
+
+            # Validation: Only offer to continue if the required state for the next step exists
+            if idx < len(command_order) - 1:
+                next_cmd = command_order[idx + 1]
+                # Check state requirements for next step
+                can_continue = True
+                if next_cmd == "tx_signer" and self.safe_tx is None:
+                    print_formatted_text(
+                        HTML(
+                            "<b><red>No SafeTx available. Cannot continue to signing step.</red></b>"
+                        )
+                    )
+                    can_continue = False
+                # Add more state checks for future steps if needed
+                if not can_continue:
+                    print_formatted_text(HTML("<b><red>Exiting msig CLI.</red></b>"))
+                    break
+                try:
+                    from moccasin.msig_cli.prompts import prompt_continue_next_step
+
+                    answer = prompt_continue_next_step(self.prompt_session, next_cmd)
+                except (EOFError, KeyboardInterrupt):
+                    print_formatted_text(HTML("\n<b><red>Exiting msig CLI.</red></b>"))
+                    break
+                if answer in {"q", "quit", "n", "no"}:
+                    print_formatted_text(HTML("\n<b><red>Goodbye!</red></b>"))
+                    break
+                elif answer in {"c", "continue", "y", "yes"}:
+                    idx += 1
+                    continue
+                else:
+                    print_formatted_text(
+                        HTML("<b><red>Unknown input, quitting.</red></b>")
+                    )
+                    break
+            else:
+                print_formatted_text(HTML("<b><green>All steps complete.</green></b>"))
                 break
-            if not user_cmd or user_cmd.lower() in {"exit", "quit"}:
-                print_formatted_text(HTML("\n<b><red>Goodbye!</red></b>"))
-                break
-            if user_cmd.lower() in {"help", "?"}:
-                self._display_help()
-                continue
-            try:
-                self._handle_command(user_cmd)
-            except GoBackToPrompt:
-                continue
-            except KeyboardInterrupt:
-                logger.info("Exiting interactive mode.")
-                break
-            except Exception as e:
-                logger.error(f"An error occurred: {e}")
-                continue
 
     def _display_status(self):
         """Display current msig CLI status and available commands."""
@@ -102,7 +134,9 @@ class MsigCli:
             HTML("\n<b><magenta>Running tx_builder command...</magenta></b>")
         )
         try:
-            self.safe_tx = tx_builder.run(self.safe_instance, args=args)
+            self.safe_tx = tx_builder.run(
+                safe_instance=self.safe_instance, prompt_session=self.prompt_session
+            )
         except GoBackToPrompt:
             raise
 
@@ -160,12 +194,11 @@ class MsigCli:
                     "<b><yellow>Safe instance not initialized. Please provide RPC URL and Safe address.</yellow></b>"
                 )
             )
+
             while not self.safe_instance:
                 try:
-                    rpc_url = self.prompt_session.prompt(HTML("<b>RPC URL:</b> "))
-                    safe_address = self.prompt_session.prompt(
-                        HTML("<b>Safe address:</b> ")
-                    )
+                    rpc_url = prompt_rpc_url(self.prompt_session)
+                    safe_address = prompt_safe_address(self.prompt_session)
                     self._initialize_safe_instance(rpc_url, safe_address)
                 except (EOFError, KeyboardInterrupt):
                     print_formatted_text(

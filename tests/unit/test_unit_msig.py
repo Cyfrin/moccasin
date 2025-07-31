@@ -1,7 +1,7 @@
 import pytest
 
 from prompt_toolkit import PromptSession
-from moccasin.commands.msig import (
+from moccasin.msig_cli.validators import (
     is_valid_address,
     is_valid_rpc_url,
     is_valid_number,

@@ -20,7 +20,7 @@ ALIAS_TO_COMMAND = {
     "util": "utils",
 }
 
-PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer", "deployments"]
+PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer", "deployments", "msig"]
 
 
 def main(argv: list) -> int:

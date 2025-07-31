@@ -2,10 +2,11 @@
 Prompt helper functions for msig_cli, decoupled from msig_cli state.
 """
 
+import json
 from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from eth.constants import ZERO_ADDRESS
-from prompt_toolkit import HTML
+from prompt_toolkit import HTML, print_formatted_text
 from moccasin.msig_cli.validators import (
     validator_address,
     validator_number,
@@ -15,6 +16,7 @@ from moccasin.msig_cli.validators import (
     validator_transaction_type,
     validator_function_signature,
     validator_not_empty,
+    validator_json_file,
     param_type_validators,
 )
 
@@ -22,7 +24,9 @@ from moccasin.msig_cli.validators import (
 def prompt_safe_nonce(prompt_session, safe_instance, safe_nonce):
     if not safe_nonce:
         safe_nonce = prompt_session.prompt(
-            HTML("<orange>#tx_builder ></orange> Enter Safe nonce: "),
+            HTML(
+                "<orange>#tx_builder ></orange> What nonce should be used for this Safe transaction? </orange>"
+            ),
             validator=validator_number,
             placeholder=HTML("<grey>[default: auto retrieval]</grey>"),
         )
@@ -37,7 +41,7 @@ def prompt_gas_token(prompt_session, gas_token):
     if not gas_token:
         gas_token = prompt_session.prompt(
             HTML(
-                "<orange>#tx_builder ></orange> Enter gas token address (or press Enter to use ZERO_ADDRESS): "
+                "<orange>#tx_builder ></orange> What is the gas token address to use for this transaction? (Press Enter to use the default/zero address) </orange>"
             ),
             validator=validator_address,
             placeholder=HTML("<grey>[default: 0x...]</grey>"),
@@ -52,7 +56,9 @@ def prompt_gas_token(prompt_session, gas_token):
 def prompt_internal_txs(prompt_session, single_internal_tx_func):
     internal_txs = []
     nb_internal_txs = prompt_session.prompt(
-        HTML("<orange>#tx_builder ></orange> Enter number of internal transactions: "),
+        HTML(
+            "<orange>#tx_builder ></orange> How many internal transactions would you like to include in this batch? </orange>"
+        ),
         validator=validator_not_zero_number,
         placeholder=HTML("<grey>[default: 1]</grey>"),
     )
@@ -76,12 +82,12 @@ def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs):
 
     print_formatted_text(
         HTML(
-            f"\n\t<b><magenta>--- Transaction {str(idx + 1).zfill(2)}/{str(nb_internal_txs).zfill(2)} ---</magenta></b>\n"
+            f"\n\t<b><magenta>--- Internal Transaction {str(idx + 1).zfill(2)}/{str(nb_internal_txs).zfill(2)} ---</magenta></b>\n"
         )
     )
     tx_type = prompt_session.prompt(
         HTML(
-            "<orange>#tx_builder:internal_txs ></orange> Type of transaction (0 for call_contract, 1 for erc20_transfer, 2 for raw): "
+            "<orange>#tx_builder:internal_txs ></orange> What type of internal transaction is this? (0 = call contract, 1 = ERC20 transfer, 2 = raw data): "
         ),
         validator=validator_transaction_type,
         placeholder=HTML("<grey>[default: 0 for call_contract]</grey>"),
@@ -93,27 +99,33 @@ def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs):
     tx_operation = 0
     if tx_type == 0:
         tx_to = prompt_session.prompt(
-            HTML("<orange>#tx_builder:internal_txs ></orange> Contract address: "),
+            HTML(
+                "<orange>#tx_builder:internal_txs ></orange> What is the contract address for this call? </orange>"
+            ),
             validator=validator_address,
             placeholder=HTML("<grey>[default: 0x...]</grey>"),
         )
         tx_to = ChecksumAddress(tx_to) if tx_to else to_checksum_address(ZERO_ADDRESS)
         tx_value = prompt_session.prompt(
-            HTML("<orange>#tx_builder:internal_txs ></orange> Value in wei: "),
+            HTML(
+                "<orange>#tx_builder:internal_txs ></orange> How much value (in wei) should be sent with this call? </orange>"
+            ),
             validator=validator_number,
             placeholder=HTML("<grey>[default: 0]</grey>"),
         )
         tx_value = int(tx_value) if tx_value else 0
         tx_operation = prompt_session.prompt(
             HTML(
-                "<orange>#tx_builder:internal_txs ></orange> Operation type (0 for call, 1 for delegate call): "
+                "<orange>#tx_builder:internal_txs ></orange> What operation type should be used? (0 = call, 1 = delegate call): </orange>"
             ),
             validator=validator_operation,
             placeholder=HTML("<grey>[default: 0 for call]</grey>"),
         )
         tx_operation = int(tx_operation) if tx_operation else 0
         function_signature: str = prompt_session.prompt(
-            HTML("<orange>#tx_builder:internal_txs ></orange> Function signature: "),
+            HTML(
+                "<orange>#tx_builder:internal_txs ></orange> What is the function signature for this call? (e.g. transfer(address,uint256)) </orange>"
+            ),
             validator=validator_function_signature,
             placeholder=HTML("<grey>e.g. transfer(address,uint256)</grey>"),
         )
@@ -124,7 +136,7 @@ def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs):
             validator = param_type_validators.get(typ, validator_not_empty)
             val: str = prompt_session.prompt(
                 HTML(
-                    f"<yellow>#tx_builder:internal_txs ></yellow> Parameter #{i + 1} ({typ}): "
+                    f"<yellow>#tx_builder:internal_txs ></yellow> What value should be used for parameter #{i + 1} of type {typ}? "
                 ),
                 validator=validator,
                 placeholder="",
@@ -156,7 +168,9 @@ def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs):
         tx_data = selector + encoded_args
     elif tx_type == 2:
         tx_data_hex = prompt_session.prompt(
-            HTML("<orange>#tx_builder:internal_txs ></orange> Raw data (hex): "),
+            HTML(
+                "<orange>#tx_builder:internal_txs ></orange> What is the raw data (hex) for this transaction? </orange>"
+            ),
             validator=validator_data,
             placeholder=HTML("<grey>e.g. 0x...</grey>"),
         )
@@ -166,4 +180,110 @@ def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs):
         to=tx_to,
         value=int(tx_value),
         data=tx_data,
+    )
+
+
+def prompt_multisend_batch_confirmation(
+    prompt_session, decoded_batch, multi_send_address, to
+):
+    """Prompt user to confirm decoded MultiSend batch and handle address override warning."""
+    from prompt_toolkit import HTML, print_formatted_text
+
+    if to and to != multi_send_address:
+        print_formatted_text(
+            HTML(
+                f"<b><yellow>Warning:</yellow></b> The provided target address will be overridden with the MultiSend contract address: {multi_send_address}. Do you want to continue?"
+            )
+        )
+    print_formatted_text(
+        HTML(
+            "<b><magenta>Here is the decoded MultiSend batch. Does everything look correct to you?</magenta></b>"
+        )
+    )
+    for idx, tx in enumerate(decoded_batch, 1):
+        print_formatted_text(
+            HTML(
+                f"<b>Tx {idx}:</b> operation={tx.operation.name}, to={tx.to}, value={tx.value}, data={tx.data.hex()[:20]}{'...' if len(tx.data) > 10 else ''}"
+            )
+        )
+    confirm = prompt_session.prompt(
+        HTML("<orange>Would you like to proceed with this batch? (y/n): </orange>"),
+        placeholder="y/n, yes/no",
+    )
+    return confirm.strip().lower() in ("y", "yes")
+
+
+def prompt_target_contract_address(prompt_session):
+    """Prompt user for the target contract address if not provided."""
+    return prompt_session.prompt(
+        HTML(
+            "<orange>Could you provide the target contract address for this transaction?</orange> "
+        ),
+        placeholder=HTML("<grey>e.g. 0x...</grey>"),
+    )
+
+
+def prompt_save_eip712_json(prompt_session, eip712_struct, eip712_json_out=None):
+    """Prompt user to save EIP-712 structured data as JSON, or save directly if path is given."""
+    if eip712_json_out:
+        with open(eip712_json_out, "w") as f:
+            json.dump(eip712_struct, f, indent=2, default=str)
+        print_formatted_text(
+            HTML(
+                f"\n<b><green>EIP-712 structured data saved to:</green></b> {eip712_json_out}\n"
+            )
+        )
+        return
+    save = prompt_session.prompt(
+        HTML(
+            "\n<orange>Would you like to save the EIP-712 structured data to a .json file? (y/n): </orange>"
+        ),
+        placeholder="y/n, yes/no",
+        validator=validator_not_empty,
+    )
+    if save.strip().lower() in ("y", "yes"):
+        filename = prompt_session.prompt(
+            HTML(
+                "<orange>Where would you like to save the EIP-712 JSON file? (e.g. ./safe-tx.json): </orange>"
+            ),
+            placeholder="./safe-tx.json",
+            validator=validator_json_file,
+        )
+        with open(filename, "w") as f:
+            json.dump(eip712_struct, f, indent=2, default=str)
+        print_formatted_text(
+            HTML(
+                f"\n<b><green>EIP-712 structured data saved to:</green></b> {filename}\n"
+            )
+        )
+    else:
+        print_formatted_text(
+            HTML("\n<b><yellow>Not saving EIP-712 structured data.</yellow></b>\n")
+        )
+
+
+def prompt_continue_next_step(prompt_session, next_cmd):
+    """Prompt the user if they want to continue to the next step or quit."""
+    answer = prompt_session.prompt(
+        HTML(
+            f"<b>Would you like to continue to the next step: <green>{next_cmd}</green>? (c to continue, q to quit): </b>"
+        ),
+        placeholder="e.g. c/q, n/no, y/yes",
+    )
+    return answer.strip().lower()
+
+
+def prompt_rpc_url(prompt_session):
+    """Prompt the user for the RPC URL."""
+    return prompt_session.prompt(
+        HTML(
+            "<b>What is the RPC URL you want to use to connect to the Ethereum network?</b> "
+        )
+    )
+
+
+def prompt_safe_address(prompt_session):
+    """Prompt the user for the Safe address."""
+    return prompt_session.prompt(
+        HTML("<b>What is the address of the Safe contract you want to use?</b> ")
     )
