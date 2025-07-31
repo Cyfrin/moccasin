@@ -506,6 +506,7 @@ def main(args: Namespace) -> int:
                                         f"<yellow>#tx_builder:internal_txs ></yellow> Parameter #{i + 1} ({typ}): "
                                     ),
                                     validator=validator,
+                                    placeholder="",
                                 )
                                 param_values.append(val)
                             # Import eth_abi.abi.encode for ABI encoding
@@ -760,6 +761,7 @@ def main(args: Namespace) -> int:
                                 "\n<orange>Save EIP-712 structured data to a .json file? (y/n): </orange>"
                             ),
                             placeholder="y/n, yes/no",
+                            validator=validator_not_empty,
                         )
                         if save.lower() in ("y", "yes"):
                             filename = prompt_session.prompt(
@@ -767,7 +769,6 @@ def main(args: Namespace) -> int:
                                     "<orange>Enter output path with filename (e.g. ./safe-tx.json): </orange>"
                                 ),
                                 placeholder="./safe-tx.json",
-                                default="./safe-tx.json",
                                 validator=validator_json_file,
                             )
                             with open(filename, "w") as f:
