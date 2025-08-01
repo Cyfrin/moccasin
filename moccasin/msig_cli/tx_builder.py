@@ -1,5 +1,3 @@
-from ast import Mult
-from re import M
 from typing import Optional
 
 from eth_typing import ChecksumAddress
@@ -7,7 +5,6 @@ from eth_typing import ChecksumAddress
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.shortcuts import clear as prompt_clear
 
-from regex import T
 from safe_eth.safe import Safe, SafeTx
 from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
 from safe_eth.util.util import to_0x_hex_str
@@ -26,65 +23,42 @@ from moccasin.msig_cli.prompts import (
 from moccasin.msig_cli.utils import GoBackToPrompt, pretty_print_safe_tx
 
 
-def _handle_multisend_batch(
-    prompt_session, safe_instance, data, _to, _operation
-) -> tuple[ChecksumAddress, int]:
-    """Handle the MultiSend batch decoding and confirmation using prompt helpers.
-
-    :param prompt_session: Prompt session for user input.
-    :param safe_instance: Safe instance to build the transaction for.
-    :param data: Data to decode as MultiSend batch.
-    :param to: Target address for the transaction, if not provided will prompt for it.
-
-    :return: Tuple of (to address, operation).
-    """
-    to: ChecksumAddress = _to
-    operation: int = _operation
-    # Decode the MultiSend batch from the provided data
+def decode_and_confirm_multisend_batch(
+    prompt_session, safe_instance, data, to, operation
+) -> tuple[Optional[ChecksumAddress], Optional[int]]:
+    """Decode and confirm MultiSend batch. If not a batch, return (None, None)."""
     try:
         decoded_batch = MultiSend.from_transaction_data(data)
     except Exception as e:
-        decoded_batch = []
         logger.warning(f"Could not decode data as MultiSend batch: {e}")
+        return None, None
 
-    # If we have a decoded batch, check if it contains delegate calls
-    if decoded_batch:
-        has_delegate = any(
-            tx.operation == MultiSendOperation.DELEGATE_CALL for tx in decoded_batch
+    if not decoded_batch:
+        return None, None
+
+    has_delegate = any(
+        tx.operation == MultiSendOperation.DELEGATE_CALL for tx in decoded_batch
+    )
+    multi_send = MultiSend(
+        ethereum_client=safe_instance.ethereum_client, call_only=not has_delegate
+    )
+    multi_send_address = multi_send.address
+
+    if not prompt_multisend_batch_confirmation(
+        prompt_session, decoded_batch, multi_send_address, to
+    ):
+        print_formatted_text(
+            HTML("<b><red>Aborting due to user rejection of decoded batch.</red></b>")
         )
+        raise GoBackToPrompt
 
-        multi_send = MultiSend(
-            ethereum_client=safe_instance.ethereum_client, call_only=not has_delegate
-        )
-        multi_send_address = multi_send.address
-
-        if not prompt_multisend_batch_confirmation(
-            prompt_session, decoded_batch, multi_send_address, to
-        ):
-            print_formatted_text(
-                HTML(
-                    "<b><red>Aborting due to user rejection of decoded batch.</red></b>"
-                )
-            )
-            raise GoBackToPrompt
-
-        # Overwrite the to address and operation with the MultiSend address and operation
-        to = multi_send_address
-        operation = int(
-            MultiSendOperation.DELEGATE_CALL.value
-            if has_delegate
-            else MultiSendOperation.CALL.value
-        )
-
-    # If it is not a MultiSend batch, we need to prompt for the target address
-    if not to:
-        to = prompt_target_contract_address(prompt_session)
-        to = ChecksumAddress(to)
-
-    # If no operation provided, we prompt for it
-    if operation is None:
-        operation = prompt_operation_type(prompt_session)
-    return (to, operation)
+    to = multi_send_address
+    operation = int(
+        MultiSendOperation.DELEGATE_CALL.value
+        if has_delegate
+        else MultiSendOperation.CALL.value
+    )
+    return to, operation
 
 
 def save_eip712_json(prompt_session, eip712_struct, eip712_json_out=None):
@@ -136,7 +110,7 @@ def run(
             value = 0
             operation = int(
                 MultiSendOperation.CALL.value
-                if multi_send.is_call_only
+                if multi_send.call_only
                 else MultiSendOperation.DELEGATE_CALL.value
             )
             print_formatted_text(
@@ -145,22 +119,31 @@ def run(
                 )
             )
         elif len(internal_txs) == 1:
-            tx = internal_txs[0]
-            to = tx.to
-            value = tx.value
-            data = tx.data
-            operation = tx.operation.value
+            multi_send_one_tx = internal_txs[0]
+            to = multi_send_one_tx.to
+            value = multi_send_one_tx.value
+            data = multi_send_one_tx.data
+            operation = multi_send_one_tx.operation.value
             print_formatted_text(
                 HTML(
                     "\n<b><green>Single internal transaction created successfully!</green></b>\n"
                 )
             )
 
-    # If data is provided or we double check the batch confirmation
+    # If data is provided, try to decode/confirm MultiSend batch
     if data:
-        to, operation = _handle_multisend_batch(
+        to_decoded, op_decoded = decode_and_confirm_multisend_batch(
             prompt_session, safe_instance, data, to, operation
         )
+        if to_decoded is not None:
+            to, operation = to_decoded, op_decoded
+
+    # If still missing, prompt for target contract address and/or operation
+    if not to:
+        to = prompt_target_contract_address(prompt_session)
+        to = ChecksumAddress(to)
+    if operation is None:
+        operation = prompt_operation_type(prompt_session)
     try:
         safe_tx = safe_instance.build_multisig_tx(
             to=to,

@@ -38,7 +38,12 @@ class MsigCli:
         }
 
     def run(self, cmd: str = None, args: Namespace = None):
-        """Run a specific command (tx_builder, tx_signer, tx_broadcast) in order. After each, prompt to continue or quit."""
+        """Run a specific command (tx_builder, tx_signer, tx_broadcast) in order. After each, prompt to continue or quit.
+
+        :param cmd: The command to run, e.g., 'tx', 'sign', 'broadcast'.
+        :param args: Optional argparse Namespace with command arguments.
+        :raises GoBackToPrompt: If the user chooses to go back to the main prompt instead of continuing.
+        """
         command_order = ["tx", "sign", "broadcast"]
 
         idx = command_order.index(cmd)
@@ -88,7 +93,11 @@ class MsigCli:
                 break
 
     def _tx_builder_command(self, args: Namespace = None):
-        """Run the transaction builder command. Accepts optional argparse args."""
+        """Run the transaction builder command. Accepts optional argparse args.
+
+        :param args: Optional argparse Namespace with command arguments.
+        :raises GoBackToPrompt: If the user chooses to go back to the main prompt instead of continuing.
+        """
         print_formatted_text(
             HTML("\n<b><magenta>Running tx_builder command...</magenta></b>")
         )
@@ -118,13 +127,19 @@ class MsigCli:
             raise
 
     def _tx_signer_command(self, args: Namespace = None):
-        """Run the transaction signer command."""
+        """Run the transaction signer command.
+
+        :param args: Optional argparse Namespace with command arguments.
+        """
         print_formatted_text(
             HTML("<b><red>tx_signer command not implemented yet!</red></b>")
         )
 
     def _tx_broadcast_command(self, args: Namespace = None):
-        """Run the transaction broadcast command."""
+        """Run the transaction broadcast command.
+
+        :param args: Optional argparse Namespace with command arguments.
+        """
         print_formatted_text(
             HTML("<b><red>tx_broadcast command not implemented yet!</red></b>")
         )

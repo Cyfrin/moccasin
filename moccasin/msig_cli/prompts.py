@@ -56,7 +56,9 @@ def prompt_gas_token(prompt_session, gas_token, cmd):
     return gas_token
 
 
-def prompt_internal_txs(prompt_session, single_internal_tx_func, cmd):
+def prompt_internal_txs(
+    prompt_session, single_internal_tx_func, cmd
+) -> list[MultiSendTx]:
     internal_txs = []
     nb_internal_txs = prompt_session.prompt(
         HTML(
@@ -76,15 +78,16 @@ def prompt_internal_txs(prompt_session, single_internal_tx_func, cmd):
     return internal_txs
 
 
-def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs, cmd):
+def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs, cmd) -> MultiSendTx:
     print_formatted_text(
         HTML(
             f"\n\t<b><magenta>--- Internal Transaction {str(idx + 1).zfill(2)}/{str(nb_internal_txs).zfill(2)} ---</magenta></b>\n"
         )
     )
     tx_type = prompt_session.prompt(
+        # @TODO Add other types of internal transactions
         HTML(
-            f"<orange>#{cmd}:internal_txs ></orange> What type of internal transaction is this? (0 = call contract, 1 = ERC20 transfer, 2 = raw data): "
+            f"<orange>#{cmd}:internal_txs ></orange> What type of internal transaction is this? (0 = call contract, 1 = raw data, 2 = ERC20 transfer): "
         ),
         validator=validator_transaction_type,
         placeholder=HTML("<grey>[default: 0 for call_contract]</grey>"),
@@ -94,6 +97,9 @@ def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs, cmd):
     tx_value = 0
     tx_data = b""
     tx_operation = 0
+
+    # Register a call contract internal transaction
+    # @TODO to refactor
     if tx_type == 0:
         tx_to = prompt_session.prompt(
             HTML(
@@ -163,19 +169,52 @@ def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs, cmd):
         )
         encoded_args = abi_encode(param_types, parsed_param_values)
         tx_data = selector + encoded_args
-    elif tx_type == 2:
-        tx_data_hex = prompt_session.prompt(
+    else:
+        print_formatted_text(
             HTML(
-                f"<orange>#{cmd}:internal_txs ></orange> What is the raw data (hex) for this transaction?: "
-            ),
-            validator=validator_data,
-            placeholder=HTML("<grey>e.g. 0x...</grey>"),
+                f"\n\t<b><red>Unsupported internal transaction type: {tx_type}. WIP</red></b>\n"
+            )
         )
-        tx_data = to_bytes(hexstr=tx_data_hex)
+        return None
+
+    # @TODO rework and check
+    # # Register a raw data internal transaction
+    # elif tx_type == 1:
+    #     tx_data_hex = prompt_session.prompt(
+    #         HTML(
+    #             f"<orange>#{cmd}:internal_txs ></orange> What is the raw data (hex) for this transaction?: "
+    #         ),
+    #         validator=validator_data,
+    #         placeholder=HTML("<grey>e.g. 0x...</grey>"),
+    #     )
+    #     tx_data = to_bytes(hexstr=tx_data_hex)
+
+    # # Register an ERC20 transfer internal transaction
+    # elif tx_type == 2:
+    #     tx_to = prompt_session.prompt(
+    #         HTML(
+    #             f"<orange>#{cmd}:internal_txs ></orange> What is the ERC20 token contract address for this transfer?: "
+    #         ),
+    #         validator=validator_address,
+    #         placeholder=HTML("<grey>[default: 0x...]</grey>"),
+    #     )
+    #     tx_to = ChecksumAddress(tx_to) if tx_to else to_checksum_address(ZERO_ADDRESS)
+    #     tx_value = prompt_session.prompt(
+    #         HTML(
+    #             f"<orange>#{cmd}:internal_txs ></orange> How much value (in wei) should be transferred?: "
+    #         ),
+    #         validator=validator_not_zero_number,
+    #         placeholder=HTML("<grey>[default: 1]</grey>"),
+    #     )
+    #     tx_value = int(tx_value) if tx_value else 1
+    #     tx_data = "0xa9059cbb" + to_bytes(hexstr=tx_to) + to_bytes(
+    #         hexstr=hex(tx_value)[2:].zfill(64)
+    # )
+
     return MultiSendTx(
-        operation=MultiSendOperation.CALL.value
+        operation=MultiSendOperation.CALL
         if tx_operation == 0
-        else MultiSendOperation.DELEGATE_CALL.value,
+        else MultiSendOperation.DELEGATE_CALL,
         to=tx_to,
         value=int(tx_value),
         data=tx_data,
