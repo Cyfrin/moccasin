@@ -239,6 +239,11 @@ def add_tx_builder_args(parser: ArgumentParser):
         "--to", help="Address of the contract to call.", type=validate_address
     )
     parser.add_argument(
+        "--operation",
+        help="Operation type: 0 for call, 1 for delegate call.",
+        type=validate_number,
+    )
+    parser.add_argument(
         "--value",
         help="Value to send with the transaction, in wei.",
         type=validate_number,
