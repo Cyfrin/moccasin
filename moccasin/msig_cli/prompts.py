@@ -172,7 +172,7 @@ def prompt_single_internal_tx(prompt_session, idx, nb_internal_txs, cmd) -> Mult
     else:
         print_formatted_text(
             HTML(
-                f"\n\t<b><red>Unsupported internal transaction type: {tx_type}. WIP</red></b>\n"
+                f"\n\t<b><red>Work in progress to support internal transaction type: {tx_type}.</red></b>\n"
             )
         )
         return None
