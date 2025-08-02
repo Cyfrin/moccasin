@@ -328,7 +328,7 @@ def prompt_continue_next_step(prompt_session, next_cmd):
         placeholder="e.g. c/q, n/no, y/yes",
         validator=validator_not_empty,
     )
-    return answer.strip().lower()
+    return True if answer.strip().lower() in ("c", "continue", "y", "yes") else False
 
 
 def prompt_rpc_url(prompt_session):

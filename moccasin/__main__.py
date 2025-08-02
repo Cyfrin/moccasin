@@ -66,6 +66,15 @@ def main(argv: list) -> int:
             logger.error(f"Error running format command: {e}")
             return 1
 
+    # Special case for msig command - pass all args through to msig handler
+    if len(argv) > 0 and argv[0] == "msig":
+        try:
+            logger.info("Running msig command...")
+            return import_module("moccasin.commands.msig").main(argv[1:])
+        except Exception as e:
+            logger.error(f"Error running msig command: {e}")
+            return 1
+
     main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
 
     # ------------------------------------------------------------------
@@ -765,7 +774,7 @@ Example usage:
     # ---------------------------------------------------------------------
     #                         MSIG COMMAND
     # ---------------------------------------------------------------------
-    msig_parser = sub_parsers.add_parser(
+    sub_parsers.add_parser(
         "msig",
         help="Moccasin Multisig CLI helper.",
         description="""This command is a helper for multisig operations in Moccasin.
@@ -774,21 +783,7 @@ Example usage:
         parents=[parent_parser],
     )
 
-    msig_parsers = msig_parser.add_subparsers(dest="msig_command")
-
-    # --- Tx builder command ---
-    msig_tx_parser = msig_parsers.add_parser(
-        "tx",
-        help="Build a multisig transaction.",
-        description="""Build a multisig transaction. This command will create a transaction that can be signed
-        by the multisig owners. It will not send the transaction to the network, but will return the transaction data that can be signed and sent later.
-        """,
-        parents=[parent_parser],
-    )
-    # Add arguments for the multisig transaction builder
-    add_tx_builder_args(msig_tx_parser)
-
-    # @TODO: Add more msig commands as needed
+    # # @TODO: Add more msig commands as needed
 
     # ------------------------------------------------------------------
     #                             RETURN
