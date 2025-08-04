@@ -1,7 +1,6 @@
 from argparse import Namespace
 
 from moccasin.msig_cli.msig_cli import MsigCli
-from moccasin.msig_cli.arg_parser import create_msig_parser
 
 
 # --- Main Function ---

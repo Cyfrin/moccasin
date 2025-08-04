@@ -5,10 +5,10 @@ from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.shortcuts import clear as prompt_clear
 
 from moccasin.logging import logger
-from moccasin.msig_cli import tx_builder
+from moccasin.msig_cli.tx import tx_build
 from moccasin.msig_cli.arg_parser import create_msig_parser
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
-from moccasin.msig_cli.prompts import (
+from moccasin.msig_cli.tx.prompts import (
     prompt_rpc_url,
     prompt_safe_address,
     prompt_continue_next_step,
@@ -35,15 +35,6 @@ class MsigCli:
         self.safe_instance: Safe = None
         self.safe_tx: SafeTx = None
 
-        self.commands = {
-            "tx": {
-                "build": self._tx_build_command,
-                "sign": self._tx_sign_command,
-                "broadcast": self._tx_broadcast_command,
-            },
-            "msg": {"signer": self._tx_sign_command},
-        }
-
     def run(self, args: Namespace = None):
         """
         Run the msig CLI with parsed args and subcommands.
@@ -59,50 +50,40 @@ class MsigCli:
             self.parser.print_help()
             return 0
 
-        # If tx but no tx_command, show tx help
-        if args.msig_command == "tx" and args.tx_command is None:
-            self.parser._tx_parser.print_help()
-            return 0
-
-        # If sign but missing required args, show sign help
-        if args.msig_command == "msg" and args.msg_command is None:
-            self.parser._sign_parser.print_help()
-            return 0
-
         # Prepare the CLI context
         self._prepare_cli_context(args)
 
         # Interactive ordered workflow restoration
         if self.safe_instance:
-            if args.msig_command == "tx":
+            if str(args.msig_command).startswith("tx_"):
                 tx_command = getattr(args, "tx_command", None)
-                order: list[str] = ["build", "sign", "broadcast"]
+                order: list[str] = ["tx_build", "tx_sign", "tx_broadcast"]
                 start_idx = order.index(tx_command) if tx_command in order else 0
                 for idx in range(start_idx, len(order)):
                     cmd = order[idx]
                     prompt_clear()
-                    if cmd == "build":
+                    if cmd == "tx_build":
                         self._tx_build_command(args)
-                    elif cmd == "sign":
+                    elif cmd == "tx_sign":
                         self._tx_sign_command(args)
-                    elif cmd == "broadcast":
+                    elif cmd == "tx_broadcast":
                         self._tx_broadcast_command(args)
                     # Prompt to continue unless last step
                     if idx < len(order) - 1:
                         next_step = prompt_continue_next_step(
-                            self.prompt_session, next_step=order[idx + 1]
+                            self.prompt_session, next_cmd=order[idx + 1]
                         )
                         if not next_step:
                             break
 
-            elif args.msig_command == "msg":
+            elif str(args.msig_command).startswith("msg_"):
                 msg_command = getattr(args, "msg_command", None)
-                order = ["signer"]
+                order = ["sign"]
                 start_idx = order.index(msg_command) if msg_command in order else 0
                 for idx in range(start_idx, len(order)):
                     cmd = order[idx]
                     prompt_clear()
-                    if cmd == "signer":
+                    if cmd == "sign":
                         self._tx_sign_command(args)
 
     def _tx_build_command(self, args: Namespace = None):
@@ -125,7 +106,7 @@ class MsigCli:
 
         # Run the transaction builder with the provided args
         try:
-            self.safe_tx = tx_builder.run(
+            self.safe_tx = tx_build.run(
                 safe_instance=self.safe_instance,
                 prompt_session=self.prompt_session,
                 to=to,

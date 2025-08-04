@@ -12,12 +12,12 @@ def _add_tx_builder_args(parser: argparse.ArgumentParser):
     """Add transaction builder arguments to the parser."""
     parser.add_argument(
         "--rpc-url",
-        help="RPC URL to get the Safe contract from.",
+        help="RPC URL to connect to the Ethereum network.",
         type=validate_rpc_url,
     )
     parser.add_argument(
         "--safe-address",
-        help="Address of the Safe contract to build the transaction for.",
+        help="Address of the Safe contract to interact with.",
         type=validate_address,
     )
     parser.add_argument(
@@ -57,29 +57,29 @@ def _add_tx_builder_args(parser: argparse.ArgumentParser):
 
 def create_msig_parser():
     """Create and return the msig command line argument parser."""
-    msig_parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
+    # Create the main parser for msig commands
+    # @dev add_help is set to False to avoid conflicts with subcommands
+    msig_parser = argparse.ArgumentParser(
+        "mox msig", formatter_class=argparse.RawTextHelpFormatter, add_help=False
+    )
     msig_subparsers = msig_parser.add_subparsers(dest="msig_command")
 
-    # Transaction subcommand
-    tx_parser = msig_subparsers.add_parser(
-        "tx", help="Multisig transaction operations."
-    )
-    tx_subparsers = tx_parser.add_subparsers(dest="tx_command")
-    tx_builder_parser = tx_subparsers.add_parser(
-        "build", help="Build a multisig transaction."
+    # ----- Transaction subcommands -----
+    tx_builder_parser = msig_subparsers.add_parser(
+        "tx_build", help="Build a multisig transaction."
     )
     _add_tx_builder_args(tx_builder_parser)
 
-    # Sign subcommand
-    msg_parser = msig_subparsers.add_parser(
-        "msg", help="Sign a transaction or message."
-    )
+    # ----- Message subcommands -----
+    # @TODO Implement sign command
+    # msg_parser = msig_subparsers.add_parser(
+    #     "msg", help="Sign a transaction or message."
+    # )
     # @TODO Add sign args here
 
     # Store references for help display
     msig_parser._subparsers = msig_subparsers
-    msig_parser._tx_parser = tx_parser
-    msig_parser._tx_subparsers = tx_subparsers
-    msig_parser._msg_parser = msg_parser
+    msig_parser._tx_builder_parser = tx_builder_parser
+    # msig_parser._msg_parser = msg_parser
 
     return msig_parser

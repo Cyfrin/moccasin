@@ -780,10 +780,7 @@ Example usage:
         description="""This command is a helper for multisig operations in Moccasin.
         It allows to build transactions, sign them, and broadcast them to the network.
         """,
-        parents=[parent_parser],
     )
-
-    # # @TODO: Add more msig commands as needed
 
     # ------------------------------------------------------------------
     #                             RETURN
