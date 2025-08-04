@@ -1,10 +1,11 @@
 import argparse
+
 from moccasin.msig_cli.validators import (
     validate_address,
-    validate_rpc_url,
-    validate_number,
     validate_data,
     validate_json_file,
+    validate_number,
+    validate_rpc_url,
 )
 
 

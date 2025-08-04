@@ -5,7 +5,6 @@ from importlib import import_module, metadata
 from pathlib import Path
 from typing import Tuple
 
-from moccasin.msig_cli.validators import add_tx_builder_args
 from moccasin.constants.vars import CONFIG_NAME
 from moccasin.logging import logger, set_log_level
 

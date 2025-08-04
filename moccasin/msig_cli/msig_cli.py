@@ -1,23 +1,26 @@
 from argparse import Namespace
-from eth_typing import ChecksumAddress
+from typing import List
+
+from eth_typing import URI
+from eth_utils import to_checksum_address
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.shortcuts import clear as prompt_clear
-
-from moccasin.logging import logger
-from moccasin.msig_cli.tx import tx_build
-from moccasin.msig_cli.arg_parser import create_msig_parser
-from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
-from moccasin.msig_cli.tx.prompts import (
-    prompt_rpc_url,
-    prompt_safe_address,
-    prompt_continue_next_step,
-)
-from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
-from moccasin.msig_cli.utils import GoBackToPrompt
-
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
+from safe_eth.util.util import to_0x_hex_str
+
+from moccasin.logging import logger
+from moccasin.msig_cli.arg_parser import create_msig_parser
+from moccasin.msig_cli.common_prompts import (
+    prompt_continue_next_step,
+    prompt_rpc_url,
+    prompt_safe_address,
+)
+from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
+from moccasin.msig_cli.tx import tx_build
+from moccasin.msig_cli.utils import GoBackToPrompt
+from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
 
 
 class MsigCli:
@@ -57,7 +60,7 @@ class MsigCli:
         if self.safe_instance:
             if str(args.msig_command).startswith("tx_"):
                 tx_command = getattr(args, "tx_command", None)
-                order: list[str] = ["tx_build", "tx_sign", "tx_broadcast"]
+                order: List[str] = ["tx_build", "tx_sign", "tx_broadcast"]
                 start_idx = order.index(tx_command) if tx_command in order else 0
                 for idx in range(start_idx, len(order)):
                     cmd = order[idx]
@@ -149,11 +152,11 @@ class MsigCli:
         assert is_valid_address(safe_address), ERROR_INVALID_ADDRESS
         assert is_valid_rpc_url(rpc_url), ERROR_INVALID_RPC_URL
         try:
-            ethereum_client = EthereumClient(rpc_url)
-            safe_address = ChecksumAddress(safe_address)
+            ethereum_client = EthereumClient(URI(rpc_url))
+            safe_address = to_checksum_address(safe_address)
             self.safe_instance = Safe(
                 address=safe_address, ethereum_client=ethereum_client
-            )
+            )  # type: ignore[abstract]
             print_formatted_text(
                 HTML(
                     "\n<b><green>Safe instance initialized successfully!</green></b>\n"
@@ -185,7 +188,7 @@ class MsigCli:
         )
         print_formatted_text(
             HTML(
-                f"<b><magenta>SafeTx hash:</magenta></b> {self.safe_tx.safe_tx_hash if self.safe_tx else 'Not created'}\n"
+                f"<b><magenta>SafeTx hash:</magenta></b> {to_0x_hex_str(self.safe_tx.safe_tx_hash) if self.safe_tx else 'Not created'}\n"
             )
         )
 

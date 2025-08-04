@@ -1,8 +1,8 @@
-import subprocess
 import json
 import os
-import pytest
+import subprocess
 
+import pytest
 
 MOX_CMD = ["mox", "msig", "tx_build"]
 

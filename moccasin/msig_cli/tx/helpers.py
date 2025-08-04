@@ -1,6 +1,7 @@
+from eth_utils import to_bytes
 from prompt_toolkit import HTML, print_formatted_text
-from safe_eth.util.util import to_0x_hex_str
 from safe_eth.safe import SafeTx
+from safe_eth.util.util import to_0x_hex_str
 
 
 def pretty_print_safe_tx(safe_tx: SafeTx):
@@ -30,3 +31,17 @@ def pretty_print_safe_tx(safe_tx: SafeTx):
         HTML(f"\t<b><yellow>RefundReceiver:</yellow></b> {safe_tx.refund_receiver}")
     )
     print_formatted_text(HTML(f"\t<b><yellow>Signers:</yellow></b> {safe_tx.signers}"))
+
+
+def parse_eth_type_value(val, typ):
+    """Parse a value according to its Ethereum type."""
+    # @TODO: Handle more complex types like arrays, structs, etc.
+    if typ.startswith("uint") or typ.startswith("int"):
+        return int(val)
+    if typ == "address":
+        return val if val.startswith("0x") else "0x" + val
+    if typ == "bool":
+        return val.lower() in ("true", "1", "yes")
+    if typ.startswith("bytes"):
+        return to_bytes(hexstr=val)
+    return val
