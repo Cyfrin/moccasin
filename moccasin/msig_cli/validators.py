@@ -1,25 +1,26 @@
 import re
+from argparse import ArgumentParser
 from pathlib import Path
 
-from argparse import ArgumentParser
 from eth_abi.abi import is_encodable_type
-from eth_utils import is_address, is_hex, is_0x_prefixed, to_checksum_address, to_bytes
+from eth_utils import is_0x_prefixed, is_address, is_hex, to_bytes, to_checksum_address
 from eth_utils.address import ChecksumAddress
 from prompt_toolkit.validation import Validator
+from safe_eth.safe.multi_send import MultiSendOperation
+
 from moccasin.msig_cli.constants import (
     ERROR_INVALID_ADDRESS,
-    ERROR_INVALID_RPC_URL,
-    ERROR_INVALID_NUMBER,
-    ERROR_INVALID_NOT_ZERO_NUMBER,
-    ERROR_INVALID_OPERATION,
-    ERROR_INVALID_DATA,
-    ERROR_INVALID_TRANSACTION_TYPE,
-    ERROR_INVALID_FUNCTION_SIGNATURE,
     ERROR_INVALID_BOOLEAN,
+    ERROR_INVALID_DATA,
+    ERROR_INVALID_FUNCTION_SIGNATURE,
     ERROR_INVALID_JSON_FILE,
+    ERROR_INVALID_NOT_ZERO_NUMBER,
+    ERROR_INVALID_NUMBER,
+    ERROR_INVALID_OPERATION,
+    ERROR_INVALID_RPC_URL,
+    ERROR_INVALID_TRANSACTION_TYPE,
 )
 from moccasin.msig_cli.utils import TransactionType
-from safe_eth.safe.multi_send import MultiSendOperation
 
 
 ################################################################

@@ -1,10 +1,10 @@
-import subprocess
 import json
 import os
+import subprocess
+
 import pytest
 
-
-MOX_CMD = ["mox", "msig", "tx"]
+MOX_CMD = ["mox", "msig", "tx_build"]
 
 
 def test_cli_tx_builder_interactive(temp_msig_workdir):

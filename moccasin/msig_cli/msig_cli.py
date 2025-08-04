@@ -1,28 +1,35 @@
 from argparse import Namespace
-from eth_typing import ChecksumAddress
+from typing import List
+
+from eth_typing import URI
+from eth_utils import to_checksum_address
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.shortcuts import clear as prompt_clear
-
-from moccasin.logging import logger
-from moccasin.msig_cli import tx_builder
-from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
-from moccasin.msig_cli.prompts import (
-    prompt_rpc_url,
-    prompt_safe_address,
-    prompt_continue_next_step,
-)
-from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
-from moccasin.msig_cli.utils import GoBackToPrompt
-
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
+from safe_eth.util.util import to_0x_hex_str
+
+from moccasin.logging import logger
+from moccasin.msig_cli.arg_parser import create_msig_parser
+from moccasin.msig_cli.common_prompts import (
+    prompt_continue_next_step,
+    prompt_rpc_url,
+    prompt_safe_address,
+)
+from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
+from moccasin.msig_cli.tx import tx_build
+from moccasin.msig_cli.utils import GoBackToPrompt
+from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
 
 
 class MsigCli:
     """MsigCli class to handle multi-signature wallet operations and session state."""
 
     def __init__(self):
+        """Initialize the MsigCli instance."""
+        self.parser = create_msig_parser()
+
         self.prompt_session = PromptSession(
             auto_suggest=AutoSuggestFromHistory(),
             bottom_toolbar="Tips: Use Ctrl-C to exit.",
@@ -31,68 +38,58 @@ class MsigCli:
         self.safe_instance: Safe = None
         self.safe_tx: SafeTx = None
 
-        self.commands = {
-            "tx": self._tx_builder_command,
-            "sign": self._tx_signer_command,
-            "broadcast": self._tx_broadcast_command,
-        }
-
-    def run(self, cmd: str = None, args: Namespace = None):
-        """Run a specific command (tx_builder, tx_signer, tx_broadcast) in order. After each, prompt to continue or quit.
-
-        :param cmd: The command to run, e.g., 'tx', 'sign', 'broadcast'.
-        :param args: Optional argparse Namespace with command arguments.
-        :raises GoBackToPrompt: If the user chooses to go back to the main prompt instead of continuing.
+    def run(self, args: Namespace = None):
         """
-        command_order = ["tx", "sign", "broadcast"]
+        Run the msig CLI with parsed args and subcommands.
+        :param msig_command: Top-level msig command (e.g., 'tx', 'msg').
+        :param args: argparse Namespace with all parsed arguments.
+        """
 
-        idx = command_order.index(cmd)
-        while idx < len(command_order):
-            current_cmd = command_order[idx]
-            try:
-                self._handle_command(current_cmd, args=args)
-            except GoBackToPrompt:
-                # GoBackToPrompt signals early exit from the current command,
-                # but we still prompt the user whether to continue to the next step or quit.
-                pass
+        # Parse the command line arguments
+        args = self.parser.parse_args(args)
 
-            # Validation: Only offer to continue if the required state for the next step exists
-            if idx < len(command_order) - 1:
-                next_cmd = command_order[idx + 1]
-                # Check state requirements for next step
-                can_continue = True
-                if next_cmd == "sign" and self.safe_tx is None:
-                    print_formatted_text(
-                        HTML(
-                            "<b><red>No SafeTx available. Cannot continue to signing step.</red></b>"
+        # If no subcommand, show msig help
+        if args.msig_command is None:
+            self.parser.print_help()
+            return 0
+
+        # Prepare the CLI context
+        self._prepare_cli_context(args)
+
+        # Interactive ordered workflow restoration
+        if self.safe_instance:
+            if str(args.msig_command).startswith("tx_"):
+                tx_command = getattr(args, "tx_command", None)
+                order: List[str] = ["tx_build", "tx_sign", "tx_broadcast"]
+                start_idx = order.index(tx_command) if tx_command in order else 0
+                for idx in range(start_idx, len(order)):
+                    cmd = order[idx]
+                    prompt_clear()
+                    if cmd == "tx_build":
+                        self._tx_build_command(args)
+                    elif cmd == "tx_sign":
+                        self._tx_sign_command(args)
+                    elif cmd == "tx_broadcast":
+                        self._tx_broadcast_command(args)
+                    # Prompt to continue unless last step
+                    if idx < len(order) - 1:
+                        next_step = prompt_continue_next_step(
+                            self.prompt_session, next_cmd=order[idx + 1]
                         )
-                    )
-                    can_continue = False
-                # Add more state checks for future steps if needed
-                if not can_continue:
-                    print_formatted_text(HTML("<b><red>Exiting msig CLI.</red></b>"))
-                    break
-                try:
-                    answer = prompt_continue_next_step(self.prompt_session, next_cmd)
-                except (EOFError, KeyboardInterrupt):
-                    print_formatted_text(HTML("\n<b><red>Exiting msig CLI.</red></b>"))
-                    break
-                if answer in {"q", "quit", "n", "no"}:
-                    print_formatted_text(HTML("\n<b><red>Goodbye!</red></b>"))
-                    break
-                elif answer in {"c", "continue", "y", "yes"}:
-                    idx += 1
-                    continue
-                else:
-                    print_formatted_text(
-                        HTML("<b><red>Unknown input, quitting.</red></b>")
-                    )
-                    break
-            else:
-                print_formatted_text(HTML("<b><green>All steps complete.</green></b>"))
-                break
+                        if not next_step:
+                            break
 
-    def _tx_builder_command(self, args: Namespace = None):
+            elif str(args.msig_command).startswith("msg_"):
+                msg_command = getattr(args, "msg_command", None)
+                order = ["sign"]
+                start_idx = order.index(msg_command) if msg_command in order else 0
+                for idx in range(start_idx, len(order)):
+                    cmd = order[idx]
+                    prompt_clear()
+                    if cmd == "sign":
+                        self._tx_sign_command(args)
+
+    def _tx_build_command(self, args: Namespace = None):
         """Run the transaction builder command. Accepts optional argparse args.
 
         :param args: Optional argparse Namespace with command arguments.
@@ -112,7 +109,7 @@ class MsigCli:
 
         # Run the transaction builder with the provided args
         try:
-            self.safe_tx = tx_builder.run(
+            self.safe_tx = tx_build.run(
                 safe_instance=self.safe_instance,
                 prompt_session=self.prompt_session,
                 to=to,
@@ -126,7 +123,7 @@ class MsigCli:
         except GoBackToPrompt:
             raise
 
-    def _tx_signer_command(self, args: Namespace = None):
+    def _tx_sign_command(self, args: Namespace = None):
         """Run the transaction signer command.
 
         :param args: Optional argparse Namespace with command arguments.
@@ -155,11 +152,11 @@ class MsigCli:
         assert is_valid_address(safe_address), ERROR_INVALID_ADDRESS
         assert is_valid_rpc_url(rpc_url), ERROR_INVALID_RPC_URL
         try:
-            ethereum_client = EthereumClient(rpc_url)
-            safe_address = ChecksumAddress(safe_address)
+            ethereum_client = EthereumClient(URI(rpc_url))
+            safe_address = to_checksum_address(safe_address)
             self.safe_instance = Safe(
                 address=safe_address, ethereum_client=ethereum_client
-            )
+            )  # type: ignore[abstract]
             print_formatted_text(
                 HTML(
                     "\n<b><green>Safe instance initialized successfully!</green></b>\n"
@@ -170,15 +167,11 @@ class MsigCli:
             logger.error(f"Failed to initialize Safe instance: {e}")
             raise e
 
-    def _handle_command(self, cmd: str, args: Namespace = None):
-        """Handle a command input by the user.
+    def _prepare_cli_context(self, args: Namespace = None):
+        """Prepare the CLI context by initializing the Safe instance and displaying the header.
 
-        :param cmd: The command string input by the user.
-        :param args: Optional argparse args to pass to the command handler.
+        :param args: Optional argparse Namespace with command arguments.
         """
-        if cmd not in self.commands:
-            print_formatted_text(HTML(f"<b><red>Unknown command: {cmd}</red></b>"))
-            return
 
         # Default display msig CLI header
         prompt_clear()
@@ -195,7 +188,7 @@ class MsigCli:
         )
         print_formatted_text(
             HTML(
-                f"<b><magenta>SafeTx hash:</magenta></b> {self.safe_tx.safe_tx_hash if self.safe_tx else 'Not created'}\n"
+                f"<b><magenta>SafeTx hash:</magenta></b> {to_0x_hex_str(self.safe_tx.safe_tx_hash) if self.safe_tx else 'Not created'}\n"
             )
         )
 
@@ -235,11 +228,3 @@ class MsigCli:
                             HTML("\n<b><red>Aborted Safe initialization.</red></b>")
                         )
                         return
-
-        # Pass args if supported
-        handler = self.commands[cmd]
-        prompt_clear()
-        if args is not None:
-            handler(args)
-        else:
-            handler()
