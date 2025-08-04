@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Optional
 
 from eth.constants import ZERO_ADDRESS
 from eth_abi.abi import encode as abi_encode
@@ -144,7 +144,7 @@ def prompt_internal_txs(prompt_session, single_internal_tx_func) -> List[MultiSe
 
 def prompt_single_internal_tx(
     prompt_session, idx, nb_internal_txs
-) -> MultiSendTx | None:
+) -> Optional[MultiSendTx]:
     print_formatted_text(
         HTML(
             f"\n<b><magenta>--- Internal Transaction {str(idx + 1).zfill(2)}/{str(nb_internal_txs).zfill(2)} ---</magenta></b>\n"

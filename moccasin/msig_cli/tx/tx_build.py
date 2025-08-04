@@ -115,7 +115,6 @@ def run(
             multi_send = MultiSend(ethereum_client=safe_instance.ethereum_client)
             tx_data = multi_send.build_tx_data(internal_txs)
             tx_to = multi_send.address
-            tx_operation = 0
             tx_operation = int(
                 MultiSendOperation.CALL.value
                 if multi_send.call_only
