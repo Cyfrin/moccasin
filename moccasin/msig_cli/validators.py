@@ -1,5 +1,4 @@
 import re
-from argparse import ArgumentParser
 from pathlib import Path
 
 from eth_abi.abi import is_encodable_type
@@ -19,6 +18,10 @@ from moccasin.msig_cli.constants import (
     ERROR_INVALID_OPERATION,
     ERROR_INVALID_RPC_URL,
     ERROR_INVALID_TRANSACTION_TYPE,
+    ERROR_INVALID_TXT_FILE,
+    ERROR_INVALID_SIGNATURES_INPUT,
+    ERROR_INVALID_SIGNER,
+    ERROR_INVALID_PRIVATE_KEY,
 )
 from moccasin.msig_cli.utils import TransactionType
 
@@ -84,10 +87,38 @@ def is_valid_boolean(value: str) -> bool:
     return value in ("true", "false")
 
 
-def is_json_file(value: str) -> bool:
+def is_valid_json_file(value: str) -> bool:
     """Check if the provided value is a valid JSON file path (ends with .json and not a directory)."""
     path = Path(value)
     return value.lower().endswith(".json") and not path.is_dir()
+
+
+def is_valid_signatures_input(value: str) -> bool:
+    """Check if the provided value is a valid signatures input."""
+    # Check if it's a path to a file
+    path = Path(value)
+    if path.is_file():
+        return value.lower().endswith(".txt") and not path.is_dir()
+    # Check if it's a hex string
+    return is_0x_prefixed(value) and is_hex(value)
+
+
+def is_valid_txt_file(value: str) -> bool:
+    """Check if the provided value is a valid text file path (ends with .txt and not a directory)."""
+    path = Path(value)
+    return value.lower().endswith(".txt") and not path.is_dir()
+
+
+def is_valid_private_key(value: str) -> bool:
+    """Check if the provided value is a valid private key."""
+    # A valid private key is a 64-character hex string with 0x prefix
+    return is_0x_prefixed(value) and is_hex(value) and len(value) == 66
+
+
+def is_valid_signer(value: str) -> bool:
+    """Check if the provided value is a valid signer input."""
+    # A valid signer can be an account name or a private key
+    return is_valid_private_key(value) or is_not_empty(value)
 
 
 # Generic non-empty validator
@@ -168,8 +199,29 @@ validator_not_empty = Validator.from_callable(
 )
 
 validator_json_file = Validator.from_callable(
-    is_json_file, error_message=ERROR_INVALID_JSON_FILE, move_cursor_to_end=True
+    is_valid_json_file, error_message=ERROR_INVALID_JSON_FILE, move_cursor_to_end=True
 )
+
+validator_signatures = Validator.from_callable(
+    is_valid_signatures_input,
+    error_message=ERROR_INVALID_SIGNATURES_INPUT,
+    move_cursor_to_end=True,
+)
+
+validator_txt_file = Validator.from_callable(
+    is_valid_txt_file, error_message=ERROR_INVALID_TXT_FILE, move_cursor_to_end=True
+)
+
+validator_private_key = Validator.from_callable(
+    is_valid_private_key,
+    error_message=ERROR_INVALID_PRIVATE_KEY,
+    move_cursor_to_end=True,
+)
+
+validator_signer = Validator.from_callable(
+    is_valid_signer, error_message=ERROR_INVALID_SIGNER, move_cursor_to_end=True
+)
+
 
 # --- Type-based prompt validation for function parameters ---
 param_type_validators = {
@@ -216,56 +268,27 @@ def validate_data(value: str) -> bytes:
 
 def validate_json_file(value: str) -> Path:
     """Validate and return a valid JSON file path."""
-    if not is_json_file(value):
-        raise ValueError("Invalid JSON file path. Please provide a valid .json file.")
+    if not is_valid_json_file(value):
+        raise ValueError(ERROR_INVALID_JSON_FILE)
     return Path(value)
 
 
-################################################################
-#                        MSIG ARGPARSE                         #
-################################################################
-def add_tx_builder_args(parser: ArgumentParser):
-    """Add transaction builder arguments to the parser."""
-    parser.add_argument(
-        "--rpc-url",
-        help="RPC URL to get the Safe contract from.",
-        type=validate_rpc_url,
-    )
-    parser.add_argument(
-        "--safe-address",
-        help="Address of the Safe contract to build the transaction for.",
-        type=validate_address,
-    )
-    parser.add_argument(
-        "--to", help="Address of the contract to call.", type=validate_address
-    )
-    parser.add_argument(
-        "--operation",
-        help="Operation type: 0 for call, 1 for delegate call.",
-        type=validate_number,
-    )
-    parser.add_argument(
-        "--value",
-        help="Value to send with the transaction, in wei.",
-        type=validate_number,
-    )
-    parser.add_argument(
-        "--data",
-        help="Data to send with the transaction, in hex format.",
-        type=validate_data,
-    )
-    parser.add_argument(
-        "--safe-nonce",
-        help="Nonce of the Safe contract to use for the transaction.",
-        type=validate_number,
-    )
-    parser.add_argument(
-        "--gas-token",
-        help="Token to use for gas, defaults to the native token of the network.",
-        type=validate_address,
-    )
-    parser.add_argument(
-        "--json-output",
-        help="Output file to save the EIP-712 structured data as JSON.",
-        type=validate_json_file,
-    )
+def validate_signatures_input(value: str) -> str:
+    """Validate and return a valid signatures input."""
+    if not is_valid_signatures_input(value):
+        raise ValueError(ERROR_INVALID_SIGNATURES_INPUT)
+    return value
+
+
+def validate_txt_file(value: str) -> Path:
+    """Validate and return a valid transaction file path."""
+    if not is_valid_txt_file(value):
+        raise ValueError(ERROR_INVALID_TXT_FILE)
+    return Path(value)
+
+
+def validate_signer(value: str) -> str:
+    """Validate and return a valid signer input."""
+    if not is_valid_signer(value):
+        raise ValueError(ERROR_INVALID_SIGNER)
+    return value

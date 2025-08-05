@@ -6,6 +6,9 @@ from moccasin.msig_cli.validators import (
     validate_json_file,
     validate_number,
     validate_rpc_url,
+    validate_txt_file,
+    validate_signatures_input,
+    validate_signer,
 )
 
 
@@ -82,13 +85,31 @@ def create_msig_parser():
         "tx_sign", help="Sign a multisig transaction."
     )
     _add_common_args(tx_sign_parser)
-
-    # ----- Message subcommands -----
-    # @TODO Implement sign command
-    # msg_parser = msig_subparsers.add_parser(
-    #     "msg", help="Sign a transaction or message."
-    # )
-    # @TODO Add sign args here
+    tx_sign_parser.add_argument(
+        "--input-json",
+        help="Path to the EIP-712 structured data JSON file of the transaction to sign.",
+        type=validate_json_file,
+    )
+    tx_sign_parser.add_argument(
+        "--output-json",
+        help="Output file to save the transaction as JSON.",
+        type=validate_json_file,
+    )
+    tx_sign_parser.add_argument(
+        "--signer",
+        help="Signer's MoccasinAccount or private key to sign the transaction. We discourage using private keys directly.",
+        type=validate_signer,
+    )
+    tx_sign_parser.add_argument(
+        "--signatures",
+        help="Signatures to include in the transaction, in hex format. Could be a bytes string or a path to a file containing signatures.",
+        type=validate_signatures_input,
+    )
+    tx_sign_parser.add_argument(
+        "--signatures-output",
+        help="Output file to save the signatures in bytes format.",
+        type=validate_txt_file,
+    )
 
     # Store references for help display
     msig_parser._subparsers = msig_subparsers

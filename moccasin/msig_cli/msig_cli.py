@@ -1,5 +1,4 @@
 from argparse import Namespace
-from email import message
 import json
 from pathlib import Path
 from typing import List
@@ -26,8 +25,11 @@ from moccasin.msig_cli.tx import tx_build
 from moccasin.msig_cli.utils import GoBackToPrompt, T_EIP712TxJson
 from moccasin.msig_cli.validators import (
     is_valid_address,
+    is_valid_private_key,
     is_valid_rpc_url,
+    validator_not_empty,
     validator_json_file,
+    validator_private_key,
 )
 
 
@@ -159,14 +161,153 @@ class MsigCli:
     def _tx_sign_command(self, args: Namespace = None):
         """Run the transaction signer command.
 
+        # @TODO: refactor in own file later and need tests
+
         :param args: Optional argparse Namespace with command arguments.
         """
         print_formatted_text(
             HTML("\n<b><magenta>Running tx_sign command...</magenta></b>")
         )
         # Get args from Namespace if provided
-        # signers: List[str] = getattr(args, "signers", None)
-        eip712_input_file = getattr(args, "eip712_input_file", None)
+        eip712_input_file = getattr(args, "input_json", None)
+        eip712_output_file = getattr(args, "output_json", None)
+        signer = getattr(args, "signer", None)
+        signatures = getattr(args, "signatures", None)
+        output_signatures_file = getattr(args, "signatures_output", None)
+
+        # If signer is not provided, prompt for it
+        account: MoccasinAccount = None
+        if not signer:
+            is_mox_account = self.prompt_session.prompt(
+                HTML(
+                    "<b><orange>#tx_sign ></orange>Do you want to sign with a MoccasinAccount? (yes/no): </b>"
+                ),
+                placeholder=HTML("<b><grey>yes/no</grey></b>"),
+                validator=validator_not_empty,
+            )
+            if is_mox_account.lower() in ("yes", "y"):
+                # Prompt for account name
+                account_name = self.prompt_session.prompt(
+                    HTML(
+                        "<b><orange>#tx_sign ></orange>What is the name of the MoccasinAccount? </b>"
+                    ),
+                    placeholder=HTML("<b><grey>account_name</grey></b>"),
+                    validator=validator_not_empty,
+                )
+                # Prompt for password
+                password = self.prompt_session.prompt(
+                    HTML(
+                        "<b><orange>#tx_sign ></orange>What is the password for the MoccasinAccount? </b>"
+                    ),
+                    placeholder=HTML("<b><grey>*******</grey></b>"),
+                    is_password=True,
+                    validator=validator_not_empty,
+                )
+                # Initialize MoccasinAccount
+                try:
+                    account = MoccasinAccount(
+                        keystore_path_or_account_name=account_name, password=password
+                    )
+                except Exception as e:
+                    print_formatted_text(
+                        HTML(
+                            f"<b><red>Error initializing MoccasinAccount: {e}</red></b>"
+                        )
+                    )
+                    return
+            else:
+                # Prompt for private key
+                print_formatted_text(
+                    HTML(
+                        "\n<b><red>Signing with private key is discouraged. Please use MoccasinAccount instead.</red></b>\n"
+                    )
+                )
+                private_key = self.prompt_session.prompt(
+                    HTML(
+                        "<b><orange>#tx_sign ></orange>What is the private key of the signer? </b>"
+                    ),
+                    placeholder=HTML("<b><grey>0x...</grey></b>"),
+                    is_password=True,
+                    validator=validator_private_key,
+                )
+                # Initialize MoccasinAccount with private key
+                try:
+                    account = MoccasinAccount(private_key=private_key)
+                except Exception as e:
+                    print_formatted_text(
+                        HTML(
+                            f"<b><red>Error initializing MoccasinAccount: {e}</red></b>"
+                        )
+                    )
+                    return
+        else:
+            # Check if signer is a string name or a private key
+            if is_valid_private_key(signer):
+                # Initialize MoccasinAccount with private key
+                try:
+                    account = MoccasinAccount(private_key=HexBytes(signer))
+                except Exception as e:
+                    print_formatted_text(
+                        HTML(
+                            f"<b><red>Error initializing MoccasinAccount: {e}</red></b>"
+                        )
+                    )
+                    return
+            else:
+                # Assume signer is an account name and prompt for password
+                try:
+                    password = (
+                        self.prompt_session.prompt(
+                            HTML(
+                                "<b><orange>#tx_sign ></orange>What is the password for the MoccasinAccount? </b>"
+                            ),
+                            placeholder=HTML("<b><grey>*******</grey></b>"),
+                            is_password=True,
+                            validator=validator_not_empty,
+                        ),
+                    )
+                    account = MoccasinAccount(
+                        keystore_path_or_account_name=signer, password=password
+                    )
+                except Exception as e:
+                    print_formatted_text(
+                        HTML(
+                            f"<b><red>Error initializing MoccasinAccount: {e}</red></b>"
+                        )
+                    )
+                    return
+
+        # Check if account is initialized
+        if not account:
+            print_formatted_text(
+                HTML(
+                    "<b><red>Signer account not initialized. Aborting signing.</red></b>"
+                )
+            )
+            return
+        else:
+            # Check if the account is the right one
+            is_right_account = self.prompt_session.prompt(
+                HTML(
+                    f"<b><orange>#tx_sign ></orange>Is this the right account? {account.address} (yes/no): </b>"
+                ),
+                placeholder=HTML("<b><grey>yes/no</grey></b>"),
+                validator=validator_not_empty,
+            )
+            if is_right_account.lower() not in ("yes", "y"):
+                print_formatted_text(
+                    HTML("<b><red>Aborting signing. Wrong account.</red></b>")
+                )
+                return
+
+        # Display the initialized account
+        print_formatted_text(
+            HTML(
+                f"\n<b><green>Signer account initialized successfully: {account.address}</green></b>\n"
+            )
+        )
+
+        # Convert args to their respective types
         eip712_input_file = Path(eip712_input_file) if eip712_input_file else None
 
         # Check if safe_tx is initialized
@@ -176,7 +317,7 @@ class MsigCli:
                 eip712_prompted_file = Path(
                     self.prompt_session.prompt(
                         HTML(
-                            "<b><orange>Could not find SafeTx. Please provide EIP-712 input file: </orange></b>"
+                            "<b><orange>#tx_sign ></orange>Could not find SafeTx. Please provide EIP-712 input file: </b>"
                         ),
                         validator=validator_json_file,
                         placeholder=HTML(
@@ -237,31 +378,6 @@ class MsigCli:
                     HTML(f"<b><red>Error creating SafeTx from JSON: {e}</red></b>")
                 )
                 return
-
-        # If eip712_input_file is provided, load the JSON data
-        # eip712_tx_json = None
-        # message_json = None
-        # if eip712_input_file:
-        #     try:
-        #         with open(eip712_input_file, "r") as f:
-        #             eip712_tx_raw = f.read()
-        #             eip712_tx_json = json.loads(eip712_tx_raw)
-
-        #     except FileNotFoundError:
-        #         print_formatted_text(
-        #             HTML(f"<b><red>File not found: {eip712_input_file}</red></b>")
-        #         )
-        #         return
-
-        # # Check if safe_tx is initialized
-        # if not self.safe_tx and not message_json:
-        #     # If safe_tx is not created, prompt to build it first
-        #     print_formatted_text(
-        #         HTML(
-        #             "<b><red>SafeTx not created. Please run tx_build command first.</red></b>"
-        #         )
-        #     )
-        #     return
 
     def _tx_broadcast_command(self, args: Namespace = None):
         """Run the transaction broadcast command.

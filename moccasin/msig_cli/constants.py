@@ -1,6 +1,10 @@
 ################################################################
 #                       ERROR CONSTANTS                        #
 ################################################################
+
+from logging import ERROR
+
+
 ERROR_INVALID_ADDRESS = "Invalid address format. Please enter a valid checksum address."
 ERROR_INVALID_RPC_URL = "Invalid RPC URL format. Please enter a valid URL starting with http:// or https://."
 ERROR_INVALID_NUMBER = "Invalid number format. Please enter a valid integer."
@@ -17,3 +21,15 @@ ERROR_INVALID_FUNCTION_SIGNATURE = (
 )
 ERROR_INVALID_BOOLEAN = "Invalid boolean value. Please enter true/false"
 ERROR_INVALID_JSON_FILE = "Invalid JSON file path. Please provide a valid .json file."
+ERROR_INVALID_SIGNATURES_INPUT = (
+    "Invalid signatures input. Must be a valid hex string or a path to a .txt file."
+)
+ERROR_INVALID_TXT_FILE = (
+    "Invalid transaction file path. Please provide a valid .txt file."
+)
+ERROR_INVALID_PRIVATE_KEY = (
+    "Invalid private key format. Must be a 64-character hex string with 0x prefix."
+)
+ERROR_INVALID_SIGNER = (
+    "Invalid signer input. Must be a valid account name or a private key."
+)
