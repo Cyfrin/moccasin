@@ -10,13 +10,13 @@ from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
 from safe_eth.util.util import to_0x_hex_str
 
 from moccasin.logging import logger
+from moccasin.msig_cli.common_prompts import prompt_save_safe_tx_json
 from moccasin.msig_cli.tx.build_prompts import (
     prompt_gas_token,
     prompt_internal_txs,
     prompt_multisend_batch_confirmation,
     prompt_operation_type,
     prompt_safe_nonce,
-    prompt_save_eip712_json,
     prompt_single_internal_tx,
     prompt_target_contract_address,
 )
@@ -62,11 +62,6 @@ def decode_and_confirm_multisend_batch(
     return to, operation
 
 
-def save_eip712_json(prompt_session, eip712_struct, eip712_json_out=None):
-    """Save the EIP-712 structured data to a JSON file using prompt helper."""
-    prompt_save_eip712_json(prompt_session, eip712_struct, eip712_json_out)
-
-
 # --- Main entrypoint ---
 def run(
     prompt_session: PromptSession,
@@ -77,7 +72,7 @@ def run(
     safe_nonce: Optional[int] = None,
     data: Optional[HexBytes] = None,
     gas_token: Optional[str] = None,
-    eip712_json_out: Optional[str] = None,
+    json_output: Optional[str] = None,
 ) -> SafeTx:
     """Run the transaction builder with interactive prompts.
 
@@ -166,9 +161,14 @@ def run(
     print_formatted_text(
         HTML("\n<b><green>SafeTx instance created successfully!</green></b>\n")
     )
+    # Pretty-print the SafeTx fields
     pretty_print_safe_tx(safe_tx)
+    # Get the EIP-712 structured data and wrap it in a dictionary with signatures
     eip712_struct = safe_tx.eip712_structured_data
     eip712_struct["message"]["data"] = to_0x_hex_str(eip712_struct["message"]["data"])
-    save_eip712_json(prompt_session, eip712_struct, eip712_json_out)
+    safe_tx_data = {"safeTx": eip712_struct, "signatures": b"".hex()}
+
+    # Save EIP-712 structured data as JSON
+    prompt_save_safe_tx_json(prompt_session, safe_tx_data, json_output)
 
     return safe_tx

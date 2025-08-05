@@ -103,12 +103,6 @@ def is_valid_signatures_input(value: str) -> bool:
     return is_0x_prefixed(value) and is_hex(value)
 
 
-def is_valid_txt_file(value: str) -> bool:
-    """Check if the provided value is a valid text file path (ends with .txt and not a directory)."""
-    path = Path(value)
-    return value.lower().endswith(".txt") and not path.is_dir()
-
-
 def is_valid_private_key(value: str) -> bool:
     """Check if the provided value is a valid private key."""
     # A valid private key is a 64-character hex string with 0x prefix
@@ -208,10 +202,6 @@ validator_signatures = Validator.from_callable(
     move_cursor_to_end=True,
 )
 
-validator_txt_file = Validator.from_callable(
-    is_valid_txt_file, error_message=ERROR_INVALID_TXT_FILE, move_cursor_to_end=True
-)
-
 validator_private_key = Validator.from_callable(
     is_valid_private_key,
     error_message=ERROR_INVALID_PRIVATE_KEY,
@@ -278,13 +268,6 @@ def validate_signatures_input(value: str) -> str:
     if not is_valid_signatures_input(value):
         raise ValueError(ERROR_INVALID_SIGNATURES_INPUT)
     return value
-
-
-def validate_txt_file(value: str) -> Path:
-    """Validate and return a valid transaction file path."""
-    if not is_valid_txt_file(value):
-        raise ValueError(ERROR_INVALID_TXT_FILE)
-    return Path(value)
 
 
 def validate_signer(value: str) -> str:

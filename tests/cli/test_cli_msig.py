@@ -59,9 +59,11 @@ def test_cli_tx_builder_interactive(temp_msig_workdir):
     assert "SafeTx instance created successfully!" in result.stdout
     assert json_path.exists()
     with open(json_path) as f:
-        data = json.load(f)
-    assert "types" in data and "message" in data
-    assert data["message"]["data"].startswith("0x")
+        safe_tx_data = json.load(f)
+    assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
+    assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
+    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
+
     os.remove(json_path)
 
 
@@ -132,9 +134,10 @@ def test_cli_tx_builder_args_with_json_output(temp_msig_workdir):
     assert "SafeTx instance created successfully!" in result.stdout
     assert json_path.exists()
     with open(json_path) as f:
-        data = json.load(f)
-    assert "types" in data and "message" in data
-    assert data["message"]["data"].startswith("0x")
+        safe_tx_data = json.load(f)
+    assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
+    assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
+    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
     os.remove(json_path)
 
 
@@ -230,9 +233,10 @@ def test_cli_tx_builder_multisend_mixed_operations(temp_msig_workdir):
     assert "SafeTx instance created successfully!" in result.stdout
     assert json_path.exists()
     with open(json_path) as f:
-        data = json.load(f)
-    assert "types" in data and "message" in data
-    assert data["message"]["data"].startswith("0x")
+        safe_tx_data = json.load(f)
+    assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
+    assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
+    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
     os.remove(json_path)
 
 
@@ -322,9 +326,10 @@ def test_cli_tx_builder_prompt_fallbacks(temp_msig_workdir):
     assert "SafeTx instance created successfully!" in result.stdout
     assert json_path.exists()
     with open(json_path) as f:
-        data = json.load(f)
-    assert "types" in data and "message" in data
-    assert data["message"]["data"].startswith("0x")
+        safe_tx_data = json.load(f)
+    assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
+    assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
+    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
 
     os.remove(json_path)
 
@@ -418,9 +423,10 @@ def test_cli_tx_builder_multisend_large_batch(temp_msig_workdir):
     assert "SafeTx instance created successfully!" in result.stdout
     assert json_path.exists()
     with open(json_path) as f:
-        data = json.load(f)
-    assert "types" in data and "message" in data
-    assert data["message"]["data"].startswith("0x")
+        safe_tx_data = json.load(f)
+    assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
+    assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
+    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
     os.remove(json_path)
 
 

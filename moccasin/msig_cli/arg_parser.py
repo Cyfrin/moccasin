@@ -6,7 +6,6 @@ from moccasin.msig_cli.validators import (
     validate_json_file,
     validate_number,
     validate_rpc_url,
-    validate_txt_file,
     validate_signatures_input,
     validate_signer,
 )
@@ -58,7 +57,7 @@ def _add_tx_builder_args(parser: argparse.ArgumentParser):
     )
     parser.add_argument(
         "--json-output",
-        help="Output file to save the EIP-712 structured data as JSON.",
+        help="Output file to save the SafeTx structured data as JSON.",
         type=validate_json_file,
     )
 
@@ -87,12 +86,12 @@ def create_msig_parser():
     _add_common_args(tx_sign_parser)
     tx_sign_parser.add_argument(
         "--input-json",
-        help="Path to the EIP-712 structured data JSON file of the transaction to sign.",
+        help="Path to the SafeTx data JSON file of the transaction to sign.",
         type=validate_json_file,
     )
     tx_sign_parser.add_argument(
         "--output-json",
-        help="Output file to save the transaction as JSON.",
+        help="Output file to save the SafeTx data as JSON.",
         type=validate_json_file,
     )
     tx_sign_parser.add_argument(
@@ -104,11 +103,6 @@ def create_msig_parser():
         "--signatures",
         help="Signatures to include in the transaction, in hex format. Could be a bytes string or a path to a file containing signatures.",
         type=validate_signatures_input,
-    )
-    tx_sign_parser.add_argument(
-        "--signatures-output",
-        help="Output file to save the signatures in bytes format.",
-        type=validate_txt_file,
     )
 
     # Store references for help display

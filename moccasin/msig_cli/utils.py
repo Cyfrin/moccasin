@@ -58,3 +58,8 @@ class T_EIP712TxJson(TypedDict):
     primaryType: str
     domain: T_EIP712Domain
     message: T_SafeTxMessage
+
+
+class T_SafeTxData(TypedDict):
+    safeTx: T_EIP712TxJson
+    signatures: str  # Signature data in hex format

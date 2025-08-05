@@ -45,3 +45,15 @@ def parse_eth_type_value(val, typ):
     if typ.startswith("bytes"):
         return to_bytes(hexstr=val)
     return val
+
+
+def get_signatures(cli_signatures: str, json_signatures: str) -> bytes:
+    if cli_signatures:
+        # Always use CLI input if provided
+        return bytes.fromhex(cli_signatures)
+    elif json_signatures:
+        # Use JSON value if present
+        return bytes.fromhex(json_signatures)
+    else:
+        # Default to empty bytes
+        return b""

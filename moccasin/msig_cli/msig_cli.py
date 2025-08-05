@@ -1,4 +1,5 @@
 from argparse import Namespace
+from email import message
 import json
 from pathlib import Path
 from typing import List
@@ -22,7 +23,8 @@ from moccasin.msig_cli.common_prompts import (
 )
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
 from moccasin.msig_cli.tx import tx_build
-from moccasin.msig_cli.utils import GoBackToPrompt, T_EIP712TxJson
+from moccasin.msig_cli.tx.helpers import get_signatures
+from moccasin.msig_cli.utils import GoBackToPrompt, T_SafeTxData
 from moccasin.msig_cli.validators import (
     is_valid_address,
     is_valid_private_key,
@@ -153,7 +155,7 @@ class MsigCli:
                 safe_nonce=safe_nonce,
                 data=data,
                 gas_token=gas_token,
-                eip712_json_out=json_out,
+                json_output=json_out,
             )
         except GoBackToPrompt:
             raise
@@ -169,18 +171,17 @@ class MsigCli:
             HTML("\n<b><magenta>Running tx_sign command...</magenta></b>")
         )
         # Get args from Namespace if provided
-        eip712_input_file = getattr(args, "input_json", None)
-        eip712_output_file = getattr(args, "output_json", None)
+        input_file_safe_tx = getattr(args, "input_json", None)
+        output_file_safe_tx = getattr(args, "output_json", None)
         signer = getattr(args, "signer", None)
         signatures = getattr(args, "signatures", None)
-        output_signatures_file = getattr(args, "signatures_output", None)
 
         # If signer is not provided, prompt for it
         account: MoccasinAccount = None
         if not signer:
             is_mox_account = self.prompt_session.prompt(
                 HTML(
-                    "<b><orange>#tx_sign ></orange>Do you want to sign with a MoccasinAccount? (yes/no): </b>"
+                    "<b><orange>#tx_sign > </orange>Do you want to sign with a MoccasinAccount? (yes/no): </b>"
                 ),
                 placeholder=HTML("<b><grey>yes/no</grey></b>"),
                 validator=validator_not_empty,
@@ -189,7 +190,7 @@ class MsigCli:
                 # Prompt for account name
                 account_name = self.prompt_session.prompt(
                     HTML(
-                        "<b><orange>#tx_sign ></orange>What is the name of the MoccasinAccount? </b>"
+                        "<b><orange>#tx_sign > </orange>What is the name of the MoccasinAccount? </b>"
                     ),
                     placeholder=HTML("<b><grey>account_name</grey></b>"),
                     validator=validator_not_empty,
@@ -197,7 +198,7 @@ class MsigCli:
                 # Prompt for password
                 password = self.prompt_session.prompt(
                     HTML(
-                        "<b><orange>#tx_sign ></orange>What is the password for the MoccasinAccount? </b>"
+                        "<b><orange>#tx_sign > </orange>What is the password for the MoccasinAccount? </b>"
                     ),
                     placeholder=HTML("<b><grey>*******</grey></b>"),
                     is_password=True,
@@ -224,7 +225,7 @@ class MsigCli:
                 )
                 private_key = self.prompt_session.prompt(
                     HTML(
-                        "<b><orange>#tx_sign ></orange>What is the private key of the signer? </b>"
+                        "<b><orange>#tx_sign > </orange>What is the private key of the signer? </b>"
                     ),
                     placeholder=HTML("<b><grey>0x...</grey></b>"),
                     is_password=True,
@@ -259,7 +260,7 @@ class MsigCli:
                     password = (
                         self.prompt_session.prompt(
                             HTML(
-                                "<b><orange>#tx_sign ></orange>What is the password for the MoccasinAccount? </b>"
+                                "<b><orange>#tx_sign > </orange>What is the password for the MoccasinAccount? </b>"
                             ),
                             placeholder=HTML("<b><grey>*******</grey></b>"),
                             is_password=True,
@@ -278,27 +279,29 @@ class MsigCli:
                     return
 
         # Check if account is initialized
-        if not account:
-            print_formatted_text(
-                HTML(
-                    "<b><red>Signer account not initialized. Aborting signing.</red></b>"
-                )
-            )
-            return
-        else:
+        if account:
             # Check if the account is the right one
             is_right_account = self.prompt_session.prompt(
                 HTML(
-                    f"<b><orange>#tx_sign ></orange>Is this the right account? {account.address} (yes/no): </b>"
+                    f"<b><orange>#tx_sign > </orange>Is this the right account? {account.address} (yes/no): </b>"
                 ),
                 placeholder=HTML("<b><grey>yes/no</grey></b>"),
                 validator=validator_not_empty,
+                is_password=False,  # @dev reset field value in session
             )
             if is_right_account.lower() not in ("yes", "y"):
                 print_formatted_text(
                     HTML("<b><red>Aborting signing. Wrong account.</red></b>")
                 )
                 return
+        else:
+            # If account is not initialized, print error and return
+            print_formatted_text(
+                HTML(
+                    "<b><red>Signer account not initialized. Aborting signing.</red></b>"
+                )
+            )
+            return
 
         # Display the initialized account
         print_formatted_text(
@@ -307,17 +310,14 @@ class MsigCli:
             )
         )
 
-        # Convert args to their respective types
-        eip712_input_file = Path(eip712_input_file) if eip712_input_file else None
-
         # Check if safe_tx is initialized
         if not self.safe_tx:
             # Check if eip712_input_file is provided, else prompt to get it
-            if not eip712_input_file:
+            if not input_file_safe_tx:
                 eip712_prompted_file = Path(
                     self.prompt_session.prompt(
                         HTML(
-                            "<b><orange>#tx_sign ></orange>Could not find SafeTx. Please provide EIP-712 input file: </b>"
+                            "<b><orange>#tx_sign > </orange>Could not find SafeTx. Please provide EIP-712 input file: </b>"
                         ),
                         validator=validator_json_file,
                         placeholder=HTML(
@@ -327,35 +327,54 @@ class MsigCli:
                 )
                 if not eip712_prompted_file.exists():
                     print_formatted_text(
-                        HTML(f"<b><red>File not found: {eip712_input_file}</red></b>")
+                        HTML(f"<b><red>File not found: {input_file_safe_tx}</red></b>")
                     )
                     return
-                eip712_input_file = eip712_prompted_file
+                input_file_safe_tx = eip712_prompted_file
 
             # Load the JSON file
             try:
-                with open(eip712_input_file, "r") as f:
-                    eip712_input_file_raw = f.read()
-                    eip712_tx_json: T_EIP712TxJson = json.loads(eip712_input_file_raw)
+                with open(input_file_safe_tx, "r") as f:
+                    input_file_raw = f.read()
+                    safe_tx_json: T_SafeTxData = json.loads(input_file_raw)
             except FileNotFoundError:
                 print_formatted_text(
-                    HTML(f"<b><red>File not found: {eip712_input_file}</red></b>")
+                    HTML(f"<b><red>File not found: {input_file_safe_tx}</red></b>")
                 )
                 return
             except json.JSONDecodeError:
                 print_formatted_text(
                     HTML(
-                        f"<b><red>Invalid JSON format in file: {eip712_input_file}</red></b>"
+                        f"<b><red>Invalid JSON format in file: {input_file_safe_tx}</red></b>"
                     )
                 )
                 return
 
-            # Create SafeTx from the loaded JSON
-            try:
-                message_json = (
-                    eip712_tx_json.message if "message" in eip712_tx_json else None
+            # Get the required fields from the JSON
+            safe_tx_eip712 = safe_tx_json.get("safeTx", None)
+            signatures_json = safe_tx_json.get("signatures", None)
+
+            if not safe_tx_eip712:
+                print_formatted_text(
+                    HTML(
+                        f"<b><red>Missing 'safeTx' field in JSON file: {input_file_safe_tx}</red></b>"
+                    )
                 )
-                if message_json:
+                return
+
+            # Get the sigmature from:
+            # 1. CLI input
+            # 2. JSON file
+            # 3. Default to empty bytes
+            signatures = get_signatures(
+                cli_signatures=signatures, json_signatures=signatures_json
+            )
+
+            # Create SafeTx
+            # @FIXME: Handle error Error creating SafeTx from JSON: 'dict' object has no attribute 'to'
+            message_json = safe_tx_eip712.get("message", None)
+            if message_json:
+                try:
                     # Convert the message to SafeTx
                     self.safe_tx = self.safe_instance.build_multisig_tx(
                         to=to_checksum_address(message_json.to),
@@ -373,9 +392,16 @@ class MsigCli:
                         signatures=b"",  # @TODO: Handle signatures if needed
                         nonce=message_json.nonce,
                     )
-            except Exception as e:
+                except Exception as e:
+                    print_formatted_text(
+                        HTML(f"<b><red>Error creating SafeTx from JSON: {e}</red></b>")
+                    )
+                    return
+            else:
                 print_formatted_text(
-                    HTML(f"<b><red>Error creating SafeTx from JSON: {e}</red></b>")
+                    HTML(
+                        f"<b><red>Missing 'message' field in 'safeTx' JSON: {input_file_safe_tx}</red></b>"
+                    )
                 )
                 return
 

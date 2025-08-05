@@ -1,4 +1,3 @@
-import json
 from typing import List, Optional
 
 from eth.constants import ZERO_ADDRESS
@@ -14,7 +13,6 @@ from moccasin.msig_cli.validators import (
     param_type_validators,
     validator_address,
     validator_function_signature,
-    validator_json_file,
     validator_not_empty,
     validator_not_zero_number,
     validator_number,
@@ -280,42 +278,3 @@ def prompt_operation_type(prompt_session):
     )
 
     return int(operation) if operation else int(MultiSendOperation.CALL.value)
-
-
-def prompt_save_eip712_json(prompt_session, eip712_struct, eip712_json_out=None):
-    """Prompt user to save EIP-712 structured data as JSON, or save directly if path is given."""
-    if eip712_json_out:
-        with open(eip712_json_out, "w") as f:
-            json.dump(eip712_struct, f, indent=2, default=str)
-        print_formatted_text(
-            HTML(
-                f"\n<b><green>EIP-712 structured data saved to:</green></b> {eip712_json_out}\n"
-            )
-        )
-        return
-    save = prompt_session.prompt(
-        HTML(
-            "\n<orange>Would you like to save the EIP-712 structured data to a .json file? (y/n): </orange>"
-        ),
-        placeholder=HTML("<grey>y/n, yes/no</grey>"),
-        validator=validator_not_empty,
-    )
-    if save.strip().lower() in ("y", "yes"):
-        filename = prompt_session.prompt(
-            HTML(
-                "<orange>Where would you like to save the EIP-712 JSON file? (e.g. ./safe-tx.json): </orange>"
-            ),
-            placeholder=HTML("<grey>./safe-tx.json</grey>"),
-            validator=validator_json_file,
-        )
-        with open(filename, "w") as f:
-            json.dump(eip712_struct, f, indent=2, default=str)
-        print_formatted_text(
-            HTML(
-                f"\n<b><green>EIP-712 structured data saved to:</green></b> {filename}\n"
-            )
-        )
-    else:
-        print_formatted_text(
-            HTML("\n<b><yellow>Not saving EIP-712 structured data.</yellow></b>\n")
-        )
