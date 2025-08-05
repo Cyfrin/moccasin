@@ -9,8 +9,8 @@ from moccasin.msig_cli.validators import (
 )
 
 
-def _add_tx_builder_args(parser: argparse.ArgumentParser):
-    """Add transaction builder arguments to the parser."""
+def _add_common_args(parser: argparse.ArgumentParser):
+    """Add common arguments to the parser that are shared across multiple commands."""
     parser.add_argument(
         "--rpc-url",
         help="RPC URL to connect to the Ethereum network.",
@@ -21,6 +21,10 @@ def _add_tx_builder_args(parser: argparse.ArgumentParser):
         help="Address of the Safe contract to interact with.",
         type=validate_address,
     )
+
+
+def _add_tx_builder_args(parser: argparse.ArgumentParser):
+    """Add transaction builder arguments to the parser."""
     parser.add_argument(
         "--to", help="Address of the contract to call.", type=validate_address
     )
@@ -66,10 +70,18 @@ def create_msig_parser():
     msig_subparsers = msig_parser.add_subparsers(dest="msig_command")
 
     # ----- Transaction subcommands -----
-    tx_builder_parser = msig_subparsers.add_parser(
+    # Add the tx_build command
+    tx_build_parser = msig_subparsers.add_parser(
         "tx_build", help="Build a multisig transaction."
     )
-    _add_tx_builder_args(tx_builder_parser)
+    _add_common_args(tx_build_parser)
+    _add_tx_builder_args(tx_build_parser)
+
+    # Add the tx_sign command
+    tx_sign_parser = msig_subparsers.add_parser(
+        "tx_sign", help="Sign a multisig transaction."
+    )
+    _add_common_args(tx_sign_parser)
 
     # ----- Message subcommands -----
     # @TODO Implement sign command
@@ -80,7 +92,7 @@ def create_msig_parser():
 
     # Store references for help display
     msig_parser._subparsers = msig_subparsers
-    msig_parser._tx_builder_parser = tx_builder_parser
-    # msig_parser._msg_parser = msg_parser
+    msig_parser._tx_build_parser = tx_build_parser
+    msig_parser._tx_sign_parser = tx_sign_parser
 
     return msig_parser

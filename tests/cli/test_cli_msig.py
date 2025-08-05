@@ -4,9 +4,13 @@ import subprocess
 
 import pytest
 
-MOX_CMD = ["mox", "msig", "tx_build"]
+MSIG_TX_BUILD = ["mox", "msig", "tx_build"]
+MSIG_TX_SIGN = ["mox", "msig", "tx_sign"]
 
 
+################################################################
+#                        TX_BUILD TESTS                        #
+################################################################
 def test_cli_tx_builder_interactive(temp_msig_workdir):
     """Test fully interactive session (all prompts, user saves JSON)."""
     json_path = temp_msig_workdir / "safe-tx.json"
@@ -45,7 +49,7 @@ def test_cli_tx_builder_interactive(temp_msig_workdir):
     if json_path.exists():
         os.remove(json_path)
     result = subprocess.run(
-        MOX_CMD,
+        MSIG_TX_BUILD,
         input=user_input,
         text=True,
         capture_output=True,
@@ -82,7 +86,7 @@ def test_cli_tx_builder_args_only(temp_msig_workdir):
         "0x0000000000000000000000000000000000000000",
     ]
     result = subprocess.run(
-        MOX_CMD + args,
+        MSIG_TX_BUILD + args,
         input="q\n",
         text=True,
         capture_output=True,
@@ -118,7 +122,7 @@ def test_cli_tx_builder_args_with_json_output(temp_msig_workdir):
     if json_path.exists():
         os.remove(json_path)
     result = subprocess.run(
-        MOX_CMD + args,
+        MSIG_TX_BUILD + args,
         input="q\n",
         text=True,
         capture_output=True,
@@ -159,7 +163,7 @@ def test_cli_tx_builder_invalid_json_output(temp_msig_workdir):
 
     with pytest.raises(subprocess.CalledProcessError):
         subprocess.run(
-            MOX_CMD + args,
+            MSIG_TX_BUILD + args,
             input="q\n",
             text=True,
             capture_output=True,
@@ -215,7 +219,7 @@ def test_cli_tx_builder_multisend_mixed_operations(temp_msig_workdir):
     if json_path.exists():
         os.remove(json_path)
     result = subprocess.run(
-        MOX_CMD,
+        MSIG_TX_BUILD,
         input=user_input,
         text=True,
         capture_output=True,
@@ -265,7 +269,7 @@ def test_cli_tx_builder_multisend_user_rejects(temp_msig_workdir):
         "n\n"
     )
     result = subprocess.run(
-        MOX_CMD,
+        MSIG_TX_BUILD,
         input=user_input,
         text=True,
         capture_output=True,
@@ -308,7 +312,7 @@ def test_cli_tx_builder_prompt_fallbacks(temp_msig_workdir):
     if json_path.exists():
         os.remove(json_path)
     result = subprocess.run(
-        MOX_CMD + args,
+        MSIG_TX_BUILD + args,
         input=user_input,
         text=True,
         capture_output=True,
@@ -348,7 +352,7 @@ def test_cli_tx_builder_invalid_data(temp_msig_workdir):
 
     with pytest.raises(subprocess.CalledProcessError):
         subprocess.run(
-            MOX_CMD + args,
+            MSIG_TX_BUILD + args,
             input="q\n",
             text=True,
             capture_output=True,
@@ -403,7 +407,7 @@ def test_cli_tx_builder_multisend_large_batch(temp_msig_workdir):
     if json_path.exists():
         os.remove(json_path)
     result = subprocess.run(
-        MOX_CMD,
+        MSIG_TX_BUILD,
         input=user_input,
         text=True,
         capture_output=True,
@@ -418,3 +422,8 @@ def test_cli_tx_builder_multisend_large_batch(temp_msig_workdir):
     assert "types" in data and "message" in data
     assert data["message"]["data"].startswith("0x")
     os.remove(json_path)
+
+
+################################################################
+#                        TX_SIGN TESTS                         #
+################################################################

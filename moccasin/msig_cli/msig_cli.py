@@ -1,16 +1,20 @@
 from argparse import Namespace
+from email import message
+import json
+from pathlib import Path
 from typing import List
 
 from eth_typing import URI
 from eth_utils import to_checksum_address
+from hexbytes import HexBytes
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.shortcuts import clear as prompt_clear
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
-from safe_eth.util.util import to_0x_hex_str
 
 from moccasin.logging import logger
+from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.arg_parser import create_msig_parser
 from moccasin.msig_cli.common_prompts import (
     prompt_continue_next_step,
@@ -19,8 +23,12 @@ from moccasin.msig_cli.common_prompts import (
 )
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
 from moccasin.msig_cli.tx import tx_build
-from moccasin.msig_cli.utils import GoBackToPrompt
-from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
+from moccasin.msig_cli.utils import GoBackToPrompt, T_EIP712TxJson
+from moccasin.msig_cli.validators import (
+    is_valid_address,
+    is_valid_rpc_url,
+    validator_json_file,
+)
 
 
 class MsigCli:
@@ -59,7 +67,7 @@ class MsigCli:
         # Interactive ordered workflow restoration
         if self.safe_instance:
             if str(args.msig_command).startswith("tx_"):
-                tx_command = getattr(args, "tx_command", None)
+                tx_command = getattr(args, "msig_command", None)
                 order: List[str] = ["tx_build", "tx_sign", "tx_broadcast"]
                 start_idx = order.index(tx_command) if tx_command in order else 0
                 for idx in range(start_idx, len(order)):
@@ -71,8 +79,33 @@ class MsigCli:
                         self._tx_sign_command(args)
                     elif cmd == "tx_broadcast":
                         self._tx_broadcast_command(args)
-                    # Prompt to continue unless last step
+
+                    # Only prompt for next step if:
+                    # 1. Not the last command in the order
                     if idx < len(order) - 1:
+                        # 2. Sign onlt if we have a safe_tx after building
+                        if not self.safe_tx and cmd == "tx_sign":
+                            print_formatted_text(
+                                HTML(
+                                    "<b><red>SafeTx not created. Aborting following signing.</red></b>"
+                                )
+                            )
+                            break
+
+                        # 3. safe_tx has been signed with required signers
+                        if (
+                            cmd == "tx_sign"
+                            and len(self.safe_tx.signers)
+                            < self.safe_instance.retrieve_threshold()
+                        ):
+                            print_formatted_text(
+                                HTML(
+                                    "<b><red>SafeTx not signed by enough signers. Aborting following broadcasting.</red></b>"
+                                )
+                            )
+                            break
+
+                        # Prompt for next step
                         next_step = prompt_continue_next_step(
                             self.prompt_session, next_cmd=order[idx + 1]
                         )
@@ -129,8 +162,106 @@ class MsigCli:
         :param args: Optional argparse Namespace with command arguments.
         """
         print_formatted_text(
-            HTML("<b><red>tx_signer command not implemented yet!</red></b>")
+            HTML("\n<b><magenta>Running tx_sign command...</magenta></b>")
         )
+        # Get args from Namespace if provided
+        # signers: List[str] = getattr(args, "signers", None)
+        eip712_input_file = getattr(args, "eip712_input_file", None)
+        eip712_input_file = Path(eip712_input_file) if eip712_input_file else None
+
+        # Check if safe_tx is initialized
+        if not self.safe_tx:
+            # Check if eip712_input_file is provided, else prompt to get it
+            if not eip712_input_file:
+                eip712_prompted_file = Path(
+                    self.prompt_session.prompt(
+                        HTML(
+                            "<b><orange>Could not find SafeTx. Please provide EIP-712 input file: </orange></b>"
+                        ),
+                        validator=validator_json_file,
+                        placeholder=HTML(
+                            "<b><grey>./path/to/eip712_input.json</grey></b>"
+                        ),
+                    )
+                )
+                if not eip712_prompted_file.exists():
+                    print_formatted_text(
+                        HTML(f"<b><red>File not found: {eip712_input_file}</red></b>")
+                    )
+                    return
+                eip712_input_file = eip712_prompted_file
+
+            # Load the JSON file
+            try:
+                with open(eip712_input_file, "r") as f:
+                    eip712_input_file_raw = f.read()
+                    eip712_tx_json: T_EIP712TxJson = json.loads(eip712_input_file_raw)
+            except FileNotFoundError:
+                print_formatted_text(
+                    HTML(f"<b><red>File not found: {eip712_input_file}</red></b>")
+                )
+                return
+            except json.JSONDecodeError:
+                print_formatted_text(
+                    HTML(
+                        f"<b><red>Invalid JSON format in file: {eip712_input_file}</red></b>"
+                    )
+                )
+                return
+
+            # Create SafeTx from the loaded JSON
+            try:
+                message_json = (
+                    eip712_tx_json.message if "message" in eip712_tx_json else None
+                )
+                if message_json:
+                    # Convert the message to SafeTx
+                    self.safe_tx = self.safe_instance.build_multisig_tx(
+                        to=to_checksum_address(message_json.to),
+                        value=message_json.value,
+                        data=HexBytes(message_json.data).removeprefix("0x"),
+                        operation=message_json.operation,
+                        safe_tx_gas=message_json.safeTxGas,
+                        base_gas=message_json.baseGas,
+                        data_gas=message_json.dataGas,
+                        gas_price=message_json.gasPrice,
+                        gas_token=to_checksum_address(message_json.gasToken),
+                        refund_receiver=to_checksum_address(
+                            message_json.refundReceiver
+                        ),
+                        signatures=b"",  # @TODO: Handle signatures if needed
+                        nonce=message_json.nonce,
+                    )
+            except Exception as e:
+                print_formatted_text(
+                    HTML(f"<b><red>Error creating SafeTx from JSON: {e}</red></b>")
+                )
+                return
+
+        # If eip712_input_file is provided, load the JSON data
+        # eip712_tx_json = None
+        # message_json = None
+        # if eip712_input_file:
+        #     try:
+        #         with open(eip712_input_file, "r") as f:
+        #             eip712_tx_raw = f.read()
+        #             eip712_tx_json = json.loads(eip712_tx_raw)
+
+        #     except FileNotFoundError:
+        #         print_formatted_text(
+        #             HTML(f"<b><red>File not found: {eip712_input_file}</red></b>")
+        #         )
+        #         return
+
+        # # Check if safe_tx is initialized
+        # if not self.safe_tx and not message_json:
+        #     # If safe_tx is not created, prompt to build it first
+        #     print_formatted_text(
+        #         HTML(
+        #             "<b><red>SafeTx not created. Please run tx_build command first.</red></b>"
+        #         )
+        #     )
+        #     return
 
     def _tx_broadcast_command(self, args: Namespace = None):
         """Run the transaction broadcast command.
@@ -188,7 +319,7 @@ class MsigCli:
         )
         print_formatted_text(
             HTML(
-                f"<b><magenta>SafeTx hash:</magenta></b> {to_0x_hex_str(self.safe_tx.safe_tx_hash) if self.safe_tx else 'Not created'}\n"
+                f"<b><magenta>SafeTx:</magenta></b> {str(self.safe_tx) if self.safe_tx else 'Not created'}\n"
             )
         )
 
