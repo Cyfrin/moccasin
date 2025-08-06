@@ -21,7 +21,7 @@ from moccasin.msig_cli.tx.build_prompts import (
     prompt_target_contract_address,
 )
 from moccasin.msig_cli.tx.helpers import pretty_print_safe_tx
-from moccasin.msig_cli.utils import GoBackToPrompt
+from moccasin.msig_cli.utils import MsigCliError, MsigCliUserAbort
 
 
 def decode_and_confirm_multisend_batch(
@@ -51,7 +51,7 @@ def decode_and_confirm_multisend_batch(
         print_formatted_text(
             HTML("<b><red>Aborting due to user rejection of decoded batch.</red></b>")
         )
-        raise GoBackToPrompt
+        raise MsigCliUserAbort("User rejected MultiSend batch confirmation.")
 
     to = multi_send_address
     operation = int(
@@ -73,7 +73,7 @@ def run(
     data: Optional[HexBytes] = None,
     gas_token: Optional[str] = None,
     json_output: Optional[str] = None,
-) -> SafeTx:
+) -> Optional[SafeTx]:
     """Run the transaction builder with interactive prompts.
 
     :param prompt_session: Prompt session for user input.
@@ -87,88 +87,97 @@ def run(
     :param eip712_json_out: Output file to save the EIP-712 structured data as JSON.
 
     :return: An instance of SafeTx.
-    :raises GoBackToPrompt: If we ne to go back to the main CLI prompt.
     """
-    # Get input values from args
-    tx_to = to_checksum_address(to) if to else None
-    tx_gas_token = to_checksum_address(gas_token) if gas_token else None
-    tx_value = value if value is not None else 0
-    tx_operation = operation
-    tx_data = data
-    tx_safe_nonce = safe_nonce
-
-    # Prompt for nonce and gas token
-    if tx_safe_nonce is None:
-        tx_safe_nonce = prompt_safe_nonce(prompt_session, safe_instance)
-    if not tx_gas_token:
-        tx_gas_token = prompt_gas_token(prompt_session)
-
-    # If no data provided, we prompt for internal transactions
-    if tx_data is None:
-        internal_txs = prompt_internal_txs(prompt_session, prompt_single_internal_tx)
-        if len(internal_txs) > 1:
-            multi_send = MultiSend(ethereum_client=safe_instance.ethereum_client)
-            tx_data = multi_send.build_tx_data(internal_txs)
-            tx_to = multi_send.address
-            tx_operation = int(
-                MultiSendOperation.CALL.value
-                if multi_send.call_only
-                else MultiSendOperation.DELEGATE_CALL.value
-            )
-            print_formatted_text(
-                HTML(
-                    "\n<b><green>MultiSend transaction created successfully!</green></b>\n"
-                )
-            )
-        else:
-            multi_send_one_tx = internal_txs[0]
-            tx_to = multi_send_one_tx.to
-            tx_value = multi_send_one_tx.value
-            tx_data = multi_send_one_tx.data
-            tx_operation = multi_send_one_tx.operation.value
-            print_formatted_text(
-                HTML(
-                    "\n<b><green>Single internal transaction created successfully!</green></b>\n"
-                )
-            )
-
-    # If data is provided, try to decode/confirm MultiSend batch
-    if tx_data is not None:
-        to_decoded, op_decoded = decode_and_confirm_multisend_batch(
-            prompt_session, safe_instance, tx_data, tx_to, tx_operation
-        )
-        if to_decoded is not None and op_decoded is not None:
-            tx_to, tx_operation = to_decoded, op_decoded
-
-    # If still missing, prompt for target contract address and/or operation
-    if not tx_to:
-        tx_to = prompt_target_contract_address(prompt_session)
-    if tx_operation is None:
-        tx_operation = prompt_operation_type(prompt_session)
     try:
-        safe_tx = safe_instance.build_multisig_tx(
-            to=tx_to,
-            value=tx_value,
-            operation=tx_operation,
-            safe_nonce=tx_safe_nonce,
-            data=tx_data,
-            gas_token=tx_gas_token,
+        # Get input values from args
+        tx_to = to_checksum_address(to) if to else None
+        tx_gas_token = to_checksum_address(gas_token) if gas_token else None
+        tx_value = value if value is not None else 0
+        tx_operation = operation
+        tx_data = data
+        tx_safe_nonce = safe_nonce
+
+        # Prompt for nonce and gas token
+        if tx_safe_nonce is None:
+            tx_safe_nonce = prompt_safe_nonce(prompt_session, safe_instance)
+        if not tx_gas_token:
+            tx_gas_token = prompt_gas_token(prompt_session)
+
+        # If no data provided, we prompt for internal transactions
+        if tx_data is None:
+            internal_txs = prompt_internal_txs(
+                prompt_session, prompt_single_internal_tx
+            )
+            if len(internal_txs) > 1:
+                multi_send = MultiSend(ethereum_client=safe_instance.ethereum_client)
+                tx_data = multi_send.build_tx_data(internal_txs)
+                tx_to = multi_send.address
+                tx_operation = int(
+                    MultiSendOperation.CALL.value
+                    if multi_send.call_only
+                    else MultiSendOperation.DELEGATE_CALL.value
+                )
+                print_formatted_text(
+                    HTML(
+                        "\n<b><green>MultiSend transaction created successfully!</green></b>\n"
+                    )
+                )
+            else:
+                multi_send_one_tx = internal_txs[0]
+                tx_to = multi_send_one_tx.to
+                tx_value = multi_send_one_tx.value
+                tx_data = multi_send_one_tx.data
+                tx_operation = multi_send_one_tx.operation.value
+                print_formatted_text(
+                    HTML(
+                        "\n<b><green>Single internal transaction created successfully!</green></b>\n"
+                    )
+                )
+
+        # If data is provided, try to decode/confirm MultiSend batch
+        if tx_data is not None:
+            to_decoded, op_decoded = decode_and_confirm_multisend_batch(
+                prompt_session, safe_instance, tx_data, tx_to, tx_operation
+            )
+            if to_decoded is not None and op_decoded is not None:
+                tx_to, tx_operation = to_decoded, op_decoded
+
+        # If still missing, prompt for target contract address and/or operation
+        if not tx_to:
+            tx_to = prompt_target_contract_address(prompt_session)
+        if tx_operation is None:
+            tx_operation = prompt_operation_type(prompt_session)
+        try:
+            safe_tx = safe_instance.build_multisig_tx(
+                to=tx_to,
+                value=tx_value,
+                operation=tx_operation,
+                safe_nonce=tx_safe_nonce,
+                data=tx_data,
+                gas_token=tx_gas_token,
+            )
+        except Exception as e:
+            raise MsigCliError(f"Error creating SafeTx instance: {e}") from e
+        prompt_clear()
+        print_formatted_text(
+            HTML("\n<b><green>SafeTx instance created successfully!</green></b>\n")
         )
+        # Pretty-print the SafeTx fields
+        pretty_print_safe_tx(safe_tx)
+        # Get the EIP-712 structured data and wrap it in a dictionary with signatures
+        eip712_struct = safe_tx.eip712_structured_data
+        eip712_struct["message"]["data"] = to_0x_hex_str(
+            eip712_struct["message"]["data"]
+        )
+        safe_tx_data = {"safeTx": eip712_struct, "signatures": b"".hex()}
+
+        # Save EIP-712 structured data as JSON
+        prompt_save_safe_tx_json(prompt_session, safe_tx_data, json_output)
+
+        return safe_tx
+    except MsigCliError as e:
+        raise MsigCliError(f"Transaction build failed: {e}") from e
+    except MsigCliUserAbort as e:
+        raise MsigCliUserAbort(f"User aborted transaction build: {e}") from e
     except Exception as e:
-        logger.error(f"Failed to create SafeTx instance: {e}")
-        raise GoBackToPrompt
-    prompt_clear()
-    print_formatted_text(
-        HTML("\n<b><green>SafeTx instance created successfully!</green></b>\n")
-    )
-    # Pretty-print the SafeTx fields
-    pretty_print_safe_tx(safe_tx)
-    # Get the EIP-712 structured data and wrap it in a dictionary with signatures
-    eip712_struct = safe_tx.eip712_structured_data
-    eip712_struct["message"]["data"] = to_0x_hex_str(eip712_struct["message"]["data"])
-    safe_tx_data = {"safeTx": eip712_struct, "signatures": b"".hex()}
-
-    # Save EIP-712 structured data as JSON
-    prompt_save_safe_tx_json(prompt_session, safe_tx_data, json_output)
-
-    return safe_tx
+        raise Exception(f"Unexpected error during transaction build: {e}") from e

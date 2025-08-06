@@ -15,10 +15,12 @@ class TransactionType(Enum):
 ################################################################
 #                          EXCEPTIONS                          #
 ################################################################
-# Exception to signal returning to prompt loop
-# @TODO: To remove and only use return 1 or 0
-class GoBackToPrompt(Exception):
-    pass
+class MsigCliError(Exception):
+    """Base exception for MsigCli errors."""
+
+
+class MsigCliUserAbort(MsigCliError):
+    """Raised when the user aborts an operation."""
 
 
 ################################################################
