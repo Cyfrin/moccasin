@@ -16,6 +16,7 @@ class TransactionType(Enum):
 #                          EXCEPTIONS                          #
 ################################################################
 # Exception to signal returning to prompt loop
+# @TODO: To remove and only use return 1 or 0
 class GoBackToPrompt(Exception):
     pass
 
@@ -23,8 +24,7 @@ class GoBackToPrompt(Exception):
 ################################################################
 #                            TYPES                             #
 ################################################################
-@dataclass
-class T_SafeTxMessage:
+class T_SafeTxMessage(TypedDict):
     to: str
     value: int
     data: str

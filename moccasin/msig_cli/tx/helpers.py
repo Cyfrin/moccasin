@@ -1,3 +1,4 @@
+from typing import Optional
 from eth_utils import to_bytes
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.safe import SafeTx
@@ -5,7 +6,11 @@ from safe_eth.util.util import to_0x_hex_str
 
 
 def pretty_print_safe_tx(safe_tx: SafeTx):
-    """Pretty-print SafeTx fields."""
+    """Pretty-print SafeTx fields.
+
+    :param safe_tx: SafeTx object to print.
+    :type safe_tx: SafeTx
+    """
 
     print_formatted_text(HTML("<b><orange>SafeTx</orange></b>"))
     print_formatted_text(HTML(f"\t<b><yellow>Nonce:</yellow></b> {safe_tx.safe_nonce}"))
@@ -34,7 +39,11 @@ def pretty_print_safe_tx(safe_tx: SafeTx):
 
 
 def parse_eth_type_value(val, typ):
-    """Parse a value according to its Ethereum type."""
+    """Parse a value according to its Ethereum type.
+
+    :param val: The value to parse.
+    :param typ: The Ethereum type of the value (e.g., "uint256", "address", "bool", etc.).
+    """
     # @TODO: Handle more complex types like arrays, structs, etc.
     if typ.startswith("uint") or typ.startswith("int"):
         return int(val)
@@ -47,7 +56,20 @@ def parse_eth_type_value(val, typ):
     return val
 
 
-def get_signatures(cli_signatures: str, json_signatures: str) -> bytes:
+def get_signatures(
+    cli_signatures: Optional[str], json_signatures: Optional[str]
+) -> bytes:
+    """Get signatures from CLI input or JSON value.
+
+    If CLI signatures are provided, they take precedence.
+    If JSON signatures are provided, they are used if CLI signatures are not.
+    If neither is provided, return empty bytes.
+
+    :param cli_signatures: Signatures from CLI input in hex format.
+    :param json_signatures: Signatures from JSON value in hex format.
+
+    :return: Signatures as bytes.
+    """
     if cli_signatures:
         # Always use CLI input if provided
         return bytes.fromhex(cli_signatures)

@@ -23,7 +23,7 @@ from moccasin.msig_cli.common_prompts import (
 )
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
 from moccasin.msig_cli.tx import tx_build
-from moccasin.msig_cli.tx.helpers import get_signatures
+from moccasin.msig_cli.tx.helpers import get_signatures, pretty_print_safe_tx
 from moccasin.msig_cli.utils import GoBackToPrompt, T_SafeTxData
 from moccasin.msig_cli.validators import (
     is_valid_address,
@@ -310,6 +310,16 @@ class MsigCli:
             )
         )
 
+        # Check if the account address is one of the Safe owners
+        # @TODO: Make a script to deploy local Safe and test with Anvil
+        if account.address not in self.safe_instance.retrieve_owners():
+            print_formatted_text(
+                HTML(
+                    "<b><red>Signer account is not one of the Safe owners. Aborting signing.</red></b>"
+                )
+            )
+            return
+
         # Check if safe_tx is initialized
         if not self.safe_tx:
             # Check if eip712_input_file is provided, else prompt to get it
@@ -351,16 +361,35 @@ class MsigCli:
                 return
 
             # Get the required fields from the JSON
-            safe_tx_eip712 = safe_tx_json.get("safeTx", None)
-            signatures_json = safe_tx_json.get("signatures", None)
+            safe_tx_eip712 = None
+            message_json = None
+            signatures_json = None
 
-            if not safe_tx_eip712:
-                print_formatted_text(
-                    HTML(
-                        f"<b><red>Missing 'safeTx' field in JSON file: {input_file_safe_tx}</red></b>"
+            # Check if safeTx field is present, or if it is an EIP-712 JSON
+            if not safe_tx_json.get("safeTx", None):
+                # If safeTx field is not present, check if it is an EIP-712 JSON
+                if (
+                    "types" in safe_tx_json
+                    and "domain" in safe_tx_json
+                    and "message" in safe_tx_json
+                ):
+                    safe_tx_eip712 = safe_tx_json
+                    # If it is an EIP-712 JSON, extract the message but not the signatures
+                    message_json = safe_tx_eip712.get("message", None)
+
+                else:
+                    print_formatted_text(
+                        HTML(
+                            f"<b><red>Invalid JSON format in file: {input_file_safe_tx}. Expected 'safeTx' or EIP-712 format.</red></b>"
+                        )
                     )
-                )
-                return
+                    return
+            else:
+                # If safeTx field is present, use it
+                safe_tx_eip712 = safe_tx_json["safeTx"]
+                # Extract the message and signatures from the safeTx field
+                message_json = safe_tx_eip712.get("message", None)
+                signatures_json = safe_tx_eip712.get("signatures", None)
 
             # Get the sigmature from:
             # 1. CLI input
@@ -371,26 +400,25 @@ class MsigCli:
             )
 
             # Create SafeTx
-            # @FIXME: Handle error Error creating SafeTx from JSON: 'dict' object has no attribute 'to'
             message_json = safe_tx_eip712.get("message", None)
             if message_json:
                 try:
                     # Convert the message to SafeTx
                     self.safe_tx = self.safe_instance.build_multisig_tx(
-                        to=to_checksum_address(message_json.to),
-                        value=message_json.value,
-                        data=HexBytes(message_json.data).removeprefix("0x"),
-                        operation=message_json.operation,
-                        safe_tx_gas=message_json.safeTxGas,
-                        base_gas=message_json.baseGas,
-                        data_gas=message_json.dataGas,
-                        gas_price=message_json.gasPrice,
-                        gas_token=to_checksum_address(message_json.gasToken),
+                        to=to_checksum_address(message_json["to"]),
+                        value=message_json["value"],
+                        data=bytes.fromhex(message_json["data"]),
+                        operation=message_json["operation"],
+                        safe_nonce=message_json["nonce"],
+                        safe_tx_gas=message_json["safeTxGas"],
+                        base_gas=message_json["baseGas"],
+                        data_gas=message_json["dataGas"],
+                        gas_price=message_json["gasPrice"],
+                        gas_token=to_checksum_address(message_json["gasToken"]),
                         refund_receiver=to_checksum_address(
-                            message_json.refundReceiver
+                            message_json["refundReceiver"]
                         ),
-                        signatures=b"",  # @TODO: Handle signatures if needed
-                        nonce=message_json.nonce,
+                        signatures=signatures,
                     )
                 except Exception as e:
                     print_formatted_text(
@@ -404,6 +432,48 @@ class MsigCli:
                     )
                 )
                 return
+
+        # Prompt the user to validate the SafeTx if it is initialized
+        if self.safe_tx:
+            # Display the SafeTx details
+            pretty_print_safe_tx(self.safe_tx)
+            # Ask for user confirmation to sign the SafeTx
+            confirm = self.prompt_session.prompt(
+                HTML(
+                    "<b><orange>#tx_sign > </orange>Do you want to sign this SafeTx? (yes/no): </b>"
+                ),
+                placeholder=HTML("<b><grey>yes/no</grey></b>"),
+                validator=validator_not_empty,
+            )
+            # If user declines, abort signing
+            if confirm.lower() not in ("yes", "y"):
+                print_formatted_text(
+                    HTML("<b><red>Aborting signing. User declined.</red></b>")
+                )
+                return
+        else:
+            # If SafeTx is not initialized, print error and return
+            print_formatted_text(
+                HTML("<b><red>SafeTx not created. Aborting signing.</red></b>")
+            )
+            return
+
+        # Sign the SafeTx
+        try:
+            self.safe_tx.sign(account=account.private_key.hex())
+            print_formatted_text(
+                HTML("<b><green>SafeTx signed successfully!</green></b>")
+            )
+        except Exception as e:
+            print_formatted_text(HTML(f"<b><red>Error signing SafeTx: {e}</red></b>"))
+            return
+
+        # Display the ordered signers
+        ordered_signers = self.safe_tx.sorted_signers
+        for idx, signer in enumerate(ordered_signers, start=1):
+            print_formatted_text(
+                HTML(f"<b><green>SafeTx signer {idx}: {signer}</green></b>")
+            )
 
     def _tx_broadcast_command(self, args: Namespace = None):
         """Run the transaction broadcast command.
