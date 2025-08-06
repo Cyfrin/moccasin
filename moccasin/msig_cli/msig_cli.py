@@ -1,18 +1,14 @@
 from argparse import Namespace
-import json
-from pathlib import Path
 from typing import List
 
 from eth_typing import URI
 from eth_utils import to_checksum_address
-from hexbytes import HexBytes
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.shortcuts import clear as prompt_clear
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
 
-from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.arg_parser import create_msig_parser
 from moccasin.msig_cli.common_prompts import (
     prompt_continue_next_step,
@@ -20,17 +16,9 @@ from moccasin.msig_cli.common_prompts import (
     prompt_safe_address,
 )
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
-from moccasin.msig_cli.tx import tx_build
-from moccasin.msig_cli.tx.helpers import get_signatures, pretty_print_safe_tx
-from moccasin.msig_cli.utils import MsigCliError, MsigCliUserAbort, T_SafeTxData
-from moccasin.msig_cli.validators import (
-    is_valid_address,
-    is_valid_private_key,
-    is_valid_rpc_url,
-    validator_not_empty,
-    validator_json_file,
-    validator_private_key,
-)
+from moccasin.msig_cli.tx import tx_build, tx_sign
+from moccasin.msig_cli.utils import MsigCliError, MsigCliUserAbort
+from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
 
 
 class MsigCli:
@@ -177,8 +165,6 @@ class MsigCli:
     def _tx_sign_command(self, args: Namespace = None):
         """Run the transaction signer command.
 
-        # @TODO: refactor in own file later and need tests
-
         :param args: Optional argparse Namespace with command arguments.
         """
         print_formatted_text(
@@ -191,287 +177,15 @@ class MsigCli:
         signatures = getattr(args, "signatures", None)
 
         try:
-            # If signer is not provided, prompt for it
-            account: MoccasinAccount = None
-            if not signer:
-                is_mox_account = self.prompt_session.prompt(
-                    HTML(
-                        "<b><orange>#tx_sign > </orange>Do you want to sign with a MoccasinAccount? (yes/no): </b>"
-                    ),
-                    placeholder=HTML("<b><grey>yes/no</grey></b>"),
-                    validator=validator_not_empty,
-                )
-                if is_mox_account.lower() in ("yes", "y"):
-                    # Prompt for account name
-                    account_name = self.prompt_session.prompt(
-                        HTML(
-                            "<b><orange>#tx_sign > </orange>What is the name of the MoccasinAccount? </b>"
-                        ),
-                        placeholder=HTML("<b><grey>account_name</grey></b>"),
-                        validator=validator_not_empty,
-                    )
-                    # Prompt for password
-                    password = self.prompt_session.prompt(
-                        HTML(
-                            "<b><orange>#tx_sign > </orange>What is the password for the MoccasinAccount? </b>"
-                        ),
-                        placeholder=HTML("<b><grey>*******</grey></b>"),
-                        is_password=True,
-                        validator=validator_not_empty,
-                    )
-                    # Initialize MoccasinAccount
-                    try:
-                        account = MoccasinAccount(
-                            keystore_path_or_account_name=account_name,
-                            password=password,
-                        )
-                    except MsigCliError as e:
-                        raise MsigCliError(
-                            f"Error initializing MoccasinAccount with prompted name and password: {e}"
-                        ) from e
-                else:
-                    # Prompt for private key
-                    print_formatted_text(
-                        HTML(
-                            "\n<b><red>Signing with private key is discouraged. Please use MoccasinAccount instead.</red></b>\n"
-                        )
-                    )
-                    private_key = self.prompt_session.prompt(
-                        HTML(
-                            "<b><orange>#tx_sign > </orange>What is the private key of the signer? </b>"
-                        ),
-                        placeholder=HTML("<b><grey>0x...</grey></b>"),
-                        is_password=True,
-                        validator=validator_private_key,
-                    )
-                    # Initialize MoccasinAccount with private key
-                    try:
-                        account = MoccasinAccount(private_key=private_key)
-                    except Exception as e:
-                        raise MsigCliError(
-                            f"Error initializing MoccasinAccount with prompted private key: {e}"
-                        ) from e
-            else:
-                # Check if signer is a string name or a private key
-                if is_valid_private_key(signer):
-                    # Initialize MoccasinAccount with private key
-                    try:
-                        account = MoccasinAccount(private_key=HexBytes(signer))
-                    except Exception as e:
-                        raise MsigCliError(
-                            "Error initializing MoccasinAccount with arg private key: {e}"
-                        ) from e
-                else:
-                    # Assume signer is an account name and prompt for password
-                    try:
-                        password = (
-                            self.prompt_session.prompt(
-                                HTML(
-                                    "<b><orange>#tx_sign > </orange>What is the password for the MoccasinAccount? </b>"
-                                ),
-                                placeholder=HTML("<b><grey>*******</grey></b>"),
-                                is_password=True,
-                                validator=validator_not_empty,
-                            ),
-                        )
-                        account = MoccasinAccount(
-                            keystore_path_or_account_name=signer, password=password
-                        )
-                    except Exception as e:
-                        raise MsigCliError(
-                            f"Error initializing MoccasinAccount with arg account name: {e}"
-                        ) from e
-
-            # Check if account is initialized
-            if account:
-                # Check if the account is the right one
-                is_right_account = self.prompt_session.prompt(
-                    HTML(
-                        f"<b><orange>#tx_sign > </orange>Is this the right account? {account.address} (yes/no): </b>"
-                    ),
-                    placeholder=HTML("<b><grey>yes/no</grey></b>"),
-                    validator=validator_not_empty,
-                    is_password=False,  # @dev reset field value in session
-                )
-                if is_right_account.lower() not in ("yes", "y"):
-                    raise MsigCliUserAbort(
-                        "User aborted tx_sign command due to wrong account."
-                    )
-            else:
-                # If account is not initialized, raise an error
-                raise MsigCliError(
-                    "Signer account not initialized. Cannot proceed with signing."
-                )
-
-            # Display the initialized account
-            print_formatted_text(
-                HTML(
-                    f"\n<b><green>Signer account initialized successfully: {account.address}</green></b>\n"
-                )
+            self.safe_tx = tx_sign.run(
+                safe_instance=self.safe_instance,
+                prompt_session=self.prompt_session,
+                safe_tx=self.safe_tx,
+                input_file_safe_tx=input_file_safe_tx,
+                output_file_safe_tx=output_file_safe_tx,
+                signer=signer,
+                signatures=signatures,
             )
-
-            # Check if the account address is one of the Safe owners
-            # @TODO: Make a script to deploy local Safe and test with Anvil
-            if account.address not in self.safe_instance.retrieve_owners():
-                raise MsigCliError(
-                    f"Signer account {account.address} is not one of the Safe owners. Cannot proceed with signing."
-                )
-
-            # Check if safe_tx is initialized
-            if not self.safe_tx:
-                # Check if eip712_input_file is provided, else prompt to get it
-                if not input_file_safe_tx:
-                    eip712_prompted_file = Path(
-                        self.prompt_session.prompt(
-                            HTML(
-                                "<b><orange>#tx_sign > </orange>Could not find SafeTx. Please provide EIP-712 input file: </b>"
-                            ),
-                            validator=validator_json_file,
-                            placeholder=HTML(
-                                "<b><grey>./path/to/eip712_input.json</grey></b>"
-                            ),
-                        )
-                    )
-                    if not eip712_prompted_file.exists():
-                        print_formatted_text(
-                            HTML(
-                                f"<b><red>File not found: {input_file_safe_tx}</red></b>"
-                            )
-                        )
-                        raise MsigCliError(
-                            f"JSON file SafeTx not found: {eip712_prompted_file}"
-                        )
-                    input_file_safe_tx = eip712_prompted_file
-
-                # Load the JSON file
-                try:
-                    with open(input_file_safe_tx, "r") as f:
-                        input_file_raw = f.read()
-                        safe_tx_json: T_SafeTxData = json.loads(input_file_raw)
-                except FileNotFoundError:
-                    raise MsigCliError(
-                        f"JSON file SafeTx not found while opening: {input_file_safe_tx}"
-                    )
-                except json.JSONDecodeError as e:
-                    raise MsigCliError(
-                        f"Invalid JSON format in file: {input_file_safe_tx} - {e}"
-                    ) from e
-
-                # Get the required fields from the JSON
-                safe_tx_eip712 = None
-                message_json = None
-                signatures_json = None
-
-                # Check if safeTx field is present, or if it is an EIP-712 JSON
-                if not safe_tx_json.get("safeTx", None):
-                    # If safeTx field is not present, check if it is an EIP-712 JSON
-                    if (
-                        "types" in safe_tx_json
-                        and "domain" in safe_tx_json
-                        and "message" in safe_tx_json
-                    ):
-                        safe_tx_eip712 = safe_tx_json
-                        # If it is an EIP-712 JSON, extract the message but not the signatures
-                        message_json = safe_tx_eip712.get("message", None)
-
-                    else:
-                        raise MsigCliError(
-                            f"Invalid JSON format in file: {input_file_safe_tx}. Expected 'safeTx' or EIP-712 format."
-                        )
-                else:
-                    # If safeTx field is present, use it
-                    safe_tx_eip712 = safe_tx_json["safeTx"]
-                    # Extract the message and signatures from the safeTx field
-                    message_json = safe_tx_eip712.get("message", None)
-                    signatures_json = safe_tx_eip712.get("signatures", None)
-
-                # Get the sigmature from:
-                # 1. CLI input
-                # 2. JSON file
-                # 3. Default to empty bytes
-                signatures = get_signatures(
-                    cli_signatures=signatures, json_signatures=signatures_json
-                )
-
-                # Create SafeTx
-                message_json = safe_tx_eip712.get("message", None)
-                if message_json:
-                    try:
-                        # Convert the message to SafeTx
-                        self.safe_tx = self.safe_instance.build_multisig_tx(
-                            to=to_checksum_address(message_json["to"]),
-                            value=message_json["value"],
-                            data=bytes.fromhex(message_json["data"]),
-                            operation=message_json["operation"],
-                            safe_nonce=message_json["nonce"],
-                            safe_tx_gas=message_json["safeTxGas"],
-                            base_gas=message_json["baseGas"],
-                            data_gas=message_json["dataGas"],
-                            gas_price=message_json["gasPrice"],
-                            gas_token=to_checksum_address(message_json["gasToken"]),
-                            refund_receiver=to_checksum_address(
-                                message_json["refundReceiver"]
-                            ),
-                            signatures=signatures,
-                        )
-                    except Exception as e:
-                        print_formatted_text(
-                            HTML(
-                                f"<b><red>Error creating SafeTx from JSON: {e}</red></b>"
-                            )
-                        )
-                        return
-                else:
-                    print_formatted_text(
-                        HTML(
-                            f"<b><red>Missing 'message' field in 'safeTx' JSON: {input_file_safe_tx}</red></b>"
-                        )
-                    )
-                    return
-
-            # Prompt the user to validate the SafeTx if it is initialized
-            if self.safe_tx:
-                # Display the SafeTx details
-                pretty_print_safe_tx(self.safe_tx)
-                # Ask for user confirmation to sign the SafeTx
-                confirm = self.prompt_session.prompt(
-                    HTML(
-                        "<b><orange>#tx_sign > </orange>Do you want to sign this SafeTx? (yes/no): </b>"
-                    ),
-                    placeholder=HTML("<b><grey>yes/no</grey></b>"),
-                    validator=validator_not_empty,
-                )
-                # If user declines, abort signing
-                if confirm.lower() not in ("yes", "y"):
-                    print_formatted_text(
-                        HTML("<b><red>Aborting signing. User declined.</red></b>")
-                    )
-                    return
-            else:
-                # If SafeTx is not initialized, print error and return
-                print_formatted_text(
-                    HTML("<b><red>SafeTx not created. Aborting signing.</red></b>")
-                )
-                return
-
-            # Sign the SafeTx
-            try:
-                self.safe_tx.sign(account=account.private_key.hex())
-                print_formatted_text(
-                    HTML("<b><green>SafeTx signed successfully!</green></b>")
-                )
-            except Exception as e:
-                print_formatted_text(
-                    HTML(f"<b><red>Error signing SafeTx: {e}</red></b>")
-                )
-                return
-
-            # Display the ordered signers
-            ordered_signers = self.safe_tx.sorted_signers
-            for idx, signer in enumerate(ordered_signers, start=1):
-                print_formatted_text(
-                    HTML(f"<b><green>SafeTx signer {idx}: {signer}</green></b>")
-                )
 
         # Handle specific exceptions from tx_sign
         except MsigCliUserAbort as e:

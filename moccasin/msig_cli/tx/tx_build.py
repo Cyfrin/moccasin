@@ -7,7 +7,6 @@ from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.shortcuts import clear as prompt_clear
 from safe_eth.safe import Safe, SafeTx
 from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
-from safe_eth.util.util import to_0x_hex_str
 
 from moccasin.logging import logger
 from moccasin.msig_cli.common_prompts import prompt_save_safe_tx_json
@@ -20,7 +19,10 @@ from moccasin.msig_cli.tx.build_prompts import (
     prompt_single_internal_tx,
     prompt_target_contract_address,
 )
-from moccasin.msig_cli.tx.helpers import pretty_print_safe_tx
+from moccasin.msig_cli.tx.helpers import (
+    get_eip712_structured_data,
+    pretty_print_safe_tx,
+)
 from moccasin.msig_cli.utils import MsigCliError, MsigCliUserAbort
 
 
@@ -162,14 +164,9 @@ def run(
         print_formatted_text(
             HTML("\n<b><green>SafeTx instance created successfully!</green></b>\n")
         )
-        # Pretty-print the SafeTx fields
+        # Pretty-print the SafeTx fields and get EIP-712 structured data
         pretty_print_safe_tx(safe_tx)
-        # Get the EIP-712 structured data and wrap it in a dictionary with signatures
-        eip712_struct = safe_tx.eip712_structured_data
-        eip712_struct["message"]["data"] = to_0x_hex_str(
-            eip712_struct["message"]["data"]
-        )
-        safe_tx_data = {"safeTx": eip712_struct, "signatures": b"".hex()}
+        safe_tx_data = get_eip712_structured_data(safe_tx, b"")
 
         # Save EIP-712 structured data as JSON
         prompt_save_safe_tx_json(prompt_session, safe_tx_data, json_output)

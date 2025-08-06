@@ -16,6 +16,7 @@ def main(args: Namespace) -> int:
         print_formatted_text(
             HTML("<b><green>msig CLI completed successfully.</green></b>")
         )
+    # @TODO: fine tune error message from subcommands and printing display
     except MsigCliUserAbort as e:
         print_formatted_text(HTML(f"<b><red>*** {e} ***</red></b>"))
         return 130

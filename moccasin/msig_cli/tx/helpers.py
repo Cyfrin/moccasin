@@ -72,10 +72,37 @@ def get_signatures(
     """
     if cli_signatures:
         # Always use CLI input if provided
-        return bytes.fromhex(cli_signatures)
+        return bytes.fromhex(
+            cli_signatures.lstrip("0x")
+            if cli_signatures.startswith("0x")
+            else cli_signatures
+        )
     elif json_signatures:
         # Use JSON value if present
-        return bytes.fromhex(json_signatures)
+        return bytes.fromhex(
+            json_signatures.lstrip("0x")
+            if json_signatures.startswith("0x")
+            else bytes.fromhex(json_signatures)
+        )
     else:
         # Default to empty bytes
         return b""
+
+
+def get_eip712_structured_data(safe_tx: SafeTx) -> dict:
+    """Get the EIP-712 structured data from a SafeTx.
+
+    :param safe_tx: SafeTx object to extract the structured data from.
+
+    :return: A dictionary containing the EIP-712 structured data.
+    """
+    # Get the EIP-712 structured data and wrap it in a dictionary with signatures
+    eip712_struct = safe_tx.eip712_structured_data
+    eip712_struct["message"]["data"] = to_0x_hex_str(eip712_struct["message"]["data"])
+    # Convert signatures to hex format
+    safe_tx_data = {
+        "safeTx": eip712_struct,
+        "signatures": to_0x_hex_str(safe_tx.signatures),
+    }
+
+    return safe_tx_data
