@@ -1,3 +1,5 @@
+import os
+
 from typing import Optional
 
 from eth_typing import ChecksumAddress
@@ -21,6 +23,7 @@ from moccasin.msig_cli.tx.build_prompts import (
 )
 from moccasin.msig_cli.tx.helpers import (
     get_eip712_structured_data,
+    get_multisend_address_from_env,
     pretty_print_safe_tx,
 )
 from moccasin.msig_cli.utils import MsigCliError, MsigCliUserAbort
@@ -42,8 +45,12 @@ def decode_and_confirm_multisend_batch(
     has_delegate = any(
         tx.operation == MultiSendOperation.DELEGATE_CALL for tx in decoded_batch
     )
+
+    # Initialize MultiSend with the address if provided, otherwise use default
     multi_send = MultiSend(
-        ethereum_client=safe_instance.ethereum_client, call_only=not has_delegate
+        ethereum_client=safe_instance.ethereum_client,
+        address=get_multisend_address_from_env(),
+        call_only=not has_delegate,
     )
     multi_send_address = multi_send.address
 
@@ -111,7 +118,10 @@ def run(
                 prompt_session, prompt_single_internal_tx
             )
             if len(internal_txs) > 1:
-                multi_send = MultiSend(ethereum_client=safe_instance.ethereum_client)
+                multi_send = MultiSend(
+                    ethereum_client=safe_instance.ethereum_client,
+                    address=get_multisend_address_from_env(),
+                )
                 tx_data = multi_send.build_tx_data(internal_txs)
                 tx_to = multi_send.address
                 tx_operation = int(
@@ -166,7 +176,7 @@ def run(
         )
         # Pretty-print the SafeTx fields and get EIP-712 structured data
         pretty_print_safe_tx(safe_tx)
-        safe_tx_data = get_eip712_structured_data(safe_tx, b"")
+        safe_tx_data = get_eip712_structured_data(safe_tx)
 
         # Save EIP-712 structured data as JSON
         prompt_save_safe_tx_json(prompt_session, safe_tx_data, json_output)

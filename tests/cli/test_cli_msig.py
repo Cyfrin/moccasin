@@ -1,24 +1,43 @@
 import json
 import os
 import subprocess
-
 import pytest
 
+from tests.utils.anvil import ANVIL_URL
+
+# Constants for CLI commands tests
+LOCAL_ANVIL_URL = ANVIL_URL.format(8545)
 MSIG_TX_BUILD = ["mox", "msig", "tx_build"]
 MSIG_TX_SIGN = ["mox", "msig", "tx_sign"]
 
 
 ################################################################
+#                  SAFE INSTANCE ANVIL TEST                     #
+################################################################
+def test_eth_safe_address_anvil_fixture(eth_safe_address_anvil):
+    """Sanity check: eth_safe_address_anvil fixture returns a valid Safe instance and contract address."""
+    # Should be a Safe instance
+    assert hasattr(eth_safe_address_anvil, "contract_address"), (
+        "Fixture did not return a Safe instance with address"
+    )
+    # Address should be a non-empty string and start with 0x
+    assert isinstance(eth_safe_address_anvil, str)
+    assert eth_safe_address_anvil.startswith("0x")
+    # 20 bytes + 0x prefix
+    assert len(eth_safe_address_anvil) == 42
+
+
+################################################################
 #                        TX_BUILD TESTS                        #
 ################################################################
-def test_cli_tx_builder_interactive(temp_msig_workdir):
+def test_cli_tx_builder_interactive(temp_msig_workdir, eth_safe_address_anvil):
     """Test fully interactive session (all prompts, user saves JSON)."""
     json_path = temp_msig_workdir / "safe-tx.json"
     user_input = (
         # RPC URL (question: What is the RPC URL you want to use to connect to the Ethereum network?)
-        "https://sepolia.drpc.org\n"
+        f"{LOCAL_ANVIL_URL}\n"
         # Safe address (question: What is the address of the Safe contract you want to use?)
-        "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C\n"
+        f"{eth_safe_address_anvil}\n"
         # Safe nonce (question: What nonce should be used for this Safe transaction?)
         "42\n"
         # Gas token (question: What is the gas token address to use for this transaction? (Press Enter to use the default/zero address))
@@ -62,18 +81,18 @@ def test_cli_tx_builder_interactive(temp_msig_workdir):
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
 
     os.remove(json_path)
 
 
-def test_cli_tx_builder_args_only(temp_msig_workdir):
+def test_cli_tx_builder_args_only(temp_msig_workdir, eth_safe_address_anvil):
     """Test all args provided, no prompts, no JSON output."""
     args = [
         "--rpc-url",
-        "https://sepolia.drpc.org",
+        LOCAL_ANVIL_URL,
         "--safe-address",
-        "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C",
+        eth_safe_address_anvil,
         "--to",
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
         "--operation",
@@ -98,14 +117,16 @@ def test_cli_tx_builder_args_only(temp_msig_workdir):
     assert "SafeTx instance created successfully!" in result.stdout
 
 
-def test_cli_tx_builder_args_with_json_output(temp_msig_workdir):
+def test_cli_tx_builder_args_with_json_output(
+    temp_msig_workdir, eth_safe_address_anvil
+):
     """Test all args provided, with --json-output, file is created and valid."""
     json_path = temp_msig_workdir / "test-tx.json"
     args = [
         "--rpc-url",
-        "https://sepolia.drpc.org",
+        LOCAL_ANVIL_URL,
         "--safe-address",
-        "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C",
+        eth_safe_address_anvil,
         "--to",
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
         "--operation",
@@ -137,17 +158,17 @@ def test_cli_tx_builder_args_with_json_output(temp_msig_workdir):
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
     os.remove(json_path)
 
 
-def test_cli_tx_builder_invalid_json_output(temp_msig_workdir):
+def test_cli_tx_builder_invalid_json_output(temp_msig_workdir, eth_safe_address_anvil):
     """Test invalid JSON output path (should fail)."""
     args = [
         "--rpc-url",
-        "https://sepolia.drpc.org",
+        LOCAL_ANVIL_URL,
         "--safe-address",
-        "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C",
+        eth_safe_address_anvil,
         "--to",
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
         "--operation",
@@ -175,7 +196,9 @@ def test_cli_tx_builder_invalid_json_output(temp_msig_workdir):
         )
 
 
-def test_cli_tx_builder_multisend_mixed_operations(temp_msig_workdir):
+def test_cli_tx_builder_multisend_mixed_operations(
+    temp_msig_workdir, eth_safe_address_anvil
+):
     """Test MultiSend batch with mixed CALL and DELEGATE_CALL operations.
 
     This test simulates a batch with two internal txs: one CALL, one DELEGATE_CALL
@@ -185,9 +208,9 @@ def test_cli_tx_builder_multisend_mixed_operations(temp_msig_workdir):
     json_path = temp_msig_workdir / "multisend-mixed.json"
     user_input = (
         # RPC URL
-        "https://sepolia.drpc.org\n"
+        f"{LOCAL_ANVIL_URL}\n"
         # Safe address
-        "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C\n"
+        f"{eth_safe_address_anvil}\n"
         # Safe nonce
         "43\n"
         # Gas token
@@ -236,17 +259,19 @@ def test_cli_tx_builder_multisend_mixed_operations(temp_msig_workdir):
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
     os.remove(json_path)
 
 
-def test_cli_tx_builder_multisend_user_rejects(temp_msig_workdir):
+def test_cli_tx_builder_multisend_user_rejects(
+    temp_msig_workdir, eth_safe_address_anvil
+):
     """Test user rejects MultiSend batch confirmation (should abort and not create SafeTx)."""
     user_input = (
         # RPC URL
-        "https://sepolia.drpc.org\n"
+        f"{LOCAL_ANVIL_URL}\n"
         # Safe address
-        "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C\n"
+        f"{eth_safe_address_anvil}\n"
         # Safe nonce
         "44\n"
         # Gas token
@@ -284,14 +309,14 @@ def test_cli_tx_builder_multisend_user_rejects(temp_msig_workdir):
     assert "SafeTx instance created successfully!" not in result.stdout
 
 
-def test_cli_tx_builder_prompt_fallbacks(temp_msig_workdir):
+def test_cli_tx_builder_prompt_fallbacks(temp_msig_workdir, eth_safe_address_anvil):
     """Test prompt fallback when --to and --operation are omitted, CLI prompts for them."""
     json_path = temp_msig_workdir / "prompt-fallback.json"
     args = [
         "--rpc-url",
-        "https://sepolia.drpc.org",
+        f"{LOCAL_ANVIL_URL}",
         "--safe-address",
-        "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C",
+        eth_safe_address_anvil,
         "--value",
         "10",
         "--data",
@@ -329,18 +354,18 @@ def test_cli_tx_builder_prompt_fallbacks(temp_msig_workdir):
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
 
     os.remove(json_path)
 
 
-def test_cli_tx_builder_invalid_data(temp_msig_workdir):
+def test_cli_tx_builder_invalid_data(temp_msig_workdir, eth_safe_address_anvil):
     """Test invalid hex data for --data, should fail gracefully."""
     args = [
         "--rpc-url",
-        "https://sepolia.drpc.org",
+        LOCAL_ANVIL_URL,
         "--safe-address",
-        "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C",
+        eth_safe_address_anvil,
         "--to",
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
         "--operation",
@@ -366,14 +391,16 @@ def test_cli_tx_builder_invalid_data(temp_msig_workdir):
         )
 
 
-def test_cli_tx_builder_multisend_large_batch(temp_msig_workdir):
+def test_cli_tx_builder_multisend_large_batch(
+    temp_msig_workdir, eth_safe_address_anvil
+):
     """Test MultiSend batch with 10 internal transactions (large batch)."""
     json_path = temp_msig_workdir / "multisend-large.json"
     user_input = (
         # RPC URL
-        "https://sepolia.drpc.org\n"
+        f"{LOCAL_ANVIL_URL}\n"
         # Safe address
-        "0xcfAAcfc01548Da1478432CF3abdCD1cBDFf11E1C\n"
+        f"{eth_safe_address_anvil}\n"
         # Safe nonce
         "48\n"
         # Gas token
@@ -426,10 +453,259 @@ def test_cli_tx_builder_multisend_large_batch(temp_msig_workdir):
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"]) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
     os.remove(json_path)
 
 
 ################################################################
 #                        TX_SIGN TESTS                         #
 ################################################################
+
+
+def test_cli_tx_sign_with_owner_key(temp_msig_workdir, eth_safe_address_anvil):
+    """Sign SafeTx with valid owner private key."""
+    json_path = temp_msig_workdir / "safe-tx-sign.json"
+    # Build SafeTx JSON first
+    user_input = (
+        f"{LOCAL_ANVIL_URL}\n"
+        f"{eth_safe_address_anvil}\n"
+        "42\n"
+        "0x0000000000000000000000000000000000000000\n"
+        "1\n"
+        "0\n"
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
+        "10\n"
+        "0\n"
+        "transfer(address,uint256)\n"
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
+        "100\n"
+        "y\n"
+        "safe-tx-sign.json\n"
+        "q\n"
+    )
+    if json_path.exists():
+        os.remove(json_path)
+    subprocess.run(
+        MSIG_TX_BUILD,
+        input=user_input,
+        text=True,
+        capture_output=False,
+        check=True,
+        timeout=30,
+    )
+    # Now sign with valid owner private key
+    owner_key = os.environ.get("ETHEREUM_TEST_PRIVATE_KEY")
+    sign_input = (
+        f"{owner_key}\n"  # private key prompt
+        "y\n"  # is right account
+        "y\n"  # confirm sign
+    )
+    result = subprocess.run(
+        MSIG_TX_SIGN + ["--input-json", str(json_path)],
+        input=sign_input,
+        text=True,
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
+    assert "SafeTx signed successfully!" in result.stdout
+    os.remove(json_path)
+
+
+def test_cli_tx_sign_with_non_owner_key(temp_msig_workdir, eth_safe_address_anvil):
+    """Sign SafeTx with non-owner private key (should fail)."""
+    json_path = temp_msig_workdir / "safe-tx-nonowner.json"
+    user_input = (
+        f"{LOCAL_ANVIL_URL}\n"
+        f"{eth_safe_address_anvil}\n"
+        "42\n"
+        "0x0000000000000000000000000000000000000000\n"
+        "1\n"
+        "0\n"
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
+        "10\n"
+        "0\n"
+        "transfer(address,uint256)\n"
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
+        "100\n"
+        "y\n"
+        "safe-tx-nonowner.json\n"
+        "q\n"
+    )
+    if json_path.exists():
+        os.remove(json_path)
+    subprocess.run(
+        MSIG_TX_BUILD,
+        input=user_input,
+        text=True,
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
+    # Use a random non-owner key
+    non_owner_key = "0x1111111111111111111111111111111111111111111111111111111111111111"
+    sign_input = (
+        f"{non_owner_key}\n"  # private key prompt
+        "y\n"  # is right account
+        "y\n"  # confirm sign
+    )
+    result = subprocess.run(
+        MSIG_TX_SIGN + ["--input-json", str(json_path)],
+        input=sign_input,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=30,
+    )
+    assert "is not one of the Safe owners" in result.stdout
+    os.remove(json_path)
+
+
+def test_cli_tx_sign_with_invalid_key(temp_msig_workdir, eth_safe_address_anvil):
+    """Sign SafeTx with invalid private key (should fail)."""
+    json_path = temp_msig_workdir / "safe-tx-invalidkey.json"
+    user_input = (
+        f"{LOCAL_ANVIL_URL}\n"
+        f"{eth_safe_address_anvil}\n"
+        "42\n"
+        "0x0000000000000000000000000000000000000000\n"
+        "1\n"
+        "0\n"
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
+        "10\n"
+        "0\n"
+        "transfer(address,uint256)\n"
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
+        "100\n"
+        "y\n"
+        "safe-tx-invalidkey.json\n"
+        "q\n"
+    )
+    if json_path.exists():
+        os.remove(json_path)
+    subprocess.run(
+        MSIG_TX_BUILD,
+        input=user_input,
+        text=True,
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
+    # Use an invalid key
+    invalid_key = "0xZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+    sign_input = (
+        f"{invalid_key}\n"  # private key prompt
+        "y\n"  # is right account
+        "y\n"  # confirm sign
+    )
+    result = subprocess.run(
+        MSIG_TX_SIGN + ["--input-json", str(json_path)],
+        input=sign_input,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=30,
+    )
+    assert "invalid" in result.stdout.lower() or "Error initializing" in result.stdout
+    os.remove(json_path)
+
+
+def test_cli_tx_sign_user_abort(temp_msig_workdir, eth_safe_address_anvil):
+    """Sign SafeTx but user aborts at confirmation prompt."""
+    json_path = temp_msig_workdir / "safe-tx-abort.json"
+    user_input = (
+        f"{LOCAL_ANVIL_URL}\n"
+        f"{eth_safe_address_anvil}\n"
+        "42\n"
+        "0x0000000000000000000000000000000000000000\n"
+        "1\n"
+        "0\n"
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
+        "10\n"
+        "0\n"
+        "transfer(address,uint256)\n"
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
+        "100\n"
+        "y\n"
+        "safe-tx-abort.json\n"
+        "q\n"
+    )
+    if json_path.exists():
+        os.remove(json_path)
+    subprocess.run(
+        MSIG_TX_BUILD,
+        input=user_input,
+        text=True,
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
+    owner_key = os.environ.get("ETHEREUM_TEST_PRIVATE_KEY")
+    sign_input = (
+        f"{owner_key}\n"  # private key prompt
+        "y\n"  # is right account
+        "n\n"  # user aborts at confirmation
+    )
+    result = subprocess.run(
+        MSIG_TX_SIGN + ["--input-json", str(json_path)],
+        input=sign_input,
+        text=True,
+        capture_output=True,
+        check=True,
+        timeout=30,
+    )
+    assert "Aborting signing. User declined." in result.stdout
+    os.remove(json_path)
+
+
+def test_cli_tx_sign_missing_json(temp_msig_workdir):
+    """Sign SafeTx with missing JSON file (should fail)."""
+    missing_path = temp_msig_workdir / "does_not_exist.json"
+    sign_input = ""
+    result = subprocess.run(
+        MSIG_TX_SIGN + ["--input-json", str(missing_path)],
+        input=sign_input,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=10,
+    )
+    assert "not found" in result.stdout.lower() or "No such file" in result.stderr
+
+
+def test_cli_tx_build_and_sign_integration(temp_msig_workdir, eth_safe_address_anvil):
+    """Integration: build then sign in sequence, simulating workflow restoration."""
+    json_path = temp_msig_workdir / "safe-tx-integrated.json"
+    # Build SafeTx JSON
+    user_input = (
+        f"{LOCAL_ANVIL_URL}\n"
+        f"{eth_safe_address_anvil}\n"
+        "42\n"
+        "0x0000000000000000000000000000000000000000\n"
+        "1\n"
+        "0\n"
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
+        "10\n"
+        "0\n"
+        "transfer(address,uint256)\n"
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
+        "100\n"
+        "y\n"
+        "safe-tx-integrated.json\n"
+        "y\n"  # continue to next step (sign)
+        f"{os.environ.get('ETHEREUM_TEST_PRIVATE_KEY')}\n"  # private key prompt
+        "y\n"  # is right account
+        "y\n"  # confirm sign
+    )
+    if json_path.exists():
+        os.remove(json_path)
+    result = subprocess.run(
+        MSIG_TX_BUILD,
+        input=user_input,
+        text=True,
+        capture_output=True,
+        check=True,
+        timeout=60,
+    )
+    assert "SafeTx signed successfully!" in result.stdout
+    os.remove(json_path)

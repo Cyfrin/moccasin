@@ -1,5 +1,6 @@
+import os
 from typing import Optional
-from eth_utils import to_bytes
+from eth_utils import to_bytes, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.safe import SafeTx
 from safe_eth.util.util import to_0x_hex_str
@@ -106,3 +107,13 @@ def get_eip712_structured_data(safe_tx: SafeTx) -> dict:
     }
 
     return safe_tx_data
+
+
+def get_multisend_address_from_env(var_name="TEST_MULTISEND_ADDRESS"):
+    """Get the MultiSend contract address from environment variables.
+
+    :param var_name: The name of the environment variable to check for the MultiSend address.
+    :return: The MultiSend contract address as a checksummed address, or None if not set.
+    """
+    address = os.environ.get(var_name)
+    return to_checksum_address(address) if address else None
