@@ -72,7 +72,7 @@ def run(
                     account = MoccasinAccount(private_key=HexBytes(signer))
                 except Exception as e:
                     raise MsigCliError(
-                        "Error initializing MoccasinAccount with arg private key: {e}"
+                        f"Error initializing MoccasinAccount with arg private key: {e}"
                     ) from e
             else:
                 # Assume signer is an account name and prompt for password
