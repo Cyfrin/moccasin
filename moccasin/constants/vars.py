@@ -1,7 +1,6 @@
 import os
 import platform
 from pathlib import Path
-
 from moccasin.constants.chains import BLOCKSCOUT_EXPLORERS, CHAIN_INFO, ZKSYNC_EXPLORERS
 
 # File Names
@@ -107,6 +106,7 @@ DEFAULT_ANVIL_PRIVATE_KEY = (
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 )
 DEFAULT_ANVIL_SENDER = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+DEFAULT_ANVIL_URL = "http://localhost:8545"
 MOCCASIN_GITHUB = "https://github.com/cyfrin/moccasin"
 STARTING_BOA_BALANCE = 1000000000000000000000  # 1,000 Ether
 

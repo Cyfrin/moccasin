@@ -1,26 +1,34 @@
 from argparse import Namespace
+import json
 from typing import List
+import shutil
 
 from eth_typing import URI
-from eth_utils import to_checksum_address
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.shortcuts import clear as prompt_clear
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
-from safe_eth.util.util import to_0x_hex_str
 
-from moccasin.logging import logger
 from moccasin.msig_cli.arg_parser import create_msig_parser
 from moccasin.msig_cli.common_prompts import (
     prompt_continue_next_step,
     prompt_rpc_url,
     prompt_safe_address,
 )
-from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
-from moccasin.msig_cli.tx import tx_build
-from moccasin.msig_cli.utils import GoBackToPrompt
-from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
+from moccasin.msig_cli.constants import ERROR_INVALID_RPC_URL
+from moccasin.msig_cli.tx import tx_build, tx_sign
+from moccasin.msig_cli.tx.sign_prompts import prompt_eip712_input_file
+from moccasin.msig_cli.utils.helpers import (
+    build_safe_tx_from_message,
+    get_safe_instance,
+    extract_safe_tx_json,
+    get_signatures_bytes,
+    validate_ethereum_client_chain_id,
+)
+from moccasin.msig_cli.utils.exceptions import MsigCliError, MsigCliUserAbort
+from moccasin.msig_cli.utils.types import T_SafeTxData
+from moccasin.msig_cli.validators import is_valid_rpc_url
 
 
 class MsigCli:
@@ -32,11 +40,14 @@ class MsigCli:
 
         self.prompt_session = PromptSession(
             auto_suggest=AutoSuggestFromHistory(),
-            bottom_toolbar="Tips: Use Ctrl-C to exit.",
+            bottom_toolbar=self._bottom_toolbar_cli,
+            rprompt=self._right_toolbar_cli,
             validate_while_typing=False,
         )
+        self.ethereum_client = None
         self.safe_instance: Safe = None
         self.safe_tx: SafeTx = None
+        self.msig_command = None
 
     def run(self, args: Namespace = None):
         """
@@ -44,61 +55,161 @@ class MsigCli:
         :param msig_command: Top-level msig command (e.g., 'tx', 'msg').
         :param args: argparse Namespace with all parsed arguments.
         """
+        try:
+            # Parse the command line arguments
+            args = self.parser.parse_args(args)
 
-        # Parse the command line arguments
-        args = self.parser.parse_args(args)
+            # If no subcommand, show msig help
+            if args.msig_command is None:
+                self.parser.print_help()
+                return 0
 
-        # If no subcommand, show msig help
-        if args.msig_command is None:
-            self.parser.print_help()
-            return 0
+            # Clear the terminal and print the banner
+            prompt_clear()
+            term_width = shutil.get_terminal_size((80, 20)).columns
+            title = " MSIG CLI "
+            # Calculate padding for title line
+            pad = term_width - len(title) - 2
+            left = pad // 2
+            right = pad - left
+            top_bottom = "=" * term_width
+            middle = " " * left + title + " " * right
+            print_formatted_text(HTML(f"<b><cyan>{top_bottom}</cyan></b>"))
+            print_formatted_text(HTML(f"<b><cyan>{middle}</cyan></b>"))
+            print_formatted_text(HTML(f"<b><cyan>{top_bottom}</cyan></b>"))
 
-        # Prepare the CLI context
-        self._prepare_cli_context(args)
+            # Check if rpc_url is provided in args or prompt for it
+            rpc_url: str = getattr(args, "rpc_url", None)
+            if rpc_url:
+                if not is_valid_rpc_url(rpc_url):
+                    raise MsigCliError(ERROR_INVALID_RPC_URL)
+            else:
+                # Prompt for RPC URL if not provided
+                rpc_url: str = prompt_rpc_url(self.prompt_session)
+                if not is_valid_rpc_url(rpc_url):
+                    raise MsigCliError(ERROR_INVALID_RPC_URL)
 
-        # Interactive ordered workflow restoration
-        if self.safe_instance:
+            # Initialize Ethereum client with the provided or prompted RPC URL
+            try:
+                self.ethereum_client = EthereumClient(URI(rpc_url))
+            except Exception as e:
+                raise MsigCliError(f"Failed to initialize Ethereum client: {e}")
+            print_formatted_text(
+                HTML(
+                    f"<b><green>Using ChainId: {self.ethereum_client.get_chain_id()}</green></b>"
+                )
+            )
+
+            # Start the msig CLI commands based on the provided args
             if str(args.msig_command).startswith("tx_"):
-                tx_command = getattr(args, "tx_command", None)
+                tx_command = getattr(args, "msig_command", None)
                 order: List[str] = ["tx_build", "tx_sign", "tx_broadcast"]
                 start_idx = order.index(tx_command) if tx_command in order else 0
                 for idx in range(start_idx, len(order)):
                     cmd = order[idx]
-                    prompt_clear()
                     if cmd == "tx_build":
+                        self.msig_command = "tx_build"
                         self._tx_build_command(args)
                     elif cmd == "tx_sign":
+                        self.msig_command = "tx_sign"
                         self._tx_sign_command(args)
                     elif cmd == "tx_broadcast":
                         self._tx_broadcast_command(args)
-                    # Prompt to continue unless last step
+
+                    # Reset command in rithe toolbar after each command
+                    self.msig_command = None
+
+                    # Only prompt for next step if:
+                    # 1. Not the last command in the order
                     if idx < len(order) - 1:
+                        # 2. Sign onlt if we have a safe_tx after building
+                        if not self.safe_tx and cmd == "tx_sign":
+                            print_formatted_text(
+                                HTML(
+                                    "<b><red>SafeTx not created. Aborting following signing.</red></b>"
+                                )
+                            )
+                            break
+
+                        # 3. safe_tx has been signed with required signers
+                        if (
+                            cmd == "tx_sign"
+                            and len(self.safe_tx.signers)
+                            < self.safe_instance.retrieve_threshold()
+                        ):
+                            print_formatted_text(
+                                HTML(
+                                    "<b><red>SafeTx not signed by enough signers. Aborting following broadcasting.</red></b>"
+                                )
+                            )
+                            break
+
+                        # Prompt for next step
                         next_step = prompt_continue_next_step(
                             self.prompt_session, next_cmd=order[idx + 1]
                         )
                         if not next_step:
                             break
+            else:
+                print_formatted_text(
+                    HTML(f"<b><red>Unknown command: {args.msig_command}</red></b>")
+                )
+                return 1
 
-            elif str(args.msig_command).startswith("msg_"):
-                msg_command = getattr(args, "msg_command", None)
-                order = ["sign"]
-                start_idx = order.index(msg_command) if msg_command in order else 0
-                for idx in range(start_idx, len(order)):
-                    cmd = order[idx]
-                    prompt_clear()
-                    if cmd == "sign":
-                        self._tx_sign_command(args)
+        # Handle user aborts and other exceptions
+        except (EOFError, KeyboardInterrupt, MsigCliUserAbort) as e:
+            raise MsigCliUserAbort(f"MsigCliAborted by user: {e}") from e
+        except MsigCliError as e:
+            raise MsigCliError(f"MsigCli error: {e}") from e
+        except Exception as e:
+            raise Exception(f"MsigCli unexpected error: {e}") from e
+
+    def _bottom_toolbar_cli(self):
+        """Return the bottom toolbar text for the prompt session."""
+        chain_id = "None"
+        safe_addr = "None"
+        tx_signed_counter = "None"
+
+        if self.ethereum_client:
+            chain_id = self.ethereum_client.get_chain_id()
+        if self.safe_instance:
+            safe_addr = self.safe_instance.address
+        if self.safe_tx and self.safe_instance:
+            try:
+                threshold = self.safe_instance.retrieve_threshold()
+            except Exception:
+                threshold = "?"
+            try:
+                signers_count = len(getattr(self.safe_tx, "signers", []))
+            except Exception:
+                signers_count = "?"
+            tx_signed_counter = f"{signers_count}/{threshold}"
+
+        return HTML(
+            f"<cyan>ChainId: {chain_id} | Safe: {safe_addr} | Signed: {tx_signed_counter}</cyan>"
+        )
+
+    def _right_toolbar_cli(self):
+        """Return the right toolbar text for the prompt session, showing the current tx command."""
+        if self.msig_command:
+            return HTML(
+                f"<b><orange bg='ansiblack'>&lt;{self.msig_command}&gt;</orange></b>"
+            )
+        return HTML("<b><orange bg='ansiblack'>&lt;msig&gt;</orange></b>")
 
     def _tx_build_command(self, args: Namespace = None):
-        """Run the transaction builder command. Accepts optional argparse args.
+        """Handle the transaction building command.
+
+        This method initializes the Safe instance and SafeTx based on the provided or prompted input,
+        validates the chainId, and then runs the transaction builder.
 
         :param args: Optional argparse Namespace with command arguments.
-        :raises GoBackToPrompt: If the user chooses to go back to the main prompt instead of continuing.
         """
         print_formatted_text(
-            HTML("\n<b><magenta>Running tx_builder command...</magenta></b>")
+            HTML("\n\n<b><cyan>Running tx_builder command...</cyan></b>\n")
         )
         # Get args from Namespace if provided
+        safe_address = getattr(args, "safe_address", None)
         to = getattr(args, "to", None)
         value = getattr(args, "value", None)
         operation = getattr(args, "operation", None)
@@ -107,30 +218,159 @@ class MsigCli:
         gas_token = getattr(args, "gas_token", None)
         json_out = getattr(args, "json_output", None)
 
+        # Initialize Safe instance from args if provided
+        if not safe_address:
+            print_formatted_text(
+                HTML(
+                    "<b><yellow>Warning: Missing safe address from input.</yellow></b>"
+                )
+            )
+            safe_address = prompt_safe_address(self.prompt_session)
+
+        # Init Safe instance
+        try:
+            self.safe_instance = get_safe_instance(
+                ethereum_client=self.ethereum_client, safe_address=safe_address
+            )
+        except MsigCliError as e:
+            raise MsigCliError(f"Failed to initialize Safe instance: {e}") from e
+
+        print_formatted_text(
+            HTML(
+                f"<b><green>Using Safe address: {self.safe_instance.address}</green></b>"
+            )
+        )
+
         # Run the transaction builder with the provided args
         try:
             self.safe_tx = tx_build.run(
-                safe_instance=self.safe_instance,
                 prompt_session=self.prompt_session,
+                safe_instance=self.safe_instance,
                 to=to,
                 value=value,
                 operation=operation,
                 safe_nonce=safe_nonce,
                 data=data,
                 gas_token=gas_token,
-                eip712_json_out=json_out,
+                json_output=json_out,
             )
-        except GoBackToPrompt:
-            raise
+
+        # Handle specific exceptions from tx_build
+        except MsigCliError as e:
+            raise MsigCliError(f"Error in tx_build command: {e}") from e
+        except MsigCliUserAbort as e:
+            raise MsigCliUserAbort(f"User aborted tx_build command: {e}") from e
+        # Catch any other exceptions and raise a generic MsigCliError
+        except Exception as e:
+            raise Exception(f"Unexpected error in tx_build command: {e}") from e
 
     def _tx_sign_command(self, args: Namespace = None):
-        """Run the transaction signer command.
+        """Handle the transaction signing command.
+
+        This method initializes the Safe instance and SafeTx based on the provided or prompted input file,
+        validates the chainId, and then runs the signing process.
+
+        It will go directly to signing if the SafeTx is already available,
+        or prompt for the EIP-712 JSON input file if not.
 
         :param args: Optional argparse Namespace with command arguments.
         """
-        print_formatted_text(
-            HTML("<b><red>tx_signer command not implemented yet!</red></b>")
-        )
+        print_formatted_text(HTML("\n\n<b><cyan>Running tx_sign command...</cyan></b>"))
+        # Get args from Namespace if provided
+        input_file_safe_tx = getattr(args, "input_json", None)
+        output_file_safe_tx = getattr(args, "output_json", None)
+        signer = getattr(args, "signer", None)
+
+        # No prior data means we need to get the Safe from the input file
+        if not self.safe_instance and not self.safe_tx:
+            # Check if eip712_input_file is provided, else prompt to get it
+            if not input_file_safe_tx:
+                print_formatted_text(
+                    HTML(
+                        "<b><yellow>Warning: No input file provided. Prompting for custom or original EIP-712 JSON file.</yellow></b>"
+                    )
+                )
+                print_formatted_text(
+                    HTML(
+                        "<b><magenta>Note: Advised to run tx_build before tx_sign if no input file available.</magenta></b>"
+                    )
+                )
+                eip712_prompted_file = prompt_eip712_input_file(self.prompt_session)
+                if not eip712_prompted_file.exists():
+                    raise MsigCliError(
+                        f"JSON file SafeTx not found: {eip712_prompted_file}."
+                    )
+                input_file_safe_tx = eip712_prompted_file
+
+            # Load the JSON file
+            try:
+                with open(input_file_safe_tx, "r") as f:
+                    input_file_raw = f.read()
+                    safe_tx_json: T_SafeTxData = json.loads(input_file_raw)
+            except FileNotFoundError:
+                raise MsigCliError(
+                    f"JSON file SafeTx not found while opening: {input_file_safe_tx}"
+                )
+            except json.JSONDecodeError as e:
+                raise MsigCliError(
+                    f"Invalid JSON format in file: {input_file_safe_tx} - {e}"
+                ) from e
+
+            # Extract SafeTx data from input file
+            domain_json, message_json, signatures_json = extract_safe_tx_json(
+                safe_tx_json
+            )
+
+            # Validate the domain chainId from JSON and our Ethereum client
+            try:
+                validate_ethereum_client_chain_id(
+                    ethereum_client=self.ethereum_client, domain_json=domain_json
+                )
+            except MsigCliError as e:
+                raise MsigCliError(
+                    f"Failed to validate Ethereum client chainId: {e}"
+                ) from e
+
+            # Initialize Safe instance with the address from domain_json
+            safe_address = domain_json.get("verifyingContract")
+            if not safe_address:
+                raise MsigCliError(
+                    "Domain JSON must contain 'verifyingContract' field for Safe address."
+                )
+            self.safe_instance = get_safe_instance(
+                ethereum_client=self.ethereum_client, safe_address=safe_address
+            )
+            print_formatted_text(
+                HTML(
+                    f"<b><green>Using Safe address: {self.safe_instance.address}</green></b>"
+                )
+            )
+
+            # Initialize SafeTx with the message and signatures
+            self.safe_tx = build_safe_tx_from_message(
+                safe_instance=self.safe_instance,
+                message_json=message_json,
+                signatures_json=get_signatures_bytes(signatures_json),
+            )
+
+        # Sign the SafeTx with the provided signer
+        try:
+            self.safe_tx = tx_sign.run(
+                prompt_session=self.prompt_session,
+                safe_instance=self.safe_instance,
+                safe_tx=self.safe_tx,
+                output_file_safe_tx=output_file_safe_tx,
+                signer=signer,
+            )
+
+        # Handle specific exceptions from tx_sign
+        except MsigCliUserAbort as e:
+            raise MsigCliUserAbort(f"User aborted tx_sign command: {e}") from e
+        except MsigCliError as e:
+            raise MsigCliError(f"MsigCli error in tx_sign command: {e}") from e
+        # Catch any other exceptions and raise
+        except Exception as e:
+            raise Exception(f"Unexpected error in tx_sign command: {e}") from e
 
     def _tx_broadcast_command(self, args: Namespace = None):
         """Run the transaction broadcast command.
@@ -140,91 +380,3 @@ class MsigCli:
         print_formatted_text(
             HTML("<b><red>tx_broadcast command not implemented yet!</red></b>")
         )
-
-    def _initialize_safe_instance(self, rpc_url: str, safe_address: str) -> Safe:
-        """Initialize the Safe instance with the provided RPC URL and Safe address.
-
-        :param rpc_url: The RPC URL to connect to the Ethereum network.
-        :param safe_address: The address of the Safe contract.
-        :return: An instance of the Safe class.
-        :raises ValueError: If the address or RPC URL is invalid.
-        """
-        assert is_valid_address(safe_address), ERROR_INVALID_ADDRESS
-        assert is_valid_rpc_url(rpc_url), ERROR_INVALID_RPC_URL
-        try:
-            ethereum_client = EthereumClient(URI(rpc_url))
-            safe_address = to_checksum_address(safe_address)
-            self.safe_instance = Safe(
-                address=safe_address, ethereum_client=ethereum_client
-            )  # type: ignore[abstract]
-            print_formatted_text(
-                HTML(
-                    "\n<b><green>Safe instance initialized successfully!</green></b>\n"
-                )
-            )
-            return self.safe_instance
-        except Exception as e:
-            logger.error(f"Failed to initialize Safe instance: {e}")
-            raise e
-
-    def _prepare_cli_context(self, args: Namespace = None):
-        """Prepare the CLI context by initializing the Safe instance and displaying the header.
-
-        :param args: Optional argparse Namespace with command arguments.
-        """
-
-        # Default display msig CLI header
-        prompt_clear()
-        print_formatted_text(HTML("\n<b><cyan>===== MSIG CLI =====</cyan></b>\n"))
-        print_formatted_text(
-            HTML(
-                f"<b><magenta>Current Safe Address:</magenta></b> {self.safe_instance.address if self.safe_instance else 'Not initialized'}"
-            )
-        )
-        print_formatted_text(
-            HTML(
-                f"<b><magenta>Chain Id:</magenta></b> {self.safe_instance.chain_id if self.safe_instance else 'Not initialized'}"
-            )
-        )
-        print_formatted_text(
-            HTML(
-                f"<b><magenta>SafeTx hash:</magenta></b> {to_0x_hex_str(self.safe_tx.safe_tx_hash) if self.safe_tx else 'Not created'}\n"
-            )
-        )
-
-        # If Safe instance is not initialized, try to use args, else prompt for RPC URL and Safe address
-        if not self.safe_instance:
-            # Initialize Safe instance from args if provided
-            rpc_url = getattr(args, "rpc_url", None) if args is not None else None
-            safe_address = (
-                getattr(args, "safe_address", None) if args is not None else None
-            )
-
-            if rpc_url and safe_address:
-                try:
-                    self._initialize_safe_instance(rpc_url, safe_address)
-                except Exception:
-                    print_formatted_text(
-                        HTML(
-                            "\n<b><red>Failed to initialize Safe instance from arguments.</red></b>"
-                        )
-                    )
-                    return
-
-            # If not provided, prompt for RPC URL and Safe address
-            else:
-                print_formatted_text(
-                    HTML(
-                        "<b><yellow>Safe instance not initialized. Please provide RPC URL and Safe address.</yellow></b>"
-                    )
-                )
-                while not self.safe_instance:
-                    try:
-                        rpc_url = prompt_rpc_url(self.prompt_session)
-                        safe_address = prompt_safe_address(self.prompt_session)
-                        self._initialize_safe_instance(rpc_url, safe_address)
-                    except (EOFError, KeyboardInterrupt):
-                        print_formatted_text(
-                            HTML("\n<b><red>Aborted Safe initialization.</red></b>")
-                        )
-                        return

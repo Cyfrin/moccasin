@@ -12,6 +12,7 @@ import moccasin.constants.vars as vars
 from moccasin.commands.wallet import save_to_keystores
 from moccasin.config import Config, _set_global_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
+from moccasin.msig_cli.scripts.deploy_local_safe import deploy_local_safe_anvil
 from tests.constants import (
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
@@ -346,3 +347,11 @@ def temp_msig_workdir(tmp_path, monkeypatch):
     """
     monkeypatch.chdir(tmp_path)
     return tmp_path
+
+
+@pytest.fixture(scope="module")
+def eth_safe_address_anvil(anvil):
+    """Fixture to provide a Safe instance connected to Anvil."""
+    eth_safe_address, _ = deploy_local_safe_anvil()
+
+    yield eth_safe_address
