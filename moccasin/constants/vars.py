@@ -1,8 +1,6 @@
 import os
 import platform
 from pathlib import Path
-from unittest.mock import DEFAULT
-
 from moccasin.constants.chains import BLOCKSCOUT_EXPLORERS, CHAIN_INFO, ZKSYNC_EXPLORERS
 
 # File Names
