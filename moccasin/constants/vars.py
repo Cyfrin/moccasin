@@ -1,6 +1,7 @@
 import os
 import platform
 from pathlib import Path
+
 from moccasin.constants.chains import BLOCKSCOUT_EXPLORERS, CHAIN_INFO, ZKSYNC_EXPLORERS
 
 # File Names

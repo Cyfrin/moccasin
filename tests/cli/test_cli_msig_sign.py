@@ -1,9 +1,9 @@
+import json
 import os
 import shutil
 import subprocess
 
 from tests.utils.anvil import ANVIL_URL
-import json
 
 # Constants for CLI commands tests
 LOCAL_ANVIL_URL = ANVIL_URL.format(8545)

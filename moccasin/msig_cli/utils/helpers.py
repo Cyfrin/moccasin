@@ -1,10 +1,12 @@
 import os
-from typing import Any, Tuple, Optional
+from typing import Optional, Tuple
+
 from eth_utils import to_bytes, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
 from safe_eth.util.util import to_0x_hex_str
+
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
 from moccasin.msig_cli.utils.exceptions import MsigCliError
 from moccasin.msig_cli.utils.types import T_EIP712TxJson, T_SafeTxData, T_SafeTxMessage

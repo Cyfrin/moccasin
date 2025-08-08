@@ -5,10 +5,10 @@ from prompt_toolkit import HTML, print_formatted_text
 
 from moccasin.msig_cli.constants import LEFT_PROMPT_SIGN
 from moccasin.msig_cli.validators import (
-    validator_safe_address,
+    validator_json_file,
     validator_not_empty,
     validator_rpc_url,
-    validator_json_file,
+    validator_safe_address,
 )
 
 

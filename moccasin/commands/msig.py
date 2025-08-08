@@ -1,5 +1,4 @@
 import traceback
-
 from argparse import Namespace
 
 from prompt_toolkit import HTML, print_formatted_text

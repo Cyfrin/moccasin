@@ -3,16 +3,17 @@ from typing import Optional
 
 from hexbytes import HexBytes
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
+from safe_eth.safe import Safe, SafeTx
 
 from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.common_prompts import prompt_save_safe_tx_json
 from moccasin.msig_cli.tx.sign_prompts import (
-    prompt_sign_with_moccasin_account,
     prompt_account_name,
     prompt_account_password,
-    prompt_private_key,
-    prompt_is_right_account,
     prompt_confirm_sign,
+    prompt_is_right_account,
+    prompt_private_key,
+    prompt_sign_with_moccasin_account,
 )
 from moccasin.msig_cli.utils.exceptions import MsigCliError, MsigCliUserAbort
 from moccasin.msig_cli.utils.helpers import (
@@ -20,8 +21,6 @@ from moccasin.msig_cli.utils.helpers import (
     pretty_print_safe_tx,
 )
 from moccasin.msig_cli.validators import is_valid_private_key
-
-from safe_eth.safe import Safe, SafeTx
 
 
 def run(

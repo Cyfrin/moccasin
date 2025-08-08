@@ -5,9 +5,9 @@ from prompt_toolkit.shortcuts import print_formatted_text
 
 from moccasin.msig_cli.constants import LEFT_PROMPT_SIGN
 from moccasin.msig_cli.validators import (
+    validator_json_file,
     validator_not_empty,
     validator_private_key,
-    validator_json_file,
 )
 
 

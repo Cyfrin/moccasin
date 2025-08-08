@@ -1,7 +1,7 @@
 import json
 import os
-import shutil
 import subprocess
+
 import pytest
 
 from tests.utils.anvil import ANVIL_URL

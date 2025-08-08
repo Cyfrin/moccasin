@@ -1,7 +1,7 @@
-from argparse import Namespace
 import json
-from typing import List
 import shutil
+from argparse import Namespace
+from typing import List
 
 from eth_typing import URI
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
@@ -19,14 +19,14 @@ from moccasin.msig_cli.common_prompts import (
 from moccasin.msig_cli.constants import ERROR_INVALID_RPC_URL
 from moccasin.msig_cli.tx import tx_build, tx_sign
 from moccasin.msig_cli.tx.sign_prompts import prompt_eip712_input_file
+from moccasin.msig_cli.utils.exceptions import MsigCliError, MsigCliUserAbort
 from moccasin.msig_cli.utils.helpers import (
     build_safe_tx_from_message,
-    get_safe_instance,
     extract_safe_tx_json,
+    get_safe_instance,
     get_signatures_bytes,
     validate_ethereum_client_chain_id,
 )
-from moccasin.msig_cli.utils.exceptions import MsigCliError, MsigCliUserAbort
 from moccasin.msig_cli.utils.types import T_SafeTxData
 from moccasin.msig_cli.validators import is_valid_rpc_url
 
