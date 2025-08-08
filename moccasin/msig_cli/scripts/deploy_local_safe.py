@@ -31,6 +31,7 @@ def deploy_local_safe_anvil() -> tuple[
     ethereum_client = EthereumClient(DEFAULT_ANVIL_URL)
 
     # Deploy a Safe instance form class method
+    # @TODO: see if we can add more owners with different thresholds
     safe_eth_tx = SafeV141.deploy_contract(
         ethereum_client=ethereum_client, deployer_account=deployer
     )

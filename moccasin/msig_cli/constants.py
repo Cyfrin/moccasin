@@ -1,10 +1,6 @@
 ################################################################
 #                       ERROR CONSTANTS                        #
 ################################################################
-
-from logging import ERROR
-
-
 ERROR_INVALID_ADDRESS = "Invalid address format. Please enter a valid checksum address."
 ERROR_INVALID_RPC_URL = "Invalid RPC URL format. Please enter a valid URL starting with http:// or https://."
 ERROR_INVALID_NUMBER = "Invalid number format. Please enter a valid integer."
@@ -33,3 +29,8 @@ ERROR_INVALID_PRIVATE_KEY = (
 ERROR_INVALID_SIGNER = (
     "Invalid signer input. Must be a valid account name or a private key."
 )
+
+################################################################
+#                       PROMPT CONSTANTS                       #
+################################################################
+LEFT_PROMPT_SIGN = "<b><orange>msig &gt; </orange></b>"

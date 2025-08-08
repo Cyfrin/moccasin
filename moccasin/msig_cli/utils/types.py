@@ -1,26 +1,4 @@
-from dataclasses import dataclass
-from enum import Enum
 from typing import TypedDict, List
-
-
-################################################################
-#                            ENUMS                             #
-################################################################
-class TransactionType(Enum):
-    CONTRACT_CALL = 0
-    ERC20_TRANSFER = 1
-    RAW = 2
-
-
-################################################################
-#                          EXCEPTIONS                          #
-################################################################
-class MsigCliError(Exception):
-    """Base exception for MsigCli errors."""
-
-
-class MsigCliUserAbort(MsigCliError):
-    """Raised when the user aborts an operation."""
 
 
 ################################################################

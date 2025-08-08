@@ -1,12 +1,9 @@
-import os
-
 from typing import Optional
 
 from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
 from hexbytes import HexBytes
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
-from prompt_toolkit.shortcuts import clear as prompt_clear
 from safe_eth.safe import Safe, SafeTx
 from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
 
@@ -21,54 +18,12 @@ from moccasin.msig_cli.tx.build_prompts import (
     prompt_single_internal_tx,
     prompt_target_contract_address,
 )
-from moccasin.msig_cli.tx.helpers import (
+from moccasin.msig_cli.utils.helpers import (
     get_eip712_structured_data,
     get_multisend_address_from_env,
     pretty_print_safe_tx,
 )
-from moccasin.msig_cli.utils import MsigCliError, MsigCliUserAbort
-
-
-def decode_and_confirm_multisend_batch(
-    prompt_session, safe_instance, data, to, operation
-) -> tuple[Optional[ChecksumAddress], Optional[int]]:
-    """Decode and confirm MultiSend batch. If not a batch, return (None, None)."""
-    try:
-        decoded_batch = MultiSend.from_transaction_data(data)
-    except Exception as e:
-        logger.warning(f"Could not decode data as MultiSend batch: {e}")
-        return None, None
-
-    if not decoded_batch:
-        return None, None
-
-    has_delegate = any(
-        tx.operation == MultiSendOperation.DELEGATE_CALL for tx in decoded_batch
-    )
-
-    # Initialize MultiSend with the address if provided, otherwise use default
-    multi_send = MultiSend(
-        ethereum_client=safe_instance.ethereum_client,
-        address=get_multisend_address_from_env(),
-        call_only=not has_delegate,
-    )
-    multi_send_address = multi_send.address
-
-    if not prompt_multisend_batch_confirmation(
-        prompt_session, decoded_batch, multi_send_address, to
-    ):
-        print_formatted_text(
-            HTML("<b><red>Aborting due to user rejection of decoded batch.</red></b>")
-        )
-        raise MsigCliUserAbort("User rejected MultiSend batch confirmation.")
-
-    to = multi_send_address
-    operation = int(
-        MultiSendOperation.DELEGATE_CALL.value
-        if has_delegate
-        else MultiSendOperation.CALL.value
-    )
-    return to, operation
+from moccasin.msig_cli.utils.exceptions import MsigCliError, MsigCliUserAbort
 
 
 # --- Main entrypoint ---
@@ -82,7 +37,7 @@ def run(
     data: Optional[HexBytes] = None,
     gas_token: Optional[str] = None,
     json_output: Optional[str] = None,
-) -> Optional[SafeTx]:
+) -> SafeTx:
     """Run the transaction builder with interactive prompts.
 
     :param prompt_session: Prompt session for user input.
@@ -148,7 +103,7 @@ def run(
 
         # If data is provided, try to decode/confirm MultiSend batch
         if tx_data is not None:
-            to_decoded, op_decoded = decode_and_confirm_multisend_batch(
+            to_decoded, op_decoded = _decode_and_confirm_multisend_batch(
                 prompt_session, safe_instance, tx_data, tx_to, tx_operation
             )
             if to_decoded is not None and op_decoded is not None:
@@ -170,7 +125,6 @@ def run(
             )
         except Exception as e:
             raise MsigCliError(f"Error creating SafeTx instance: {e}") from e
-        prompt_clear()
         print_formatted_text(
             HTML("\n<b><green>SafeTx instance created successfully!</green></b>\n")
         )
@@ -188,3 +142,45 @@ def run(
         raise MsigCliUserAbort(f"User aborted transaction build: {e}") from e
     except Exception as e:
         raise Exception(f"Unexpected error during transaction build: {e}") from e
+
+
+def _decode_and_confirm_multisend_batch(
+    prompt_session, safe_instance, data, to, operation
+) -> tuple[Optional[ChecksumAddress], Optional[int]]:
+    """Decode and confirm MultiSend batch. If not a batch, return (None, None)."""
+    try:
+        decoded_batch = MultiSend.from_transaction_data(data)
+    except Exception as e:
+        logger.warning(f"Could not decode data as MultiSend batch: {e}")
+        return None, None
+
+    if not decoded_batch:
+        return None, None
+
+    has_delegate = any(
+        tx.operation == MultiSendOperation.DELEGATE_CALL for tx in decoded_batch
+    )
+
+    # Initialize MultiSend with the address if provided, otherwise use default
+    multi_send = MultiSend(
+        ethereum_client=safe_instance.ethereum_client,
+        address=get_multisend_address_from_env(),
+        call_only=not has_delegate,
+    )
+    multi_send_address = multi_send.address
+
+    if not prompt_multisend_batch_confirmation(
+        prompt_session, decoded_batch, multi_send_address, to
+    ):
+        print_formatted_text(
+            HTML("<b><red>Aborting due to user rejection of decoded batch.</red></b>")
+        )
+        raise MsigCliUserAbort("User rejected MultiSend batch confirmation.")
+
+    to = multi_send_address
+    operation = int(
+        MultiSendOperation.DELEGATE_CALL.value
+        if has_delegate
+        else MultiSendOperation.CALL.value
+    )
+    return to, operation

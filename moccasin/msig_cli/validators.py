@@ -18,12 +18,11 @@ from moccasin.msig_cli.constants import (
     ERROR_INVALID_OPERATION,
     ERROR_INVALID_RPC_URL,
     ERROR_INVALID_TRANSACTION_TYPE,
-    ERROR_INVALID_TXT_FILE,
     ERROR_INVALID_SIGNATURES_INPUT,
     ERROR_INVALID_SIGNER,
     ERROR_INVALID_PRIVATE_KEY,
 )
-from moccasin.msig_cli.utils import TransactionType
+from moccasin.msig_cli.utils.enums import TransactionType
 
 
 ################################################################

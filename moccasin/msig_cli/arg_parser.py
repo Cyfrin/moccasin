@@ -18,15 +18,15 @@ def _add_common_args(parser: argparse.ArgumentParser):
         help="RPC URL to connect to the Ethereum network.",
         type=validate_rpc_url,
     )
+
+
+def _add_tx_builder_args(parser: argparse.ArgumentParser):
+    """Add transaction builder arguments to the parser."""
     parser.add_argument(
         "--safe-address",
         help="Address of the Safe contract to interact with.",
         type=validate_address,
     )
-
-
-def _add_tx_builder_args(parser: argparse.ArgumentParser):
-    """Add transaction builder arguments to the parser."""
     parser.add_argument(
         "--to", help="Address of the contract to call.", type=validate_address
     )
@@ -62,6 +62,25 @@ def _add_tx_builder_args(parser: argparse.ArgumentParser):
     )
 
 
+def _add_tx_signer_args(parser: argparse.ArgumentParser):
+    """Add transaction signer arguments to the parser."""
+    parser.add_argument(
+        "--signer",
+        help="Signer account name from mox wallet or private key to use for signing the transaction. Private key is discouraged for security reasons, only use for testing purposes.",
+        type=validate_signer,
+    )
+    parser.add_argument(
+        "--input-json",
+        help="Path to a JSON file containing the SafeTx data to sign.",
+        type=validate_json_file,
+    )
+    parser.add_argument(
+        "--output-json",
+        help="Output file to save the signed SafeTx data as JSON.",
+        type=validate_json_file,
+    )
+
+
 def create_msig_parser():
     """Create and return the msig command line argument parser."""
     # Create the main parser for msig commands
@@ -84,26 +103,7 @@ def create_msig_parser():
         "tx_sign", help="Sign a multisig transaction."
     )
     _add_common_args(tx_sign_parser)
-    tx_sign_parser.add_argument(
-        "--input-json",
-        help="Path to the SafeTx data JSON file of the transaction to sign.",
-        type=validate_json_file,
-    )
-    tx_sign_parser.add_argument(
-        "--output-json",
-        help="Output file to save the SafeTx data as JSON.",
-        type=validate_json_file,
-    )
-    tx_sign_parser.add_argument(
-        "--signer",
-        help="Signer's MoccasinAccount or private key to sign the transaction. We discourage using private keys directly.",
-        type=validate_signer,
-    )
-    tx_sign_parser.add_argument(
-        "--signatures",
-        help="Signatures to include in the transaction, in hex format. Could be a bytes string or a path to a file containing signatures.",
-        type=validate_signatures_input,
-    )
+    _add_tx_signer_args(tx_sign_parser)
 
     # Store references for help display
     msig_parser._subparsers = msig_subparsers
