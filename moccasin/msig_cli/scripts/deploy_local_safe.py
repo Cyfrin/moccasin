@@ -2,7 +2,6 @@ import os
 from typing import Optional
 
 from eth_typing import ChecksumAddress
-from regex import E
 from requests.exceptions import ConnectionError
 
 from moccasin.moccasin_account import MoccasinAccount
