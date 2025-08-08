@@ -72,11 +72,8 @@ def get_signatures_bytes(signatures: Optional[str]) -> bytes:
     """
     if signatures:
         # Use JSON value if present
-        return bytes.fromhex(
-            signatures.lstrip("0x")
-            if signatures.startswith("0x")
-            else bytes.fromhex(signatures)
-        )
+        hex_str = signatures.lstrip("0x") if signatures.startswith("0x") else signatures
+        return bytes.fromhex(hex_str)
     else:
         # Default to empty bytes
         return b""
