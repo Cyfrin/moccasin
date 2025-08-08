@@ -1,3 +1,5 @@
+import traceback
+
 from argparse import Namespace
 
 from prompt_toolkit import HTML, print_formatted_text
@@ -28,4 +30,5 @@ def main(args: Namespace) -> int:
         return 1
     except Exception as e:
         print_formatted_text(HTML(f"<b><red>!!! Unexpected error: {e} !!!</red></b>"))
+        traceback.print_exc()
         return 1

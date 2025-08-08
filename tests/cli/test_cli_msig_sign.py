@@ -3,11 +3,36 @@ import shutil
 import subprocess
 
 from tests.utils.anvil import ANVIL_URL
+import json
 
 # Constants for CLI commands tests
 LOCAL_ANVIL_URL = ANVIL_URL.format(8545)
 MSIG_TX_BUILD = ["mox", "msig", "tx_build"]
 MSIG_TX_SIGN = ["mox", "msig", "tx_sign"]
+
+
+def _update_verifying_address(json_path, safe_address):
+    """Update the verifyingAddress in the SafeTx JSON file.
+
+    :param json_path: Path to the SafeTx JSON file.
+    :param safe_address: The Safe address to set as verifyingAddress.
+    """
+    with open(json_path, "r") as f:
+        safe_tx_data = json.load(f)
+
+    # Handle both SafeTx and EIP-712 formats
+    if "safeTx" in safe_tx_data:
+        if (
+            "domain" in safe_tx_data["safeTx"]
+            and "verifyingContract" in safe_tx_data["safeTx"]["domain"]
+        ):
+            safe_tx_data["safeTx"]["domain"]["verifyingContract"] = safe_address
+    elif "domain" in safe_tx_data and "verifyingContract" in safe_tx_data["domain"]:
+        safe_tx_data["domain"]["verifyingContract"] = safe_address
+
+    # Save the updated JSON back to the file
+    with open(json_path, "w") as f:
+        json.dump(safe_tx_data, f, indent=2)
 
 
 ################################################################
@@ -26,10 +51,14 @@ def test_eth_safe_address_anvil_fixture(eth_safe_address_anvil):
 #                        TX_SIGN TESTS                         #
 ################################################################
 def test_cli_tx_sign_with_owner_key(temp_msig_workdir, eth_safe_address_anvil):
-    """Sign SafeTx with valid owner private key."""
+    """Sign SafeTx with valid owner private key and dynamically set verifyingAddress."""
     json_path = temp_msig_workdir / "safe-tx-sign.json"
     src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
     shutil.copyfile(src_json, json_path)
+
+    # Dynamically update verifyingAddress in the JSON file
+    _update_verifying_address(json_path, eth_safe_address_anvil)
+
     owner_key = os.environ.get("ETHEREUM_TEST_PRIVATE_KEY")
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
@@ -50,30 +79,33 @@ def test_cli_tx_sign_with_owner_key(temp_msig_workdir, eth_safe_address_anvil):
     os.remove(json_path)
 
 
-# @TODO find a way to add owners to deploy_local_safe_anvil fixture
-# def test_cli_tx_sign_with_non_owner_key(temp_msig_workdir, eth_safe_address_anvil):
-#     """Sign SafeTx with non-owner private key (should fail)."""
-#     json_path = temp_msig_workdir / "safe-tx-nonowner.json"
-#     src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-#     shutil.copyfile(src_json, json_path)
-#     non_owner_key = "0x1111111111111111111111111111111111111111111111111111111111111111"
-#     sign_input = (
-#         f"{LOCAL_ANVIL_URL}\n"
-#         "n\n"  # not MoccasinAccount
-#         f"{non_owner_key}\n"
-#         "y\n"  # confirm account
-#         "y\n"  # confirm signing
-#     )
-#     result = subprocess.run(
-#         MSIG_TX_SIGN + ["--input-json", str(json_path)],
-#         input=sign_input,
-#         text=True,
-#         capture_output=True,
-#         check=False,
-#         timeout=30,
-#     )
-#     assert "is not one of the Safe owners" in result.stdout
-#     os.remove(json_path)
+def test_cli_tx_sign_with_non_owner_key(temp_msig_workdir, eth_safe_address_anvil):
+    """Sign SafeTx with non-owner private key (should fail)."""
+    json_path = temp_msig_workdir / "safe-tx-nonowner.json"
+    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
+    shutil.copyfile(src_json, json_path)
+
+    # Dynamically update verifyingAddress in the JSON file
+    _update_verifying_address(json_path, eth_safe_address_anvil)
+
+    non_owner_key = "0x1111111111111111111111111111111111111111111111111111111111111111"
+    sign_input = (
+        f"{LOCAL_ANVIL_URL}\n"
+        "n\n"  # not MoccasinAccount
+        f"{non_owner_key}\n"
+        "y\n"  # confirm account
+        "y\n"  # confirm signing
+    )
+    result = subprocess.run(
+        MSIG_TX_SIGN + ["--input-json", str(json_path)],
+        input=sign_input,
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=30,
+    )
+    assert "is not one of the Safe owners" in result.stdout
+    os.remove(json_path)
 
 
 def test_cli_tx_sign_with_invalid_key(temp_msig_workdir, eth_safe_address_anvil):
@@ -81,6 +113,10 @@ def test_cli_tx_sign_with_invalid_key(temp_msig_workdir, eth_safe_address_anvil)
     json_path = temp_msig_workdir / "safe-tx-invalidkey.json"
     src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
     shutil.copyfile(src_json, json_path)
+
+    # Dynamically update verifyingAddress in the JSON file
+    _update_verifying_address(json_path, eth_safe_address_anvil)
+
     invalid_key = "0xZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
@@ -106,6 +142,10 @@ def test_cli_tx_sign_user_abort(temp_msig_workdir, eth_safe_address_anvil):
     json_path = temp_msig_workdir / "safe-tx-abort.json"
     src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
     shutil.copyfile(src_json, json_path)
+
+    # Dynamically update verifyingAddress in the JSON file
+    _update_verifying_address(json_path, eth_safe_address_anvil)
+
     owner_key = os.environ.get("ETHEREUM_TEST_PRIVATE_KEY")
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"

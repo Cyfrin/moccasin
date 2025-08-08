@@ -4,12 +4,28 @@ from typing import Optional
 from eth_typing import ChecksumAddress
 from requests.exceptions import ConnectionError
 
-from moccasin.moccasin_account import MoccasinAccount
 from safe_eth.eth import EthereumClient
 from safe_eth.safe.multi_send import MultiSend
 from safe_eth.safe.safe import SafeV141
+from safe_eth.eth.contracts import get_safe_V1_4_1_contract, get_proxy_factory_contract
+from safe_eth.safe.proxy_factory import ProxyFactory
+from safe_eth.eth.utils import get_empty_tx_params
 
+from moccasin.moccasin_account import MoccasinAccount
 from moccasin.constants.vars import DEFAULT_ANVIL_PRIVATE_KEY, DEFAULT_ANVIL_URL
+import traceback
+
+DEFAULT_ANVIL_OWNERS = [
+    "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+    "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+    "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+    "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+    "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc",
+    "0x976EA74026E726554dB657fA54763abd0C3a0aa9",
+    "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955",
+    "0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f",
+    "0xa0Ee7A142d267C1f36714E4a8F75612F20a79720",
+]
 
 
 def deploy_local_safe_anvil() -> tuple[
@@ -29,11 +45,46 @@ def deploy_local_safe_anvil() -> tuple[
     deployer = MoccasinAccount(private_key=DEFAULT_ANVIL_PRIVATE_KEY)
     ethereum_client = EthereumClient(DEFAULT_ANVIL_URL)
 
-    # Deploy a Safe instance form class method
-    # @TODO: see if we can add more owners with different thresholds
-    safe_eth_tx = SafeV141.deploy_contract(
+    # Deploy Safe master copy
+    safe_master_tx = SafeV141.deploy_contract(
         ethereum_client=ethereum_client, deployer_account=deployer
     )
+    safe_master_address = safe_master_tx.contract_address
+
+    # Deploy ProxyFactory
+    proxy_factory_contract = get_proxy_factory_contract(ethereum_client.w3)
+    tx_hash = proxy_factory_contract.constructor().transact({"from": deployer.address})
+    tx_receipt = ethereum_client.w3.eth.wait_for_transaction_receipt(tx_hash)
+    assert tx_receipt["status"] == 1, "Problem deploying ProxyFactory"
+    proxy_factory_address = tx_receipt["contractAddress"]
+    proxy_factory = ProxyFactory(proxy_factory_address, ethereum_client)
+
+    # Owners and threshold for local testing
+    owners = [deployer.address, *DEFAULT_ANVIL_OWNERS]
+    threshold = 2
+    fallback_handler = "0x0000000000000000000000000000000000000000"
+    to = "0x0000000000000000000000000000000000000000"
+    data = b""
+    payment_token = "0x0000000000000000000000000000000000000000"
+    payment = 0
+    payment_receiver = "0x0000000000000000000000000000000000000000"
+    initializer = get_safe_V1_4_1_contract(ethereum_client.w3, safe_master_address)
+    initializer = initializer.functions.setup(
+        owners,
+        threshold,
+        to,
+        data,
+        fallback_handler,
+        payment_token,
+        payment,
+        payment_receiver,
+    ).build_transaction(get_empty_tx_params())["data"]
+
+    # Deploy Safe proxy with initializer
+    safe_proxy_tx = proxy_factory.deploy_proxy_contract_with_nonce(
+        deployer, safe_master_address, initializer=initializer
+    )
+    safe_proxy_address = safe_proxy_tx.contract_address
 
     # Deploy a MultiSend contract and set the address in the environment variable
     multisend_eth_tx = MultiSend.deploy_contract(
@@ -41,7 +92,7 @@ def deploy_local_safe_anvil() -> tuple[
     )
     os.environ["TEST_MULTISEND_ADDRESS"] = multisend_eth_tx.contract_address
 
-    return safe_eth_tx.contract_address, multisend_eth_tx.contract_address
+    return safe_proxy_address, multisend_eth_tx.contract_address
 
 
 if __name__ == "__main__":
@@ -59,3 +110,4 @@ if __name__ == "__main__":
         print("Error: Could not connect to Anvil at localhost:8545. Is Anvil running?")
     except Exception as e:
         print(f"Error deploying Safe: {e}")
+        traceback.print_exc()

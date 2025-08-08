@@ -213,10 +213,36 @@ Tests use static JSON and local contract addresses for reproducibility.
 - [ ] Implement `tx_execute` for transaction execution
 - [ ] Add support for ERC20 transfers and raw data internal transactions
 - [ ] Improve function parameter type handling (arrays, bytes, etc.)
-- [ ] Add message signing (`msg` subcommand)
 - [ ] Extend validation for more Ethereum types
 - [ ] Add unit and integration tests for new features
-- [ ] Add more owners and a threshold while deploying locally
+- [x] Add more owners and a threshold while deploying locally
+
+# Troubleshooting
+
+> `ERROR: Error running msig command: not well-formed (invalid token): line 1, column 222`
+
+This error comes from the anvil not running and also the deployment script not being run. Make sure to run the deployment script first:
+
+```bash
+# In a separate terminal, start Anvil
+anvil
+# Then run the deployment script
+python moccasin/msig_cli/scripts/deploy_local_safe.py
+```
+
+Note: if you run `msig tx_sign` against a JSON file that has not been updated with the correct `verifyingAddress`, you will get an EVM error like:
+
+```bash
+Unexpected error during transaction build: ('execution reverted', '0x')
+```
+
+To avoid this, ensure the `verifyingAddress` in your JSON matches the Safe contract address deployed by the script.
+
+```bash
+➜ python moccasin/msig_cli/scripts/deploy_local_safe.py
+Safe deployed successfully: 0x559da2BFD9e8F7D2fa3C6F851f2aE962Cc06aD42
+MultiSend deployed successfully: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
+```
 
 ---
 

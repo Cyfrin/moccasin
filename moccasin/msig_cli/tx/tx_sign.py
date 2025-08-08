@@ -69,7 +69,7 @@ def run(
             if is_valid_private_key(signer):
                 # Initialize MoccasinAccount with private key
                 try:
-                    account = MoccasinAccount(private_key=HexBytes(signer))
+                    account = MoccasinAccount(private_key=HexBytes(signer).hex())
                 except Exception as e:
                     raise MsigCliError(
                         f"Error initializing MoccasinAccount with arg private key: {e}"
@@ -113,22 +113,20 @@ def run(
                 f"Signer account {account.address} is not one of the Safe owners. Cannot proceed with signing."
             )
 
-        # Prompt the user to validate the SafeTx if it is initialized
-        if safe_tx:
-            # Display the SafeTx details
-            pretty_print_safe_tx(safe_tx)
-            # Ask for user confirmation to sign the SafeTx
-            confirm = prompt_confirm_sign(prompt_session)
-            # If user declines, abort signing
-            if confirm.lower() not in ("yes", "y"):
-                print_formatted_text(
-                    HTML("<b><red>Aborting signing. User declined.</red></b>")
-                )
-                return
-        else:
-            # If SafeTx is not initialized, print error and return
+        # Check if signer has already signed the SafeTx
+        if account.address in safe_tx.signers:
+            raise MsigCliError(
+                f"Signer account {account.address} has already signed the SafeTx. Cannot proceed with signing."
+            )
+
+        # Display the SafeTx details
+        pretty_print_safe_tx(safe_tx)
+        # Ask for user confirmation to sign the SafeTx
+        confirm = prompt_confirm_sign(prompt_session)
+        # If user declines, abort signing
+        if confirm.lower() not in ("yes", "y"):
             print_formatted_text(
-                HTML("<b><red>SafeTx not created. Aborting signing.</red></b>")
+                HTML("<b><red>Aborting signing. User declined.</red></b>")
             )
             return
 
@@ -143,7 +141,8 @@ def run(
             return
 
         # Display the ordered signers
-        ordered_signers = safe_tx.sorted_signers
+        # Note: SafeTx.sorted_signers returns the most recent signers first
+        ordered_signers = list(reversed(safe_tx.sorted_signers))
         for idx, sig in enumerate(ordered_signers, start=1):
             print_formatted_text(
                 HTML(f"<b><green>SafeTx signer {idx}: {sig}</green></b>")

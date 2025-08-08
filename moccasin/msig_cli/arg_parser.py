@@ -6,7 +6,6 @@ from moccasin.msig_cli.validators import (
     validate_json_file,
     validate_number,
     validate_rpc_url,
-    validate_signatures_input,
     validate_signer,
 )
 

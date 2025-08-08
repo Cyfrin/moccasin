@@ -56,7 +56,7 @@
     },
     "primaryType": "SafeTx",
     "domain": {
-      "verifyingContract": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "verifyingContract": "0x559da2BFD9e8F7D2fa3C6F851f2aE962Cc06aD42",
       "chainId": 31337
     },
     "message": {
@@ -73,5 +73,5 @@
       "nonce": 42
     }
   },
-  "signatures": "0x"
+  "signatures": ""
 }

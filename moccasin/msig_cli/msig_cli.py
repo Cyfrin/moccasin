@@ -166,22 +166,25 @@ class MsigCli:
 
     def _bottom_toolbar_cli(self):
         """Return the bottom toolbar text for the prompt session."""
-        # Initialize variables for chainId, safe address, and tx signed counter
         chain_id = "None"
         safe_addr = "None"
         tx_signed_counter = "None"
 
-        # Get the chainId, safe address, and tx signed counter if available
         if self.ethereum_client:
             chain_id = self.ethereum_client.get_chain_id()
         if self.safe_instance:
             safe_addr = self.safe_instance.address
         if self.safe_tx and self.safe_instance:
-            tx_signed_counter = (
-                f"{len(self.safe_tx.signers)}/{self.safe_instance.retrieve_threshold()}"
-            )
+            try:
+                threshold = self.safe_instance.retrieve_threshold()
+            except Exception:
+                threshold = "?"
+            try:
+                signers_count = len(getattr(self.safe_tx, "signers", []))
+            except Exception:
+                signers_count = "?"
+            tx_signed_counter = f"{signers_count}/{threshold}"
 
-        # Return the formatted HTML for the bottom toolbar
         return HTML(
             f"<cyan>ChainId: {chain_id} | Safe: {safe_addr} | Signed: {tx_signed_counter}</cyan>"
         )
