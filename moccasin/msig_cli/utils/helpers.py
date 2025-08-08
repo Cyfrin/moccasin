@@ -1,4 +1,3 @@
-from ctypes import Union
 import os
 from typing import Any, Tuple, Optional
 from eth_utils import to_bytes, to_checksum_address
