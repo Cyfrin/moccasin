@@ -108,7 +108,7 @@ def run(
         )
 
         # Check if the account address is one of the Safe owners
-        if safe_instance.retrieve_is_owner(account.address):
+        if not safe_instance.retrieve_is_owner(account.address):
             raise MsigCliError(
                 f"Signer account {account.address} is not one of the Safe owners. Cannot proceed with signing."
             )
