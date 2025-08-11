@@ -51,6 +51,8 @@ def deploy_local_safe_anvil() -> tuple[
         ethereum_client=ethereum_client, deployer_account=deployer
     )
     safe_master_address = safe_master_tx.contract_address
+    if safe_master_address is None:
+        raise Exception("Failed to deploy Safe master copy.")
 
     # Deploy ProxyFactory
     proxy_factory_contract = get_proxy_factory_contract(ethereum_client.w3)
@@ -69,8 +71,10 @@ def deploy_local_safe_anvil() -> tuple[
     payment_token = "0x0000000000000000000000000000000000000000"
     payment = 0
     payment_receiver = "0x0000000000000000000000000000000000000000"
-    initializer = get_safe_V1_4_1_contract(ethereum_client.w3, safe_master_address)
-    initializer = initializer.functions.setup(
+    initializer_contract = get_safe_V1_4_1_contract(
+        ethereum_client.w3, safe_master_address
+    )
+    initializer_data = initializer_contract.functions.setup(
         owners,
         threshold,
         to,
@@ -80,6 +84,12 @@ def deploy_local_safe_anvil() -> tuple[
         payment,
         payment_receiver,
     ).build_transaction(get_empty_tx_params())["data"]
+    # Ensure initializer is bytes
+    initializer = b""
+    if isinstance(initializer_data, str):
+        initializer = bytes.fromhex(initializer_data.lstrip("0x"))
+    elif isinstance(initializer_data, bytes):
+        initializer = initializer_data
 
     # Deploy Safe proxy with initializer
     safe_proxy_tx = proxy_factory.deploy_proxy_contract_with_nonce(
@@ -91,7 +101,7 @@ def deploy_local_safe_anvil() -> tuple[
     multisend_eth_tx = MultiSend.deploy_contract(
         ethereum_client=ethereum_client, deployer_account=deployer
     )
-    os.environ["TEST_MULTISEND_ADDRESS"] = multisend_eth_tx.contract_address
+    os.environ["TEST_MULTISEND_ADDRESS"] = str(multisend_eth_tx.contract_address)
 
     return safe_proxy_address, multisend_eth_tx.contract_address
 

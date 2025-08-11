@@ -1,7 +1,7 @@
 import json
 import shutil
 from argparse import Namespace
-from typing import List
+from typing import List, cast
 
 from eth_typing import URI
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
@@ -79,13 +79,13 @@ class MsigCli:
             print_formatted_text(HTML(f"<b><cyan>{top_bottom}</cyan></b>"))
 
             # Check if rpc_url is provided in args or prompt for it
-            rpc_url: str = getattr(args, "rpc_url", None)
+            rpc_url = cast(str, getattr(args, "rpc_url", None))
             if rpc_url:
                 if not is_valid_rpc_url(rpc_url):
                     raise MsigCliError(ERROR_INVALID_RPC_URL)
             else:
                 # Prompt for RPC URL if not provided
-                rpc_url: str = prompt_rpc_url(self.prompt_session)
+                rpc_url = cast(str, prompt_rpc_url(self.prompt_session))
                 if not is_valid_rpc_url(rpc_url):
                     raise MsigCliError(ERROR_INVALID_RPC_URL)
 

@@ -41,7 +41,7 @@ def run(
 
         # Initialize the signer account
         # If sig_signer is provided, use it; otherwise, prompt for it
-        account: MoccasinAccount = None
+        account = None
         if not sig_signer:
             is_mox_account = prompt_sign_with_moccasin_account(prompt_session)
             if is_mox_account.lower() in ("yes", "y"):
@@ -65,10 +65,10 @@ def run(
                     ) from e
         else:
             # Check if signer is a string name or a private key
-            if is_valid_private_key(signer):
+            if is_valid_private_key(sig_signer):
                 # Initialize MoccasinAccount with private key
                 try:
-                    account = MoccasinAccount(private_key=HexBytes(signer).hex())
+                    account = MoccasinAccount(private_key=HexBytes(sig_signer).hex())
                 except Exception as e:
                     raise MsigCliError(
                         f"Error initializing MoccasinAccount with arg private key: {e}"
@@ -86,7 +86,7 @@ def run(
                     ) from e
 
         # Check if account is initialized
-        if account:
+        if account and account.address:
             # Check if the account is the right one
             is_right_account = prompt_is_right_account(prompt_session, account.address)
             if is_right_account.lower() not in ("yes", "y"):
@@ -124,10 +124,7 @@ def run(
         confirm = prompt_confirm_sign(prompt_session)
         # If user declines, abort signing
         if confirm.lower() not in ("yes", "y"):
-            print_formatted_text(
-                HTML("<b><red>Aborting signing. User declined.</red></b>")
-            )
-            return
+            raise MsigCliUserAbort("User aborted tx_sign command.")
 
         # Sign the SafeTx
         try:
@@ -136,8 +133,9 @@ def run(
                 HTML("<b><green>SafeTx signed successfully!</green></b>")
             )
         except Exception as e:
-            print_formatted_text(HTML(f"<b><red>Error signing SafeTx: {e}</red></b>"))
-            return
+            raise MsigCliError(
+                f"Error signing SafeTx with account {account.address}: {e}"
+            ) from e
 
         # Display the ordered signers
         # Note: SafeTx.sorted_signers returns the most recent signers first

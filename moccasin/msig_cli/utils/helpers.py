@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Tuple
+from typing import Optional, Tuple, cast
 
 from eth_utils import to_bytes, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
@@ -9,7 +9,12 @@ from safe_eth.util.util import to_0x_hex_str
 
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
 from moccasin.msig_cli.utils.exceptions import MsigCliError
-from moccasin.msig_cli.utils.types import T_EIP712TxJson, T_SafeTxData, T_SafeTxMessage
+from moccasin.msig_cli.utils.types import (
+    T_EIP712Domain,
+    T_EIP712TxJson,
+    T_SafeTxData,
+    T_SafeTxMessage,
+)
 from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
 
 
@@ -129,7 +134,7 @@ def get_safe_instance(ethereum_client: EthereumClient, safe_address: str) -> Saf
 
 def extract_safe_tx_json(
     safe_tx_json: T_SafeTxData | T_EIP712TxJson,
-) -> Tuple[dict, dict, Optional[str]]:
+) -> Tuple[T_EIP712Domain, T_SafeTxMessage, Optional[str]]:
     """
     Validate SafeTx JSON input, extract message, domain, and signatures, and strictly enforce domain matching.
     Raises MsigCliError if domain does not match safe_instance (no override, fail-fast).
@@ -146,25 +151,34 @@ def extract_safe_tx_json(
     domain_json = None
     signatures_json = None
     if "safeTx" in safe_tx_json:
-        safe_tx_eip712 = safe_tx_json["safeTx"]
-        message_json = safe_tx_eip712.get("message")
-        domain_json = safe_tx_eip712.get("domain")
-        signatures_json = safe_tx_json.get("signatures")
+        safe_tx_eip712 = safe_tx_json["safeTx"]  # type: ignore
+        message_json = cast(T_SafeTxMessage, safe_tx_eip712.get("message"))
+        domain_json = cast(T_EIP712Domain, safe_tx_eip712.get("domain"))
+        signatures_val = safe_tx_json.get("signatures")
+        signatures_json = (
+            cast(Optional[str], signatures_val)
+            if signatures_val is None or isinstance(signatures_val, str)
+            else str(signatures_val)
+        )
     elif all(k in safe_tx_json for k in ("types", "domain", "message")):
-        message_json = safe_tx_json.get("message")
-        domain_json = safe_tx_json.get("domain")
+        message_json = cast(T_SafeTxMessage, safe_tx_json.get("message"))
+        domain_json = cast(T_EIP712Domain, safe_tx_json.get("domain"))
     else:
         raise MsigCliError(
             "Invalid SafeTx JSON format: missing 'safeTx' or EIP-712 fields."
         )
 
-    # Return the extracted data
+    # Enforce domain and message are present
+    if domain_json is None:
+        raise MsigCliError("SafeTx JSON missing 'domain' field.")
+    if message_json is None:
+        raise MsigCliError("SafeTx JSON missing 'message' field.")
     return domain_json, message_json, signatures_json
 
 
 def validate_ethereum_client_chain_id(
-    ethereum_client: EthereumClient, domain_json: dict
-) -> bool:
+    ethereum_client: EthereumClient, domain_json: T_EIP712Domain
+) -> None:
     """Validate the chainId in the domain JSON against the Ethereum client.
 
     :param ethereum_client: The Ethereum client instance.
