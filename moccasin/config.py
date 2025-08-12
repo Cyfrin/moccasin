@@ -58,6 +58,8 @@ from moccasin.constants.vars import (
     SQL_LIMIT,
     SQL_WHERE,
     TESTS_FOLDER,
+    MOCCASIN_DEFAULT_FOLDER,
+    DEFAULT_PROJECT,
 )
 from moccasin.logging import logger
 from moccasin.moccasin_account import MoccasinAccount
@@ -248,7 +250,7 @@ class Network:
                     self.explorer_type = "blockscout"
                 elif "zksync" in self.explorer_uri:
                     self.explorer_type = "zksyncexplorer"
-                elif self.explorer_uri.strip('/') in ETHERSCAN_EXPLORERS.keys():
+                elif self.explorer_uri.strip("/") in ETHERSCAN_EXPLORERS.keys():
                     self.explorer_type = "etherscan"
 
         if self.explorer_type is None:
@@ -2231,4 +2233,19 @@ def initialize_global_config(config_path: Path | None = None) -> Config:
 def _set_global_config(config_path: Path | None = None) -> Config:
     global _config
     _config = Config.load_config_from_root(config_path)
+    return _config
+
+
+def _initialize_global_config_without_requiring_toml_file(
+    config_path: Path | None = None,
+) -> Config:
+    global _config
+    if config_path is None:
+        config_path = MOCCASIN_DEFAULT_FOLDER / DEFAULT_PROJECT / CONFIG_NAME
+    if not config_path.exists():
+        from moccasin.constants.file_data import MOCCASIN_DEFAULT_CONFIG
+
+        with config_path.open("w", encoding="utf-8") as fp:
+            fp.write(MOCCASIN_DEFAULT_CONFIG)
+    _config = Config(config_path)
     return _config

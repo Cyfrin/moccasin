@@ -12,6 +12,7 @@ def main(args: Namespace) -> int:
     """Main entry point for the msig CLI."""
 
     msig_cli = MsigCli()
+
     try:
         msig_cli.run(args)
         print_formatted_text(
@@ -31,3 +32,4 @@ def main(args: Namespace) -> int:
         print_formatted_text(HTML(f"<b><red>!!! Unexpected error: {e} !!!</red></b>"))
         traceback.print_exc()
         return 1
+    return 0

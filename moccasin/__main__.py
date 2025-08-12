@@ -65,15 +65,6 @@ def main(argv: list) -> int:
             logger.error(f"Error running format command: {e}")
             return 1
 
-    # Special case for msig command - pass all args through to msig handler
-    if len(argv) > 0 and argv[0] == "msig":
-        try:
-            logger.info("Running msig command...")
-            return import_module("moccasin.commands.msig").main(argv[1:])
-        except Exception as e:
-            logger.error(f"Error running msig command: {e}")
-            return 1
-
     main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
 
     # ------------------------------------------------------------------
@@ -216,6 +207,7 @@ Use this command to prepare your contracts for deployment or testing.""",
         action="store_true",
     )
     add_network_args_to_parser(test_parser)
+    add_db_args_to_parser(test_parser)
     add_account_args_to_parser(test_parser)
 
     # Pytest args
@@ -387,6 +379,7 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
 
     add_network_args_to_parser(run_parser)
+    add_db_args_to_parser(run_parser)
     add_account_args_to_parser(run_parser)
 
     # ------------------------------------------------------------------
@@ -410,6 +403,7 @@ Use this command to prepare your contracts for deployment or testing.""",
     )
 
     add_network_args_to_parser(deploy_parser)
+    add_db_args_to_parser(deploy_parser)
     add_account_args_to_parser(deploy_parser)
 
     # ------------------------------------------------------------------
@@ -509,6 +503,7 @@ Use this command to prepare your contracts for deployment or testing.""",
         parents=[parent_parser],
     )
     add_network_args_to_parser(console_parser)
+    add_db_args_to_parser(console_parser)
     add_account_args_to_parser(console_parser)
 
     # ------------------------------------------------------------------
@@ -746,6 +741,7 @@ Example usage:
         "--limit", default=None, help="Limit the number of deployments to get."
     )
     add_network_args_to_parser(deployments_parser)
+    add_db_args_to_parser(deployments_parser)
 
     # ------------------------------------------------------------------
     #                         UTILS COMMAND
@@ -773,13 +769,30 @@ Example usage:
     # ---------------------------------------------------------------------
     #                         MSIG COMMAND
     # ---------------------------------------------------------------------
-    sub_parsers.add_parser(
+    msig_parser = sub_parsers.add_parser(
         "msig",
         help="Moccasin Multisig CLI helper.",
         description="""This command is a helper for multisig operations in Moccasin.
         It allows to build transactions, sign them, and broadcast them to the network.
         """,
+        parents=[parent_parser],
     )
+    msig_subparsers = msig_parser.add_subparsers(dest="msig_command")
+
+    # tx_build
+    tx_build_parser = msig_subparsers.add_parser(
+        "tx_build", help="Build a multisig transaction."
+    )
+    add_network_args_to_parser(tx_build_parser)
+    add_account_args_to_parser(tx_build_parser)
+
+    # tx_sign
+    tx_sign_parser = msig_subparsers.add_parser(
+        "tx_sign", help="Sign a multisig transaction."
+    )
+    add_network_args_to_parser(tx_sign_parser)
+    add_account_args_to_parser(tx_sign_parser)
+    add_tx_signer_args(tx_sign_parser)
 
     # ------------------------------------------------------------------
     #                             RETURN
@@ -826,7 +839,7 @@ def add_network_args_to_parser(parser: argparse.ArgumentParser):
         "--network", help=f"Alias of the network (from the {CONFIG_NAME})."
     )
     network_or_rpc_group.add_argument(
-        "--url", "--rpc", help="RPC URL to run the script on."
+        "--url", "--rpc", "--rpc-url", help="RPC URL to run the script on."
     )
     network_or_rpc_group.add_argument(
         "--prompt-live",
@@ -835,6 +848,10 @@ def add_network_args_to_parser(parser: argparse.ArgumentParser):
         default=None,  # When no flag is passed
         help="Prompt the user to make sure they want to run this script.",
     )
+    return parser
+
+
+def add_db_args_to_parser(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--db-path",
         default=None,
@@ -876,6 +893,20 @@ def create_parent_parser():
         "-q", "--quiet", action="store_true", help="Suppress all output except errors"
     )
     return parser
+
+
+def add_tx_signer_args(parser: argparse.ArgumentParser):
+    """Add transaction signer arguments to the parser."""
+    parser.add_argument(
+        "--signer",
+        help="Signer account name from mox wallet or private key to use for signing the transaction. Private key is discouraged for security reasons, only use for testing purposes.",
+    )
+    parser.add_argument(
+        "--input-json", help="Path to a JSON file containing the SafeTx data to sign."
+    )
+    parser.add_argument(
+        "--output-json", help="Output file to save the signed SafeTx data as JSON."
+    )
 
 
 class RequirePasswordAction(argparse.Action):
