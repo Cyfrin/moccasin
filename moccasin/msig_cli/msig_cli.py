@@ -10,7 +10,6 @@ from prompt_toolkit.shortcuts import clear as prompt_clear
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
 
-from moccasin.msig_cli.arg_parser import create_msig_parser
 from moccasin.msig_cli.common_prompts import (
     prompt_continue_next_step,
     prompt_rpc_url,
@@ -35,19 +34,6 @@ class MsigCli:
     """MsigCli class to handle multi-signature wallet operations and session state."""
 
     def __init__(self):
-        """Initialize the MsigCli instance."""
-        self.parser = create_msig_parser()
-
-        self.prompt_session = PromptSession(
-            auto_suggest=AutoSuggestFromHistory(),
-            bottom_toolbar=self._bottom_toolbar_cli,
-            rprompt=self._right_toolbar_cli,
-            validate_while_typing=False,
-        )
-        self.ethereum_client = None
-        self.safe_instance: Safe = None
-        self.safe_tx: SafeTx = None
-        self.msig_command = None
 
     def run(self, args: Namespace = None):
         """
@@ -56,28 +42,6 @@ class MsigCli:
         :param args: argparse Namespace with all parsed arguments.
         """
         try:
-            # Parse the command line arguments
-            args = self.parser.parse_args(args)
-
-            # If no subcommand, show msig help
-            if args.msig_command is None:
-                self.parser.print_help()
-                return 0
-
-            # Clear the terminal and print the banner
-            prompt_clear()
-            term_width = shutil.get_terminal_size((80, 20)).columns
-            title = " MSIG CLI "
-            # Calculate padding for title line
-            pad = term_width - len(title) - 2
-            left = pad // 2
-            right = pad - left
-            top_bottom = "=" * term_width
-            middle = " " * left + title + " " * right
-            print_formatted_text(HTML(f"<b><cyan>{top_bottom}</cyan></b>"))
-            print_formatted_text(HTML(f"<b><cyan>{middle}</cyan></b>"))
-            print_formatted_text(HTML(f"<b><cyan>{top_bottom}</cyan></b>"))
-
             # Check if rpc_url is provided in args or prompt for it
             rpc_url = cast(str, getattr(args, "rpc_url", None))
             if rpc_url:

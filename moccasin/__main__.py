@@ -1,4 +1,5 @@
 import argparse
+from operator import add
 import sys
 import tomllib
 from importlib import import_module, metadata
@@ -63,15 +64,6 @@ def main(argv: list) -> int:
             return import_module("moccasin.commands.format").main(args)
         except Exception as e:
             logger.error(f"Error running format command: {e}")
-            return 1
-
-    # Special case for msig command - pass all args through to msig handler
-    if len(argv) > 0 and argv[0] == "msig":
-        try:
-            logger.info("Running msig command...")
-            return import_module("moccasin.commands.msig").main(argv[1:])
-        except Exception as e:
-            logger.error(f"Error running msig command: {e}")
             return 1
 
     main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
@@ -773,14 +765,36 @@ Example usage:
     # ---------------------------------------------------------------------
     #                         MSIG COMMAND
     # ---------------------------------------------------------------------
-    sub_parsers.add_parser(
+    msig_parser = sub_parsers.add_parser(
         "msig",
         help="Moccasin Multisig CLI helper.",
         description="""This command is a helper for multisig operations in Moccasin.
         It allows to build transactions, sign them, and broadcast them to the network.
         """,
+        parents=[parent_parser],
     )
+    msig_parser.add_argument(
+        "--with-project-toml",
+        help="Use the project moccasin.toml file to get the multisig configuration, rather than the default one.",
+        action="store_true",
+    )
+    msig_subparsers = msig_parser.add_subparsers(dest="msig_command")
 
+    # tx_build
+    tx_build_parser = msig_subparsers.add_parser(
+        "tx_build", help="Build a multisig transaction."
+    )
+    add_network_args_to_parser(tx_build_parser)
+    add_account_args_to_parser(tx_build_parser)
+    add_tx_builder_args(tx_build_parser)
+
+    # tx_sign
+    tx_sign_parser = msig_subparsers.add_parser(
+        "tx_sign", help="Sign a multisig transaction."
+    )
+    add_network_args_to_parser(tx_sign_parser)
+    add_account_args_to_parser(tx_sign_parser)
+    add_tx_signer_args(tx_sign_parser)
     # ------------------------------------------------------------------
     #                             RETURN
     # ------------------------------------------------------------------
@@ -876,6 +890,44 @@ def create_parent_parser():
         "-q", "--quiet", action="store_true", help="Suppress all output except errors"
     )
     return parser
+
+
+# Msig CLI specific argument parsers
+def add_tx_builder_args(parser: argparse.ArgumentParser):
+    """Add transaction builder arguments to the parser."""
+    # add msg as calldata that could be decoded if we want to avoid json?
+    parser.add_argument(
+        "--safe-address", help="Address of the Safe contract to interact with."
+    )
+    parser.add_argument("--to", help="Address of the contract to call.")
+    parser.add_argument(
+        "--operation", help="Operation type: 0 for call, 1 for delegate call."
+    )
+    parser.add_argument("--value", help="Value to send with the transaction, in wei.")
+    parser.add_argument(
+        "--data", help="Data to send with the transaction, in hex format."
+    )
+    parser.add_argument(
+        "--safe-nonce", help="Nonce of the Safe contract to use for the transaction."
+    )
+    parser.add_argument(
+        "--gas-token",
+        help="Token to use for gas, defaults to the native token of the network.",
+    )
+    parser.add_argument(
+        "--output-json", help="Output file to save the SafeTx structured data as JSON."
+    )
+
+
+def add_tx_signer_args(parser: argparse.ArgumentParser):
+    """Add transaction signer arguments to the parser."""
+    # add msg as calldata that could be decoded if we want to avoid json?
+    parser.add_argument(
+        "--input-json", help="Path to a JSON file containing the SafeTx data to sign."
+    )
+    parser.add_argument(
+        "--output-json", help="Output file to save the signed SafeTx data as JSON."
+    )
 
 
 class RequirePasswordAction(argparse.Action):

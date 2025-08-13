@@ -39,6 +39,7 @@ from moccasin.constants.vars import (
     DB_PATH_LIVE_DEFAULT,
     DB_PATH_LOCAL_DEFAULT,
     DEFAULT_NETWORK,
+    DEFAULT_PROJECT,
     DEPENDENCIES_FOLDER,
     DOT_ENV_FILE,
     DOT_ENV_KEY,
@@ -46,6 +47,7 @@ from moccasin.constants.vars import (
     FORK_NETWORK_DEFAULTS,
     GET_CONTRACT_SQL,
     LOCAL_NETWORK_DEFAULTS,
+    MOCCASIN_DEFAULT_FOLDER,
     PYEVM,
     RESTRICTED_VALUES_FOR_LOCAL_NETWORK,
     SAVE_ABI_PATH,
@@ -248,7 +250,7 @@ class Network:
                     self.explorer_type = "blockscout"
                 elif "zksync" in self.explorer_uri:
                     self.explorer_type = "zksyncexplorer"
-                elif self.explorer_uri.strip('/') in ETHERSCAN_EXPLORERS.keys():
+                elif self.explorer_uri.strip("/") in ETHERSCAN_EXPLORERS.keys():
                     self.explorer_type = "etherscan"
 
         if self.explorer_type is None:
@@ -2221,14 +2223,42 @@ def get_config() -> Config:
     return _config
 
 
-def initialize_global_config(config_path: Path | None = None) -> Config:
+def initialize_global_config(
+    config_path: Path | None = None, is_default_project=False
+) -> Config:
     global _config
     assert _config is None
-    _set_global_config(config_path)
+    if is_default_project:
+        _set_global_config_without_requiring_toml_file(config_path)
+    else:
+        _set_global_config(config_path)
     return get_config()
 
 
 def _set_global_config(config_path: Path | None = None) -> Config:
     global _config
     _config = Config.load_config_from_root(config_path)
+    return _config
+
+
+def _set_global_config_without_requiring_toml_file(
+    config_path: Path | None = None,
+) -> Config:
+    """Initialize the global Config object without requiring a moccasin.toml file.
+
+    This function will create a default configuration file if it does not exist.
+
+    :param config_path: The path to the configuration file. If None, uses the default path.
+    :type config_path: Path or None
+    :return: The initialized Config object.
+    """
+    global _config
+    if config_path is None:
+        config_path = MOCCASIN_DEFAULT_FOLDER / DEFAULT_PROJECT / CONFIG_NAME
+    if not config_path.exists():
+        from moccasin.constants.file_data import MOCCASIN_DEFAULT_CONFIG
+
+        with config_path.open("w", encoding="utf-8") as fp:
+            fp.write(MOCCASIN_DEFAULT_CONFIG)
+    _config = Config(config_path)
     return _config

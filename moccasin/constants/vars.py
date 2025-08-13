@@ -66,6 +66,7 @@ MOCCASIN_KEYSTORE_PATH = Path(
 )
 MOCCASIN_KEYSTORE_PATH.mkdir(parents=True, exist_ok=True)
 CONFIG_NAME = "moccasin.toml"
+DEFAULT_PROJECT = "default_project"
 
 
 # Define default values for PYEVM and ERAVM
