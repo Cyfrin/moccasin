@@ -6,6 +6,7 @@ import pytest
 
 from pathlib import Path
 
+from moccasin.msig_cli.constants import ERROR_INVALID_DATA, ERROR_INVALID_JSON_FILE
 from tests.utils.anvil import ANVIL_URL
 
 # Constants for CLI commands tests
@@ -208,20 +209,21 @@ def test_cli_tx_builder_invalid_json_output(
         "not_a_json.txt",
     ]
 
-    with pytest.raises(subprocess.CalledProcessError):
-        current_dir = Path.cwd()
-        try:
-            os.chdir(current_dir.joinpath(moccasin_home_folder))
-            subprocess.run(
-                [mox_path, "msig", "tx_build"] + args,
-                input="q\n",
-                text=True,
-                capture_output=True,
-                check=True,
-                timeout=30,
-            )
-        finally:
-            os.chdir(current_dir)
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"] + args,
+            input="q\n",
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=30,
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert ERROR_INVALID_JSON_FILE in result.stderr
 
 
 def test_cli_tx_builder_multisend_mixed_operations(
@@ -435,21 +437,22 @@ def test_cli_tx_builder_invalid_data(
         "0x0000000000000000000000000000000000000000",
     ]
 
-    with pytest.raises(subprocess.CalledProcessError):
-        current_dir = Path.cwd()
+    current_dir = Path.cwd()
 
-        try:
-            os.chdir(current_dir.joinpath(moccasin_home_folder))
-            subprocess.run(
-                [mox_path, "msig", "tx_build"] + args,
-                input="q\n",
-                text=True,
-                capture_output=True,
-                check=True,
-                timeout=30,
-            )
-        finally:
-            os.chdir(current_dir)
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"] + args,
+            input="q\n",
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=30,
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert ERROR_INVALID_DATA in result.stderr
 
 
 def test_cli_tx_builder_multisend_large_batch(
@@ -524,18 +527,3 @@ def test_cli_tx_builder_multisend_large_batch(
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
     assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
     os.remove(json_path)
-
-
-"""
-@TOFIX
-tests/cli/test_cli_msig_build.py::test_eth_safe_address_anvil_fixture PASSED            [ 10%]
-tests/cli/test_cli_msig_build.py::test_cli_tx_builder_interactive PASSED                [ 20%]
-tests/cli/test_cli_msig_build.py::test_cli_tx_builder_args_only PASSED                  [ 30%]
-tests/cli/test_cli_msig_build.py::test_cli_tx_builder_args_with_json_output FAILED      [ 40%]
-tests/cli/test_cli_msig_build.py::test_cli_tx_builder_invalid_json_output FAILED        [ 50%]
-tests/cli/test_cli_msig_build.py::test_cli_tx_builder_multisend_mixed_operations PASSED [ 60%]
-tests/cli/test_cli_msig_build.py::test_cli_tx_builder_multisend_user_rejects PASSED     [ 70%]
-tests/cli/test_cli_msig_build.py::test_cli_tx_builder_prompt_fallbacks FAILED           [ 80%]
-tests/cli/test_cli_msig_build.py::test_cli_tx_builder_invalid_data FAILED               [ 90%]
-tests/cli/test_cli_msig_build.py::test_cli_tx_builder_multisend_large_batch PASSED
-"""

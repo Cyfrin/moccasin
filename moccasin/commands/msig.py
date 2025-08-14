@@ -1,4 +1,6 @@
 from argparse import Namespace
+import json
+import traceback
 from typing import Tuple
 
 from eth_typing import URI
@@ -21,8 +23,16 @@ from moccasin.msig_cli.common_prompts import (
     prompt_rpc_url,
     prompt_safe_address,
 )
-from moccasin.msig_cli.tx import tx_build
-from moccasin.msig_cli.utils.helpers import get_safe_instance
+from moccasin.msig_cli.tx import tx_build, tx_sign
+from moccasin.msig_cli.tx.sign_prompts import prompt_eip712_input_file
+from moccasin.msig_cli.utils.helpers import (
+    build_safe_tx_from_message,
+    extract_safe_tx_json,
+    get_safe_instance,
+    get_signatures_bytes,
+    validate_ethereum_client_chain_id,
+)
+from moccasin.msig_cli.utils.types import T_SafeTxData
 
 
 # --- Prompt session functions ---
@@ -63,6 +73,18 @@ def _right_toolbar_cli(msig_command: str = None):
     return HTML("<b><orange bg='ansiblack'>&lt;msig&gt;</orange></b>")
 
 
+def _update_bottom_toolbar(
+    prompt_session: PromptSession,
+    ethereum_client: EthereumClient,
+    safe_instance: Safe = None,
+    safe_tx: SafeTx = None,
+):
+    """Update the bottom toolbar of the prompt session with the current state."""
+    prompt_session.bottom_toolbar = _bottom_toolbar_cli(
+        ethereum_client=ethereum_client, safe_instance=safe_instance, safe_tx=safe_tx
+    )
+
+
 # --- Tx command functions ---
 def _tx_build_command(
     prompt_session: PromptSession,
@@ -79,22 +101,17 @@ def _tx_build_command(
     print_formatted_text(
         HTML("\n\n<b><cyan>Running tx_builder command...</cyan></b>\n")
     )
-    # Get args from Namespace if provided
-    safe_address = getattr(args, "safe_address", None)
-    to = getattr(args, "to", None)
-    value = getattr(args, "value", None)
-    operation = getattr(args, "operation", None)
-    safe_nonce = getattr(args, "safe_nonce", None)
-    data = getattr(args, "data", None)
-    gas_token = getattr(args, "gas_token", None)
-    json_out = getattr(args, "json_output", None)
+    # Validate and preprocess the provided arguments if not None
+    (safe_address, to, value, operation, safe_nonce, data, gas_token, output_json) = (
+        tx_build.preprocess_raw_args(args)
+    )
 
     # Values to build from tx_build
     safe_instance = None
     safe_tx = None
 
     # Initialize Safe instance from args if provided
-    if not safe_address:
+    if safe_address is None:
         print_formatted_text(
             HTML("<b><yellow>Warning: Missing safe address from input.</yellow></b>")
         )
@@ -104,7 +121,7 @@ def _tx_build_command(
     safe_instance = get_safe_instance(
         ethereum_client=ethereum_client, safe_address=safe_address
     )
-    if not safe_instance:
+    if safe_instance is None:
         logger.error(f"Failed to initialize Safe instance with address: {safe_address}")
         raise ValueError(
             f"Failed to initialize Safe instance with address: {safe_address}"
@@ -115,8 +132,10 @@ def _tx_build_command(
     )
 
     # Update bottom toolbar with Ethereum client
-    prompt_session.bottom_toolbar = _bottom_toolbar_cli(
-        ethereum_client=ethereum_client, safe_instance=safe_instance, safe_tx=None
+    _update_bottom_toolbar(
+        prompt_session=prompt_session,
+        ethereum_client=ethereum_client,
+        safe_instance=safe_instance,
     )
 
     # Run the transaction builder with the provided args
@@ -129,7 +148,7 @@ def _tx_build_command(
         safe_nonce=safe_nonce,
         data=data,
         gas_token=gas_token,
-        json_output=json_out,
+        output_json=output_json,
     )
 
     # Catch any exceptions and raise a generic MsigCliError
@@ -137,14 +156,23 @@ def _tx_build_command(
         raise Exception("Failed to build SafeTx from provided parameters.")
 
     # Update bottom toolbar with Ethereum client
-    prompt_session.bottom_toolbar = _bottom_toolbar_cli(
-        ethereum_client=ethereum_client, safe_instance=safe_instance, safe_tx=safe_tx
+    _update_bottom_toolbar(
+        prompt_session=prompt_session,
+        ethereum_client=ethereum_client,
+        safe_instance=safe_instance,
+        safe_tx=safe_tx,
     )
 
     return safe_instance, safe_tx
 
 
-def _tx_sign_command(self, args: Namespace = None):
+def _tx_sign_command(
+    prompt_session: PromptSession,
+    ethereum_client: EthereumClient,
+    safe_instance: Safe = None,
+    safe_tx: SafeTx = None,
+    args: Namespace = None,
+):
     """Handle the transaction signing command.
 
     This method initializes the Safe instance and SafeTx based on the provided or prompted input file,
@@ -156,15 +184,13 @@ def _tx_sign_command(self, args: Namespace = None):
     :param args: Optional argparse Namespace with command arguments.
     """
     print_formatted_text(HTML("\n\n<b><cyan>Running tx_sign command...</cyan></b>"))
-    # Get args from Namespace if provided
-    input_file_safe_tx = getattr(args, "input_json", None)
-    output_file_safe_tx = getattr(args, "output_json", None)
-    signer = getattr(args, "signer", None)
+    # Validate and preprocess the provided arguments if not None
+    (input_file_safe_tx, output_file_safe_tx) = tx_sign.preprocess_raw_args(args)
 
     # No prior data means we need to get the Safe from the input file
-    if not self.safe_instance and not self.safe_tx:
+    if not safe_instance and not safe_tx:
         # Check if eip712_input_file is provided, else prompt to get it
-        if not input_file_safe_tx:
+        if input_file_safe_tx is None:
             print_formatted_text(
                 HTML(
                     "<b><yellow>Warning: No input file provided. Prompting for custom or original EIP-712 JSON file.</yellow></b>"
@@ -175,80 +201,74 @@ def _tx_sign_command(self, args: Namespace = None):
                     "<b><magenta>Note: Advised to run tx_build before tx_sign if no input file available.</magenta></b>"
                 )
             )
-            eip712_prompted_file = prompt_eip712_input_file(self.prompt_session)
+            eip712_prompted_file = prompt_eip712_input_file(prompt_session)
             if not eip712_prompted_file.exists():
-                raise MsigCliError(
-                    f"JSON file SafeTx not found: {eip712_prompted_file}."
-                )
+                raise ValueError(f"JSON file SafeTx not found: {eip712_prompted_file}.")
             input_file_safe_tx = eip712_prompted_file
 
         # Load the JSON file
-        try:
-            with open(input_file_safe_tx, "r") as f:
-                input_file_raw = f.read()
-                safe_tx_json: T_SafeTxData = json.loads(input_file_raw)
-        except FileNotFoundError:
-            raise MsigCliError(
-                f"JSON file SafeTx not found while opening: {input_file_safe_tx}"
-            )
-        except json.JSONDecodeError as e:
-            raise MsigCliError(
-                f"Invalid JSON format in file: {input_file_safe_tx} - {e}"
-            ) from e
+        with open(input_file_safe_tx, "r") as f:
+            safe_tx_json: T_SafeTxData = json.loads(f.read())
 
         # Extract SafeTx data from input file
         domain_json, message_json, signatures_json = extract_safe_tx_json(safe_tx_json)
 
         # Validate the domain chainId from JSON and our Ethereum client
-        try:
-            validate_ethereum_client_chain_id(
-                ethereum_client=self.ethereum_client, domain_json=domain_json
-            )
-        except MsigCliError as e:
-            raise MsigCliError(
-                f"Failed to validate Ethereum client chainId: {e}"
-            ) from e
+        validate_ethereum_client_chain_id(
+            ethereum_client=ethereum_client, domain_json=domain_json
+        )
 
         # Initialize Safe instance with the address from domain_json
         safe_address = domain_json.get("verifyingContract")
         if not safe_address:
-            raise MsigCliError(
+            raise ValueError(
                 "Domain JSON must contain 'verifyingContract' field for Safe address."
             )
-        self.safe_instance = get_safe_instance(
-            ethereum_client=self.ethereum_client, safe_address=safe_address
+        safe_instance = get_safe_instance(
+            ethereum_client=ethereum_client, safe_address=safe_address
         )
         print_formatted_text(
-            HTML(
-                f"<b><green>Using Safe address: {self.safe_instance.address}</green></b>"
-            )
+            HTML(f"<b><green>Using Safe address: {safe_instance.address}</green></b>")
         )
 
         # Initialize SafeTx with the message and signatures
-        self.safe_tx = build_safe_tx_from_message(
-            safe_instance=self.safe_instance,
+        safe_tx = build_safe_tx_from_message(
+            safe_instance=safe_instance,
             message_json=message_json,
             signatures_json=get_signatures_bytes(signatures_json),
         )
 
-    # Sign the SafeTx with the provided signer
-    try:
-        self.safe_tx = tx_sign.run(
-            prompt_session=self.prompt_session,
-            safe_instance=self.safe_instance,
-            safe_tx=self.safe_tx,
-            output_file_safe_tx=output_file_safe_tx,
-            signer=signer,
+        # Update bottom toolbar with Ethereum client
+        _update_bottom_toolbar(
+            prompt_session=prompt_session,
+            ethereum_client=ethereum_client,
+            safe_instance=safe_instance,
         )
 
-    # Handle specific exceptions from tx_sign
-    except MsigCliUserAbort as e:
-        raise MsigCliUserAbort(f"User aborted tx_sign command: {e}") from e
-    except MsigCliError as e:
-        raise MsigCliError(f"MsigCli error in tx_sign command: {e}") from e
-    # Catch any other exceptions and raise
-    except Exception as e:
-        raise Exception(f"Unexpected error in tx_sign command: {e}") from e
+    # Get the signer from config or none
+    signer = None
+    if args.account is not None or args.private_key is not None:
+        signer = get_config().get_active_network().get_default_account()
+
+    # Sign the SafeTx with the provided signer
+    safe_tx = tx_sign.run(
+        prompt_session=prompt_session,
+        safe_instance=safe_instance,
+        safe_tx=safe_tx,
+        signer=signer,
+        output_file_safe_tx=output_file_safe_tx,
+    )
+    if not safe_tx:
+        raise Exception("Failed to sign SafeTx with provided parameters.")
+
+    # Update bottom toolbar with Ethereum client
+    _update_bottom_toolbar(
+        prompt_session=prompt_session,
+        ethereum_client=ethereum_client,
+        safe_instance=safe_instance,
+    )
+
+    return safe_instance, safe_tx
 
 
 def _tx_broadcast_command(self, args: Namespace = None):
@@ -337,7 +357,11 @@ def main(args: Namespace) -> int:
                         )
                     elif cmd == "tx_sign":
                         safe_instance, safe_tx = _tx_sign_command(
-                            prompt_session, ethereum_client, args
+                            prompt_session,
+                            ethereum_client,
+                            safe_instance,
+                            safe_tx,
+                            args,
                         )
                     elif cmd == "tx_broadcast":
                         _tx_broadcast_command(prompt_session, args)
@@ -384,6 +408,7 @@ def main(args: Namespace) -> int:
 
     except Exception as e:
         logger.error(f"Error in msig CLI: {e}")
+        traceback.print_exc()
         return 1
     except KeyboardInterrupt:
         logger.info("User aborted the msig CLI.")

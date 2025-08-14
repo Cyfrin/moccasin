@@ -37,14 +37,7 @@ def prompt_continue_next_step(prompt_session, next_cmd):
     return True if answer.strip().lower() in ("c", "continue", "y", "yes") else False
 
 
-def prompt_save_safe_tx_json(prompt_session, safe_tx_data, json_output=None):
-    if json_output:
-        with open(json_output, "w") as f:
-            json.dump(safe_tx_data, f, indent=2, default=str)
-        print_formatted_text(
-            HTML(f"<b><green>Saved EIP-712 JSON:</green> {json_output}</b>")
-        )
-        return
+def prompt_save_safe_tx_json(prompt_session):
     save = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Save EIP-712 JSON? (y/n): </b>"),
         placeholder=HTML("<grey>y/n</grey>"),
@@ -56,10 +49,7 @@ def prompt_save_safe_tx_json(prompt_session, safe_tx_data, json_output=None):
             placeholder=HTML("<grey>./safe-tx.json</grey>"),
             validator=validator_json_file,
         )
-        with open(filename, "w") as f:
-            json.dump(safe_tx_data, f, indent=2, default=str)
-        print_formatted_text(
-            HTML(f"<b><green>Saved EIP-712 JSON:</green> {filename}</b>")
-        )
+        return filename
     else:
         print_formatted_text(HTML("<b><yellow>Not saving EIP-712 JSON.</yellow></b>"))
+        return None

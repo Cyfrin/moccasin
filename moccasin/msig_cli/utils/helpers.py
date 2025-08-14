@@ -1,6 +1,8 @@
+import json
 import os
 from typing import Optional, Tuple, cast
 
+from click import File
 from eth_utils import to_bytes, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.eth import EthereumClient
@@ -86,7 +88,7 @@ def get_signatures_bytes(signatures: Optional[str]) -> bytes:
         return b""
 
 
-def get_eip712_structured_data(safe_tx: SafeTx) -> dict:
+def get_custom_eip712_structured_data(safe_tx: SafeTx) -> dict:
     """Get the EIP-712 structured data from a SafeTx.
 
     :param safe_tx: SafeTx object to extract the structured data from.
@@ -184,11 +186,11 @@ def validate_ethereum_client_chain_id(
     :raises MsigCliError: If the chainId does not match the Ethereum client's chainId.
     """
     if "chainId" not in domain_json:
-        raise MsigCliError("Domain JSON must contain 'chainId' field.")
+        raise Exception("Domain JSON must contain 'chainId' field.")
 
     eth_chain_id = ethereum_client.get_chain_id()
     if domain_json["chainId"] != eth_chain_id:
-        raise MsigCliError(
+        raise Exception(
             f"Domain chainId {domain_json['chainId']} does not match Ethereum client chainId {eth_chain_id}."
         )
 
@@ -226,3 +228,12 @@ def build_safe_tx_from_message(
         )
     except Exception as e:
         raise MsigCliError(f"Error creating SafeTx from message JSON: {e}") from e
+
+
+def save_safe_tx_json(output_json: str, safe_tx_data: dict) -> None:
+    """Save the SafeTx data as JSON to the specified output file."""
+    with open(output_json, "w") as f:
+        json.dump(safe_tx_data, f, indent=2, default=str)
+    print_formatted_text(
+        HTML(f"<b><green>Saved EIP-712 JSON:</green> {output_json}</b>")
+    )

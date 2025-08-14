@@ -1,3 +1,4 @@
+from argparse import Namespace
 from typing import Optional
 
 from eth_typing import ChecksumAddress
@@ -19,10 +20,60 @@ from moccasin.msig_cli.tx.build_prompts import (
     prompt_target_contract_address,
 )
 from moccasin.msig_cli.utils.helpers import (
-    get_eip712_structured_data,
+    get_custom_eip712_structured_data,
     get_multisend_address_from_env,
     pretty_print_safe_tx,
+    save_safe_tx_json,
 )
+from moccasin.msig_cli.validators import (
+    validate_address,
+    validate_data,
+    validate_json_file,
+    validate_number,
+    validate_operation,
+)
+
+
+def _decode_and_confirm_multisend_batch(
+    prompt_session, safe_instance, data, to, operation
+) -> tuple[Optional[ChecksumAddress], Optional[int]]:
+    """Decode and confirm MultiSend batch. If not a batch, return (None, None)."""
+    try:
+        decoded_batch = MultiSend.from_transaction_data(data)
+    except Exception as e:
+        logger.warning(f"Could not decode data as MultiSend batch: {e}")
+        return None, None
+
+    if not decoded_batch:
+        return None, None
+
+    has_delegate = any(
+        tx.operation == MultiSendOperation.DELEGATE_CALL for tx in decoded_batch
+    )
+
+    # Initialize MultiSend with the address if provided, otherwise use default
+    multi_send = MultiSend(
+        ethereum_client=safe_instance.ethereum_client,
+        address=get_multisend_address_from_env(),
+        call_only=not has_delegate,
+    )
+    multi_send_address = multi_send.address
+
+    if not prompt_multisend_batch_confirmation(
+        prompt_session, decoded_batch, multi_send_address, to
+    ):
+        print_formatted_text(
+            HTML("<b><red>Aborting due to user rejection of decoded batch.</red></b>")
+        )
+        raise Exception("User rejected MultiSend batch confirmation.")
+
+    to = multi_send_address
+    operation = int(
+        MultiSendOperation.DELEGATE_CALL.value
+        if has_delegate
+        else MultiSendOperation.CALL.value
+    )
+    return to, operation
 
 
 # --- Main entrypoint ---
@@ -35,7 +86,7 @@ def run(
     safe_nonce: Optional[int] = None,
     data: Optional[HexBytes] = None,
     gas_token: Optional[str] = None,
-    json_output: Optional[str] = None,
+    output_json: Optional[str] = None,
 ) -> SafeTx:
     """Run the transaction builder with interactive prompts.
 
@@ -58,6 +109,7 @@ def run(
     tx_operation = operation
     tx_data = data
     tx_safe_nonce = safe_nonce
+    tx_output_json = output_json
 
     # Prompt for nonce and gas token
     if tx_safe_nonce is None:
@@ -126,51 +178,68 @@ def run(
     )
     # Pretty-print the SafeTx fields and get EIP-712 structured data
     pretty_print_safe_tx(safe_tx)
-    safe_tx_data = get_eip712_structured_data(safe_tx)
+    safe_tx_data = get_custom_eip712_structured_data(safe_tx)
 
     # Save EIP-712 structured data as JSON
-    prompt_save_safe_tx_json(prompt_session, safe_tx_data, json_output)
+    if tx_output_json is None:
+        tx_output_json = prompt_save_safe_tx_json(prompt_session)
+
+    if tx_output_json is not None:
+        save_safe_tx_json(tx_output_json, safe_tx_data)
+        return
+    else:
+        print_formatted_text(HTML("<b><yellow>Not saving EIP-712 JSON.</yellow></b>"))
 
     return safe_tx
 
 
-def _decode_and_confirm_multisend_batch(
-    prompt_session, safe_instance, data, to, operation
-) -> tuple[Optional[ChecksumAddress], Optional[int]]:
-    """Decode and confirm MultiSend batch. If not a batch, return (None, None)."""
-    try:
-        decoded_batch = MultiSend.from_transaction_data(data)
-    except Exception as e:
-        logger.warning(f"Could not decode data as MultiSend batch: {e}")
-        return None, None
+# --- Tx build helper functions ---
+def preprocess_raw_args(
+    args: Namespace,
+) -> tuple[
+    Optional[ChecksumAddress],
+    Optional[int],
+    Optional[int],
+    Optional[int],
+    Optional[HexBytes],
+    Optional[ChecksumAddress],
+    Optional[str],
+]:
+    """Preprocess and validate raw arguments for the transaction builder.
 
-    if not decoded_batch:
-        return None, None
+    :param to: Address of the contract to call.
+    :param value: Value to send with the transaction, in wei.
+    :param operation: Operation type (0 for call, 1 for delegate call).
+    :param safe_nonce: Nonce of the Safe contract to use for the transaction.
+    :param data: Data to send with the transaction, in hex format.
+    :param gas_token: Token to use for gas, defaults to the native token of the network.
+    :param output_json: Output file to save the EIP-712 structured data as JSON.
+    :return: A tuple containing the validated and converted values.
+    """
+    safe_address = None
+    to = None
+    value = None
+    operation = None
+    safe_nonce = None
+    data = None
+    gas_token = None
+    output_json = None
 
-    has_delegate = any(
-        tx.operation == MultiSendOperation.DELEGATE_CALL for tx in decoded_batch
-    )
+    if args.safe_address is not None:
+        safe_address = validate_address(args.safe_address)
+    if args.to is not None:
+        to = validate_address(args.to)
+    if args.value is not None:
+        value = validate_number(args.value)
+    if args.operation is not None:
+        operation = validate_operation(args.operation)
+    if args.safe_nonce is not None:
+        safe_nonce = validate_number(args.safe_nonce)
+    if args.data is not None:
+        data = validate_data(args.data)
+    if args.gas_token is not None:
+        gas_token = validate_address(args.gas_token)
+    if args.output_json is not None:
+        output_json = validate_json_file(args.output_json)
 
-    # Initialize MultiSend with the address if provided, otherwise use default
-    multi_send = MultiSend(
-        ethereum_client=safe_instance.ethereum_client,
-        address=get_multisend_address_from_env(),
-        call_only=not has_delegate,
-    )
-    multi_send_address = multi_send.address
-
-    if not prompt_multisend_batch_confirmation(
-        prompt_session, decoded_batch, multi_send_address, to
-    ):
-        print_formatted_text(
-            HTML("<b><red>Aborting due to user rejection of decoded batch.</red></b>")
-        )
-        raise Exception("User rejected MultiSend batch confirmation.")
-
-    to = multi_send_address
-    operation = int(
-        MultiSendOperation.DELEGATE_CALL.value
-        if has_delegate
-        else MultiSendOperation.CALL.value
-    )
-    return to, operation
+    return safe_address, to, value, operation, safe_nonce, data, gas_token, output_json

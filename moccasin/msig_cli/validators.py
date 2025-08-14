@@ -274,3 +274,10 @@ def validate_signer(value: str) -> str:
     if not is_valid_signer(value):
         raise ValueError(ERROR_INVALID_SIGNER)
     return value
+
+
+def validate_operation(value: str) -> int:
+    """Validate and return a valid operation type."""
+    if not is_valid_operation(value):
+        raise ValueError(ERROR_INVALID_OPERATION)
+    return int(value)
