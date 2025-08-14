@@ -51,9 +51,9 @@ def test_eth_safe_address_anvil_fixture(eth_safe_address_anvil):
 ################################################################
 #                        TX_SIGN TESTS                         #
 ################################################################
-def test_cli_tx_sign_with_owner_key(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_sign_with_owner_key(moccasin_home_folder, eth_safe_address_anvil):
     """Sign SafeTx with valid owner private key and dynamically set verifyingAddress."""
-    json_path = temp_msig_workdir / "safe-tx-sign.json"
+    json_path = moccasin_home_folder / "safe-tx-sign.json"
     src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
     shutil.copyfile(src_json, json_path)
 
@@ -80,9 +80,9 @@ def test_cli_tx_sign_with_owner_key(temp_msig_workdir, eth_safe_address_anvil):
     os.remove(json_path)
 
 
-def test_cli_tx_sign_with_non_owner_key(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_sign_with_non_owner_key(moccasin_home_folder, eth_safe_address_anvil):
     """Sign SafeTx with non-owner private key (should fail)."""
-    json_path = temp_msig_workdir / "safe-tx-nonowner.json"
+    json_path = moccasin_home_folder / "safe-tx-nonowner.json"
     src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
     shutil.copyfile(src_json, json_path)
 
@@ -109,9 +109,9 @@ def test_cli_tx_sign_with_non_owner_key(temp_msig_workdir, eth_safe_address_anvi
     os.remove(json_path)
 
 
-def test_cli_tx_sign_with_invalid_key(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_sign_with_invalid_key(moccasin_home_folder, eth_safe_address_anvil):
     """Sign SafeTx with invalid private key (should fail)."""
-    json_path = temp_msig_workdir / "safe-tx-invalidkey.json"
+    json_path = moccasin_home_folder / "safe-tx-invalidkey.json"
     src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
     shutil.copyfile(src_json, json_path)
 
@@ -138,9 +138,9 @@ def test_cli_tx_sign_with_invalid_key(temp_msig_workdir, eth_safe_address_anvil)
     os.remove(json_path)
 
 
-def test_cli_tx_sign_user_abort(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_sign_user_abort(moccasin_home_folder, eth_safe_address_anvil):
     """Sign SafeTx but user aborts at confirmation prompt."""
-    json_path = temp_msig_workdir / "safe-tx-abort.json"
+    json_path = moccasin_home_folder / "safe-tx-abort.json"
     src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
     shutil.copyfile(src_json, json_path)
 
@@ -172,9 +172,9 @@ def test_cli_tx_sign_user_abort(temp_msig_workdir, eth_safe_address_anvil):
     os.remove(json_path)
 
 
-def test_cli_tx_sign_missing_json(temp_msig_workdir):
+def test_cli_tx_sign_missing_json(moccasin_home_folder):
     """Sign SafeTx with missing JSON file (should fail)."""
-    missing_path = temp_msig_workdir / "does_not_exist.json"
+    missing_path = moccasin_home_folder / "does_not_exist.json"
     sign_input = ""
     result = subprocess.run(
         MSIG_TX_SIGN

@@ -125,11 +125,8 @@ def get_safe_instance(ethereum_client: EthereumClient, safe_address: str) -> Saf
     """
     assert is_valid_address(safe_address), ERROR_INVALID_ADDRESS
     assert is_valid_rpc_url(ethereum_client.ethereum_node_url), ERROR_INVALID_RPC_URL
-    try:
-        safe_address_checksum = to_checksum_address(safe_address)
-        return Safe(address=safe_address_checksum, ethereum_client=ethereum_client)  # type: ignore[abstract]
-    except Exception as e:
-        raise MsigCliError(f"Failed to initialize Safe instance: {e}") from e
+    safe_address_checksum = to_checksum_address(safe_address)
+    return Safe(address=safe_address_checksum, ethereum_client=ethereum_client)  # type: ignore[abstract]
 
 
 def extract_safe_tx_json(

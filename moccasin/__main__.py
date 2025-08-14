@@ -774,9 +774,10 @@ Example usage:
         parents=[parent_parser],
     )
     msig_parser.add_argument(
-        "--with-project-toml",
-        help="Use the project moccasin.toml file to get the multisig configuration, rather than the default one.",
+        "--no-project-toml",
+        help="If you want to run this command without a project.toml file.",
         action="store_true",
+        default=True,
     )
     msig_subparsers = msig_parser.add_subparsers(dest="msig_command")
 

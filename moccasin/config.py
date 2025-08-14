@@ -2258,6 +2258,9 @@ def _set_global_config_without_requiring_toml_file(
     if not config_path.exists():
         from moccasin.constants.file_data import MOCCASIN_DEFAULT_CONFIG
 
+        # Ensure the parent directory exists
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+
         with config_path.open("w", encoding="utf-8") as fp:
             fp.write(MOCCASIN_DEFAULT_CONFIG)
     _config = Config(config_path)

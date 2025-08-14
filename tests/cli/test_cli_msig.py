@@ -25,9 +25,11 @@ def test_eth_safe_address_anvil_fixture(eth_safe_address_anvil):
 ################################################################
 #                      TX_BUILD & TX_SIGN                      #
 ################################################################
-def test_cli_tx_build_and_sign_integration(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_build_and_sign_integration(
+    moccasin_home_folder, eth_safe_address_anvil
+):
     """Integration: build then sign in sequence, simulating workflow restoration."""
-    json_path = temp_msig_workdir / "safe-tx-integrated.json"
+    json_path = moccasin_home_folder / "safe-tx-integrated.json"
     # Build SafeTx JSON
     user_input = (
         f"{LOCAL_ANVIL_URL}\n"

@@ -337,18 +337,6 @@ def pt_session():
             yield pipe_input
 
 
-@pytest.fixture
-def temp_msig_workdir(tmp_path, monkeypatch):
-    """Create a temporary working directory for tests.
-
-    @dev The tmp_path argument in your fixture is a built-in pytest fixture.
-    When you use pytest for testing, it provides tmp_path automatically
-    to your test functions and fixtures.
-    """
-    monkeypatch.chdir(tmp_path)
-    return tmp_path
-
-
 @pytest.fixture(scope="module")
 def eth_safe_address_anvil(anvil):
     """Fixture to provide a Safe instance connected to Anvil."""
