@@ -1,5 +1,4 @@
 import argparse
-from operator import add
 import sys
 import tomllib
 from importlib import import_module, metadata

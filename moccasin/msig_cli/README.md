@@ -232,7 +232,7 @@ Tests use static JSON and local contract addresses for reproducibility.
 - [ ] Extend validation for more Ethereum types
 - [ ] Add unit and integration tests for new features
 - [x] Add more owners and a threshold while deploying locally
-- [ ] Consider adding `sign` to sign simple messagesin the fututre
+- [ ] Consider adding `sign` to sign simple messages in the future
 - [ ] See if we can run with boa and pyevm to mock EthereumClient
 
 # Troubleshooting

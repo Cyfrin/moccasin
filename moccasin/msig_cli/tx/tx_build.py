@@ -177,7 +177,6 @@ def run(
         HTML("\n<b><green>SafeTx instance created successfully!</green></b>\n")
     )
     # Pretty-print the SafeTx fields and get EIP-712 structured data
-    print(safe_tx)
     pretty_print_safe_tx(safe_tx)
     safe_tx_data = get_custom_eip712_structured_data(safe_tx)
 

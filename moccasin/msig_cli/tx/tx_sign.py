@@ -38,7 +38,6 @@ def run(
         )
 
     # Check if signer has already signed the SafeTx
-    print(safe_tx.signers)
     if signer.address in safe_tx.signers:
         raise ValueError(
             f"Signer account {signer.address} has already signed the SafeTx. Cannot proceed with signing."
