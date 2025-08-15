@@ -782,7 +782,7 @@ Example usage:
 
     # tx_build
     tx_build_parser = msig_subparsers.add_parser(
-        "tx_build", help="Build a multisig transaction."
+        "tx-build", help="Build a multisig transaction."
     )
     add_network_args_to_parser(tx_build_parser)
     add_account_args_to_parser(tx_build_parser)
@@ -790,7 +790,7 @@ Example usage:
 
     # tx_sign
     tx_sign_parser = msig_subparsers.add_parser(
-        "tx_sign", help="Sign a multisig transaction."
+        "tx-sign", help="Sign a multisig transaction."
     )
     add_network_args_to_parser(tx_sign_parser)
     add_account_args_to_parser(tx_sign_parser)

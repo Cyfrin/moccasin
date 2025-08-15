@@ -365,14 +365,14 @@ def main(args: Namespace) -> int:
 
             # Handle the msig command
             msig_command = str(args.msig_command)
-            if msig_command.startswith("tx_"):
+            if msig_command.startswith("tx"):
                 # Init Safe instance and SafeTx
                 safe_instance = None
                 safe_tx = None
                 signer = None
 
                 # Prepare the tx command workflow
-                tx_cmd_order = ["tx_build", "tx_sign", "tx_broadcast"]
+                tx_cmd_order = ["tx-build", "tx-sign", "tx-broadcast"]
                 if msig_command not in tx_cmd_order:
                     logger.error(
                         f"Unknown msig command: {msig_command}. Expected one of {tx_cmd_order}."
