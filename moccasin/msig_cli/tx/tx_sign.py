@@ -17,6 +17,7 @@ from moccasin.msig_cli.tx.sign_prompts import (
 from moccasin.msig_cli.utils.helpers import (
     get_custom_eip712_structured_data,
     pretty_print_safe_tx,
+    save_safe_tx_json,
 )
 from moccasin.msig_cli.validators import validate_json_file
 
@@ -37,6 +38,7 @@ def run(
         )
 
     # Check if signer has already signed the SafeTx
+    print(safe_tx.signers)
     if signer.address in safe_tx.signers:
         raise ValueError(
             f"Signer account {signer.address} has already signed the SafeTx. Cannot proceed with signing."
@@ -71,8 +73,7 @@ def run(
         output_file_safe_tx = prompt_save_safe_tx_json(prompt_session)
 
     if output_file_safe_tx is not None:
-        output_file_safe_tx(output_file_safe_tx, safe_tx_data)
-        return
+        save_safe_tx_json(output_file_safe_tx, safe_tx_data)
     else:
         print_formatted_text(HTML("<b><yellow>Not saving EIP-712 JSON.</yellow></b>"))
 

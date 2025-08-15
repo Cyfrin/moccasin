@@ -201,7 +201,7 @@ def _tx_sign_command(
             )
             print_formatted_text(
                 HTML(
-                    "<b><magenta>Note: Advised to run tx_build before tx_sign if no input file available.</magenta></b>"
+                    "<b><magenta>Note: Advised to run tx_build before tx_sign if no input file available.</magenta></b>\n"
                 )
             )
             eip712_prompted_file = prompt_eip712_input_file(prompt_session)

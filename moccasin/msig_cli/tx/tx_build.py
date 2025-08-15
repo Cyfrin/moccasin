@@ -177,6 +177,7 @@ def run(
         HTML("\n<b><green>SafeTx instance created successfully!</green></b>\n")
     )
     # Pretty-print the SafeTx fields and get EIP-712 structured data
+    print(safe_tx)
     pretty_print_safe_tx(safe_tx)
     safe_tx_data = get_custom_eip712_structured_data(safe_tx)
 
@@ -186,7 +187,6 @@ def run(
 
     if tx_output_json is not None:
         save_safe_tx_json(tx_output_json, safe_tx_data)
-        return
     else:
         print_formatted_text(HTML("<b><yellow>Not saving EIP-712 JSON.</yellow></b>"))
 
