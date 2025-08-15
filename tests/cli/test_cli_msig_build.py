@@ -2,14 +2,13 @@ import json
 import os
 import subprocess
 
-import pytest
+from pathlib import Path
 
+from moccasin.msig_cli.constants import ERROR_INVALID_DATA, ERROR_INVALID_JSON_FILE
 from tests.utils.anvil import ANVIL_URL
 
 # Constants for CLI commands tests
 LOCAL_ANVIL_URL = ANVIL_URL.format(8545)
-MSIG_TX_BUILD = ["mox", "msig", "tx_build"]
-MSIG_TX_SIGN = ["mox", "msig", "tx_sign"]
 
 
 ################################################################
@@ -27,9 +26,11 @@ def test_eth_safe_address_anvil_fixture(eth_safe_address_anvil):
 ################################################################
 #                        TX_BUILD TESTS                        #
 ################################################################
-def test_cli_tx_builder_interactive(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_builder_interactive(
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
+):
     """Test fully interactive session (all prompts, user saves JSON)."""
-    json_path = temp_msig_workdir / "safe-tx.json"
+    json_path = moccasin_home_folder / "safe-tx.json"
     user_input = (
         # RPC URL (question: What is the RPC URL you want to use to connect to the Ethereum network?)
         f"{LOCAL_ANVIL_URL}\n"
@@ -64,14 +65,21 @@ def test_cli_tx_builder_interactive(temp_msig_workdir, eth_safe_address_anvil):
     )
     if json_path.exists():
         os.remove(json_path)
-    result = subprocess.run(
-        MSIG_TX_BUILD,
-        input=user_input,
-        text=True,
-        capture_output=True,
-        check=True,
-        timeout=30,
-    )
+
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"],
+            input=user_input,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=30,
+        )
+    finally:
+        os.chdir(current_dir)
+
     assert "SafeTx instance created successfully!" in result.stdout
     assert json_path.exists()
     with open(json_path) as f:
@@ -83,10 +91,12 @@ def test_cli_tx_builder_interactive(temp_msig_workdir, eth_safe_address_anvil):
     os.remove(json_path)
 
 
-def test_cli_tx_builder_args_only(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_builder_args_only(
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
+):
     """Test all args provided, no prompts, no JSON output."""
     args = [
-        "--rpc-url",
+        "--rpc",
         LOCAL_ANVIL_URL,
         "--safe-address",
         eth_safe_address_anvil,
@@ -103,98 +113,119 @@ def test_cli_tx_builder_args_only(temp_msig_workdir, eth_safe_address_anvil):
         "--gas-token",
         "0x0000000000000000000000000000000000000000",
     ]
-    result = subprocess.run(
-        MSIG_TX_BUILD + args,
-        input="q\n",
-        text=True,
-        capture_output=True,
-        check=True,
-        timeout=30,
-    )
-    assert "SafeTx instance created successfully!" in result.stdout
-
-
-def test_cli_tx_builder_args_with_json_output(
-    temp_msig_workdir, eth_safe_address_anvil
-):
-    """Test all args provided, with --json-output, file is created and valid."""
-    json_path = temp_msig_workdir / "test-tx.json"
-    args = [
-        "--rpc-url",
-        LOCAL_ANVIL_URL,
-        "--safe-address",
-        eth_safe_address_anvil,
-        "--to",
-        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-        "--operation",
-        "0",
-        "--value",
-        "10",
-        "--data",
-        "0xa9059cbb000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000064",
-        "--safe-nonce",
-        "42",
-        "--gas-token",
-        "0x0000000000000000000000000000000000000000",
-        "--json-output",
-        "test-tx.json",
-    ]
-    if json_path.exists():
-        os.remove(json_path)
-    result = subprocess.run(
-        MSIG_TX_BUILD + args,
-        input="q\n",
-        text=True,
-        capture_output=True,
-        check=True,
-        timeout=30,
-    )
-    assert "SafeTx instance created successfully!" in result.stdout
-    assert json_path.exists()
-    with open(json_path) as f:
-        safe_tx_data = json.load(f)
-    assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
-    assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
-    os.remove(json_path)
-
-
-def test_cli_tx_builder_invalid_json_output(temp_msig_workdir, eth_safe_address_anvil):
-    """Test invalid JSON output path (should fail)."""
-    args = [
-        "--rpc-url",
-        LOCAL_ANVIL_URL,
-        "--safe-address",
-        eth_safe_address_anvil,
-        "--to",
-        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-        "--operation",
-        "0",
-        "--value",
-        "10",
-        "--data",
-        "0xa9059cbb000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000064",
-        "--safe-nonce",
-        "42",
-        "--gas-token",
-        "0x0000000000000000000000000000000000000000",
-        "--json-output",
-        "not_a_json.txt",
-    ]
-
-    with pytest.raises(subprocess.CalledProcessError):
-        subprocess.run(
-            MSIG_TX_BUILD + args,
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"] + args,
             input="q\n",
             text=True,
             capture_output=True,
             check=True,
             timeout=30,
         )
+    finally:
+        os.chdir(current_dir)
+
+    assert "SafeTx instance created successfully!" in result.stdout
+
+
+def test_cli_tx_builder_args_with_json_output(
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
+):
+    """Test all args provided, with --output-json, file is created and valid."""
+    json_path = moccasin_home_folder / "test-tx.json"
+    args = [
+        "--url",
+        LOCAL_ANVIL_URL,
+        "--safe-address",
+        eth_safe_address_anvil,
+        "--to",
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "--operation",
+        "0",
+        "--value",
+        "10",
+        "--data",
+        "0xa9059cbb000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000064",
+        "--safe-nonce",
+        "42",
+        "--gas-token",
+        "0x0000000000000000000000000000000000000000",
+        "--output-json",
+        "test-tx.json",
+    ]
+    if json_path.exists():
+        os.remove(json_path)
+
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"] + args,
+            input="q\n",
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=30,
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert "SafeTx instance created successfully!" in result.stdout
+    assert json_path.exists()
+    with open(json_path) as f:
+        safe_tx_data = json.load(f)
+    assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
+    assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
+    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
+    os.remove(json_path)
+
+
+def test_cli_tx_builder_invalid_json_output(
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
+):
+    """Test invalid JSON output path (should fail)."""
+    args = [
+        "--rpc",
+        LOCAL_ANVIL_URL,
+        "--safe-address",
+        eth_safe_address_anvil,
+        "--to",
+        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+        "--operation",
+        "0",
+        "--value",
+        "10",
+        "--data",
+        "0xa9059cbb000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000064",
+        "--safe-nonce",
+        "42",
+        "--gas-token",
+        "0x0000000000000000000000000000000000000000",
+        "--output-json",
+        "not_a_json.txt",
+    ]
+
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"] + args,
+            input="q\n",
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=30,
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert ERROR_INVALID_JSON_FILE in result.stderr
 
 
 def test_cli_tx_builder_multisend_mixed_operations(
-    temp_msig_workdir, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
 ):
     """Test MultiSend batch with mixed CALL and DELEGATE_CALL operations.
 
@@ -202,7 +233,7 @@ def test_cli_tx_builder_multisend_mixed_operations(
     We'll use interactive mode to ensure the CLI prompts for each internal tx
     """
 
-    json_path = temp_msig_workdir / "multisend-mixed.json"
+    json_path = moccasin_home_folder / "multisend-mixed.json"
     user_input = (
         # RPC URL
         f"{LOCAL_ANVIL_URL}\n"
@@ -241,14 +272,21 @@ def test_cli_tx_builder_multisend_mixed_operations(
     )
     if json_path.exists():
         os.remove(json_path)
-    result = subprocess.run(
-        MSIG_TX_BUILD,
-        input=user_input,
-        text=True,
-        capture_output=True,
-        check=True,
-        timeout=60,
-    )
+
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"],
+            input=user_input,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=60,
+        )
+    finally:
+        os.chdir(current_dir)
+
     assert "MultiSend transaction created successfully!" in result.stdout
     assert "SafeTx instance created successfully!" in result.stdout
     assert json_path.exists()
@@ -261,7 +299,7 @@ def test_cli_tx_builder_multisend_mixed_operations(
 
 
 def test_cli_tx_builder_multisend_user_rejects(
-    temp_msig_workdir, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
 ):
     """Test user rejects MultiSend batch confirmation (should abort and not create SafeTx)."""
     user_input = (
@@ -294,23 +332,33 @@ def test_cli_tx_builder_multisend_user_rejects(
         # Confirm MultiSend batch (user rejects)
         "n\n"
     )
-    result = subprocess.run(
-        MSIG_TX_BUILD,
-        input=user_input,
-        text=True,
-        capture_output=True,
-        check=False,  # Should not raise, but should not create SafeTx
-        timeout=60,
-    )
+
+    current_dir = Path.cwd()
+
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"],
+            input=user_input,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=60,
+        )
+    finally:
+        os.chdir(current_dir)
+
     assert "Aborting due to user rejection of decoded batch." in result.stdout
     assert "SafeTx instance created successfully!" not in result.stdout
 
 
-def test_cli_tx_builder_prompt_fallbacks(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_builder_prompt_fallbacks(
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
+):
     """Test prompt fallback when --to and --operation are omitted, CLI prompts for them."""
-    json_path = temp_msig_workdir / "prompt-fallback.json"
+    json_path = moccasin_home_folder / "prompt-fallback.json"
     args = [
-        "--rpc-url",
+        "--url",
         f"{LOCAL_ANVIL_URL}",
         "--safe-address",
         eth_safe_address_anvil,
@@ -322,7 +370,7 @@ def test_cli_tx_builder_prompt_fallbacks(temp_msig_workdir, eth_safe_address_anv
         "45",
         "--gas-token",
         "0x0000000000000000000000000000000000000000",
-        "--json-output",
+        "--output-json",
         "prompt-fallback.json",
     ]
     # The CLI should prompt for 'to' and 'operation'.
@@ -337,14 +385,22 @@ def test_cli_tx_builder_prompt_fallbacks(temp_msig_workdir, eth_safe_address_anv
     )
     if json_path.exists():
         os.remove(json_path)
-    result = subprocess.run(
-        MSIG_TX_BUILD + args,
-        input=user_input,
-        text=True,
-        capture_output=True,
-        check=True,
-        timeout=60,
-    )
+
+    current_dir = Path.cwd()
+
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"] + args,
+            input=user_input,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=60,
+        )
+    finally:
+        os.chdir(current_dir)
+
     assert "SafeTx instance created successfully!" in result.stdout
     assert json_path.exists()
     with open(json_path) as f:
@@ -356,10 +412,12 @@ def test_cli_tx_builder_prompt_fallbacks(temp_msig_workdir, eth_safe_address_anv
     os.remove(json_path)
 
 
-def test_cli_tx_builder_invalid_data(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_builder_invalid_data(
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
+):
     """Test invalid hex data for --data, should fail gracefully."""
     args = [
-        "--rpc-url",
+        "--rpc",
         LOCAL_ANVIL_URL,
         "--safe-address",
         eth_safe_address_anvil,
@@ -377,22 +435,29 @@ def test_cli_tx_builder_invalid_data(temp_msig_workdir, eth_safe_address_anvil):
         "0x0000000000000000000000000000000000000000",
     ]
 
-    with pytest.raises(subprocess.CalledProcessError):
-        subprocess.run(
-            MSIG_TX_BUILD + args,
+    current_dir = Path.cwd()
+
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"] + args,
             input="q\n",
             text=True,
             capture_output=True,
             check=True,
             timeout=30,
         )
+    finally:
+        os.chdir(current_dir)
+
+    assert ERROR_INVALID_DATA in result.stderr
 
 
 def test_cli_tx_builder_multisend_large_batch(
-    temp_msig_workdir, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
 ):
     """Test MultiSend batch with 10 internal transactions (large batch)."""
-    json_path = temp_msig_workdir / "multisend-large.json"
+    json_path = moccasin_home_folder / "multisend-large.json"
     user_input = (
         # RPC URL
         f"{LOCAL_ANVIL_URL}\n"
@@ -435,14 +500,22 @@ def test_cli_tx_builder_multisend_large_batch(
     )
     if json_path.exists():
         os.remove(json_path)
-    result = subprocess.run(
-        MSIG_TX_BUILD,
-        input=user_input,
-        text=True,
-        capture_output=True,
-        check=True,
-        timeout=180,
-    )
+
+    current_dir = Path.cwd()
+
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"],
+            input=user_input,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=180,
+        )
+    finally:
+        os.chdir(current_dir)
+
     assert "MultiSend transaction created successfully!" in result.stdout
     assert "SafeTx instance created successfully!" in result.stdout
     assert json_path.exists()

@@ -2,12 +2,12 @@
 import os
 import subprocess
 
+from pathlib import Path
+
 from tests.utils.anvil import ANVIL_URL
 
 # Constants for CLI commands tests
 LOCAL_ANVIL_URL = ANVIL_URL.format(8545)
-MSIG_TX_BUILD = ["mox", "msig", "tx_build"]
-MSIG_TX_SIGN = ["mox", "msig", "tx_sign"]
 
 
 ################################################################
@@ -25,9 +25,11 @@ def test_eth_safe_address_anvil_fixture(eth_safe_address_anvil):
 ################################################################
 #                      TX_BUILD & TX_SIGN                      #
 ################################################################
-def test_cli_tx_build_and_sign_integration(temp_msig_workdir, eth_safe_address_anvil):
+def test_cli_tx_build_and_sign_integration(
+    mox_path, moccasin_home_folder, eth_safe_address_anvil
+):
     """Integration: build then sign in sequence, simulating workflow restoration."""
-    json_path = temp_msig_workdir / "safe-tx-integrated.json"
+    json_path = moccasin_home_folder / "safe-tx-integrated.json"
     # Build SafeTx JSON
     user_input = (
         f"{LOCAL_ANVIL_URL}\n"
@@ -52,13 +54,20 @@ def test_cli_tx_build_and_sign_integration(temp_msig_workdir, eth_safe_address_a
     )
     if json_path.exists():
         os.remove(json_path)
-    result = subprocess.run(
-        MSIG_TX_BUILD,
-        input=user_input,
-        text=True,
-        capture_output=True,
-        check=True,
-        timeout=60,
-    )
+
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(moccasin_home_folder))
+        result = subprocess.run(
+            [mox_path, "msig", "tx_build"],
+            input=user_input,
+            text=True,
+            capture_output=True,
+            check=True,
+            timeout=60,
+        )
+    finally:
+        os.chdir(current_dir)
+
     assert "SafeTx signed successfully!" in result.stdout
     os.remove(json_path)

@@ -25,7 +25,7 @@ Build a Safe multisig transaction interactively or via command-line arguments.
 
 **Arguments:**
 
-- `--rpc-url` — RPC endpoint for Ethereum network.
+- `--url` or `--rpc` — RPC endpoint for Ethereum network.
 - `--safe-address` — Safe contract address.
 - `--to` — Target contract address.
 - `--operation` — Operation type (`0` for call, `1` for delegate call).
@@ -33,14 +33,14 @@ Build a Safe multisig transaction interactively or via command-line arguments.
 - `--data` — Calldata (hex).
 - `--safe-nonce` — Safe contract nonce.
 - `--gas-token` — Gas token address (optional).
-- `--json-output` — Path to save EIP-712 JSON.
+- `--output-json` — Path to save EIP-712 JSON.
 
 If arguments are omitted, the CLI will prompt for them interactively. All steps can be automated for CI/CD or scripting.
 
 **Example:**
 
 ```bash
-mox msig tx_build --rpc-url http://localhost:8545 --safe-address 0xSafe... --to 0xTarget... --operation 0 --value 0 --data 0x...
+mox msig tx_build --url http://localhost:8545 --safe-address 0xSafe... --to 0xTarget... --operation 0 --value 0 --data 0x...
 ```
 
 Or run interactively:
@@ -55,10 +55,13 @@ Sign a Safe multisig transaction from EIP-712 JSON, with strict domain validatio
 
 **Arguments:**
 
-- `--rpc-url` — RPC endpoint for Ethereum network.
-- `--signer` — Account name (from keystore) or private key to sign with.
-- `--input-json` — Path to EIP-712 SafeTx JSON to sign.
-- `--output-json` — Path to output signed SafeTx JSON (can overwrite input).
+- `--url` or `--rpc` — RPC endpoint for Ethereum network.
+- `--input-json` — Path to EIP-712 SafeTx JSON to sign. If omitted, prompts interactively.
+- `--output-json` — Path to output signed SafeTx JSON (can overwrite input). If omitted, prompts interactively.
+- `--account` — Account name (from keystore) to sign with.
+- `--private-key` — Private key to sign with.
+- `--password` — Password for keystore account (can be prompted).
+- `--password-file-path` — Path to file containing password for keystore account.
 
 **Prompts:**
 
@@ -70,7 +73,7 @@ Sign a Safe multisig transaction from EIP-712 JSON, with strict domain validatio
 **Example:**
 
 ```bash
-mox msig tx_sign --rpc-url http://localhost:8545 --signer anvil0 --input-json ./safe_tx.json --output-json ./safe_tx.json
+mox msig tx_sign --url http://localhost:8545 --input-json ./safe_tx.json --output-json ./safe_tx_signed.json --account mykeystore
 ```
 
 Or run interactively:
@@ -78,6 +81,19 @@ Or run interactively:
 ```bash
 mox msig tx_sign
 ```
+
+### `mox msig tx_broadcast`
+
+TODO
+
+---
+
+## Interactive Usage & Fallbacks
+
+- If any required argument is omitted, the CLI will prompt for it interactively.
+- For signing, if `--input-json` or `--output-json` is omitted, you will be prompted for the file path.
+- For keystore accounts, you will be prompted for the account name and password if not provided.
+- All prompts are branded and support history/autosuggest for convenience.
 
 ---
 
@@ -210,12 +226,14 @@ Tests use static JSON and local contract addresses for reproducibility.
 
 - [x] Build and sign commands with robust validation and error handling
 - [x] Local deployment and test support (Anvil)
-- [ ] Implement `tx_execute` for transaction execution
+- [ ] Implement `tx_broadcast` for transaction execution
 - [ ] Add support for ERC20 transfers and raw data internal transactions
 - [ ] Improve function parameter type handling (arrays, bytes, etc.)
 - [ ] Extend validation for more Ethereum types
 - [ ] Add unit and integration tests for new features
 - [x] Add more owners and a threshold while deploying locally
+- [ ] Consider adding `sign` to sign simple messages in the future
+- [ ] See if we can run with boa and pyevm to mock EthereumClient
 
 # Troubleshooting
 
@@ -246,5 +264,6 @@ MultiSend deployed successfully: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
 
 ---
 
+See [`msig.py`](../commands/msig.py) and [`msig_cli`](.) for full implementation details.
 See [`tx_build.py`](tx/tx_build.py) and [`tx_sign.py`](tx/tx_sign.py) for transaction builder and signer logic.
 See [`scripts/deploy_local_safe.py`](scripts/deploy_local_safe.py) for local deployment.

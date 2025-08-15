@@ -1,6 +1,8 @@
+import json
 import os
 from typing import Optional, Tuple, cast
 
+from click import File
 from eth_utils import to_bytes, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.eth import EthereumClient
@@ -8,7 +10,6 @@ from safe_eth.safe import Safe, SafeTx
 from safe_eth.util.util import to_0x_hex_str
 
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
-from moccasin.msig_cli.utils.exceptions import MsigCliError
 from moccasin.msig_cli.utils.types import (
     T_EIP712Domain,
     T_EIP712TxJson,
@@ -86,7 +87,7 @@ def get_signatures_bytes(signatures: Optional[str]) -> bytes:
         return b""
 
 
-def get_eip712_structured_data(safe_tx: SafeTx) -> dict:
+def get_custom_eip712_structured_data(safe_tx: SafeTx) -> dict:
     """Get the EIP-712 structured data from a SafeTx.
 
     :param safe_tx: SafeTx object to extract the structured data from.
@@ -125,24 +126,18 @@ def get_safe_instance(ethereum_client: EthereumClient, safe_address: str) -> Saf
     """
     assert is_valid_address(safe_address), ERROR_INVALID_ADDRESS
     assert is_valid_rpc_url(ethereum_client.ethereum_node_url), ERROR_INVALID_RPC_URL
-    try:
-        safe_address_checksum = to_checksum_address(safe_address)
-        return Safe(address=safe_address_checksum, ethereum_client=ethereum_client)  # type: ignore[abstract]
-    except Exception as e:
-        raise MsigCliError(f"Failed to initialize Safe instance: {e}") from e
+    safe_address_checksum = to_checksum_address(safe_address)
+    return Safe(address=safe_address_checksum, ethereum_client=ethereum_client)  # type: ignore[abstract]
 
 
 def extract_safe_tx_json(
     safe_tx_json: T_SafeTxData | T_EIP712TxJson,
-) -> Tuple[T_EIP712Domain, T_SafeTxMessage, Optional[str]]:
+) -> Tuple[Optional[T_EIP712Domain], Optional[T_SafeTxMessage], Optional[str]]:
     """
     Validate SafeTx JSON input, extract message, domain, and signatures, and strictly enforce domain matching.
-    Raises MsigCliError if domain does not match safe_instance (no override, fail-fast).
 
     :param safe_tx_json: The loaded JSON dict from file.
     :param safe_instance: The Safe instance to match against (if available).
-
-    :raises MsigCliError: If the domain does not match the Safe instance.
 
     :return: (message_json, domain_json, signatures_json)
     """
@@ -164,15 +159,12 @@ def extract_safe_tx_json(
         message_json = cast(T_SafeTxMessage, safe_tx_json.get("message"))
         domain_json = cast(T_EIP712Domain, safe_tx_json.get("domain"))
     else:
-        raise MsigCliError(
-            "Invalid SafeTx JSON format: missing 'safeTx' or EIP-712 fields."
-        )
+        return None, None, None
 
     # Enforce domain and message are present
-    if domain_json is None:
-        raise MsigCliError("SafeTx JSON missing 'domain' field.")
-    if message_json is None:
-        raise MsigCliError("SafeTx JSON missing 'message' field.")
+    if domain_json is None or message_json is None:
+        return None, None, None
+
     return domain_json, message_json, signatures_json
 
 
@@ -187,11 +179,11 @@ def validate_ethereum_client_chain_id(
     :raises MsigCliError: If the chainId does not match the Ethereum client's chainId.
     """
     if "chainId" not in domain_json:
-        raise MsigCliError("Domain JSON must contain 'chainId' field.")
+        raise Exception("Domain JSON must contain 'chainId' field.")
 
     eth_chain_id = ethereum_client.get_chain_id()
     if domain_json["chainId"] != eth_chain_id:
-        raise MsigCliError(
+        raise Exception(
             f"Domain chainId {domain_json['chainId']} does not match Ethereum client chainId {eth_chain_id}."
         )
 
@@ -228,4 +220,13 @@ def build_safe_tx_from_message(
             signatures=signatures_json,
         )
     except Exception as e:
-        raise MsigCliError(f"Error creating SafeTx from message JSON: {e}") from e
+        raise Exception(f"Error creating SafeTx from message JSON: {e}") from e
+
+
+def save_safe_tx_json(output_json: str, safe_tx_data: dict) -> None:
+    """Save the SafeTx data as JSON to the specified output file."""
+    with open(output_json, "w") as f:
+        json.dump(safe_tx_data, f, indent=2, default=str)
+    print_formatted_text(
+        HTML(f"<b><green>Saved EIP-712 JSON:</green> {output_json}</b>")
+    )
