@@ -216,30 +216,30 @@ def preprocess_raw_args(
     :param output_json: Output file to save the EIP-712 structured data as JSON.
     :return: A tuple containing the validated and converted values.
     """
-    safe_address = None
-    to = None
-    value = None
-    operation = None
-    safe_nonce = None
-    data = None
-    gas_token = None
-    output_json = None
+    safe_address = getattr(args, "safe_address", None)
+    to = getattr(args, "to", None)
+    value = getattr(args, "value", None)
+    operation = getattr(args, "operation", None)
+    safe_nonce = getattr(args, "safe_nonce", None)
+    data = getattr(args, "data", None)
+    gas_token = getattr(args, "gas_token", None)
+    output_json = getattr(args, "output_json", None)
 
-    if args.safe_address is not None:
-        safe_address = validate_address(args.safe_address)
-    if args.to is not None:
-        to = validate_address(args.to)
-    if args.value is not None:
-        value = validate_number(args.value)
-    if args.operation is not None:
-        operation = validate_operation(args.operation)
-    if args.safe_nonce is not None:
-        safe_nonce = validate_number(args.safe_nonce)
-    if args.data is not None:
-        data = validate_data(args.data)
-    if args.gas_token is not None:
-        gas_token = validate_address(args.gas_token)
-    if args.output_json is not None:
-        output_json = validate_json_file(args.output_json)
+    if safe_address is not None:
+        safe_address = validate_address(safe_address)
+    if to is not None:
+        to = validate_address(to)
+    if value is not None:
+        value = validate_number(value)
+    if operation is not None:
+        operation = validate_operation(operation)
+    if safe_nonce is not None:
+        safe_nonce = validate_number(safe_nonce)
+    if data is not None:
+        data = validate_data(data)
+    if gas_token is not None:
+        gas_token = validate_address(gas_token)
+    if output_json is not None:
+        output_json = validate_json_file(output_json)
 
     return safe_address, to, value, operation, safe_nonce, data, gas_token, output_json

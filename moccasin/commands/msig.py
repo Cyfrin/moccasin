@@ -18,13 +18,17 @@ from moccasin.logging import logger, set_log_level
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
 
+from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.common_prompts import (
     prompt_continue_next_step,
     prompt_rpc_url,
     prompt_safe_address,
 )
 from moccasin.msig_cli.tx import tx_build, tx_sign
-from moccasin.msig_cli.tx.sign_prompts import prompt_eip712_input_file
+from moccasin.msig_cli.tx.sign_prompts import (
+    prompt_eip712_input_file,
+    prompt_is_right_account,
+)
 from moccasin.msig_cli.utils.helpers import (
     build_safe_tx_from_message,
     extract_safe_tx_json,
@@ -139,21 +143,20 @@ def _tx_build_command(
     )
 
     # Run the transaction builder with the provided args
-    safe_tx = tx_build.run(
-        prompt_session=prompt_session,
-        safe_instance=safe_instance,
-        to=to,
-        value=value,
-        operation=operation,
-        safe_nonce=safe_nonce,
-        data=data,
-        gas_token=gas_token,
-        output_json=output_json,
-    )
-
-    # Catch any exceptions and raise a generic MsigCliError
-    if not safe_tx:
-        raise Exception("Failed to build SafeTx from provided parameters.")
+    try:
+        safe_tx = tx_build.run(
+            prompt_session=prompt_session,
+            safe_instance=safe_instance,
+            to=to,
+            value=value,
+            operation=operation,
+            safe_nonce=safe_nonce,
+            data=data,
+            gas_token=gas_token,
+            output_json=output_json,
+        )
+    except Exception as e:
+        raise Exception("Failed to build SafeTx from provided parameters: {e}") from e
 
     # Update bottom toolbar with Ethereum client
     _update_bottom_toolbar(
@@ -172,7 +175,7 @@ def _tx_sign_command(
     safe_instance: Safe = None,
     safe_tx: SafeTx = None,
     args: Namespace = None,
-):
+) -> Tuple[Safe, SafeTx, MoccasinAccount]:
     """Handle the transaction signing command.
 
     This method initializes the Safe instance and SafeTx based on the provided or prompted input file,
@@ -212,6 +215,10 @@ def _tx_sign_command(
 
         # Extract SafeTx data from input file
         domain_json, message_json, signatures_json = extract_safe_tx_json(safe_tx_json)
+        if domain_json is None or message_json is None:
+            raise ValueError(
+                "Invalid SafeTx JSON format: missing 'domain' or 'message' fields."
+            )
 
         # Validate the domain chainId from JSON and our Ethereum client
         validate_ethereum_client_chain_id(
@@ -245,21 +252,42 @@ def _tx_sign_command(
             safe_instance=safe_instance,
         )
 
+    # @FIXME Error here with signer
     # Get the signer from config or none
     signer = None
     if args.account is not None or args.private_key is not None:
         signer = get_config().get_active_network().get_default_account()
+    else:
+        # Prompt for signer account if not provided in args
+        signer = tx_sign.get_signer_account(prompt_session)
+        if signer is None:
+            raise ValueError("No signer account provided or found.")
+
+    # Validate the signer account
+    if signer is not None and signer.address is not None:
+        # Check if the account is the right one
+        is_right_account = prompt_is_right_account(prompt_session, signer.address)
+        if is_right_account.lower() not in ("yes", "y"):
+            raise ValueError("User aborted tx_sign command due to wrong account.")
+
+    # Display the initialized account
+    print_formatted_text(
+        HTML(
+            f"\n<b><green>Signer account initialized successfully: {signer.address}</green></b>\n"
+        )
+    )
 
     # Sign the SafeTx with the provided signer
-    safe_tx = tx_sign.run(
-        prompt_session=prompt_session,
-        safe_instance=safe_instance,
-        safe_tx=safe_tx,
-        signer=signer,
-        output_file_safe_tx=output_file_safe_tx,
-    )
-    if not safe_tx:
-        raise Exception("Failed to sign SafeTx with provided parameters.")
+    try:
+        safe_tx = tx_sign.run(
+            prompt_session=prompt_session,
+            safe_instance=safe_instance,
+            safe_tx=safe_tx,
+            signer=signer,
+            output_file_safe_tx=output_file_safe_tx,
+        )
+    except Exception as e:
+        raise Exception(f"Failed to sign SafeTx with provided parameters: {e}") from e
 
     # Update bottom toolbar with Ethereum client
     _update_bottom_toolbar(
@@ -268,7 +296,7 @@ def _tx_sign_command(
         safe_instance=safe_instance,
     )
 
-    return safe_instance, safe_tx
+    return safe_instance, safe_tx, signer
 
 
 def _tx_broadcast_command(self, args: Namespace = None):
@@ -338,6 +366,7 @@ def main(args: Namespace) -> int:
                 # Init Safe instance and SafeTx
                 safe_instance = None
                 safe_tx = None
+                signer = None
 
                 # Prepare the tx command workflow
                 tx_cmd_order = ["tx_build", "tx_sign", "tx_broadcast"]
@@ -356,7 +385,7 @@ def main(args: Namespace) -> int:
                             prompt_session, ethereum_client, args
                         )
                     elif cmd == "tx_sign":
-                        safe_instance, safe_tx = _tx_sign_command(
+                        safe_instance, safe_tx, signer = _tx_sign_command(
                             prompt_session,
                             ethereum_client,
                             safe_instance,
@@ -368,6 +397,10 @@ def main(args: Namespace) -> int:
 
                     # Reset command in right toolbar after each command
                     msig_command = None
+
+                    # Set signer to boa env eoa to use in next commands
+                    if signer is not None:
+                        config.get_active_network().set_boa_eoa(signer)
 
                     # Only prompt for next step if:
                     # 1. Not the last command in the order

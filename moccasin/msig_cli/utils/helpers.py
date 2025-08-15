@@ -10,7 +10,6 @@ from safe_eth.safe import Safe, SafeTx
 from safe_eth.util.util import to_0x_hex_str
 
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
-from moccasin.msig_cli.utils.exceptions import MsigCliError
 from moccasin.msig_cli.utils.types import (
     T_EIP712Domain,
     T_EIP712TxJson,
@@ -133,15 +132,12 @@ def get_safe_instance(ethereum_client: EthereumClient, safe_address: str) -> Saf
 
 def extract_safe_tx_json(
     safe_tx_json: T_SafeTxData | T_EIP712TxJson,
-) -> Tuple[T_EIP712Domain, T_SafeTxMessage, Optional[str]]:
+) -> Tuple[Optional[T_EIP712Domain], Optional[T_SafeTxMessage], Optional[str]]:
     """
     Validate SafeTx JSON input, extract message, domain, and signatures, and strictly enforce domain matching.
-    Raises MsigCliError if domain does not match safe_instance (no override, fail-fast).
 
     :param safe_tx_json: The loaded JSON dict from file.
     :param safe_instance: The Safe instance to match against (if available).
-
-    :raises MsigCliError: If the domain does not match the Safe instance.
 
     :return: (message_json, domain_json, signatures_json)
     """
@@ -163,15 +159,12 @@ def extract_safe_tx_json(
         message_json = cast(T_SafeTxMessage, safe_tx_json.get("message"))
         domain_json = cast(T_EIP712Domain, safe_tx_json.get("domain"))
     else:
-        raise MsigCliError(
-            "Invalid SafeTx JSON format: missing 'safeTx' or EIP-712 fields."
-        )
+        return None, None, None
 
     # Enforce domain and message are present
-    if domain_json is None:
-        raise MsigCliError("SafeTx JSON missing 'domain' field.")
-    if message_json is None:
-        raise MsigCliError("SafeTx JSON missing 'message' field.")
+    if domain_json is None or message_json is None:
+        return None, None, None
+
     return domain_json, message_json, signatures_json
 
 
@@ -227,7 +220,7 @@ def build_safe_tx_from_message(
             signatures=signatures_json,
         )
     except Exception as e:
-        raise MsigCliError(f"Error creating SafeTx from message JSON: {e}") from e
+        raise Exception(f"Error creating SafeTx from message JSON: {e}") from e
 
 
 def save_safe_tx_json(output_json: str, safe_tx_data: dict) -> None:

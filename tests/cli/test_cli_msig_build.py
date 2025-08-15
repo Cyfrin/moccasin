@@ -2,8 +2,6 @@ import json
 import os
 import subprocess
 
-import pytest
-
 from pathlib import Path
 
 from moccasin.msig_cli.constants import ERROR_INVALID_DATA, ERROR_INVALID_JSON_FILE
@@ -344,7 +342,7 @@ def test_cli_tx_builder_multisend_user_rejects(
             input=user_input,
             text=True,
             capture_output=True,
-            check=False,  # Should not raise, but should not create SafeTx
+            check=True,
             timeout=60,
         )
     finally:
