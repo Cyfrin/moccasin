@@ -117,7 +117,7 @@ def test_cli_tx_sign_with_non_owner_key(
             input=sign_input,
             text=True,
             capture_output=True,
-            check=True,
+            # check=True,  # Removed to allow assertion on result content
             timeout=30,
         )
     finally:
@@ -157,7 +157,7 @@ def test_cli_tx_sign_with_invalid_key(
             input=sign_input,
             text=True,
             capture_output=True,
-            check=True,
+            check=False,
             timeout=30,
         )
     finally:
@@ -193,7 +193,6 @@ def test_cli_tx_sign_user_abort(mox_path, moccasin_home_folder, eth_safe_address
             input=sign_input,
             text=True,
             capture_output=True,
-            check=True,
             timeout=30,
         )
     finally:
@@ -220,7 +219,6 @@ def test_cli_tx_sign_missing_json(mox_path, moccasin_home_folder):
         input=sign_input,
         text=True,
         capture_output=True,
-        check=True,
         timeout=10,
     )
     assert "No such file or directory:" in result.stderr
