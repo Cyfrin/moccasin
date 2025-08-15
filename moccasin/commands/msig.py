@@ -252,16 +252,14 @@ def _tx_sign_command(
             safe_instance=safe_instance,
         )
 
-    # @FIXME Error here with signer
-    # Get the signer from config or none
-    signer = None
-    if args.account is not None or args.private_key is not None:
     # Get the signer from config or prompt if not provided
     signer = None
     if args.account is not None or args.private_key is not None:
         signer = get_config().get_active_network().get_default_account()
         if signer is None:
-            raise ValueError("No signer account found in config for the provided arguments.")
+            raise ValueError(
+                "No signer account found in config for the provided arguments."
+            )
     else:
         # Prompt for signer account if not provided in args
         signer = tx_sign.get_signer_account(prompt_session)
