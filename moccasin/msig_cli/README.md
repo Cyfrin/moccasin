@@ -19,7 +19,7 @@ This module provides a command-line interface for building, signing, and broadca
 
 ## CLI Commands
 
-### `mox msig tx_build`
+### `mox msig tx-sign`
 
 Build a Safe multisig transaction interactively or via command-line arguments.
 
@@ -40,16 +40,16 @@ If arguments are omitted, the CLI will prompt for them interactively. All steps 
 **Example:**
 
 ```bash
-mox msig tx_build --url http://localhost:8545 --safe-address 0xSafe... --to 0xTarget... --operation 0 --value 0 --data 0x...
+mox msig tx-sign --url http://localhost:8545 --safe-address 0xSafe... --to 0xTarget... --operation 0 --value 0 --data 0x...
 ```
 
 Or run interactively:
 
 ```bash
-mox msig tx_build
+mox msig tx-sign
 ```
 
-### `mox msig tx_sign`
+### `mox msig tx-sign`
 
 Sign a Safe multisig transaction from EIP-712 JSON, with strict domain validation and owner checks.
 
@@ -73,13 +73,13 @@ Sign a Safe multisig transaction from EIP-712 JSON, with strict domain validatio
 **Example:**
 
 ```bash
-mox msig tx_sign --url http://localhost:8545 --input-json ./safe_tx.json --output-json ./safe_tx_signed.json --account mykeystore
+mox msig tx-sign --url http://localhost:8545 --input-json ./safe_tx.json --output-json ./safe_tx_signed.json --account mykeystore
 ```
 
 Or run interactively:
 
 ```bash
-mox msig tx_sign
+mox msig tx-sign
 ```
 
 ### `mox msig tx_broadcast`
