@@ -12,6 +12,7 @@ import moccasin.constants.vars as vars
 from moccasin.commands.wallet import save_to_keystores
 from moccasin.config import Config, _set_global_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
+from moccasin.msig_cli.scripts.deploy_local_safe import deploy_local_safe_anvil
 from tests.constants import (
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
@@ -319,3 +320,26 @@ def pytest_collection_modifyitems(config, items: List[Any]):
                 for marker in test.own_markers
                 if marker.name not in ("skip", "skipif")
             ]
+
+
+# ------------------------------------------------------------------
+#                        MSIG FIXTURES
+# ------------------------------------------------------------------
+@pytest.fixture
+def pt_session():
+    """Create a prompt_toolkit session for testing."""
+    from prompt_toolkit.application import create_app_session
+    from prompt_toolkit.input import create_pipe_input
+    from prompt_toolkit.output import DummyOutput
+
+    with create_pipe_input() as pipe_input:
+        with create_app_session(input=pipe_input, output=DummyOutput()):
+            yield pipe_input
+
+
+@pytest.fixture(scope="module")
+def eth_safe_address_anvil(anvil):
+    """Fixture to provide a Safe instance connected to Anvil."""
+    eth_safe_address, _ = deploy_local_safe_anvil()
+
+    yield eth_safe_address
