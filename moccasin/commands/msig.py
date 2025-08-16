@@ -1,28 +1,27 @@
-from argparse import Namespace
 import json
 import traceback
+from argparse import Namespace
 from typing import Tuple
 
 from eth_typing import URI
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from safe_eth.eth import EthereumClient
+from safe_eth.safe import Safe, SafeTx
 
 from moccasin._sys_path_and_config_setup import (
     _patch_sys_path,
     _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
-from moccasin.config import initialize_global_config, get_config
+from moccasin.config import get_config, initialize_global_config
 from moccasin.logging import logger, set_log_level
-
-from safe_eth.eth import EthereumClient
-from safe_eth.safe import Safe, SafeTx
-
 from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.common_prompts import (
     prompt_continue_next_step,
     prompt_rpc_url,
     prompt_safe_address,
+    prompt_save_safe_tx_json,
 )
 from moccasin.msig_cli.tx import tx_build, tx_sign
 from moccasin.msig_cli.tx.sign_prompts import (
@@ -32,11 +31,21 @@ from moccasin.msig_cli.tx.sign_prompts import (
 from moccasin.msig_cli.utils.helpers import (
     build_safe_tx_from_message,
     extract_safe_tx_json,
+    get_custom_eip712_structured_data,
     get_safe_instance,
     get_signatures_bytes,
+    save_safe_tx_json,
     validate_ethereum_client_chain_id,
 )
 from moccasin.msig_cli.utils.types import T_SafeTxData
+
+# --- Constants ---
+TX_BUILD_CMD = "tx-build"
+TX_SIGN_CMD = "tx-sign"
+TX_BROADCAST_CMD = "tx-broadcast"
+
+# Define the command order for transaction commands
+TX_COMMANDS_ORDER = [TX_BUILD_CMD, TX_SIGN_CMD, TX_BROADCAST_CMD]
 
 
 # --- Prompt session functions ---
@@ -87,6 +96,20 @@ def _update_bottom_toolbar(
     prompt_session.bottom_toolbar = _bottom_toolbar_cli(
         ethereum_client=ethereum_client, safe_instance=safe_instance, safe_tx=safe_tx
     )
+
+
+def _prompt_save_json(
+    prompt_session: PromptSession, safe_tx: SafeTx, output_json: str = None
+):
+    """Prompt the user to save the SafeTx JSON data."""
+    safe_tx_data = get_custom_eip712_structured_data(safe_tx)
+    if output_json is None:
+        output_json = prompt_save_safe_tx_json(prompt_session)
+
+    if output_json is not None:
+        save_safe_tx_json(output_json, safe_tx_data)
+    else:
+        print_formatted_text(HTML("<b><yellow>Not saving EIP-712 JSON.</yellow></b>"))
 
 
 # --- Tx command functions ---
@@ -164,6 +187,11 @@ def _tx_build_command(
         ethereum_client=ethereum_client,
         safe_instance=safe_instance,
         safe_tx=safe_tx,
+    )
+
+    # Prompt to save the SafeTx JSON data
+    _prompt_save_json(
+        prompt_session=prompt_session, safe_tx=safe_tx, output_json=output_json
     )
 
     return safe_instance, safe_tx
@@ -297,6 +325,12 @@ def _tx_sign_command(
         prompt_session=prompt_session,
         ethereum_client=ethereum_client,
         safe_instance=safe_instance,
+        safe_tx=safe_tx,
+    )
+
+    # Prompt to save the SafeTx JSON data
+    _prompt_save_json(
+        prompt_session=prompt_session, safe_tx=safe_tx, output_json=output_file_safe_tx
     )
 
     return safe_instance, safe_tx, signer
@@ -320,7 +354,8 @@ def main(args: Namespace) -> int:
         prompt_session = PromptSession(
             auto_suggest=AutoSuggestFromHistory(), validate_while_typing=False
         )
-        prompt_session.rprompt = _right_toolbar_cli(args.msig_command)
+        # Set the right toolbar with default msig
+        prompt_session.rprompt = _right_toolbar_cli()
 
         # If a network is specified, use it; otherwise, prompt for RPC URL
         rpc_url = args.url
@@ -359,8 +394,8 @@ def main(args: Namespace) -> int:
                 return 1
 
             # Update bottom toolbar with Ethereum client
-            prompt_session.bottom_toolbar = _bottom_toolbar_cli(
-                ethereum_client=ethereum_client, safe_instance=None, safe_tx=None
+            _update_bottom_toolbar(
+                prompt_session=prompt_session, ethereum_client=ethereum_client
             )
 
             # Handle the msig command
@@ -372,22 +407,24 @@ def main(args: Namespace) -> int:
                 signer = None
 
                 # Prepare the tx command workflow
-                tx_cmd_order = ["tx-build", "tx-sign", "tx-broadcast"]
-                if msig_command not in tx_cmd_order:
+                if msig_command not in TX_COMMANDS_ORDER:
                     logger.error(
-                        f"Unknown msig command: {msig_command}. Expected one of {tx_cmd_order}."
+                        f"Unknown msig command: {msig_command}. Expected one of {TX_COMMANDS_ORDER}."
                     )
                     return 1
 
                 # Run the main loop for the tx commands
-                start_idx = tx_cmd_order.index(msig_command)
-                for idx in range(start_idx, len(tx_cmd_order)):
-                    cmd = tx_cmd_order[idx]
-                    if cmd == "tx_build":
+                start_idx = TX_COMMANDS_ORDER.index(msig_command)
+                for idx in range(start_idx, len(TX_COMMANDS_ORDER)):
+                    cmd = TX_COMMANDS_ORDER[idx]
+                    # Set the right toolbar with the current command
+                    prompt_session.rprompt = _right_toolbar_cli(cmd)
+
+                    if cmd == TX_BUILD_CMD:
                         safe_instance, safe_tx = _tx_build_command(
                             prompt_session, ethereum_client, args
                         )
-                    elif cmd == "tx_sign":
+                    elif cmd == TX_SIGN_CMD:
                         safe_instance, safe_tx, signer = _tx_sign_command(
                             prompt_session,
                             ethereum_client,
@@ -395,7 +432,7 @@ def main(args: Namespace) -> int:
                             safe_tx,
                             args,
                         )
-                    elif cmd == "tx_broadcast":
+                    elif cmd == TX_BROADCAST_CMD:
                         _tx_broadcast_command(prompt_session, args)
 
                     # Reset command in right toolbar after each command
@@ -407,7 +444,7 @@ def main(args: Namespace) -> int:
 
                     # Only prompt for next step if:
                     # 1. Not the last command in the order
-                    if idx < len(tx_cmd_order) - 1:
+                    if idx < len(TX_COMMANDS_ORDER) - 1:
                         # 2. Sign onlt if we have a safe_tx after building
                         if not safe_tx and cmd == "tx_sign":
                             print_formatted_text(
@@ -430,9 +467,12 @@ def main(args: Namespace) -> int:
                             )
                             break
 
+                        # Reset the right toolbar
+                        prompt_session.rprompt = _right_toolbar_cli()
+
                         # Prompt for next step
                         next_step = prompt_continue_next_step(
-                            prompt_session, next_cmd=tx_cmd_order[idx + 1]
+                            prompt_session, next_cmd=TX_COMMANDS_ORDER[idx + 1]
                         )
                         if not next_step:
                             break

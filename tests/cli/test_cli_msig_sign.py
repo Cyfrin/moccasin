@@ -2,7 +2,6 @@ import json
 import os
 import shutil
 import subprocess
-
 from pathlib import Path
 
 from tests.constants import ANVIL1_KEYSTORE_NAME, ANVIL1_KEYSTORE_PASSWORD

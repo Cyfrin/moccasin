@@ -9,7 +9,6 @@ from safe_eth.safe import Safe, SafeTx
 from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
 
 from moccasin.logging import logger
-from moccasin.msig_cli.common_prompts import prompt_save_safe_tx_json
 from moccasin.msig_cli.tx.build_prompts import (
     prompt_gas_token,
     prompt_internal_txs,
@@ -20,10 +19,8 @@ from moccasin.msig_cli.tx.build_prompts import (
     prompt_target_contract_address,
 )
 from moccasin.msig_cli.utils.helpers import (
-    get_custom_eip712_structured_data,
     get_multisend_address_from_env,
     pretty_print_safe_tx,
-    save_safe_tx_json,
 )
 from moccasin.msig_cli.validators import (
     validate_address,
@@ -86,7 +83,6 @@ def run(
     safe_nonce: Optional[int] = None,
     data: Optional[HexBytes] = None,
     gas_token: Optional[str] = None,
-    output_json: Optional[str] = None,
 ) -> SafeTx:
     """Run the transaction builder with interactive prompts.
 
@@ -109,7 +105,6 @@ def run(
     tx_operation = operation
     tx_data = data
     tx_safe_nonce = safe_nonce
-    tx_output_json = output_json
 
     # Prompt for nonce and gas token
     if tx_safe_nonce is None:
@@ -178,16 +173,6 @@ def run(
     )
     # Pretty-print the SafeTx fields and get EIP-712 structured data
     pretty_print_safe_tx(safe_tx)
-    safe_tx_data = get_custom_eip712_structured_data(safe_tx)
-
-    # Save EIP-712 structured data as JSON
-    if tx_output_json is None:
-        tx_output_json = prompt_save_safe_tx_json(prompt_session)
-
-    if tx_output_json is not None:
-        save_safe_tx_json(tx_output_json, safe_tx_data)
-    else:
-        print_formatted_text(HTML("<b><yellow>Not saving EIP-712 JSON.</yellow></b>"))
 
     return safe_tx
 

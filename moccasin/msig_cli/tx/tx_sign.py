@@ -6,7 +6,6 @@ from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
 
 from moccasin.moccasin_account import MoccasinAccount
-from moccasin.msig_cli.common_prompts import prompt_save_safe_tx_json
 from moccasin.msig_cli.tx.sign_prompts import (
     prompt_account_name,
     prompt_account_password,
@@ -14,11 +13,7 @@ from moccasin.msig_cli.tx.sign_prompts import (
     prompt_private_key,
     prompt_sign_with_moccasin_account,
 )
-from moccasin.msig_cli.utils.helpers import (
-    get_custom_eip712_structured_data,
-    pretty_print_safe_tx,
-    save_safe_tx_json,
-)
+from moccasin.msig_cli.utils.helpers import pretty_print_safe_tx
 from moccasin.msig_cli.validators import validate_json_file
 
 
@@ -28,7 +23,6 @@ def run(
     safe_instance: Safe,
     safe_tx: SafeTx,
     signer: Optional[MoccasinAccount],
-    output_file_safe_tx: Optional[Path],
 ) -> SafeTx:
     """Main entrypoint for the tx_sign command."""
     # Check if the account address is one of the Safe owners
@@ -65,16 +59,6 @@ def run(
     ordered_signers = list(reversed(safe_tx.sorted_signers))
     for idx, sig in enumerate(ordered_signers, start=1):
         print_formatted_text(HTML(f"<b><green>SafeTx signer {idx}: {sig}</green></b>"))
-
-    # Save EIP-712 structured data as JSON
-    safe_tx_data = get_custom_eip712_structured_data(safe_tx)
-    if output_file_safe_tx is None:
-        output_file_safe_tx = prompt_save_safe_tx_json(prompt_session)
-
-    if output_file_safe_tx is not None:
-        save_safe_tx_json(output_file_safe_tx, safe_tx_data)
-    else:
-        print_formatted_text(HTML("<b><yellow>Not saving EIP-712 JSON.</yellow></b>"))
 
     return safe_tx
 

@@ -1,7 +1,6 @@
 import json
 import os
 import subprocess
-
 from pathlib import Path
 
 from moccasin.msig_cli.constants import ERROR_INVALID_DATA, ERROR_INVALID_JSON_FILE

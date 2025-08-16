@@ -1,7 +1,6 @@
 # @TODO test the full workflow of the CLI msig commands: build, sign, execute
 import os
 import subprocess
-
 from pathlib import Path
 
 from tests.utils.anvil import ANVIL_URL

@@ -2,7 +2,6 @@ import json
 import os
 from typing import Optional, Tuple, cast
 
-from click import File
 from eth_utils import to_bytes, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.eth import EthereumClient

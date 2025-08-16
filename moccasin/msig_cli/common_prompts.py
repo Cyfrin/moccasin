@@ -1,7 +1,5 @@
-import json
-
 from eth_utils import to_checksum_address
-from prompt_toolkit import HTML, print_formatted_text
+from prompt_toolkit import HTML
 
 from moccasin.msig_cli.constants import LEFT_PROMPT_SIGN
 from moccasin.msig_cli.validators import (
@@ -51,5 +49,4 @@ def prompt_save_safe_tx_json(prompt_session):
         )
         return filename
     else:
-        print_formatted_text(HTML("<b><yellow>Not saving EIP-712 JSON.</yellow></b>"))
         return None
