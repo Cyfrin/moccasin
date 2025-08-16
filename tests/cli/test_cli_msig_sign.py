@@ -74,7 +74,7 @@ def test_cli_tx_sign_with_owner_key(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -112,7 +112,7 @@ def test_cli_tx_sign_with_non_owner_key(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -152,7 +152,7 @@ def test_cli_tx_sign_with_invalid_key(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -188,7 +188,7 @@ def test_cli_tx_sign_user_abort(mox_path, moccasin_home_folder, eth_safe_address
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -209,7 +209,7 @@ def test_cli_tx_sign_missing_json(mox_path, moccasin_home_folder):
         [
             mox_path,
             "msig",
-            "tx_sign",
+            "tx-sign",
             "--rpc",
             LOCAL_ANVIL_URL,
             "--input-json",
@@ -246,7 +246,7 @@ def test_cli_tx_sign_with_moccasin_keystore(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -284,7 +284,7 @@ def test_cli_tx_sign_with_keystore_wrong_password(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -322,7 +322,7 @@ def test_cli_tx_sign_with_nonexistent_keystore(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -359,7 +359,7 @@ def test_cli_tx_sign_interactive_input_json_prompt(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_sign"],
+            [mox_path, "msig", "tx-sign"],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -399,7 +399,7 @@ def test_cli_tx_sign_interactive_output_json_prompt(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
             input=sign_input,
             text=True,
             capture_output=True,

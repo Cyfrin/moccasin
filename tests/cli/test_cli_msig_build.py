@@ -69,7 +69,7 @@ def test_cli_tx_builder_interactive(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"],
+            [mox_path, "msig", "tx-build"],
             input=user_input,
             text=True,
             capture_output=True,
@@ -116,7 +116,7 @@ def test_cli_tx_builder_args_only(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"] + args,
+            [mox_path, "msig", "tx-build"] + args,
             input="q\n",
             text=True,
             capture_output=True,
@@ -161,7 +161,7 @@ def test_cli_tx_builder_args_with_json_output(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"] + args,
+            [mox_path, "msig", "tx-build"] + args,
             input="q\n",
             text=True,
             capture_output=True,
@@ -210,7 +210,7 @@ def test_cli_tx_builder_invalid_json_output(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"] + args,
+            [mox_path, "msig", "tx-build"] + args,
             input="q\n",
             text=True,
             capture_output=True,
@@ -276,7 +276,7 @@ def test_cli_tx_builder_multisend_mixed_operations(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"],
+            [mox_path, "msig", "tx-build"],
             input=user_input,
             text=True,
             capture_output=True,
@@ -337,7 +337,7 @@ def test_cli_tx_builder_multisend_user_rejects(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"],
+            [mox_path, "msig", "tx-build"],
             input=user_input,
             text=True,
             capture_output=True,
@@ -390,7 +390,7 @@ def test_cli_tx_builder_prompt_fallbacks(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"] + args,
+            [mox_path, "msig", "tx-build"] + args,
             input=user_input,
             text=True,
             capture_output=True,
@@ -439,7 +439,7 @@ def test_cli_tx_builder_invalid_data(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"] + args,
+            [mox_path, "msig", "tx-build"] + args,
             input="q\n",
             text=True,
             capture_output=True,
@@ -505,7 +505,7 @@ def test_cli_tx_builder_multisend_large_batch(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"],
+            [mox_path, "msig", "tx-build"],
             input=user_input,
             text=True,
             capture_output=True,

@@ -58,7 +58,7 @@ def test_cli_tx_build_and_sign_integration(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx_build"],
+            [mox_path, "msig", "tx-build"],
             input=user_input,
             text=True,
             capture_output=True,
