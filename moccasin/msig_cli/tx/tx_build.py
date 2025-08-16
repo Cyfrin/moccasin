@@ -1,9 +1,9 @@
 from argparse import Namespace
+from pathlib import Path
 from typing import Optional
 
 from eth_typing import ChecksumAddress
 from eth_utils import to_checksum_address
-from hexbytes import HexBytes
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
 from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
@@ -81,7 +81,7 @@ def run(
     value: Optional[int] = None,
     operation: Optional[int] = None,
     safe_nonce: Optional[int] = None,
-    data: Optional[HexBytes] = None,
+    data: Optional[bytes] = None,
     gas_token: Optional[str] = None,
 ) -> SafeTx:
     """Run the transaction builder with interactive prompts.
@@ -179,27 +179,25 @@ def run(
 
 # --- Tx build helper functions ---
 def preprocess_raw_args(
-    args: Namespace,
+    args: Namespace | None,
 ) -> tuple[
     Optional[ChecksumAddress],
-    Optional[int],
-    Optional[int],
-    Optional[int],
-    Optional[HexBytes],
     Optional[ChecksumAddress],
-    Optional[str],
+    Optional[int],
+    Optional[int],
+    Optional[int],
+    Optional[bytes],
+    Optional[ChecksumAddress],
+    Optional[Path],
 ]:
     """Preprocess and validate raw arguments for the transaction builder.
 
-    :param to: Address of the contract to call.
-    :param value: Value to send with the transaction, in wei.
-    :param operation: Operation type (0 for call, 1 for delegate call).
-    :param safe_nonce: Nonce of the Safe contract to use for the transaction.
-    :param data: Data to send with the transaction, in hex format.
-    :param gas_token: Token to use for gas, defaults to the native token of the network.
-    :param output_json: Output file to save the EIP-712 structured data as JSON.
+    :param args: Namespace containing raw arguments.
     :return: A tuple containing the validated and converted values.
     """
+    if args is None:
+        return None, None, None, None, None, None, None, None
+
     safe_address = getattr(args, "safe_address", None)
     to = getattr(args, "to", None)
     value = getattr(args, "value", None)

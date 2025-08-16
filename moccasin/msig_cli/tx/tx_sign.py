@@ -22,17 +22,17 @@ def run(
     prompt_session: PromptSession,
     safe_instance: Safe,
     safe_tx: SafeTx,
-    signer: Optional[MoccasinAccount],
+    signer: MoccasinAccount,
 ) -> SafeTx:
     """Main entrypoint for the tx_sign command."""
     # Check if the account address is one of the Safe owners
-    if not safe_instance.retrieve_is_owner(signer.address):
+    if not safe_instance.retrieve_is_owner(str(signer.address)):
         raise ValueError(
             f"Signer account {signer.address} is not one of the Safe owners. Cannot proceed with signing."
         )
 
     # Check if signer has already signed the SafeTx
-    if signer.address in safe_tx.signers:
+    if str(signer.address) in safe_tx.signers:
         raise ValueError(
             f"Signer account {signer.address} has already signed the SafeTx. Cannot proceed with signing."
         )
@@ -64,8 +64,13 @@ def run(
 
 
 # --- Tx build helper functions ---
-def preprocess_raw_args(args: Namespace) -> tuple[Optional[Path], Optional[Path]]:
+def preprocess_raw_args(
+    args: Namespace | None,
+) -> tuple[Optional[Path], Optional[Path]]:
     """Preprocess raw arguments for tx_sign command."""
+    if args is None:
+        return None, None
+
     input_json = getattr(args, "input_json", None)
     output_json = getattr(args, "output_json", None)
 

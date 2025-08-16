@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from typing import Optional, Tuple, cast
 
 from eth_utils import to_bytes, to_checksum_address
@@ -222,7 +223,7 @@ def build_safe_tx_from_message(
         raise Exception(f"Error creating SafeTx from message JSON: {e}") from e
 
 
-def save_safe_tx_json(output_json: str, safe_tx_data: dict) -> None:
+def save_safe_tx_json(output_json: Path, safe_tx_data: dict) -> None:
     """Save the SafeTx data as JSON to the specified output file."""
     with open(output_json, "w") as f:
         json.dump(safe_tx_data, f, indent=2, default=str)

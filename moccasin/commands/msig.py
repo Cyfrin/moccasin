@@ -1,6 +1,7 @@
 import json
 import traceback
 from argparse import Namespace
+from pathlib import Path
 from typing import Tuple
 
 from eth_typing import URI
@@ -55,21 +56,21 @@ def _bottom_toolbar_cli(
     safe_tx: SafeTx = None,
 ):
     """Return the bottom toolbar text for the prompt session."""
-    chain_id = "None"
-    safe_addr = "None"
-    tx_signed_counter = "None"
+    chain_id: str = "None"
+    safe_addr: str = "None"
+    tx_signed_counter: str = "None"
 
     if ethereum_client:
-        chain_id = ethereum_client.get_chain_id()
+        chain_id = str(ethereum_client.get_chain_id())  # Fix: ensure str
     if safe_instance:
-        safe_addr = safe_instance.address
+        safe_addr = str(safe_instance.address)  # Fix: ensure str
     if safe_tx and safe_instance:
         try:
-            threshold = safe_instance.retrieve_threshold()
+            threshold = str(safe_instance.retrieve_threshold())  # Fix: ensure str
         except Exception:
             threshold = "?"
         try:
-            signers_count = len(getattr(safe_tx, "signers", []))
+            signers_count = str(len(getattr(safe_tx, "signers", [])))  # Fix: ensure str
         except Exception:
             signers_count = "?"
         tx_signed_counter = f"{signers_count}/{threshold}"
@@ -99,7 +100,7 @@ def _update_bottom_toolbar(
 
 
 def _prompt_save_json(
-    prompt_session: PromptSession, safe_tx: SafeTx, output_json: str = None
+    prompt_session: PromptSession, safe_tx: SafeTx, output_json: Path = None
 ):
     """Prompt the user to save the SafeTx JSON data."""
     safe_tx_data = get_custom_eip712_structured_data(safe_tx)
@@ -176,7 +177,6 @@ def _tx_build_command(
             safe_nonce=safe_nonce,
             data=data,
             gas_token=gas_token,
-            output_json=output_json,
         )
     except Exception as e:
         raise Exception("Failed to build SafeTx from provided parameters: {e}") from e
@@ -282,7 +282,10 @@ def _tx_sign_command(
 
     # Get the signer from config or prompt if not provided
     signer = None
-    if args.account is not None or args.private_key is not None:
+    if (
+        getattr(args, "account", None) is not None
+        or getattr(args, "private_key", None) is not None
+    ):
         signer = get_config().get_active_network().get_default_account()
         if signer is None:
             raise ValueError(
@@ -308,6 +311,12 @@ def _tx_sign_command(
         )
     )
 
+    # Ensure safe_instance and safe_tx are not None
+    if safe_instance is None:
+        raise ValueError("Safe instance must not be None before signing.")
+    if safe_tx is None:
+        raise ValueError("SafeTx must not be None before signing.")
+
     # Sign the SafeTx with the provided signer
     try:
         safe_tx = tx_sign.run(
@@ -315,7 +324,6 @@ def _tx_sign_command(
             safe_instance=safe_instance,
             safe_tx=safe_tx,
             signer=signer,
-            output_file_safe_tx=output_file_safe_tx,
         )
     except Exception as e:
         raise Exception(f"Failed to sign SafeTx with provided parameters: {e}") from e
@@ -336,7 +344,7 @@ def _tx_sign_command(
     return safe_instance, safe_tx, signer
 
 
-def _tx_broadcast_command(self, args: Namespace = None):
+def _tx_broadcast_command(prompt_session: PromptSession, args: Namespace = None):
     """Run the transaction broadcast command.
 
     :param args: Optional argparse Namespace with command arguments.
@@ -351,7 +359,7 @@ def main(args: Namespace) -> int:
     """Main entry point for the msig CLI."""
     try:
         # Set prompt session for user interactions
-        prompt_session = PromptSession(
+        prompt_session: PromptSession = PromptSession(
             auto_suggest=AutoSuggestFromHistory(), validate_while_typing=False
         )
         # Set the right toolbar with default msig
@@ -380,7 +388,10 @@ def main(args: Namespace) -> int:
             config = get_config()
 
             # Initialize Ethereum client
-            ethereum_client = EthereumClient(URI(config.get_active_network().url))
+            active_rpc_url = config.get_active_network().url
+            if active_rpc_url is None:
+                raise ValueError("No RPC URL provided for the active network.")
+            ethereum_client = EthereumClient(URI(active_rpc_url))
 
             if ethereum_client is not None:
                 # Print the chain ID in a formatted way
@@ -436,7 +447,7 @@ def main(args: Namespace) -> int:
                         _tx_broadcast_command(prompt_session, args)
 
                     # Reset command in right toolbar after each command
-                    msig_command = None
+                    msig_command = ""
 
                     # Set signer to boa env eoa to use in next commands
                     if signer is not None:
@@ -446,7 +457,7 @@ def main(args: Namespace) -> int:
                     # 1. Not the last command in the order
                     if idx < len(TX_COMMANDS_ORDER) - 1:
                         # 2. Sign onlt if we have a safe_tx after building
-                        if not safe_tx and cmd == "tx_sign":
+                        if safe_tx is None and cmd == "tx_sign":
                             print_formatted_text(
                                 HTML(
                                     "<b><red>SafeTx not created. Aborting following signing.</red></b>"
@@ -455,8 +466,10 @@ def main(args: Namespace) -> int:
                             break
 
                         # 3. safe_tx has been signed with required signers
-                        if (
+                        elif (
                             cmd == "tx_sign"
+                            and safe_instance is not None
+                            and safe_tx is not None
                             and len(safe_tx.signers)
                             < safe_instance.retrieve_threshold()
                         ):
