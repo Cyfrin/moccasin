@@ -43,3 +43,4 @@ class T_EIP712TxJson(TypedDict):
 class T_SafeTxData(TypedDict):
     safeTx: T_EIP712TxJson
     signatures: str  # Signature data in hex format
+    tx_hash: str  # Transaction hash in hex format

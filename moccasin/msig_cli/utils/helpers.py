@@ -230,3 +230,22 @@ def save_safe_tx_json(output_json: Path, safe_tx_data: dict) -> None:
     print_formatted_text(
         HTML(f"<b><green>Saved EIP-712 JSON:</green> {output_json}</b>")
     )
+
+
+def check_funds_account(
+    safe_tx_gas: int, base_gas: int, gas_price: int, gas_token: str
+) -> bool:
+    """
+    Check account has enough funds to pay for a SafeTx
+
+    :param safe_tx_gas: Safe tx gas
+    :param base_gas: Data gas
+    :param gas_price: Gas Price
+    :param gas_token: Gas Token, to use token instead of ether for the gas
+    :return: `True` if enough funds, `False` otherwise
+    """
+    if gas_token == NULL_ADDRESS:
+        balance = self.ethereum_client.get_balance(self.address)
+    else:
+        balance = self.ethereum_client.erc20.get_balance(self.address, gas_token)
+    return balance >= (safe_tx_gas + base_gas) * gas_price

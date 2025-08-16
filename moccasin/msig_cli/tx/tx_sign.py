@@ -63,7 +63,7 @@ def run(
     return safe_tx
 
 
-# --- Tx build helper functions ---
+# --- Tx sign helper functions ---
 def preprocess_raw_args(
     args: Namespace | None,
 ) -> tuple[Optional[Path], Optional[Path]]:
@@ -82,7 +82,6 @@ def preprocess_raw_args(
     return input_json, output_json
 
 
-# --- Tx sign helper functions ---
 def get_signer_account(prompt_session: PromptSession) -> MoccasinAccount:
     """Get the signer account for the transaction."""
     account = None

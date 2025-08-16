@@ -795,6 +795,20 @@ Example usage:
     add_network_args_to_parser(tx_sign_parser)
     add_account_args_to_parser(tx_sign_parser)
     add_tx_signer_args(tx_sign_parser)
+
+    # tx_broadcast
+    tx_broadcast_parser = msig_subparsers.add_parser(
+        "tx-broadcast", help="Broadcast a multisig transaction."
+    )
+    add_network_args_to_parser(tx_broadcast_parser)
+    add_account_args_to_parser(tx_broadcast_parser)
+    tx_broadcast_parser.add_argument(
+        "--input-json",
+        help="Path to a JSON file containing the SafeTx data to broadcast.",
+    )
+    tx_broadcast_parser.add_argument(
+        "--output-json", help="Output file to save the broadcasted SafeTx data as JSON."
+    )
     # ------------------------------------------------------------------
     #                             RETURN
     # ------------------------------------------------------------------

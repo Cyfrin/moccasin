@@ -20,15 +20,13 @@ from moccasin.logging import logger, set_log_level
 from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.common_prompts import (
     prompt_continue_next_step,
+    prompt_is_right_account,
     prompt_rpc_url,
     prompt_safe_address,
     prompt_save_safe_tx_json,
-)
-from moccasin.msig_cli.tx import tx_build, tx_sign
-from moccasin.msig_cli.tx.sign_prompts import (
     prompt_eip712_input_file,
-    prompt_is_right_account,
 )
+from moccasin.msig_cli.tx import tx_broadcast, tx_build, tx_sign
 from moccasin.msig_cli.utils.helpers import (
     build_safe_tx_from_message,
     extract_safe_tx_json,
@@ -124,11 +122,12 @@ def _tx_build_command(
     This method initializes the Safe instance and SafeTx based on the provided or prompted input,
     validates the chainId, and then runs the transaction builder.
 
+    :param prompt_session: The prompt session for user interactions.
+    :param ethereum_client: The Ethereum client to interact with the blockchain.
     :param args: Optional argparse Namespace with command arguments.
+    :return: A tuple containing the Safe instance and the SafeTx object.
     """
-    print_formatted_text(
-        HTML("\n\n<b><cyan>Running tx_builder command...</cyan></b>\n")
-    )
+    print_formatted_text(HTML("\n\n<b><cyan>Running tx-build command...</cyan></b>\n"))
     # Validate and preprocess the provided arguments if not None
     (safe_address, to, value, operation, safe_nonce, data, gas_token, output_json) = (
         tx_build.preprocess_raw_args(args)
@@ -212,9 +211,14 @@ def _tx_sign_command(
     It will go directly to signing if the SafeTx is already available,
     or prompt for the EIP-712 JSON input file if not.
 
+    :param prompt_session: The prompt session for user interactions.
+    :param ethereum_client: The Ethereum client to interact with the blockchain.
+    :param safe_instance: Optional Safe instance to use for signing.
+    :param safe_tx: Optional SafeTx object to sign.
     :param args: Optional argparse Namespace with command arguments.
+    :return: A tuple containing the Safe instance, SafeTx object, and signer account.
     """
-    print_formatted_text(HTML("\n\n<b><cyan>Running tx_sign command...</cyan></b>"))
+    print_formatted_text(HTML("\n\n<b><cyan>Running tx-sign command...</cyan></b>"))
     # Validate and preprocess the provided arguments if not None
     (input_file_safe_tx, output_file_safe_tx) = tx_sign.preprocess_raw_args(args)
 
@@ -344,14 +348,167 @@ def _tx_sign_command(
     return safe_instance, safe_tx, signer
 
 
-def _tx_broadcast_command(prompt_session: PromptSession, args: Namespace = None):
-    """Run the transaction broadcast command.
+def _tx_broadcast_command(
+    prompt_session: PromptSession,
+    ethereum_client: EthereumClient,
+    safe_instance: Safe = None,
+    safe_tx: SafeTx = None,
+    args: Namespace = None,
+) -> Tuple[Safe, SafeTx, MoccasinAccount]:
+    """Handle the transaction broadcast command.
 
+    This method initializes the Safe instance and SafeTx based on the provided or prompted input file,
+    validates the chainId, and then runs the broadcasting process.
+
+    :param prompt_session: The prompt session for user interactions.
+    :param ethereum_client: The Ethereum client to interact with the blockchain.
+    :param safe_instance: Optional Safe instance to use for broadcasting.
+    :param safe_tx: Optional SafeTx object to broadcast.
     :param args: Optional argparse Namespace with command arguments.
+    :return: A tuple containing the Safe instance, SafeTx object, and signer account.
     """
     print_formatted_text(
-        HTML("<b><red>tx_broadcast command not implemented yet!</red></b>")
+        HTML("\n\n<b><cyan>Running tx-broadcast command...</cyan></b>")
     )
+    # Validate and preprocess the provided arguments if not None
+    (input_file_safe_tx, output_file_safe_tx) = tx_broadcast.preprocess_raw_args(args)
+
+    # No prior data means we need to get the Safe from the input file
+    if not safe_instance and not safe_tx:
+        # Check if eip712_input_file is provided, else prompt to get it
+        if input_file_safe_tx is None:
+            print_formatted_text(
+                HTML(
+                    "<b><yellow>Warning: No input file provided. Prompting for custom or original EIP-712 JSON file.</yellow></b>"
+                )
+            )
+            print_formatted_text(
+                HTML(
+                    "<b><magenta>Note: Advised to run tx_build before tx_sign if no input file available.</magenta></b>\n"
+                )
+            )
+            eip712_prompted_file = prompt_eip712_input_file(prompt_session)
+            if not eip712_prompted_file.exists():
+                raise ValueError(f"JSON file SafeTx not found: {eip712_prompted_file}.")
+            input_file_safe_tx = eip712_prompted_file
+
+        # Load the JSON file
+        with open(input_file_safe_tx, "r") as f:
+            safe_tx_json: T_SafeTxData = json.loads(f.read())
+
+        # Extract SafeTx data from input file
+        domain_json, message_json, signatures_json = extract_safe_tx_json(safe_tx_json)
+        if domain_json is None or message_json is None:
+            raise ValueError(
+                "Invalid SafeTx JSON format: missing 'domain' or 'message' fields."
+            )
+
+        # Validate the domain chainId from JSON and our Ethereum client
+        validate_ethereum_client_chain_id(
+            ethereum_client=ethereum_client, domain_json=domain_json
+        )
+
+        # Initialize Safe instance with the address from domain_json
+        safe_address = domain_json.get("verifyingContract")
+        if not safe_address:
+            raise ValueError(
+                "Domain JSON must contain 'verifyingContract' field for Safe address."
+            )
+        safe_instance = get_safe_instance(
+            ethereum_client=ethereum_client, safe_address=safe_address
+        )
+        print_formatted_text(
+            HTML(f"<b><green>Using Safe address: {safe_instance.address}</green></b>")
+        )
+
+        # Initialize SafeTx with the message and signatures
+        safe_tx = build_safe_tx_from_message(
+            safe_instance=safe_instance,
+            message_json=message_json,
+            signatures_json=get_signatures_bytes(signatures_json),
+        )
+
+        # Update bottom toolbar with Ethereum client
+        _update_bottom_toolbar(
+            prompt_session=prompt_session,
+            ethereum_client=ethereum_client,
+            safe_instance=safe_instance,
+        )
+
+    # Get the broadcaster from config or prompt if not provided
+    broadcaster = None
+    if (
+        getattr(args, "account", None) is not None
+        or getattr(args, "private_key", None) is not None
+    ):
+        broadcaster = get_config().get_active_network().get_default_account()
+        if broadcaster is None:
+            raise ValueError(
+                "No broadcaster account found in config for the provided arguments."
+            )
+    else:
+        # Prompt for signer account if not provided in args
+        broadcaster = tx_broadcast.get_broadcaster_account(prompt_session)
+        if broadcaster is None:
+            raise ValueError("No signer account provided or found.")
+
+    # Validate the signer account
+    if broadcaster is not None and broadcaster.address is not None:
+        # Check if the account is the right one
+        is_right_account = prompt_is_right_account(prompt_session, broadcaster.address)
+        if is_right_account.lower() not in ("yes", "y"):
+            raise ValueError("User aborted tx_sign command due to wrong account.")
+
+    # Display the initialized account
+    print_formatted_text(
+        HTML(
+            f"\n<b><green>Broadcaster account initialized successfully: {broadcaster.address}</green></b>\n"
+        )
+    )
+
+    # Ensure safe_instance and safe_tx are not None
+    if safe_instance is None:
+        raise ValueError("Safe instance must not be None before signing.")
+    if safe_tx is None:
+        raise ValueError("SafeTx must not be None before signing.")
+
+    # Sign the SafeTx with the provided signer
+    try:
+        safe_tx = tx_broadcast.run(
+            prompt_session=prompt_session,
+            safe_instance=safe_instance,
+            safe_tx=safe_tx,
+            broadcaster=broadcaster,
+        )
+    except Exception as e:
+        raise Exception(f"Failed to sign SafeTx with provided parameters: {e}") from e
+
+    # Update bottom toolbar with Ethereum client
+    _update_bottom_toolbar(
+        prompt_session=prompt_session,
+        ethereum_client=ethereum_client,
+        safe_instance=safe_instance,
+        safe_tx=safe_tx,
+    )
+
+    # Check if the SafeTx was successfully broadcasted
+    if safe_tx.tx_hash is None:
+        raise ValueError(
+            "SafeTx hash is None, something went wrong during broadcasting."
+        )
+
+    # Display SafeTx hash
+    print_formatted_text(HTML("<b><green>SafeTx broadcasted successfully!</green></b>"))
+    print_formatted_text(
+        HTML(f"<b><yellow>SafeTx hash: </yellow></b>{safe_tx.tx_hash.hex()}")
+    )
+
+    # Prompt to save the SafeTx JSON data
+    _prompt_save_json(
+        prompt_session=prompt_session, safe_tx=safe_tx, output_json=output_file_safe_tx
+    )
+
+    return safe_instance, safe_tx, broadcaster
 
 
 # --- Main Function ---
@@ -444,7 +601,13 @@ def main(args: Namespace) -> int:
                             args,
                         )
                     elif cmd == TX_BROADCAST_CMD:
-                        _tx_broadcast_command(prompt_session, args)
+                        _tx_broadcast_command(
+                            prompt_session,
+                            ethereum_client,
+                            safe_instance,
+                            safe_tx,
+                            args,
+                        )
 
                     # Reset command in right toolbar after each command
                     msig_command = ""

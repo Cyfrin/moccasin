@@ -1,3 +1,4 @@
+from pathlib import Path
 from eth_utils import to_checksum_address
 from prompt_toolkit import HTML
 
@@ -26,6 +27,16 @@ def prompt_safe_address(prompt_session):
     )
 
 
+def prompt_eip712_input_file(prompt_session):
+    return Path(
+        prompt_session.prompt(
+            HTML(f"{LEFT_PROMPT_SIGN}<b>EIP-712 input file? </b>"),
+            validator=validator_json_file,
+            placeholder=HTML("<grey>./input.json</grey>"),
+        )
+    )
+
+
 def prompt_continue_next_step(prompt_session, next_cmd):
     answer = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Continue to {next_cmd}? (c/q):</b> "),
@@ -50,3 +61,12 @@ def prompt_save_safe_tx_json(prompt_session):
         return filename
     else:
         return None
+
+
+def prompt_is_right_account(prompt_session, address):
+    return prompt_session.prompt(
+        HTML(f"{LEFT_PROMPT_SIGN}<b>Right account {address}? </b>"),
+        placeholder=HTML("<grey>yes/no</grey>"),
+        validator=validator_not_empty,
+        is_password=False,
+    )
