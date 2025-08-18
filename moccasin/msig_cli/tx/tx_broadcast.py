@@ -9,6 +9,7 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Optional
 
+from eth.constants import ZERO_ADDRESS
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
 
@@ -17,9 +18,7 @@ from moccasin.msig_cli.tx.broadcast_prompts import (
     prompt_account_name,
     prompt_account_password,
     prompt_broadcast_with_moccasin_account,
-    prompt_confirm_base_gas_limit,
     prompt_confirm_broadcast,
-    prompt_confirm_safe_tx_gas_limit,
     prompt_private_key,
 )
 from moccasin.msig_cli.utils.helpers import pretty_print_safe_tx
@@ -46,94 +45,17 @@ def run(
             f"SafeTx requires at least {safe_instance.retrieve_threshold()} signers, but only {len(safe_tx.signers)} signers are provided."
         )
 
-    # Estimate the gas for the SafeTx
-    safe_tx_gas = None
-    try:
-        safe_tx_gas = safe_instance.estimate_tx_gas(
-            safe_tx.to, safe_tx.value, safe_tx.data, safe_tx.operation
-        )
-    except Exception as e:
-        raise Exception(f"Error estimating gas for SafeTx: {e}") from e
-
-    print_formatted_text(
-        HTML(f"<b><green>Estimated gas for SafeTx: {safe_tx_gas}</green></b>")
-    )
-
-    # Compare the gas estimate with the SafeTx gas limit
-    if safe_tx.safe_tx_gas < safe_tx_gas:
-        print_formatted_text(
-            HTML(
-                f"<b><red>Warning: SafeTx gas limit ({safe_tx.safe_tx_gas}) is less than the estimated gas ({safe_tx_gas}).</red></b>"
-            )
-        )
-        # Ask user if they want to change the gas limit or continue with the current gas limit
-        confirm = prompt_confirm_safe_tx_gas_limit(prompt_session, safe_tx_gas)
-        if confirm.lower() in ("yes", "y"):
-            safe_tx.safe_tx_gas = safe_tx_gas
-            print_formatted_text(
-                HTML(
-                    f"<b><green>SafeTx gas limit updated to: {safe_tx.safe_tx_gas}</green></b>"
-                )
-            )
-        else:
-            print_formatted_text(
-                HTML(
-                    f"<b><yellow>Continuing with current SafeTx gas limit: {safe_tx.safe_tx_gas}</yellow></b>"
-                )
-            )
-
-    # Get the base gas for the Safe trnsaction
-    base_gas = None
-    try:
-        base_gas = safe_instance.estimate_tx_base_gas(
-            safe_tx.to,
-            safe_tx.value,
-            safe_tx.data,
-            safe_tx.operation,
-            safe_tx.gas_token,
-            safe_tx.safe_tx_gas,
-        )
-    except Exception as e:
-        raise Exception(f"Error estimating base gas for SafeTx: {e}") from e
-    print_formatted_text(
-        HTML(f"<b><green>Estimated base gas for SafeTx: {base_gas}</green></b>")
-    )
-
-    # Compare the base gas with the SafeTx base gas
-    if safe_tx.base_gas < base_gas:
-        print_formatted_text(
-            HTML(
-                f"<b><red>Warning: SafeTx base gas ({safe_tx.base_gas}) is less than the estimated base gas ({base_gas}).</red></b>"
-            )
-        )
-        # Ask user if they want to change the base gas or continue with the current base gas
-        confirm = prompt_confirm_base_gas_limit(prompt_session, base_gas)
-        if confirm.lower() in ("yes", "y"):
-            safe_tx.base_gas = base_gas
-            print_formatted_text(
-                HTML(
-                    f"<b><green>SafeTx base gas updated to: {safe_tx.base_gas}</green></b>"
-                )
-            )
-        else:
-            print_formatted_text(
-                HTML(
-                    f"<b><yellow>Continuing with current SafeTx base gas: {safe_tx.base_gas}</yellow></b>"
-                )
-            )
-
-    # Update the gas price if not set
-    if safe_tx.gas_price is None:
-        print_formatted_text(
-            HTML(
-                "<b><yellow>SafeTx gas price is not set. Using eth client's gas price.</yellow></b>"
-            )
-        )
-        # Use the Safe's gas price if not set in the SafeTx
-        # see: safe_tx execute method
-        safe_tx.gas_price = safe_instance.w3.eth.gas_price
-        print_formatted_text(
-            HTML(f"<b><green>SafeTx gas price set to: {safe_tx.gas_price}</green></b>")
+    # Check if safe contract balance is not zero
+    if safe_instance.ethereum_client.get_balance(safe_instance.address) <= 0:
+        # @FIXME erc20 balance check
+        # safe_tx.gas_token is not None
+        # and safe_tx.gas_token != ZERO_ADDRESS
+        # and safe_instance.ethereum_client.erc20.get_balance(
+        #     safe_instance.address, safe_tx.gas_token
+        # )
+        # <= 0
+        raise ValueError(
+            "Safe contract does not have any funds. Please fund the Safe contract before broadcasting the transaction."
         )
 
     # Check if the Safe has enough funds for the gas
@@ -143,6 +65,14 @@ def run(
         raise ValueError(
             "Safe contract does not have enough funds to cover the gas for this transaction."
         )
+
+    # Display cost in wei
+    estimated_cost_in_wei = (safe_tx.safe_tx_gas + safe_tx.base_gas) * safe_tx.gas_price
+    print_formatted_text(
+        HTML(
+            f"<b><orange>Estimated cost for SafeTx: </orange></b>{estimated_cost_in_wei} wei"
+        )
+    )
 
     # Display the SafeTx details
     pretty_print_safe_tx(safe_tx)
@@ -159,7 +89,7 @@ def run(
         safe_tx.execute(tx_sender_private_key=broadcaster.private_key)
     except Exception as e:
         raise Exception(
-            f"Error signing SafeTx with account {broadcaster.address}: {e}"
+            f"Error broadcasting SafeTx with account {broadcaster.address}: {e}"
         ) from e
 
     print_formatted_text(HTML("<b><green>SafeTx broadcasted successfully!</green></b>"))
@@ -167,11 +97,11 @@ def run(
     # Display the tx hash and tx params
     print_formatted_text(
         HTML(
-            f"<b><green>SafeTx broadcasted with tx hash: {safe_tx.tx_hash}</green></b>"
+            f"<b><green>SafeTx broadcasted with tx hash: </green></b>{safe_tx.tx_hash}"
         )
     )
     print_formatted_text(
-        HTML(f"<b><green>SafeTx params: {safe_tx.tx_params}</green></b>")
+        HTML(f"<b><green>SafeTx params: </green></b>{safe_tx.tx_params}")
     )
 
     return safe_tx

@@ -69,7 +69,7 @@ def prompt_single_internal_tx(
 ) -> Optional[MultiSendTx]:
     print_formatted_text(
         HTML(
-            f"\n<b><magenta>--- Internal Tx {str(idx + 1).zfill(2)}/{str(nb_internal_txs).zfill(2)} ---</magenta></b>\n"
+            f"\n<b><orange>--- Internal Tx {str(idx + 1).zfill(2)}/{str(nb_internal_txs).zfill(2)} ---</orange></b>\n"
         )
     )
     tx_type = prompt_session.prompt(
@@ -190,3 +190,33 @@ def prompt_operation_type(prompt_session):
         placeholder=HTML("<grey>[default: 0]</grey>"),
     )
     return int(operation) if operation else int(MultiSendOperation.CALL.value)
+
+
+def prompt_confirm_safe_tx_gas_limit(prompt_session, gas_estimate):
+    return prompt_session.prompt(
+        HTML(
+            f"{LEFT_PROMPT_SIGN}<b>Change SafeTx gas limit to estimated gas ({gas_estimate})? (yes/no): </b>"
+        ),
+        placeholder=HTML("<grey>yes/no</grey>"),
+        validator=validator_not_empty,
+    )
+
+
+def prompt_confirm_base_gas_limit(prompt_session, gas_estimate):
+    return prompt_session.prompt(
+        HTML(
+            f"{LEFT_PROMPT_SIGN}<b>Change base gas limit to estimated gas ({gas_estimate})? (yes/no): </b>"
+        ),
+        placeholder=HTML("<grey>yes/no</grey>"),
+        validator=validator_not_empty,
+    )
+
+
+def prompt_confirm_gas_price(prompt_session, gas_price):
+    return prompt_session.prompt(
+        HTML(
+            f"{LEFT_PROMPT_SIGN}<b>Change SafeTx gas price to eth client's gas price ({gas_price})? (yes/no): </b>"
+        ),
+        placeholder=HTML("<grey>yes/no</grey>"),
+        validator=validator_not_empty,
+    )

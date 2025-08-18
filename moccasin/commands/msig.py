@@ -15,8 +15,7 @@ from moccasin._sys_path_and_config_setup import (
     _setup_network_and_account_from_config_and_cli,
     get_sys_paths_list,
 )
-from moccasin.config import get_config, initialize_global_config
-from moccasin.constants.vars import MOCCASIN_KEYSTORE_PATH
+from moccasin.config import initialize_global_config
 from moccasin.logging import logger, set_log_level
 from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.common_prompts import (
@@ -129,7 +128,7 @@ def _initialize_safe_and_tx(
         )
         print_formatted_text(
             HTML(
-                "<b><magenta>Note: Advised to run tx_build before tx_sign if no input file available.</magenta></b>\n"
+                "<b><orange>Note: Advised to run tx_build before tx_sign if no input file available.</orange></b>\n"
             )
         )
         eip712_prompted_file = prompt_eip712_input_file(prompt_session)
@@ -163,7 +162,7 @@ def _initialize_safe_and_tx(
         ethereum_client=ethereum_client, safe_address=safe_address
     )
     print_formatted_text(
-        HTML(f"<b><green>Using Safe address: {safe_instance.address}</green></b>")
+        HTML(f"<b><green>Using Safe address: </green></b>{safe_instance.address}")
     )
 
     # Initialize SafeTx with the message and signatures
@@ -201,9 +200,19 @@ def _tx_build_command(
     """
     print_formatted_text(HTML("\n\n<b><cyan>Running tx-build command...</cyan></b>\n"))
     # Validate and preprocess the provided arguments if not None
-    (safe_address, to, value, operation, safe_nonce, data, gas_token, output_json) = (
-        tx_build.preprocess_raw_args(args)
-    )
+    (
+        safe_address,
+        to,
+        value,
+        operation,
+        safe_nonce,
+        data,
+        gas_token,
+        safe_tx_gas,
+        base_gas,
+        gas_price,
+        output_json,
+    ) = tx_build.preprocess_raw_args(args)
 
     # Values to build from tx_build
     safe_instance = None
@@ -227,7 +236,7 @@ def _tx_build_command(
         )
 
     print_formatted_text(
-        HTML(f"<b><green>Using Safe address: {safe_instance.address}</green></b>")
+        HTML(f"<b><green>Using Safe address: </green></b>{safe_instance.address}")
     )
 
     # Update bottom toolbar with Ethereum client
@@ -248,6 +257,9 @@ def _tx_build_command(
             safe_nonce=safe_nonce,
             data=data,
             gas_token=gas_token,
+            safe_tx_gas=safe_tx_gas,
+            base_gas=base_gas,
+            gas_price=gas_price,
         )
     except Exception as e:
         raise Exception("Failed to build SafeTx from provided parameters: {e}") from e
@@ -519,7 +531,7 @@ def main(args: Namespace) -> int:
                 # Print the chain ID in a formatted way
                 print_formatted_text(
                     HTML(
-                        f"<b><green>Using ChainId: {ethereum_client.get_chain_id()}</green></b>"
+                        f"<b><green>Using ChainId: </green></b>{ethereum_client.get_chain_id()}"
                     )
                 )
             else:

@@ -58,7 +58,7 @@ def run(
     # Note: SafeTx.sorted_signers returns the most recent signers first
     ordered_signers = list(reversed(safe_tx.sorted_signers))
     for idx, sig in enumerate(ordered_signers, start=1):
-        print_formatted_text(HTML(f"<b><green>SafeTx signer {idx}: {sig}</green></b>"))
+        print_formatted_text(HTML(f"<b><green>SafeTx signer {idx}: </green></b>{sig}"))
 
     return safe_tx
 

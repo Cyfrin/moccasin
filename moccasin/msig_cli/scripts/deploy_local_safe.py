@@ -29,6 +29,8 @@ DEFAULT_ANVIL_OWNERS = [
     "0xa0Ee7A142d267C1f36714E4a8F75612F20a79720",
 ]
 
+FUND_SAFE_PROXY_AMOUNT = int(10 * 10**18)  # 10 ETH in wei
+
 # @TODO typecheck mypy
 
 
@@ -107,6 +109,13 @@ def deploy_local_safe_anvil() -> tuple[
         deployer, safe_master_address, initializer=initializer
     )
     safe_proxy_address = safe_proxy_tx.contract_address
+
+    # Fund the Safe proxy address with ETH
+    fund_amount = FUND_SAFE_PROXY_AMOUNT
+    tx_hash = ethereum_client.w3.eth.send_transaction(
+        {"from": deployer.address, "to": safe_proxy_address, "value": fund_amount}
+    )
+    ethereum_client.w3.eth.wait_for_transaction_receipt(tx_hash)
 
     # Deploy a MultiSend contract and set the address in the environment variable
     multisend_eth_tx = MultiSend.deploy_contract(
