@@ -111,6 +111,78 @@ def _prompt_save_json(
         print_formatted_text(HTML("<b><yellow>Not saving EIP-712 JSON.</yellow></b>"))
 
 
+def _initialize_safe_and_tx(
+    prompt_session: PromptSession,
+    ethereum_client: EthereumClient,
+    input_file_safe_tx: Path,
+) -> Tuple[Safe, SafeTx]:
+    """Initialize Safe and SafeTx instances."""
+    safe_instance = None
+    safe_tx = None
+
+    # Check if eip712_input_file is provided, else prompt to get it
+    if input_file_safe_tx is None:
+        print_formatted_text(
+            HTML(
+                "<b><yellow>Warning: No input file provided. Prompting for custom or original EIP-712 JSON file.</yellow></b>"
+            )
+        )
+        print_formatted_text(
+            HTML(
+                "<b><magenta>Note: Advised to run tx_build before tx_sign if no input file available.</magenta></b>\n"
+            )
+        )
+        eip712_prompted_file = prompt_eip712_input_file(prompt_session)
+        if not eip712_prompted_file.exists():
+            raise ValueError(f"JSON file SafeTx not found: {eip712_prompted_file}.")
+        input_file_safe_tx = eip712_prompted_file
+
+    # Load the JSON file
+    with open(input_file_safe_tx, "r") as f:
+        safe_tx_json: T_SafeTxData = json.loads(f.read())
+
+    # Extract SafeTx data from input file
+    domain_json, message_json, signatures_json = extract_safe_tx_json(safe_tx_json)
+    if domain_json is None or message_json is None:
+        raise ValueError(
+            "Invalid SafeTx JSON format: missing 'domain' or 'message' fields."
+        )
+
+    # Validate the domain chainId from JSON and our Ethereum client
+    validate_ethereum_client_chain_id(
+        ethereum_client=ethereum_client, domain_json=domain_json
+    )
+
+    # Initialize Safe instance with the address from domain_json
+    safe_address = domain_json.get("verifyingContract")
+    if not safe_address:
+        raise ValueError(
+            "Domain JSON must contain 'verifyingContract' field for Safe address."
+        )
+    safe_instance = get_safe_instance(
+        ethereum_client=ethereum_client, safe_address=safe_address
+    )
+    print_formatted_text(
+        HTML(f"<b><green>Using Safe address: {safe_instance.address}</green></b>")
+    )
+
+    # Initialize SafeTx with the message and signatures
+    safe_tx = build_safe_tx_from_message(
+        safe_instance=safe_instance,
+        message_json=message_json,
+        signatures_json=get_signatures_bytes(signatures_json),
+    )
+
+    # Update bottom toolbar with Ethereum client
+    _update_bottom_toolbar(
+        prompt_session=prompt_session,
+        ethereum_client=ethereum_client,
+        safe_instance=safe_instance,
+    )
+
+    return safe_instance, safe_tx
+
+
 # --- Tx command functions ---
 def _tx_build_command(
     prompt_session: PromptSession,
@@ -224,64 +296,10 @@ def _tx_sign_command(
 
     # No prior data means we need to get the Safe from the input file
     if not safe_instance and not safe_tx:
-        # Check if eip712_input_file is provided, else prompt to get it
-        if input_file_safe_tx is None:
-            print_formatted_text(
-                HTML(
-                    "<b><yellow>Warning: No input file provided. Prompting for custom or original EIP-712 JSON file.</yellow></b>"
-                )
-            )
-            print_formatted_text(
-                HTML(
-                    "<b><magenta>Note: Advised to run tx_build before tx_sign if no input file available.</magenta></b>\n"
-                )
-            )
-            eip712_prompted_file = prompt_eip712_input_file(prompt_session)
-            if not eip712_prompted_file.exists():
-                raise ValueError(f"JSON file SafeTx not found: {eip712_prompted_file}.")
-            input_file_safe_tx = eip712_prompted_file
-
-        # Load the JSON file
-        with open(input_file_safe_tx, "r") as f:
-            safe_tx_json: T_SafeTxData = json.loads(f.read())
-
-        # Extract SafeTx data from input file
-        domain_json, message_json, signatures_json = extract_safe_tx_json(safe_tx_json)
-        if domain_json is None or message_json is None:
-            raise ValueError(
-                "Invalid SafeTx JSON format: missing 'domain' or 'message' fields."
-            )
-
-        # Validate the domain chainId from JSON and our Ethereum client
-        validate_ethereum_client_chain_id(
-            ethereum_client=ethereum_client, domain_json=domain_json
-        )
-
-        # Initialize Safe instance with the address from domain_json
-        safe_address = domain_json.get("verifyingContract")
-        if not safe_address:
-            raise ValueError(
-                "Domain JSON must contain 'verifyingContract' field for Safe address."
-            )
-        safe_instance = get_safe_instance(
-            ethereum_client=ethereum_client, safe_address=safe_address
-        )
-        print_formatted_text(
-            HTML(f"<b><green>Using Safe address: {safe_instance.address}</green></b>")
-        )
-
-        # Initialize SafeTx with the message and signatures
-        safe_tx = build_safe_tx_from_message(
-            safe_instance=safe_instance,
-            message_json=message_json,
-            signatures_json=get_signatures_bytes(signatures_json),
-        )
-
-        # Update bottom toolbar with Ethereum client
-        _update_bottom_toolbar(
+        safe_instance, safe_tx = _initialize_safe_and_tx(
             prompt_session=prompt_session,
             ethereum_client=ethereum_client,
-            safe_instance=safe_instance,
+            input_file_safe_tx=input_file_safe_tx,
         )
 
     # Get the signer from config or prompt if not provided
@@ -348,6 +366,7 @@ def _tx_sign_command(
     return safe_instance, safe_tx, signer
 
 
+# @XXX To test manually and make tests
 def _tx_broadcast_command(
     prompt_session: PromptSession,
     ethereum_client: EthereumClient,
@@ -375,64 +394,10 @@ def _tx_broadcast_command(
 
     # No prior data means we need to get the Safe from the input file
     if not safe_instance and not safe_tx:
-        # Check if eip712_input_file is provided, else prompt to get it
-        if input_file_safe_tx is None:
-            print_formatted_text(
-                HTML(
-                    "<b><yellow>Warning: No input file provided. Prompting for custom or original EIP-712 JSON file.</yellow></b>"
-                )
-            )
-            print_formatted_text(
-                HTML(
-                    "<b><magenta>Note: Advised to run tx_build before tx_sign if no input file available.</magenta></b>\n"
-                )
-            )
-            eip712_prompted_file = prompt_eip712_input_file(prompt_session)
-            if not eip712_prompted_file.exists():
-                raise ValueError(f"JSON file SafeTx not found: {eip712_prompted_file}.")
-            input_file_safe_tx = eip712_prompted_file
-
-        # Load the JSON file
-        with open(input_file_safe_tx, "r") as f:
-            safe_tx_json: T_SafeTxData = json.loads(f.read())
-
-        # Extract SafeTx data from input file
-        domain_json, message_json, signatures_json = extract_safe_tx_json(safe_tx_json)
-        if domain_json is None or message_json is None:
-            raise ValueError(
-                "Invalid SafeTx JSON format: missing 'domain' or 'message' fields."
-            )
-
-        # Validate the domain chainId from JSON and our Ethereum client
-        validate_ethereum_client_chain_id(
-            ethereum_client=ethereum_client, domain_json=domain_json
-        )
-
-        # Initialize Safe instance with the address from domain_json
-        safe_address = domain_json.get("verifyingContract")
-        if not safe_address:
-            raise ValueError(
-                "Domain JSON must contain 'verifyingContract' field for Safe address."
-            )
-        safe_instance = get_safe_instance(
-            ethereum_client=ethereum_client, safe_address=safe_address
-        )
-        print_formatted_text(
-            HTML(f"<b><green>Using Safe address: {safe_instance.address}</green></b>")
-        )
-
-        # Initialize SafeTx with the message and signatures
-        safe_tx = build_safe_tx_from_message(
-            safe_instance=safe_instance,
-            message_json=message_json,
-            signatures_json=get_signatures_bytes(signatures_json),
-        )
-
-        # Update bottom toolbar with Ethereum client
-        _update_bottom_toolbar(
+        safe_instance, safe_tx = _initialize_safe_and_tx(
             prompt_session=prompt_session,
             ethereum_client=ethereum_client,
-            safe_instance=safe_instance,
+            input_file_safe_tx=input_file_safe_tx,
         )
 
     # Get the broadcaster from config or prompt if not provided

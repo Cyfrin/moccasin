@@ -5,10 +5,20 @@ from moccasin.msig_cli.constants import LEFT_PROMPT_SIGN
 from moccasin.msig_cli.validators import validator_not_empty, validator_private_key
 
 
-def prompt_confirm_gas_limit(prompt_session, gas_estimate):
+def prompt_confirm_safe_tx_gas_limit(prompt_session, gas_estimate):
     return prompt_session.prompt(
         HTML(
             f"{LEFT_PROMPT_SIGN}<b>Change SafeTx gas limit to estimated gas ({gas_estimate})? (yes/no): </b>"
+        ),
+        placeholder=HTML("<grey>yes/no</grey>"),
+        validator=validator_not_empty,
+    )
+
+
+def prompt_confirm_base_gas_limit(prompt_session, gas_estimate):
+    return prompt_session.prompt(
+        HTML(
+            f"{LEFT_PROMPT_SIGN}<b>Change base gas limit to estimated gas ({gas_estimate})? (yes/no): </b>"
         ),
         placeholder=HTML("<grey>yes/no</grey>"),
         validator=validator_not_empty,
