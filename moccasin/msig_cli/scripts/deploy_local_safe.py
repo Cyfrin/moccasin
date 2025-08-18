@@ -10,6 +10,9 @@ from safe_eth.eth.utils import get_empty_tx_params
 from safe_eth.safe.multi_send import MultiSend
 from safe_eth.safe.proxy_factory import ProxyFactory
 from safe_eth.safe.safe import SafeV141
+from safe_eth.safe.compatibility_fallback_handler import (
+    CompatibilityFallbackHandlerV141,
+)
 
 from moccasin.constants.vars import DEFAULT_ANVIL_PRIVATE_KEY, DEFAULT_ANVIL_URL
 from moccasin.moccasin_account import MoccasinAccount
@@ -30,7 +33,7 @@ DEFAULT_ANVIL_OWNERS = [
 
 
 def deploy_local_safe_anvil() -> tuple[
-    Optional[ChecksumAddress], Optional[ChecksumAddress]
+    Optional[ChecksumAddress], Optional[ChecksumAddress], Optional[ChecksumAddress]
 ]:
     """Deploy a local Safe instance on Anvil and set up MultiSend address.
 
@@ -62,10 +65,18 @@ def deploy_local_safe_anvil() -> tuple[
     proxy_factory_address = tx_receipt["contractAddress"]
     proxy_factory = ProxyFactory(proxy_factory_address, ethereum_client)  # type: ignore
 
+    # Deploy CompatibilityFallbackHandler contract (for simulation)
+    fallback_handler_tx = CompatibilityFallbackHandlerV141.deploy_contract(
+        ethereum_client=ethereum_client, deployer_account=deployer
+    )
+    fallback_handler_address = fallback_handler_tx.contract_address
+    if fallback_handler_address is None:
+        raise Exception("Failed to deploy CompatibilityFallbackHandler.")
+
     # Owners and threshold for local testing
     owners = [deployer.address, *DEFAULT_ANVIL_OWNERS]
     threshold = 2
-    fallback_handler = "0x0000000000000000000000000000000000000000"
+    fallback_handler = fallback_handler_address
     to = "0x0000000000000000000000000000000000000000"
     data = b""
     payment_token = "0x0000000000000000000000000000000000000000"
@@ -103,12 +114,18 @@ def deploy_local_safe_anvil() -> tuple[
     )
     os.environ["TEST_MULTISEND_ADDRESS"] = str(multisend_eth_tx.contract_address)
 
-    return safe_proxy_address, multisend_eth_tx.contract_address
+    return (
+        safe_proxy_address,
+        multisend_eth_tx.contract_address,
+        fallback_handler_address,
+    )
 
 
 if __name__ == "__main__":
     try:
-        eth_safe_address, eth_multisend_address = deploy_local_safe_anvil()
+        eth_safe_address, eth_multisend_address, eth_fallback_handler_address = (
+            deploy_local_safe_anvil()
+        )
         if eth_safe_address is None:
             raise Exception("Failed to deploy Safe contract.")
         else:
@@ -117,6 +134,12 @@ if __name__ == "__main__":
             raise Exception("Failed to deploy MultiSend contract.")
         else:
             print(f"MultiSend deployed successfully: {eth_multisend_address}")
+        if eth_fallback_handler_address is None:
+            raise Exception("Failed to deploy CompatibilityFallbackHandler contract.")
+        else:
+            print(
+                f"CompatibilityFallbackHandler deployed successfully: {eth_fallback_handler_address}"
+            )
     except ConnectionError:
         print("Error: Could not connect to Anvil at localhost:8545. Is Anvil running?")
     except Exception as e:

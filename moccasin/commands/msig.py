@@ -7,7 +7,6 @@ from typing import Tuple
 from eth_typing import URI
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-from requests import get
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
 
@@ -17,11 +16,10 @@ from moccasin._sys_path_and_config_setup import (
     get_sys_paths_list,
 )
 from moccasin.config import get_config, initialize_global_config
+from moccasin.constants.vars import MOCCASIN_KEYSTORE_PATH
 from moccasin.logging import logger, set_log_level
-from moccasin.metamask_cli_integration import account
 from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.common_prompts import (
-    prompt_continue_next_step,
     prompt_is_right_account,
     prompt_rpc_url,
     prompt_safe_address,
@@ -275,6 +273,7 @@ def _tx_sign_command(
     ethereum_client: EthereumClient,
     safe_instance: Safe = None,
     safe_tx: SafeTx = None,
+    signer: MoccasinAccount = None,
     args: Namespace = None,
 ) -> Tuple[Safe, SafeTx]:
     """Handle the transaction signing command.
@@ -304,18 +303,16 @@ def _tx_sign_command(
             input_file_safe_tx=input_file_safe_tx,
         )
 
+    # Update bottom toolbar with Safe instance and SafeTx
+    _update_bottom_toolbar(
+        prompt_session=prompt_session,
+        ethereum_client=ethereum_client,
+        safe_instance=safe_instance,
+        safe_tx=safe_tx,
+    )
+
     # Get the signer from config or prompt if not provided
-    signer = None
-    if (
-        getattr(args, "account", None) is not None
-        or getattr(args, "private_key", None) is not None
-    ):
-        signer = get_config().get_active_network().get_default_account()
-        if signer is None:
-            raise ValueError(
-                "No signer account found in config for the provided arguments."
-            )
-    else:
+    if signer is None:
         # Prompt for signer account if not provided in args
         signer = tx_sign.get_signer_account(prompt_session)
         if signer is None:
@@ -373,6 +370,7 @@ def _tx_broadcast_command(
     ethereum_client: EthereumClient,
     safe_instance: Safe = None,
     safe_tx: SafeTx = None,
+    broadcaster: MoccasinAccount = None,
     args: Namespace = None,
 ) -> Tuple[Safe, SafeTx, MoccasinAccount]:
     """Handle the transaction broadcast command.
@@ -401,19 +399,17 @@ def _tx_broadcast_command(
             input_file_safe_tx=input_file_safe_tx,
         )
 
+    # Update bottom toolbar with Safe instance and SafeTx
+    _update_bottom_toolbar(
+        prompt_session=prompt_session,
+        ethereum_client=ethereum_client,
+        safe_instance=safe_instance,
+        safe_tx=safe_tx,
+    )
+
     # Get the broadcaster from config or prompt if not provided
-    broadcaster = None
-    if (
-        getattr(args, "account", None) is not None
-        or getattr(args, "private_key", None) is not None
-    ):
-        broadcaster = get_config().get_active_network().get_default_account()
-        if broadcaster is None:
-            raise ValueError(
-                "No broadcaster account found in config for the provided arguments."
-            )
-    else:
-        # Prompt for signer account if not provided in args
+    if broadcaster is None:
+        # Prompt for broadcaster account if not provided in args
         broadcaster = tx_broadcast.get_broadcaster_account(prompt_session)
         if broadcaster is None:
             raise ValueError("No signer account provided or found.")
@@ -447,7 +443,9 @@ def _tx_broadcast_command(
             broadcaster=broadcaster,
         )
     except Exception as e:
-        raise Exception(f"Failed to sign SafeTx with provided parameters: {e}") from e
+        raise Exception(
+            f"Failed to broadcast SafeTx with provided parameters: {e}"
+        ) from e
 
     # Update bottom toolbar with Ethereum client
     _update_bottom_toolbar(
@@ -497,9 +495,8 @@ def main(args: Namespace) -> int:
         config = initialize_global_config(is_default_project=args.no_project_toml)
         set_log_level(quiet=args.quiet, debug=args.debug)
 
-        # @FIXME: account not unlocked after setup so no pk
         with _patch_sys_path(get_sys_paths_list(config)):
-            _setup_network_and_account_from_config_and_cli(
+            moccasin_account = _setup_network_and_account_from_config_and_cli(
                 network=args.network,
                 url=str(rpc_url),
                 fork=args.fork,
@@ -508,6 +505,7 @@ def main(args: Namespace) -> int:
                 password=args.password,
                 password_file_path=args.password_file_path,
                 prompt_live=args.prompt_live,
+                return_mox_account=True,
             )
             # @TODO prompt for Metamask UI setup later
 
@@ -556,11 +554,21 @@ def main(args: Namespace) -> int:
                     )
                 elif msig_command == TX_SIGN_CMD:
                     safe_instance, safe_tx = _tx_sign_command(
-                        prompt_session, ethereum_client, safe_instance, safe_tx, args
+                        prompt_session,
+                        ethereum_client,
+                        safe_instance,
+                        safe_tx,
+                        moccasin_account,
+                        args,
                     )
                 elif msig_command == TX_BROADCAST_CMD:
                     _tx_broadcast_command(
-                        prompt_session, ethereum_client, safe_instance, safe_tx, args
+                        prompt_session,
+                        ethereum_client,
+                        safe_instance,
+                        safe_tx,
+                        moccasin_account,
+                        args,
                     )
             else:
                 logger.error(
