@@ -21,6 +21,20 @@ from moccasin.msig_cli.validators import (
 )
 
 
+def prompt_safe_nonce(prompt_session) -> int:
+    safe_nonce = prompt_session.prompt(
+        HTML(f"{LEFT_PROMPT_SIGN}<b>Safe nonce? </b>"),
+        validator=validator_number,
+        placeholder=HTML("<grey>[default: 0]</grey>"),
+    )
+    if safe_nonce:
+        safe_nonce = int(safe_nonce)
+    else:
+        safe_nonce = 0
+
+    return safe_nonce
+
+
 def prompt_confirm_safe_nonce(prompt_session, retrieved_safe_nonce: int) -> str:
     return prompt_session.prompt(
         HTML(
@@ -95,6 +109,7 @@ def prompt_single_internal_tx(
         value=int(tx_value),
         data=tx_data,
     )
+    # @TODO: Handle other internal tx types (ERC20 transfer, RAW calldata)
 
 
 def _handle_internal_tx_call_type(prompt_session, tx_to, tx_value, tx_operation):
@@ -179,6 +194,7 @@ def prompt_target_contract_address(prompt_session):
     )
 
 
+# @NOTE: should we always default to CALL operation? Seems like it is the most common.
 def prompt_operation_type(prompt_session):
     operation = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Operation type? </b>"),
@@ -188,31 +204,31 @@ def prompt_operation_type(prompt_session):
     return int(operation) if operation else int(MultiSendOperation.CALL.value)
 
 
-def prompt_confirm_safe_tx_gas_limit(prompt_session, gas_estimate):
-    return prompt_session.prompt(
-        HTML(
-            f"{LEFT_PROMPT_SIGN}<b>Change SafeTx gas limit to estimated gas ({gas_estimate})? (yes/no): </b>"
-        ),
-        placeholder=HTML("<grey>yes/no</grey>"),
-        validator=validator_not_empty,
+def prompt_refund_receiver(prompt_session):
+    address = prompt_session.prompt(
+        HTML(f"{LEFT_PROMPT_SIGN}<b>Refund receiver address? </b>"),
+        validator=validator_address,
+        placeholder=HTML("<grey>[default: 0x...]</grey>"),
     )
 
+    if address is None or address == "":
+        address = ZERO_ADDRESS
+    return to_checksum_address(address)
 
-def prompt_confirm_base_gas_limit(prompt_session, gas_estimate):
-    return prompt_session.prompt(
-        HTML(
-            f"{LEFT_PROMPT_SIGN}<b>Change base gas limit to estimated gas ({gas_estimate})? (yes/no): </b>"
-        ),
-        placeholder=HTML("<grey>yes/no</grey>"),
-        validator=validator_not_empty,
+
+def prompt_safe_tx_gas(prompt_session):
+    safe_tx_gas = prompt_session.prompt(
+        HTML(f"{LEFT_PROMPT_SIGN}<b>SafeTx gas? </b>"),
+        validator=validator_number,
+        placeholder=HTML("<grey>[default: 0]</grey>"),
     )
+    return int(safe_tx_gas) if safe_tx_gas else 0
 
 
-def prompt_confirm_gas_price(prompt_session, gas_price):
-    return prompt_session.prompt(
-        HTML(
-            f"{LEFT_PROMPT_SIGN}<b>Change SafeTx gas price to eth client's gas price ({gas_price})? (yes/no): </b>"
-        ),
-        placeholder=HTML("<grey>yes/no</grey>"),
-        validator=validator_not_empty,
+def prompt_base_gas(prompt_session):
+    base_gas = prompt_session.prompt(
+        HTML(f"{LEFT_PROMPT_SIGN}<b>Base gas? </b>"),
+        validator=validator_number,
+        placeholder=HTML("<grey>[default: 0]</grey>"),
     )
+    return int(base_gas) if base_gas else 0

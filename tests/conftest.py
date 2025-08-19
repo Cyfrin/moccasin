@@ -340,6 +340,6 @@ def pt_session():
 @pytest.fixture(scope="module")
 def eth_safe_address_anvil(anvil):
     """Fixture to provide a Safe instance connected to Anvil."""
-    eth_safe_address, _ = deploy_local_safe_anvil()
+    eth_safe_address, _, _ = deploy_local_safe_anvil()
 
     yield eth_safe_address

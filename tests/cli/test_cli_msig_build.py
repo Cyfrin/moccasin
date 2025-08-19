@@ -31,34 +31,35 @@ def test_cli_tx_builder_interactive(
     """Test fully interactive session (all prompts, user saves JSON)."""
     json_path = moccasin_home_folder / "safe-tx.json"
     user_input = (
-        # RPC URL (question: What is the RPC URL you want to use to connect to the Ethereum network?)
+        # RPC URL
         f"{LOCAL_ANVIL_URL}\n"
-        # Safe address (question: What is the address of the Safe contract you want to use?)
+        # Safe address
         f"{eth_safe_address_anvil}\n"
-        # Safe nonce (question: What nonce should be used for this Safe transaction?)
-        "42\n"
-        # Gas token (question: What is the gas token address to use for this transaction? (Press Enter to use the default/zero address))
+        # Safe nonce
+        "0\n"
+        # Gas token
         "0x0000000000000000000000000000000000000000\n"
-        # Number of internal txs (question: How many internal transactions would you like to include in this batch?)
+        # Refund receiver
+        "0x0000000000000000000000000000000000000000\n"
+        # Number of internal txs
         "1\n"
-        # Internal tx type (question: What type of internal transaction is this? (0 = call contract, 1 = ERC20 transfer, 2 = raw data))
+        # Internal tx type
         "0\n"
-        # Contract address (question: What is the contract address for this call?)
+        # Contract address
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
-        # Value in wei (question: How much value (in wei) should be sent with this call?)
+        # Value in wei
         "10\n"
-        # Operation type (question: What operation type should be used? (0 = call, 1 = delegate call))
+        # Operation type
         "0\n"
-        # Function signature (question: What is the function signature for this call? (e.g. transfer(address,uint256)))
+        # Function signature
         "transfer(address,uint256)\n"
-        # Param 1 (question: What value should be used for parameter #1 of type address?)
+        # Param 1
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
-        # Param 2 (question: What value should be used for parameter #2 of type uint256?)
+        # Param 2
         "100\n"
-        # XXX: update tests with gas prompts
-        # Save EIP-712 JSON? (question: Would you like to save the EIP-712 structured data to a .json file? (y/n))
+        # Save EIP-712 JSON?
         "y\n"
-        # File path (question: Where would you like to save the EIP-712 JSON file? (e.g. ./safe-tx.json))
+        # File path
         "safe-tx.json\n"
         # After saving, CLI will ask if you want to continue to the next step (signer). We answer 'q' to quit.
         "q\n"
@@ -109,8 +110,10 @@ def test_cli_tx_builder_args_only(
         "--data",
         "0xa9059cbb000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000064",
         "--safe-nonce",
-        "42",
+        "0",
         "--gas-token",
+        "0x0000000000000000000000000000000000000000",
+        "--refund-receiver",
         "0x0000000000000000000000000000000000000000",
     ]
     current_dir = Path.cwd()
@@ -149,8 +152,10 @@ def test_cli_tx_builder_args_with_json_output(
         "--data",
         "0xa9059cbb000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000064",
         "--safe-nonce",
-        "42",
+        "0",
         "--gas-token",
+        "0x0000000000000000000000000000000000000000",
+        "--refund-receiver",
         "0x0000000000000000000000000000000000000000",
         "--output-json",
         "test-tx.json",
@@ -200,8 +205,10 @@ def test_cli_tx_builder_invalid_json_output(
         "--data",
         "0xa9059cbb000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000000000000000000000000000000000000000000064",
         "--safe-nonce",
-        "42",
+        "0",
         "--gas-token",
+        "0x0000000000000000000000000000000000000000",
+        "--refund-receiver",
         "0x0000000000000000000000000000000000000000",
         "--output-json",
         "not_a_json.txt",
@@ -240,12 +247,16 @@ def test_cli_tx_builder_multisend_mixed_operations(
         # Safe address
         f"{eth_safe_address_anvil}\n"
         # Safe nonce
-        "43\n"
+        "42\n"
+        # Confirm change nonce to retrieved Safe nonce
+        "y\n"
         # Gas token
+        "0x0000000000000000000000000000000000000000\n"
+        # Refund receiver
         "0x0000000000000000000000000000000000000000\n"
         # Number of internal txs
         "2\n"
-        # Internal tx 1: type CALL
+        # Internal tx 1: tx_type CALL
         "0\n"  # type: call contract
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"  # contract address
         "10\n"  # value
@@ -253,7 +264,7 @@ def test_cli_tx_builder_multisend_mixed_operations(
         "transfer(address,uint256)\n"  # function signature
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"  # param 1
         "100\n"  # param 2
-        # Internal tx 2: type CALL, but operation DELEGATE_CALL
+        # Internal tx 2: tx_type CALL, but tx_operation DELEGATE_CALL
         "0\n"  # type: call contract
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"  # contract address
         "20\n"  # value
@@ -263,6 +274,9 @@ def test_cli_tx_builder_multisend_mixed_operations(
         "200\n"  # param 2
         # Confirm MultiSend batch
         "y\n"
+        # As delegate call is used, the CLI will prompt manual gas input
+        "100000\n"  # safe_tx_gas
+        "100000\n"  # base_gas
         # Save EIP-712 JSON? (y/n)
         "y\n"
         # File path
@@ -294,6 +308,7 @@ def test_cli_tx_builder_multisend_mixed_operations(
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
+    assert safe_tx_data["safeTx"]["message"]["operation"] == 0  # CALL operation
     assert bytes.fromhex(safe_tx_data["signatures"][2:]) == b""
     os.remove(json_path)
 
@@ -308,12 +323,16 @@ def test_cli_tx_builder_multisend_user_rejects(
         # Safe address
         f"{eth_safe_address_anvil}\n"
         # Safe nonce
-        "44\n"
+        "42\n"
+        # Confirm change nonce to retrieved Safe nonce
+        "y\n"
         # Gas token
+        "0x0000000000000000000000000000000000000000\n"
+        # Refund receiver
         "0x0000000000000000000000000000000000000000\n"
         # Number of internal txs
         "2\n"
-        # Internal tx 1: type CALL
+        # Internal tx 1: tx_type CALL
         "0\n"
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
         "10\n"
@@ -321,7 +340,7 @@ def test_cli_tx_builder_multisend_user_rejects(
         "transfer(address,uint256)\n"
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
         "100\n"
-        # Internal tx 2: type CALL, operation DELEGATE_CALL
+        # Internal tx 2: tx_type CALL, tx_operation DELEGATE_CALL
         "0\n"
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
         "20\n"
@@ -375,10 +394,12 @@ def test_cli_tx_builder_prompt_fallbacks(
     ]
     # The CLI should prompt for 'to' and 'operation'.
     user_input = (
+        # Confirm change nonce to retrieved Safe nonce
+        "y\n"
         # to (target contract address)
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
-        # operation
-        "0\n"
+        # refund receiver (default to 0x0000...)
+        "0x0000000000000000000000000000000000000000\n"
         # After, CLI will prompt to save JSON (already provided as arg, so should not prompt)
         # After saving, quit
         "q\n"
@@ -430,8 +451,10 @@ def test_cli_tx_builder_invalid_data(
         "--data",
         "0xINVALIDHEXDATA",
         "--safe-nonce",
-        "46",
+        "0",
         "--gas-token",
+        "0x0000000000000000000000000000000000000000",
+        "--refund-receiver",
         "0x0000000000000000000000000000000000000000",
     ]
 
@@ -464,8 +487,10 @@ def test_cli_tx_builder_multisend_large_batch(
         # Safe address
         f"{eth_safe_address_anvil}\n"
         # Safe nonce
-        "48\n"
+        "0\n"
         # Gas token
+        "0x0000000000000000000000000000000000000000\n"
+        # Refund receiver
         "0x0000000000000000000000000000000000000000\n"
         # Number of internal txs
         "10\n"
@@ -491,6 +516,9 @@ def test_cli_tx_builder_multisend_large_batch(
     user_input += (
         # Confirm MultiSend batch
         "y\n"
+        # As delegate call is used, the CLI will prompt manual gas input
+        "100000\n"  # safe_tx_gas
+        "100000\n"  # base_gas
         # Save EIP-712 JSON? (y/n)
         "y\n"
         # File path

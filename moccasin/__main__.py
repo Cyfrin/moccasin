@@ -931,17 +931,8 @@ def add_tx_builder_args(parser: argparse.ArgumentParser):
         help="Token to use for gas, defaults to the native token of the network.",
     )
     parser.add_argument(
-        "--safe-tx-gas",
-        help="Specific gas limit for the Safe transaction.",
-        default="0",
-    )
-    parser.add_argument(
-        "--base-gas",
-        help="Base gas limit independent of the transaction execution (e.g. base transaction fee, signature check, payment of the refund...)",
-        default="0",
-    )
-    parser.add_argument(
-        "--gas-price", help="Gas price to use for the Safe transaction.", default="0"
+        "--refund-receiver",
+        help="Address to receive the refund if the transaction fails.",
     )
     parser.add_argument(
         "--output-json", help="Output file to save the SafeTx structured data as JSON."

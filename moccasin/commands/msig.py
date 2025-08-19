@@ -210,13 +210,10 @@ def _tx_build_command(
         safe_address,
         to,
         value,
-        operation,
         safe_nonce,
         data,
         gas_token,
-        safe_tx_gas,
-        base_gas,
-        gas_price,
+        refund_receiver,
         output_json,
     ) = tx_build.preprocess_raw_args(args)
 
@@ -259,16 +256,13 @@ def _tx_build_command(
             safe_instance=safe_instance,
             to=to,
             value=value,
-            operation=operation,
             safe_nonce=safe_nonce,
             data=data,
             gas_token=gas_token,
-            safe_tx_gas=safe_tx_gas,
-            base_gas=base_gas,
-            gas_price=gas_price,
+            refund_receiver=refund_receiver,
         )
     except Exception as e:
-        raise Exception("Failed to build SafeTx from provided parameters: {e}") from e
+        raise Exception(f"Failed to build SafeTx from provided parameters: {e}") from e
 
     # Update bottom toolbar with Ethereum client
     _update_bottom_toolbar(
@@ -601,82 +595,3 @@ def main(args: Namespace) -> int:
     # Return 0 for successful completion
     print_formatted_text(HTML("<b><cyan>Shutting down msig CLI...</cyan></b>"))
     return 0
-
-
-# @NOTE Implementation with loop to chain commands but maybe not needed
-# to remove if unecessary
-
-# # Run the main loop for the tx commands
-# start_idx = TX_COMMANDS_ORDER.index(msig_command)
-# for idx in range(start_idx, len(TX_COMMANDS_ORDER)):
-#     cmd = TX_COMMANDS_ORDER[idx]
-#     # Set the right toolbar with the current command
-#     prompt_session.rprompt = _right_toolbar_cli(cmd)
-
-#     if cmd == TX_BUILD_CMD:
-#         safe_instance, safe_tx = _tx_build_command(
-#             prompt_session, ethereum_client, args
-#         )
-#     elif cmd == TX_SIGN_CMD:
-#         safe_instance, safe_tx, signer = _tx_sign_command(
-#             prompt_session,
-#             ethereum_client,
-#             safe_instance,
-#             safe_tx,
-#             args,
-#         )
-#     elif cmd == TX_BROADCAST_CMD:
-#         _tx_broadcast_command(
-#             prompt_session,
-#             ethereum_client,
-#             safe_instance,
-#             safe_tx,
-#             args,
-#         )
-
-#     # Reset command in right toolbar after each command
-#     msig_command = ""
-
-#     # Set signer to boa env eoa to use in next commands
-#     if signer is not None:
-#         config.get_active_network().set_boa_eoa(signer)
-
-#     # Only prompt for next step if:
-#     # 1. Not the last command in the order
-#     if idx < len(TX_COMMANDS_ORDER) - 1:
-#         # 2. Sign onlt if we have a safe_tx after building
-#         if safe_tx is None and cmd == "tx_sign":
-#             print_formatted_text(
-#                 HTML(
-#                     "<b><red>SafeTx not created. Aborting following signing.</red></b>"
-#                 )
-#             )
-#             break
-
-#         # 3. safe_tx has been signed with required signers
-#         elif (
-#             cmd == "tx_sign"
-#             and safe_instance is not None
-#             and safe_tx is not None
-#             and len(safe_tx.signers)
-#             >= safe_instance.retrieve_threshold()
-#         ):
-#             # Prompt if the user wants to sign to reach the threshold
-#             is_sign_redo = prompt_session.prompt(
-#                 HTML(
-#                     "<b><yellow>Threshold not reached. Do you want to sign with another account? (y/n)</yellow></b> "
-#                 ),
-#                 placeholder="y/n",
-#             )
-#             if is_sign_redo.lower() not in ("yes", "y"):
-#                 break
-
-#         # Reset the right toolbar
-#         prompt_session.rprompt = _right_toolbar_cli()
-
-#         # Prompt for next step
-#         next_step = prompt_continue_next_step(
-#             prompt_session, next_cmd=TX_COMMANDS_ORDER[idx + 1]
-#         )
-#         if not next_step:
-#             break

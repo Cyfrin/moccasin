@@ -32,8 +32,6 @@ DEFAULT_ANVIL_OWNERS = [
 
 FUND_SAFE_PROXY_AMOUNT = int(10 * 10**18)  # 10 ETH in wei
 
-# @TODO typecheck mypy
-
 
 def deploy_local_safe_anvil() -> tuple[
     Optional[ChecksumAddress], Optional[ChecksumAddress], Optional[ChecksumAddress]
