@@ -25,6 +25,11 @@ def run(
     signer: MoccasinAccount,
 ) -> SafeTx:
     """Main entrypoint for the tx_sign command."""
+    # Check if the SafeTx has been broadcasted already
+    if safe_tx.tx is not None or safe_tx.tx_hash is not None:
+        raise ValueError(
+            "SafeTx seems to have already been broadcasted. Cannot sign it again."
+        )
     # Check if the account address is one of the Safe owners
     if not safe_instance.retrieve_is_owner(str(signer.address)):
         raise ValueError(
@@ -58,12 +63,12 @@ def run(
     # Note: SafeTx.sorted_signers returns the most recent signers first
     ordered_signers = list(reversed(safe_tx.sorted_signers))
     for idx, sig in enumerate(ordered_signers, start=1):
-        print_formatted_text(HTML(f"<b><green>SafeTx signer {idx}: {sig}</green></b>"))
+        print_formatted_text(HTML(f"<b><green>SafeTx signer {idx}: </green></b>{sig}"))
 
     return safe_tx
 
 
-# --- Tx build helper functions ---
+# --- Tx sign helper functions ---
 def preprocess_raw_args(
     args: Namespace | None,
 ) -> tuple[Optional[Path], Optional[Path]]:
@@ -82,7 +87,6 @@ def preprocess_raw_args(
     return input_json, output_json
 
 
-# --- Tx sign helper functions ---
 def get_signer_account(prompt_session: PromptSession) -> MoccasinAccount:
     """Get the signer account for the transaction."""
     account = None

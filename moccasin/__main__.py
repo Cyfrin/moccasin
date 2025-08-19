@@ -795,6 +795,20 @@ Example usage:
     add_network_args_to_parser(tx_sign_parser)
     add_account_args_to_parser(tx_sign_parser)
     add_tx_signer_args(tx_sign_parser)
+
+    # tx_broadcast
+    tx_broadcast_parser = msig_subparsers.add_parser(
+        "tx-broadcast", help="Broadcast a multisig transaction."
+    )
+    add_network_args_to_parser(tx_broadcast_parser)
+    add_account_args_to_parser(tx_broadcast_parser)
+    tx_broadcast_parser.add_argument(
+        "--input-json",
+        help="Path to a JSON file containing the SafeTx data to broadcast.",
+    )
+    tx_broadcast_parser.add_argument(
+        "--output-json", help="Output file to save the broadcasted SafeTx data as JSON."
+    )
     # ------------------------------------------------------------------
     #                             RETURN
     # ------------------------------------------------------------------
@@ -903,7 +917,9 @@ def add_tx_builder_args(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--operation", help="Operation type: 0 for call, 1 for delegate call."
     )
-    parser.add_argument("--value", help="Value to send with the transaction, in wei.")
+    parser.add_argument(
+        "--value", help="Value to send with the transaction, in wei.", default="0"
+    )
     parser.add_argument(
         "--data", help="Data to send with the transaction, in hex format."
     )
@@ -913,6 +929,10 @@ def add_tx_builder_args(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--gas-token",
         help="Token to use for gas, defaults to the native token of the network.",
+    )
+    parser.add_argument(
+        "--refund-receiver",
+        help="Address to receive the refund if the transaction fails.",
     )
     parser.add_argument(
         "--output-json", help="Output file to save the SafeTx structured data as JSON."

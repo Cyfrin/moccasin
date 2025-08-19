@@ -24,6 +24,10 @@ ANVIL_STORED_KEYSTORE_PATH = Path(__file__).parent.joinpath(
     "data/anvil_data/anvil1.json"
 )
 
+ANVIL2_PRIVATE_KEY = (
+    "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+)
+
 
 # ------------------------------------------------------------------
 #                            TEST TOML

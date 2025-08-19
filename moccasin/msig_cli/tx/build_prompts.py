@@ -5,7 +5,6 @@ from eth_abi.abi import encode as abi_encode
 from eth_typing import ChecksumAddress
 from eth_utils import function_signature_to_4byte_selector, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
-from safe_eth.safe import Safe
 from safe_eth.safe.multi_send import MultiSendOperation, MultiSendTx
 
 from moccasin.msig_cli.constants import LEFT_PROMPT_SIGN
@@ -22,17 +21,28 @@ from moccasin.msig_cli.validators import (
 )
 
 
-def prompt_safe_nonce(prompt_session, safe_instance: Safe):
+def prompt_safe_nonce(prompt_session) -> int:
     safe_nonce = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Safe nonce? </b>"),
         validator=validator_number,
-        placeholder=HTML("<grey>[default: auto]</grey>"),
+        placeholder=HTML("<grey>[default: 0]</grey>"),
     )
     if safe_nonce:
         safe_nonce = int(safe_nonce)
     else:
-        safe_nonce = safe_instance.retrieve_nonce()
+        safe_nonce = 0
+
     return safe_nonce
+
+
+def prompt_confirm_safe_nonce(prompt_session, retrieved_safe_nonce: int) -> str:
+    return prompt_session.prompt(
+        HTML(
+            f"{LEFT_PROMPT_SIGN}<b>Change nonce to retrieved Safe nonce ({retrieved_safe_nonce})? </b>"
+        ),
+        placeholder=HTML("<grey>yes/no</grey>"),
+        validator=validator_not_empty,
+    )
 
 
 def prompt_gas_token(prompt_session):
@@ -69,7 +79,7 @@ def prompt_single_internal_tx(
 ) -> Optional[MultiSendTx]:
     print_formatted_text(
         HTML(
-            f"\n<b><magenta>--- Internal Tx {str(idx + 1).zfill(2)}/{str(nb_internal_txs).zfill(2)} ---</magenta></b>\n"
+            f"\n<b><orange>--- Internal Tx {str(idx + 1).zfill(2)}/{str(nb_internal_txs).zfill(2)} ---</orange></b>\n"
         )
     )
     tx_type = prompt_session.prompt(
@@ -99,6 +109,7 @@ def prompt_single_internal_tx(
         value=int(tx_value),
         data=tx_data,
     )
+    # @TODO: Handle other internal tx types (ERC20 transfer, RAW calldata)
 
 
 def _handle_internal_tx_call_type(prompt_session, tx_to, tx_value, tx_operation):
@@ -183,6 +194,7 @@ def prompt_target_contract_address(prompt_session):
     )
 
 
+# @NOTE: should we always default to CALL operation? Seems like it is the most common.
 def prompt_operation_type(prompt_session):
     operation = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Operation type? </b>"),
@@ -190,3 +202,33 @@ def prompt_operation_type(prompt_session):
         placeholder=HTML("<grey>[default: 0]</grey>"),
     )
     return int(operation) if operation else int(MultiSendOperation.CALL.value)
+
+
+def prompt_refund_receiver(prompt_session):
+    address = prompt_session.prompt(
+        HTML(f"{LEFT_PROMPT_SIGN}<b>Refund receiver address? </b>"),
+        validator=validator_address,
+        placeholder=HTML("<grey>[default: 0x...]</grey>"),
+    )
+
+    if address is None or address == "":
+        address = ZERO_ADDRESS
+    return to_checksum_address(address)
+
+
+def prompt_safe_tx_gas(prompt_session):
+    safe_tx_gas = prompt_session.prompt(
+        HTML(f"{LEFT_PROMPT_SIGN}<b>SafeTx gas? </b>"),
+        validator=validator_number,
+        placeholder=HTML("<grey>[default: 0]</grey>"),
+    )
+    return int(safe_tx_gas) if safe_tx_gas else 0
+
+
+def prompt_base_gas(prompt_session):
+    base_gas = prompt_session.prompt(
+        HTML(f"{LEFT_PROMPT_SIGN}<b>Base gas? </b>"),
+        validator=validator_number,
+        placeholder=HTML("<grey>[default: 0]</grey>"),
+    )
+    return int(base_gas) if base_gas else 0

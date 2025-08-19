@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import sys
@@ -17,6 +18,7 @@ from tests.constants import (
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
     ANVIL1_PRIVATE_KEY,
+    ANVIL2_PRIVATE_KEY,
     ANVIL_STORED_STATE_PATH,
     COMPLEX_PROJECT_PATH,
     INSTALL_PROJECT_PATH,
@@ -337,9 +339,55 @@ def pt_session():
             yield pipe_input
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
+def safe_tx_input_json(moccasin_home_folder, eth_safe_address_anvil):
+    """Provide a sample SafeTx JSON for testing."""
+    src = os.path.join(os.path.dirname(__file__), "data/msig_data/safe_tx.json")
+    dst = moccasin_home_folder / "safe-tx.json"
+    shutil.copyfile(src, dst)
+
+    # Update verifyingContract here
+    with open(dst, "r") as f:
+        safe_tx_data = json.load(f)
+
+    # Handle both SafeTx and EIP-712 formats
+    if "safeTx" in safe_tx_data:
+        if (
+            "domain" in safe_tx_data["safeTx"]
+            and "verifyingContract" in safe_tx_data["safeTx"]["domain"]
+        ):
+            safe_tx_data["safeTx"]["domain"]["verifyingContract"] = (
+                eth_safe_address_anvil
+            )
+    elif "domain" in safe_tx_data and "verifyingContract" in safe_tx_data["domain"]:
+        safe_tx_data["domain"]["verifyingContract"] = eth_safe_address_anvil
+
+    # Save the updated JSON back to the file
+    with open(dst, "w") as f:
+        json.dump(safe_tx_data, f, indent=2)
+
+    yield dst
+
+    # Clean up the file after the test
+    if dst.exists():
+        os.remove(dst)
+
+
+@pytest.fixture
+def owner_key():
+    """Provide the owner private key for testing."""
+    return os.environ.get("ETHEREUM_TEST_PRIVATE_KEY")
+
+
+@pytest.fixture
+def owner2_key():
+    """Provide a second owner private key for testing (Anvil default #2)."""
+    return ANVIL2_PRIVATE_KEY
+
+
+@pytest.fixture
 def eth_safe_address_anvil(anvil):
     """Fixture to provide a Safe instance connected to Anvil."""
-    eth_safe_address, _ = deploy_local_safe_anvil()
+    eth_safe_address, _, _ = deploy_local_safe_anvil()
 
     yield eth_safe_address

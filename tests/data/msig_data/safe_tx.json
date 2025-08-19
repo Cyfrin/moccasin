@@ -56,22 +56,23 @@
     },
     "primaryType": "SafeTx",
     "domain": {
-      "verifyingContract": "0x559da2BFD9e8F7D2fa3C6F851f2aE962Cc06aD42",
+      "verifyingContract": "0x00242329c100033ba499aDDe46ed3AB540B0F542",
       "chainId": 31337
     },
     "message": {
-      "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "to": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
       "value": 10,
       "data": "0xa9059cbb000000000000000000000000cfaacfc01548da1478432cf3abdcd1cbdff11e1c000000000000000000000000000000000000000000000000000000000000000a",
       "operation": 0,
-      "safeTxGas": 0,
-      "baseGas": 0,
-      "dataGas": 0,
-      "gasPrice": 0,
+      "safeTxGas": 80572,
+      "baseGas": 55352,
+      "dataGas": 55352,
+      "gasPrice": 1324785622,
       "gasToken": "0x0000000000000000000000000000000000000000",
       "refundReceiver": "0x0000000000000000000000000000000000000000",
-      "nonce": 42
+      "nonce": 3
     }
   },
-  "signatures": ""
+  "signatures": "0x",
+  "tx_hash": null
 }
