@@ -1,6 +1,4 @@
-import json
 import os
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -9,30 +7,6 @@ from tests.utils.anvil import ANVIL_URL
 
 # Constants for CLI commands tests
 LOCAL_ANVIL_URL = ANVIL_URL.format(8545)
-
-
-def _update_verifying_address(json_path, safe_address):
-    """Update the verifyingAddress in the SafeTx JSON file.
-
-    :param json_path: Path to the SafeTx JSON file.
-    :param safe_address: The Safe address to set as verifyingAddress.
-    """
-    with open(json_path, "r") as f:
-        safe_tx_data = json.load(f)
-
-    # Handle both SafeTx and EIP-712 formats
-    if "safeTx" in safe_tx_data:
-        if (
-            "domain" in safe_tx_data["safeTx"]
-            and "verifyingContract" in safe_tx_data["safeTx"]["domain"]
-        ):
-            safe_tx_data["safeTx"]["domain"]["verifyingContract"] = safe_address
-    elif "domain" in safe_tx_data and "verifyingContract" in safe_tx_data["domain"]:
-        safe_tx_data["domain"]["verifyingContract"] = safe_address
-
-    # Save the updated JSON back to the file
-    with open(json_path, "w") as f:
-        json.dump(safe_tx_data, f, indent=2)
 
 
 ################################################################
@@ -51,17 +25,9 @@ def test_eth_safe_address_anvil_fixture(eth_safe_address_anvil):
 #                        TX_SIGN TESTS                         #
 ################################################################
 def test_cli_tx_sign_with_owner_key(
-    mox_path, moccasin_home_folder, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, safe_tx_input_json, owner_key
 ):
     """Sign SafeTx with valid owner private key and dynamically set verifyingAddress."""
-    json_path = moccasin_home_folder / "safe-tx-sign.json"
-    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-    shutil.copyfile(src_json, json_path)
-
-    # Dynamically update verifyingAddress in the JSON file
-    _update_verifying_address(json_path, eth_safe_address_anvil)
-
-    owner_key = os.environ.get("ETHEREUM_TEST_PRIVATE_KEY")
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
         "n\n"  # not MoccasinAccount
@@ -74,7 +40,7 @@ def test_cli_tx_sign_with_owner_key(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(safe_tx_input_json)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -85,20 +51,12 @@ def test_cli_tx_sign_with_owner_key(
         os.chdir(current_dir)
 
     assert "SafeTx signed successfully!" in result.stdout
-    os.remove(json_path)
 
 
 def test_cli_tx_sign_with_non_owner_key(
-    mox_path, moccasin_home_folder, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, safe_tx_input_json
 ):
     """Sign SafeTx with non-owner private key (should fail)."""
-    json_path = moccasin_home_folder / "safe-tx-nonowner.json"
-    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-    shutil.copyfile(src_json, json_path)
-
-    # Dynamically update verifyingAddress in the JSON file
-    _update_verifying_address(json_path, eth_safe_address_anvil)
-
     non_owner_key = "0x1111111111111111111111111111111111111111111111111111111111111111"
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
@@ -112,7 +70,7 @@ def test_cli_tx_sign_with_non_owner_key(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(safe_tx_input_json)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -125,20 +83,12 @@ def test_cli_tx_sign_with_non_owner_key(
     assert (
         "is not one of the Safe owners. Cannot proceed with signing." in result.stderr
     )
-    os.remove(json_path)
 
 
 def test_cli_tx_sign_with_invalid_key(
-    mox_path, moccasin_home_folder, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, safe_tx_input_json
 ):
     """Sign SafeTx with invalid private key (should fail)."""
-    json_path = moccasin_home_folder / "safe-tx-invalidkey.json"
-    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-    shutil.copyfile(src_json, json_path)
-
-    # Dynamically update verifyingAddress in the JSON file
-    _update_verifying_address(json_path, eth_safe_address_anvil)
-
     invalid_key = "0xZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
@@ -152,7 +102,7 @@ def test_cli_tx_sign_with_invalid_key(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(safe_tx_input_json)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -163,19 +113,12 @@ def test_cli_tx_sign_with_invalid_key(
         os.chdir(current_dir)
 
     assert "invalid" in result.stdout.lower() or "Error initializing" in result.stdout
-    os.remove(json_path)
 
 
-def test_cli_tx_sign_user_abort(mox_path, moccasin_home_folder, eth_safe_address_anvil):
+def test_cli_tx_sign_user_abort(
+    mox_path, moccasin_home_folder, safe_tx_input_json, owner_key
+):
     """Sign SafeTx but user aborts at confirmation prompt."""
-    json_path = moccasin_home_folder / "safe-tx-abort.json"
-    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-    shutil.copyfile(src_json, json_path)
-
-    # Dynamically update verifyingAddress in the JSON file
-    _update_verifying_address(json_path, eth_safe_address_anvil)
-
-    owner_key = os.environ.get("ETHEREUM_TEST_PRIVATE_KEY")
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
         "n\n"  # not MoccasinAccount
@@ -188,7 +131,7 @@ def test_cli_tx_sign_user_abort(mox_path, moccasin_home_folder, eth_safe_address
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(safe_tx_input_json)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -198,10 +141,9 @@ def test_cli_tx_sign_user_abort(mox_path, moccasin_home_folder, eth_safe_address
         os.chdir(current_dir)
 
     assert "User aborted tx_sign command." in result.stderr
-    os.remove(json_path)
 
 
-def test_cli_tx_sign_missing_json(mox_path, moccasin_home_folder):
+def test_cli_tx_sign_missing_json(mox_path, moccasin_home_folder, safe_tx_input_json):
     """Sign SafeTx with missing JSON file (should fail)."""
     missing_path = moccasin_home_folder / "does_not_exist.json"
     sign_input = ""
@@ -224,15 +166,9 @@ def test_cli_tx_sign_missing_json(mox_path, moccasin_home_folder):
 
 
 def test_cli_tx_sign_with_moccasin_keystore(
-    mox_path, moccasin_home_folder, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, safe_tx_input_json
 ):
     """Sign SafeTx using Moccasin keystore account and correct password."""
-    json_path = moccasin_home_folder / "safe-tx-keystore.json"
-    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-    shutil.copyfile(src_json, json_path)
-
-    _update_verifying_address(json_path, eth_safe_address_anvil)
-
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
         "y\n"  # Use Moccasin account
@@ -246,7 +182,7 @@ def test_cli_tx_sign_with_moccasin_keystore(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(safe_tx_input_json)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -257,19 +193,12 @@ def test_cli_tx_sign_with_moccasin_keystore(
         os.chdir(current_dir)
 
     assert "SafeTx signed successfully!" in result.stdout
-    os.remove(json_path)
 
 
 def test_cli_tx_sign_with_keystore_wrong_password(
-    mox_path, moccasin_home_folder, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, safe_tx_input_json
 ):
     """Sign SafeTx using Moccasin keystore account and wrong password (should fail)."""
-    json_path = moccasin_home_folder / "safe-tx-keystore-wrongpw.json"
-    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-    shutil.copyfile(src_json, json_path)
-
-    _update_verifying_address(json_path, eth_safe_address_anvil)
-
     wrong_password = "not_the_right_password"
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
@@ -284,7 +213,7 @@ def test_cli_tx_sign_with_keystore_wrong_password(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(safe_tx_input_json)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -295,19 +224,12 @@ def test_cli_tx_sign_with_keystore_wrong_password(
         os.chdir(current_dir)
 
     assert "ValueError: Passwords do not match" in result.stderr
-    os.remove(json_path)
 
 
 def test_cli_tx_sign_with_nonexistent_keystore(
-    mox_path, moccasin_home_folder, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, safe_tx_input_json
 ):
     """Sign SafeTx using a non-existent Moccasin keystore (should fail)."""
-    json_path = moccasin_home_folder / "safe-tx-keystore-nonexistent.json"
-    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-    shutil.copyfile(src_json, json_path)
-
-    _update_verifying_address(json_path, eth_safe_address_anvil)
-
     fake_keystore_name = "does_not_exist"
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
@@ -322,7 +244,7 @@ def test_cli_tx_sign_with_nonexistent_keystore(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(safe_tx_input_json)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -334,21 +256,15 @@ def test_cli_tx_sign_with_nonexistent_keystore(
 
     assert "No such file or directory" in result.stderr
     assert "does_not_exist" in result.stderr
-    os.remove(json_path)
 
 
 def test_cli_tx_sign_interactive_input_json_prompt(
-    mox_path, moccasin_home_folder, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, safe_tx_input_json
 ):
     """Test interactive fallback: CLI prompts for input JSON when --input-json is omitted."""
-    json_path = moccasin_home_folder / "safe-tx-interactive.json"
-    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-    shutil.copyfile(src_json, json_path)
-    _update_verifying_address(json_path, eth_safe_address_anvil)
-
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
-        f"{json_path}\n"  # Prompted for input JSON file path
+        f"{safe_tx_input_json}\n"  # Prompted for input JSON file path
         "n\n"  # not MoccasinAccount
         "0x1111111111111111111111111111111111111111111111111111111111111111\n"
         "y\n"  # confirm account
@@ -371,19 +287,12 @@ def test_cli_tx_sign_interactive_input_json_prompt(
 
     # Should fail because key is not owner, but the prompt for input file should work
     assert "is not one of the Safe owners" in result.stderr or "SafeTx" in result.stdout
-    os.remove(json_path)
 
 
 def test_cli_tx_sign_interactive_output_json_prompt(
-    mox_path, moccasin_home_folder, eth_safe_address_anvil
+    mox_path, moccasin_home_folder, safe_tx_input_json, owner_key
 ):
     """Test interactive fallback: CLI prompts for output JSON when output file is omitted."""
-    json_path = moccasin_home_folder / "safe-tx-interactive-output.json"
-    src_json = os.path.join(os.path.dirname(__file__), "../data/msig_data/safe_tx.json")
-    shutil.copyfile(src_json, json_path)
-    _update_verifying_address(json_path, eth_safe_address_anvil)
-
-    owner_key = os.environ.get("ETHEREUM_TEST_PRIVATE_KEY")
     output_json_path = moccasin_home_folder / "signed-output.json"
     sign_input = (
         f"{LOCAL_ANVIL_URL}\n"
@@ -399,7 +308,7 @@ def test_cli_tx_sign_interactive_output_json_prompt(
     try:
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
-            [mox_path, "msig", "tx-sign", "--input-json", str(json_path)],
+            [mox_path, "msig", "tx-sign", "--input-json", str(safe_tx_input_json)],
             input=sign_input,
             text=True,
             capture_output=True,
@@ -411,7 +320,6 @@ def test_cli_tx_sign_interactive_output_json_prompt(
 
     assert "SafeTx signed successfully!" in result.stdout
     assert output_json_path.exists()
-    os.remove(json_path)
     os.remove(output_json_path)
 
 

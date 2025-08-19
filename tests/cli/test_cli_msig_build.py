@@ -61,8 +61,6 @@ def test_cli_tx_builder_interactive(
         "y\n"
         # File path
         "safe-tx.json\n"
-        # After saving, CLI will ask if you want to continue to the next step (signer). We answer 'q' to quit.
-        "q\n"
     )
     if json_path.exists():
         os.remove(json_path)
@@ -121,7 +119,6 @@ def test_cli_tx_builder_args_only(
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
             [mox_path, "msig", "tx-build"] + args,
-            input="q\n",
             text=True,
             capture_output=True,
             check=True,
@@ -168,7 +165,6 @@ def test_cli_tx_builder_args_with_json_output(
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
             [mox_path, "msig", "tx-build"] + args,
-            input="q\n",
             text=True,
             capture_output=True,
             check=True,
@@ -219,7 +215,6 @@ def test_cli_tx_builder_invalid_json_output(
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
             [mox_path, "msig", "tx-build"] + args,
-            input="q\n",
             text=True,
             capture_output=True,
             check=True,
@@ -281,8 +276,6 @@ def test_cli_tx_builder_multisend_mixed_operations(
         "y\n"
         # File path
         "multisend-mixed.json\n"
-        # After saving, quit
-        "q\n"
     )
     if json_path.exists():
         os.remove(json_path)
@@ -400,9 +393,6 @@ def test_cli_tx_builder_prompt_fallbacks(
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
         # refund receiver (default to 0x0000...)
         "0x0000000000000000000000000000000000000000\n"
-        # After, CLI will prompt to save JSON (already provided as arg, so should not prompt)
-        # After saving, quit
-        "q\n"
     )
     if json_path.exists():
         os.remove(json_path)
@@ -464,7 +454,6 @@ def test_cli_tx_builder_invalid_data(
         os.chdir(current_dir.joinpath(moccasin_home_folder))
         result = subprocess.run(
             [mox_path, "msig", "tx-build"] + args,
-            input="q\n",
             text=True,
             capture_output=True,
             check=True,
@@ -523,8 +512,6 @@ def test_cli_tx_builder_multisend_large_batch(
         "y\n"
         # File path
         "multisend-large.json\n"
-        # After saving, quit
-        "q\n"
     )
     if json_path.exists():
         os.remove(json_path)
