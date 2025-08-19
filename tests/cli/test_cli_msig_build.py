@@ -55,6 +55,7 @@ def test_cli_tx_builder_interactive(
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
         # Param 2 (question: What value should be used for parameter #2 of type uint256?)
         "100\n"
+        # XXX: update tests with gas prompts
         # Save EIP-712 JSON? (question: Would you like to save the EIP-712 structured data to a .json file? (y/n))
         "y\n"
         # File path (question: Where would you like to save the EIP-712 JSON file? (e.g. ./safe-tx.json))

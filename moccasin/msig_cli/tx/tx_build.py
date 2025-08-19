@@ -122,6 +122,8 @@ def _setup_gas_values_to_safe_tx(
         HTML(f"<b><green>Estimated gas for SafeTx: </green></b>{estimated_safe_tx_gas}")
     )
 
+    # XXX If values are none prompt for them
+
     # Compare the gas estimate with the SafeTx gas limit
     if safe_tx_gas < estimated_safe_tx_gas:
         print_formatted_text(

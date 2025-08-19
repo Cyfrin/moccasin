@@ -5,7 +5,6 @@ from eth_abi.abi import encode as abi_encode
 from eth_typing import ChecksumAddress
 from eth_utils import function_signature_to_4byte_selector, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
-from safe_eth.safe import Safe
 from safe_eth.safe.multi_send import MultiSendOperation, MultiSendTx
 
 from moccasin.msig_cli.constants import LEFT_PROMPT_SIGN
