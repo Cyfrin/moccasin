@@ -22,17 +22,14 @@ from moccasin.msig_cli.validators import (
 )
 
 
-def prompt_safe_nonce(prompt_session, safe_instance: Safe):
-    safe_nonce = prompt_session.prompt(
-        HTML(f"{LEFT_PROMPT_SIGN}<b>Safe nonce? </b>"),
-        validator=validator_number,
-        placeholder=HTML("<grey>[default: auto]</grey>"),
+def prompt_confirm_safe_nonce(prompt_session, retrieved_safe_nonce: int) -> str:
+    return prompt_session.prompt(
+        HTML(
+            f"{LEFT_PROMPT_SIGN}<b>Change nonce to retrieved Safe nonce ({retrieved_safe_nonce})? </b>"
+        ),
+        placeholder=HTML("<grey>yes/no</grey>"),
+        validator=validator_not_empty,
     )
-    if safe_nonce:
-        safe_nonce = int(safe_nonce)
-    else:
-        safe_nonce = safe_instance.retrieve_nonce()
-    return safe_nonce
 
 
 def prompt_gas_token(prompt_session):

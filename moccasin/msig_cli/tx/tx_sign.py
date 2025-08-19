@@ -25,6 +25,11 @@ def run(
     signer: MoccasinAccount,
 ) -> SafeTx:
     """Main entrypoint for the tx_sign command."""
+    # Check if the SafeTx has been broadcasted already
+    if safe_tx.tx is not None or safe_tx.tx_hash is not None:
+        raise ValueError(
+            "SafeTx seems to have already been broadcasted. Cannot sign it again."
+        )
     # Check if the account address is one of the Safe owners
     if not safe_instance.retrieve_is_owner(str(signer.address)):
         raise ValueError(

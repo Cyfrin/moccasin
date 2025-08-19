@@ -141,7 +141,9 @@ def _initialize_safe_and_tx(
         safe_tx_json: T_SafeTxData = json.loads(f.read())
 
     # Extract SafeTx data from input file
-    domain_json, message_json, signatures_json = extract_safe_tx_json(safe_tx_json)
+    domain_json, message_json, signatures_json, tx_hash = extract_safe_tx_json(
+        safe_tx_json
+    )
     if domain_json is None or message_json is None:
         raise ValueError(
             "Invalid SafeTx JSON format: missing 'domain' or 'message' fields."
@@ -171,6 +173,10 @@ def _initialize_safe_and_tx(
         message_json=message_json,
         signatures_json=get_signatures_bytes(signatures_json),
     )
+    if tx_hash is not None:
+        safe_tx.tx_hash = bytes.fromhex(
+            tx_hash[2:] if tx_hash.startswith("0x") else tx_hash
+        )
 
     # Update bottom toolbar with Ethereum client
     _update_bottom_toolbar(
@@ -472,12 +478,6 @@ def _tx_broadcast_command(
         raise ValueError(
             "SafeTx hash is None, something went wrong during broadcasting."
         )
-
-    # Display SafeTx hash
-    print_formatted_text(HTML("<b><green>SafeTx broadcasted successfully!</green></b>"))
-    print_formatted_text(
-        HTML(f"<b><yellow>SafeTx hash: </yellow></b>{safe_tx.tx_hash.hex()}")
-    )
 
     # Prompt to save the SafeTx JSON data
     _prompt_save_json(

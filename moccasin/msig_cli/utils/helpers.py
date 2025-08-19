@@ -71,20 +71,14 @@ def parse_eth_type_value(val, typ):
 
 
 def get_signatures_bytes(signatures: Optional[str]) -> bytes:
-    """Get signatures bytes from JSON value or return empty bytes.
-
-    :param signatures: Signatures in hex format or None.
-    :type signatures: Optional[str]
-
-    :return: Signatures as bytes.
-    """
-    if signatures:
-        # Use JSON value if present
-        hex_str = signatures.lstrip("0x") if signatures.startswith("0x") else signatures
-        return bytes.fromhex(hex_str)
-    else:
-        # Default to empty bytes
+    if not signatures or signatures in ("0x", ""):
         return b""
+    hex_str = signatures[2:] if signatures.startswith("0x") else signatures
+    # Remove whitespace and newlines, and validate the hex string
+    hex_str = hex_str.strip().replace("\n", "").replace(" ", "")
+    if len(hex_str) % 2 != 0 or not all(c in "0123456789abcdefABCDEF" for c in hex_str):
+        raise ValueError(f"Invalid hex string for signatures: {hex_str}")
+    return bytes.fromhex(hex_str)
 
 
 def get_custom_eip712_structured_data(safe_tx: SafeTx) -> dict:
@@ -97,10 +91,22 @@ def get_custom_eip712_structured_data(safe_tx: SafeTx) -> dict:
     # Get the EIP-712 structured data and wrap it in a dictionary with signatures
     eip712_struct = safe_tx.eip712_structured_data
     eip712_struct["message"]["data"] = to_0x_hex_str(eip712_struct["message"]["data"])
-    # Convert signatures to hex format
+    # Ensure signatures are bytes, not HexBytes
+    signatures_bytes = bytes(safe_tx.signatures)
+    if len(signatures_bytes) % 65 != 0:
+        raise ValueError(
+            f"Signature bytes length is {len(signatures_bytes)}, expected multiple of 65"
+        )
+    # @NOTE using manual conversion to hex string and not `to_0x_hex_str`
+    # possible edge case with v byte being serialized as a single
+    # hex digit when it's less than 0x10
+    # Example:
+    #    0x6beaebb7fb32501947b74d5b68788a49714f0d9ec51cf0afb6e1524ac17a841036f783144ee4b1f7644f9459512de26743085f7027a706ab30ac67e2c7ee6bf1c
+    #    0x06beaebb7fb32501947b74d5b68788a49714f0d9ec51cf0afb6e1524ac17a841036f783144ee4b1f7644f9459512de26743085f7027a706ab30ac67e2c7ee6bf1c
     safe_tx_data = {
         "safeTx": eip712_struct,
-        "signatures": to_0x_hex_str(safe_tx.signatures),
+        "signatures": "0x" + signatures_bytes.hex(),
+        "tx_hash": safe_tx.tx_hash.hex() if safe_tx.tx_hash else None,
     }
 
     return safe_tx_data
@@ -132,7 +138,9 @@ def get_safe_instance(ethereum_client: EthereumClient, safe_address: str) -> Saf
 
 def extract_safe_tx_json(
     safe_tx_json: T_SafeTxData | T_EIP712TxJson,
-) -> Tuple[Optional[T_EIP712Domain], Optional[T_SafeTxMessage], Optional[str]]:
+) -> Tuple[
+    Optional[T_EIP712Domain], Optional[T_SafeTxMessage], Optional[str], Optional[str]
+]:
     """
     Validate SafeTx JSON input, extract message, domain, and signatures, and strictly enforce domain matching.
 
@@ -145,6 +153,8 @@ def extract_safe_tx_json(
     message_json = None
     domain_json = None
     signatures_json = None
+    tx_hash = None
+    # Check if the input is a SafeTxData or EIP-712 JSON
     if "safeTx" in safe_tx_json:
         safe_tx_eip712 = safe_tx_json["safeTx"]  # type: ignore
         message_json = cast(T_SafeTxMessage, safe_tx_eip712.get("message"))
@@ -155,17 +165,18 @@ def extract_safe_tx_json(
             if signatures_val is None or isinstance(signatures_val, str)
             else str(signatures_val)
         )
+        tx_hash = safe_tx_json.get("tx_hash")
     elif all(k in safe_tx_json for k in ("types", "domain", "message")):
         message_json = cast(T_SafeTxMessage, safe_tx_json.get("message"))
         domain_json = cast(T_EIP712Domain, safe_tx_json.get("domain"))
     else:
-        return None, None, None
+        return None, None, None, None
 
-    # Enforce domain and message are present
+    # Enforce domain and message matching
     if domain_json is None or message_json is None:
-        return None, None, None
+        return None, None, None, None
 
-    return domain_json, message_json, signatures_json
+    return domain_json, message_json, signatures_json, tx_hash
 
 
 def validate_ethereum_client_chain_id(
@@ -206,7 +217,7 @@ def build_safe_tx_from_message(
             to=to_checksum_address(message_json["to"]),
             value=message_json["value"],
             data=bytes.fromhex(
-                message_json["data"].lstrip("0x")
+                message_json["data"][2:]
                 if message_json["data"].startswith("0x")
                 else message_json["data"]
             ),
@@ -230,22 +241,3 @@ def save_safe_tx_json(output_json: Path, safe_tx_data: dict) -> None:
     print_formatted_text(
         HTML(f"<b><green>Saved EIP-712 JSON:</green> {output_json}</b>")
     )
-
-
-def check_funds_account(
-    safe_tx_gas: int, base_gas: int, gas_price: int, gas_token: str
-) -> bool:
-    """
-    Check account has enough funds to pay for a SafeTx
-
-    :param safe_tx_gas: Safe tx gas
-    :param base_gas: Data gas
-    :param gas_price: Gas Price
-    :param gas_token: Gas Token, to use token instead of ether for the gas
-    :return: `True` if enough funds, `False` otherwise
-    """
-    if gas_token == NULL_ADDRESS:
-        balance = self.ethereum_client.get_balance(self.address)
-    else:
-        balance = self.ethereum_client.erc20.get_balance(self.address, gas_token)
-    return balance >= (safe_tx_gas + base_gas) * gas_price

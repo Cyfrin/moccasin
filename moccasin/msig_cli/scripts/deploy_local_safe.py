@@ -2,6 +2,7 @@ import os
 import traceback
 from typing import Optional
 
+from eth_utils import to_checksum_address
 from eth_typing import URI, ChecksumAddress
 from requests.exceptions import ConnectionError
 from safe_eth.eth import EthereumClient
@@ -76,7 +77,12 @@ def deploy_local_safe_anvil() -> tuple[
         raise Exception("Failed to deploy CompatibilityFallbackHandler.")
 
     # Owners and threshold for local testing
-    owners = [deployer.address, *DEFAULT_ANVIL_OWNERS]
+    owners = list(
+        {
+            to_checksum_address(addr)
+            for addr in [deployer.address, *DEFAULT_ANVIL_OWNERS]
+        }
+    )
     threshold = 2
     fallback_handler = fallback_handler_address
     to = "0x0000000000000000000000000000000000000000"
@@ -100,7 +106,11 @@ def deploy_local_safe_anvil() -> tuple[
     # Ensure initializer is bytes
     initializer = b""
     if isinstance(initializer_data, str):
-        initializer = bytes.fromhex(initializer_data.lstrip("0x"))
+        initializer = bytes.fromhex(
+            initializer_data[2:]
+            if initializer_data.startswith("0x")
+            else initializer_data
+        )
     elif isinstance(initializer_data, bytes):
         initializer = initializer_data
 

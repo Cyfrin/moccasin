@@ -2,7 +2,6 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Optional
 
-from eth.constants import ZERO_ADDRESS
 from eth_typing import ChecksumAddress
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
@@ -17,7 +16,7 @@ from moccasin.msig_cli.tx.build_prompts import (
     prompt_internal_txs,
     prompt_multisend_batch_confirmation,
     prompt_operation_type,
-    prompt_safe_nonce,
+    prompt_confirm_safe_nonce,
     prompt_single_internal_tx,
     prompt_target_contract_address,
 )
@@ -251,9 +250,28 @@ def run(
             "Safe contract does not have any funds. Please fund the Safe contract to run gas simulation"
         )
 
-    # Prompt for nonce and gas token
-    if safe_nonce is None:
-        safe_nonce = prompt_safe_nonce(prompt_session, safe_instance)
+    # Check if Safe nonce is provided or aligned with the current Safe nonce
+    retrieved_safe_nonce = safe_instance.retrieve_nonce()
+    if safe_nonce is None or safe_nonce != retrieved_safe_nonce:
+        print_formatted_text(
+            HTML(
+                f"<b><red>Warning: Safe nonce not provided or does not match the current Safe nonce ({retrieved_safe_nonce}).</red></b>"
+            )
+        )
+        confirm = prompt_confirm_safe_nonce(prompt_session, retrieved_safe_nonce)
+        if confirm.lower() in ("yes", "y"):
+            safe_nonce = retrieved_safe_nonce
+            print_formatted_text(
+                HTML(f"<b><green>Using retrieved Safe nonce: </green></b>{safe_nonce}")
+            )
+        else:
+            print_formatted_text(
+                HTML(
+                    f"<b><red>Continuing with provided Safe nonce: </red></b>{safe_nonce}"
+                )
+            )
+
+    # If no gas token provided, prompt for it
     if not gas_token:
         gas_token = prompt_gas_token(prompt_session)
 

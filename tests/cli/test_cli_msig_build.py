@@ -85,7 +85,7 @@ def test_cli_tx_builder_interactive(
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"][2:]) == b""
 
     os.remove(json_path)
 
@@ -177,7 +177,7 @@ def test_cli_tx_builder_args_with_json_output(
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"][2:]) == b""
     os.remove(json_path)
 
 
@@ -293,7 +293,7 @@ def test_cli_tx_builder_multisend_mixed_operations(
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"][2:]) == b""
     os.remove(json_path)
 
 
@@ -406,7 +406,7 @@ def test_cli_tx_builder_prompt_fallbacks(
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"][2:]) == b""
 
     os.remove(json_path)
 
@@ -522,5 +522,5 @@ def test_cli_tx_builder_multisend_large_batch(
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert bytes.fromhex(safe_tx_data["signatures"].lstrip("0x")) == b""
+    assert bytes.fromhex(safe_tx_data["signatures"][2:]) == b""
     os.remove(json_path)

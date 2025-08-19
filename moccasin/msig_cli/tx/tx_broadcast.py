@@ -9,7 +9,6 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Optional
 
-from eth.constants import ZERO_ADDRESS
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
 
@@ -92,16 +91,16 @@ def run(
             f"Error broadcasting SafeTx with account {broadcaster.address}: {e}"
         ) from e
 
-    print_formatted_text(HTML("<b><green>SafeTx broadcasted successfully!</green></b>"))
-
-    # Display the tx hash and tx params
-    print_formatted_text(
-        HTML(
-            f"<b><green>SafeTx broadcasted with tx hash: </green></b>{safe_tx.tx_hash}"
+    # Check if the SafeTx was successfully broadcasted
+    if safe_tx.tx_hash is None:
+        raise ValueError(
+            "SafeTx hash is None, something went wrong during broadcasting."
         )
-    )
+
+    # Display SafeTx hash
+    print_formatted_text(HTML("<b><green>SafeTx broadcasted successfully!</green></b>"))
     print_formatted_text(
-        HTML(f"<b><green>SafeTx params: </green></b>{safe_tx.tx_params}")
+        HTML(f"<b><yellow>SafeTx hash: </yellow></b>{safe_tx.tx_hash.hex()}")
     )
 
     return safe_tx
