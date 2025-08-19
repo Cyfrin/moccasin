@@ -19,11 +19,11 @@ from moccasin.config import initialize_global_config
 from moccasin.logging import logger, set_log_level
 from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.common_prompts import (
+    prompt_eip712_input_file,
     prompt_is_right_account,
     prompt_rpc_url,
     prompt_safe_address,
     prompt_save_safe_tx_json,
-    prompt_eip712_input_file,
 )
 from moccasin.msig_cli.tx import tx_broadcast, tx_build, tx_sign
 from moccasin.msig_cli.utils.helpers import (
@@ -113,7 +113,7 @@ def _prompt_save_json(
 def _initialize_safe_and_tx(
     prompt_session: PromptSession,
     ethereum_client: EthereumClient,
-    input_file_safe_tx: Path,
+    input_file_safe_tx: Path | None,
 ) -> Tuple[Safe, SafeTx]:
     """Initialize Safe and SafeTx instances."""
     safe_instance = None

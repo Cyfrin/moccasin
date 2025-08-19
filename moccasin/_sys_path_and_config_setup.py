@@ -226,6 +226,7 @@ def _setup_network_and_account_from_config_and_cli(
     # Allow to return the MoccasinAccount instance if requested
     if return_mox_account:
         return mox_account
+    return None
 
 
 # @dev contextmanager allows to act as a robust initializer and finalizer

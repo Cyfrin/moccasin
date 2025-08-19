@@ -85,7 +85,7 @@ def run(
     # Broadcast the SafeTx
     try:
         safe_tx.call(tx_sender_address=broadcaster.address)
-        safe_tx.execute(tx_sender_private_key=broadcaster.private_key)
+        safe_tx.execute(tx_sender_private_key=broadcaster.private_key.hex())
     except Exception as e:
         raise Exception(
             f"Error broadcasting SafeTx with account {broadcaster.address}: {e}"

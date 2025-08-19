@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from eth_utils import to_checksum_address
 from prompt_toolkit import HTML
 

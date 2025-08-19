@@ -11,10 +11,10 @@ from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
 from moccasin.logging import logger
 from moccasin.msig_cli.tx.build_prompts import (
     prompt_base_gas,
+    prompt_confirm_safe_nonce,
     prompt_gas_token,
     prompt_internal_txs,
     prompt_multisend_batch_confirmation,
-    prompt_confirm_safe_nonce,
     prompt_refund_receiver,
     prompt_safe_nonce,
     prompt_safe_tx_gas,
@@ -38,7 +38,7 @@ CALL_TX_OPERATION = 0
 
 def _decode_and_confirm_multisend_batch(
     prompt_session, safe_instance, data, to
-) -> tuple[Optional[ChecksumAddress]]:
+) -> Optional[ChecksumAddress]:
     """Decode and confirm MultiSend batch. If not a batch, return (None, None).
 
     :param prompt_session: Prompt session for user input.
@@ -86,7 +86,7 @@ def _setup_gas_values_to_safe_tx(
     to: ChecksumAddress,
     value: int,
     data: bytes,
-    gas_token: Optional[ChecksumAddress],
+    gas_token: ChecksumAddress,
 ) -> tuple[int, int, int]:
     """Setup gas values for the SafeTx.
 
@@ -257,6 +257,10 @@ def run(
     if to is None:
         to = prompt_target_contract_address(prompt_session)
 
+    # If value is still None at this point, default to 0
+    if value is None:
+        value = 0
+
     # Setup gas values for the SafeTx
     safe_tx_gas, base_gas, gas_price = _setup_gas_values_to_safe_tx(
         prompt_session, safe_instance, to, value, data, gas_token
@@ -294,7 +298,6 @@ def preprocess_raw_args(
     Optional[ChecksumAddress],
     Optional[int],
     Optional[int],
-    Optional[int],
     Optional[bytes],
     Optional[ChecksumAddress],
     Optional[ChecksumAddress],
@@ -306,11 +309,11 @@ def preprocess_raw_args(
     :return: A tuple containing the validated and converted values.
     """
     if args is None:
-        return None, None, None, None, None, None, None, None, None
+        return None, None, None, None, None, None, None, None
 
     safe_address = getattr(args, "safe_address", None)
     to = getattr(args, "to", None)
-    value = getattr(args, "value", 0)
+    value = getattr(args, "value", "0")
     safe_nonce = getattr(args, "safe_nonce", None)
     data = getattr(args, "data", None)
     gas_token = getattr(args, "gas_token", None)

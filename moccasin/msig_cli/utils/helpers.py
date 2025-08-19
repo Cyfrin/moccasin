@@ -165,7 +165,8 @@ def extract_safe_tx_json(
             if signatures_val is None or isinstance(signatures_val, str)
             else str(signatures_val)
         )
-        tx_hash = safe_tx_json.get("tx_hash")
+        tx_hash_val = safe_tx_json.get("tx_hash")
+        tx_hash = str(tx_hash_val) if tx_hash_val is not None else None
     elif all(k in safe_tx_json for k in ("types", "domain", "message")):
         message_json = cast(T_SafeTxMessage, safe_tx_json.get("message"))
         domain_json = cast(T_EIP712Domain, safe_tx_json.get("domain"))

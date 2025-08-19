@@ -2,18 +2,19 @@ import os
 import traceback
 from typing import Optional
 
-from eth_utils import to_checksum_address
 from eth_typing import URI, ChecksumAddress
+from eth_utils import to_checksum_address
 from requests.exceptions import ConnectionError
 from safe_eth.eth import EthereumClient
 from safe_eth.eth.contracts import get_proxy_factory_contract, get_safe_V1_4_1_contract
 from safe_eth.eth.utils import get_empty_tx_params
-from safe_eth.safe.multi_send import MultiSend
-from safe_eth.safe.proxy_factory import ProxyFactory
-from safe_eth.safe.safe import SafeV141
 from safe_eth.safe.compatibility_fallback_handler import (
     CompatibilityFallbackHandlerV141,
 )
+from safe_eth.safe.multi_send import MultiSend
+from safe_eth.safe.proxy_factory import ProxyFactory
+from safe_eth.safe.safe import SafeV141
+from web3.types import Wei
 
 from moccasin.constants.vars import DEFAULT_ANVIL_PRIVATE_KEY, DEFAULT_ANVIL_URL
 from moccasin.moccasin_account import MoccasinAccount
@@ -49,6 +50,8 @@ def deploy_local_safe_anvil() -> tuple[
     # Deployer account and EthereumClient for Safe
     deployer = MoccasinAccount(private_key=DEFAULT_ANVIL_PRIVATE_KEY)
     ethereum_client = EthereumClient(URI(DEFAULT_ANVIL_URL))
+    if deployer.address is None:
+        raise Exception("Failed to create deployer account.")
 
     # Deploy Safe master copy
     safe_master_tx = SafeV141.deploy_contract(
@@ -79,6 +82,7 @@ def deploy_local_safe_anvil() -> tuple[
         {
             to_checksum_address(addr)
             for addr in [deployer.address, *DEFAULT_ANVIL_OWNERS]
+            if addr is not None
         }
     )
     threshold = 2
@@ -117,11 +121,13 @@ def deploy_local_safe_anvil() -> tuple[
         deployer, safe_master_address, initializer=initializer
     )
     safe_proxy_address = safe_proxy_tx.contract_address
+    if safe_proxy_address is None:
+        raise Exception("Failed to deploy Safe proxy contract.")
 
     # Fund the Safe proxy address with ETH
     fund_amount = FUND_SAFE_PROXY_AMOUNT
     tx_hash = ethereum_client.w3.eth.send_transaction(
-        {"from": deployer.address, "to": safe_proxy_address, "value": fund_amount}
+        {"from": deployer.address, "to": safe_proxy_address, "value": Wei(fund_amount)}
     )
     ethereum_client.w3.eth.wait_for_transaction_receipt(tx_hash)
 
