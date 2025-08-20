@@ -8,6 +8,7 @@ from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
 from safe_eth.util.util import to_0x_hex_str
+from web3.types import TxParams
 
 from moccasin.msig_cli.constants import ERROR_INVALID_ADDRESS, ERROR_INVALID_RPC_URL
 from moccasin.msig_cli.utils.types import (
@@ -17,8 +18,6 @@ from moccasin.msig_cli.utils.types import (
     T_SafeTxMessage,
 )
 from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
-
-from web3.types import TxParams
 
 
 def pretty_print_safe_tx(safe_tx: SafeTx):
