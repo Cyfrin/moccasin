@@ -20,7 +20,10 @@ from moccasin.msig_cli.tx.broadcast_prompts import (
     prompt_confirm_broadcast,
     prompt_private_key,
 )
-from moccasin.msig_cli.utils.helpers import pretty_print_safe_tx
+from moccasin.msig_cli.utils.helpers import (
+    pretty_print_broadcasted_tx,
+    pretty_print_safe_tx,
+)
 from moccasin.msig_cli.validators import validate_json_file
 
 
@@ -98,10 +101,20 @@ def run(
         )
 
     # Display SafeTx hash
-    print_formatted_text(HTML("<b><green>SafeTx broadcasted successfully!</green></b>"))
     print_formatted_text(
-        HTML(f"<b><yellow>SafeTx hash: </yellow></b>{safe_tx.tx_hash.hex()}")
+        HTML("\n<b><green>SafeTx broadcasted successfully!</green></b>")
     )
+    print_formatted_text(
+        HTML(f"<b><orange>SafeTx hash: </orange></b>{safe_tx.tx_hash.hex()}")
+    )
+
+    # Check Broadcasted SafeTx details are available
+    if safe_tx.tx is None:
+        raise ValueError(
+            "SafeTx details are not available after broadcasting. Please check the transaction on the blockchain."
+        )
+    # Pretty print the broadcasted SafeTx details
+    pretty_print_broadcasted_tx(safe_tx.tx)
 
     return safe_tx
 

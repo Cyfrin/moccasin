@@ -128,7 +128,7 @@ def _initialize_safe_and_tx(
         )
         print_formatted_text(
             HTML(
-                "<b><orange>Note: Advised to run tx_build before tx_sign if no input file available.</orange></b>\n"
+                "<b><orange>Note: Advised to run tx_build before tx_sign if no input file available.</orange></b>"
             )
         )
         eip712_prompted_file = prompt_eip712_input_file(prompt_session)
@@ -164,7 +164,7 @@ def _initialize_safe_and_tx(
         ethereum_client=ethereum_client, safe_address=safe_address
     )
     print_formatted_text(
-        HTML(f"<b><green>Using Safe address: </green></b>{safe_instance.address}")
+        HTML(f"\n<b><green>Using Safe address: </green></b>{safe_instance.address}")
     )
 
     # Initialize SafeTx with the message and signatures
@@ -204,7 +204,7 @@ def _tx_build_command(
     :param args: Optional argparse Namespace with command arguments.
     :return: A tuple containing the Safe instance and the SafeTx object.
     """
-    print_formatted_text(HTML("\n\n<b><cyan>Running tx-build command...</cyan></b>\n"))
+    print_formatted_text(HTML("\n<b><cyan>Running tx-build command...</cyan></b>"))
     # Validate and preprocess the provided arguments if not None
     (
         safe_address,
@@ -239,7 +239,7 @@ def _tx_build_command(
         )
 
     print_formatted_text(
-        HTML(f"<b><green>Using Safe address: </green></b>{safe_instance.address}")
+        HTML(f"\n<b><green>Using Safe address: </green></b>{safe_instance.address}")
     )
 
     # Update bottom toolbar with Ethereum client
@@ -303,7 +303,7 @@ def _tx_sign_command(
     :param args: Optional argparse Namespace with command arguments.
     :return: A tuple containing the Safe instance, SafeTx object, and signer account.
     """
-    print_formatted_text(HTML("\n\n<b><cyan>Running tx-sign command...</cyan></b>"))
+    print_formatted_text(HTML("\n<b><cyan>Running tx-sign command...</cyan></b>"))
     # Validate and preprocess the provided arguments if not None
     (input_file_safe_tx, output_file_safe_tx) = tx_sign.preprocess_raw_args(args)
 
@@ -340,7 +340,7 @@ def _tx_sign_command(
     # Display the initialized account
     print_formatted_text(
         HTML(
-            f"\n<b><green>Signer account initialized successfully: {signer.address}</green></b>\n"
+            f"\n<b><green>Signer account initialized successfully: {signer.address}</green></b>"
         )
     )
 
@@ -397,9 +397,7 @@ def _tx_broadcast_command(
     :param args: Optional argparse Namespace with command arguments.
     :return: A tuple containing the Safe instance, SafeTx object, and signer account.
     """
-    print_formatted_text(
-        HTML("\n\n<b><cyan>Running tx-broadcast command...</cyan></b>")
-    )
+    print_formatted_text(HTML("\n<b><cyan>Running tx-broadcast command...</cyan></b>"))
     # Validate and preprocess the provided arguments if not None
     (input_file_safe_tx, output_file_safe_tx) = tx_broadcast.preprocess_raw_args(args)
 
@@ -436,7 +434,7 @@ def _tx_broadcast_command(
     # Display the initialized account
     print_formatted_text(
         HTML(
-            f"\n<b><green>Broadcaster account initialized successfully: {broadcaster.address}</green></b>\n"
+            f"\n<b><green>Broadcaster account initialized successfully: {broadcaster.address}</green></b>"
         )
     )
 
@@ -525,7 +523,7 @@ def main(args: Namespace) -> int:
                 # Print the chain ID in a formatted way
                 print_formatted_text(
                     HTML(
-                        f"<b><green>Using ChainId: </green></b>{ethereum_client.get_chain_id()}"
+                        f"\n<b><green>Using ChainId: </green></b>{ethereum_client.get_chain_id()}"
                     )
                 )
             else:
@@ -591,7 +589,9 @@ def main(args: Namespace) -> int:
         return 1
 
     # Print success message and return 0
-    print_formatted_text(HTML("<b><green>msig CLI completed successfully.</green></b>"))
+    print_formatted_text(
+        HTML("\n<b><green>msig CLI completed successfully.</green></b>")
+    )
     # Return 0 for successful completion
     print_formatted_text(HTML("<b><cyan>Shutting down msig CLI...</cyan></b>"))
     return 0

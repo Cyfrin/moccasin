@@ -53,7 +53,9 @@ def run(
     # Sign the SafeTx
     try:
         safe_tx.sign(private_key=signer.private_key.hex())
-        print_formatted_text(HTML("<b><green>SafeTx signed successfully!</green></b>"))
+        print_formatted_text(
+            HTML("\n<b><green>SafeTx signed successfully!</green></b>")
+        )
     except Exception as e:
         raise Exception(
             f"Error signing SafeTx with account {signer.address}: {e}"
@@ -63,7 +65,9 @@ def run(
     # Note: SafeTx.sorted_signers returns the most recent signers first
     ordered_signers = list(reversed(safe_tx.sorted_signers))
     for idx, sig in enumerate(ordered_signers, start=1):
-        print_formatted_text(HTML(f"<b><green>SafeTx signer {idx}: </green></b>{sig}"))
+        print_formatted_text(
+            HTML(f"<b><orange>SafeTx signer {idx}: </orange></b>{sig}")
+        )
 
     return safe_tx
 

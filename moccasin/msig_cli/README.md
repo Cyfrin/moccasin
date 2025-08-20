@@ -2,24 +2,51 @@
 
 This module provides a command-line interface for building, signing, and broadcasting Safe multisig transactions and messages. It is designed for both interactive use and automation, making it suitable for offline developer workflows.
 
+# Moccasin Multisig CLI
+
+This module provides a command-line interface for building, signing, and broadcasting Safe multisig transactions and messages. It is designed for both interactive use and automation, making it suitable for offline developer workflows.
+
 ## Features
 
-- **Interactive Transaction Builder:**
+- **Interactive Transaction Builder (`tx-build`):**
+
   - Build Safe multisig transactions with prompts for all required fields.
   - Supports both single transactions and batch (MultiSend) operations.
-- **Input Validation:**
-  - Validates addresses, calldata, and other parameters.
-  - Can use defaults or scripted values if arguments are omitted.
-- **Batch Operations:**
+  - Gas estimation is performed automatically or interactively, including SafeTx gas, base gas, and gas price, with validation of contract balance and nonce.
+  - Input validation for addresses, calldata, and other parameters. Defaults and scripted values supported if arguments are omitted.
   - MultiSend support for batching multiple internal transactions.
-- **EIP-712 Structured Data Output:**
-  - Optionally outputs EIP-712 JSON for signing and verification.
+  - EIP-712 structured data output for signing and verification.
+
+- **Transaction Signing (`tx-sign`):**
+
+  - Sign Safe multisig transactions from EIP-712 JSON, with strict domain validation and owner checks.
+  - Prompts for signer account (keystore or private key) and password if needed.
+  - Validates signer is a Safe owner and has not already signed the transaction.
+  - Displays SafeTx details and enforces owner/domain checks before signing.
+  - Interactive confirmation before signing, with ordered display of signers.
+
+- **Transaction Broadcasting (`tx-broadcast`):**
+
+  - Broadcast signed Safe multisig transactions to the blockchain.
+  - Prompts for broadcaster account (keystore or private key) and password if needed.
+  - Validates SafeTx has not already been broadcasted and has enough signers (threshold check).
+  - Checks Safe contract balance and funds for gas before broadcasting.
+  - Displays estimated cost in wei and SafeTx details before broadcasting.
+  - Interactive confirmation before broadcasting, with display of transaction hash and broadcasted transaction details.
+
+- **Input Validation:**
+
+  - All commands validate input parameters and prompt interactively for missing values.
+  - JSON file validation for input/output.
+
 - **Extensible CLI:**
-  - Designed for future commands (sign, broadcast, etc.) and integration with external tools.
+
+  - Modular design for future commands and integration with external tools.
+  - All prompts are branded and support autosuggest for convenience.
 
 ## CLI Commands
 
-### `mox msig tx-sign`
+### `mox msig tx-build`
 
 Build a Safe multisig transaction interactively or via command-line arguments.
 
@@ -28,11 +55,11 @@ Build a Safe multisig transaction interactively or via command-line arguments.
 - `--url` or `--rpc` — RPC endpoint for Ethereum network.
 - `--safe-address` — Safe contract address.
 - `--to` — Target contract address.
-- `--operation` — Operation type (`0` for call, `1` for delegate call).
 - `--value` — Amount in wei.
 - `--data` — Calldata (hex).
 - `--safe-nonce` — Safe contract nonce.
 - `--gas-token` — Gas token address (optional).
+- `--refund-receiver` — Address to receive gas refunds (optional).
 - `--output-json` — Path to save EIP-712 JSON.
 
 If arguments are omitted, the CLI will prompt for them interactively. All steps can be automated for CI/CD or scripting.
@@ -40,13 +67,13 @@ If arguments are omitted, the CLI will prompt for them interactively. All steps 
 **Example:**
 
 ```bash
-mox msig tx-sign --url http://localhost:8545 --safe-address 0xSafe... --to 0xTarget... --operation 0 --value 0 --data 0x...
+mox msig tx-build --url http://localhost:8545 --safe-address 0xSafe... --to 0xTarget... --operation 0 --value 0 --data 0x...
 ```
 
 Or run interactively:
 
 ```bash
-mox msig tx-sign
+mox msig tx-build
 ```
 
 ### `mox msig tx-sign`
@@ -82,26 +109,53 @@ Or run interactively:
 mox msig tx-sign
 ```
 
-### `mox msig tx_broadcast`
+### `mox msig tx-broadcast`
 
-TODO
+Broadcast a signed Safe multisig transaction to the blockchain.
 
----
+**Arguments:**
+
+- `--url` or `--rpc` — RPC endpoint for Ethereum network.
+- `--input-json` — Path to EIP-712 SafeTx JSON to broadcast. If omitted, prompts interactively.
+- `--output-json` — Path to output broadcasted SafeTx JSON (can overwrite input). If omitted, prompts interactively.
+- `--account` — Account name (from keystore) to broadcast with.
+- `--private-key` — Private key to broadcast with.
+- `--password` — Password for keystore account (can be prompted).
+- `--password-file-path` — Path to file containing password for keystore account.
+
+**Prompts & Validation:**
+
+- Prompts for broadcaster (account name or private key) if not provided.
+- Prompts for password if using keystore account.
+- Validates SafeTx has not already been broadcasted and has enough signers (threshold check).
+- Checks Safe contract balance and funds for gas before broadcasting.
+- Displays estimated cost in wei and SafeTx details before broadcasting.
+- Interactive confirmation before broadcasting, with display of transaction hash and broadcasted transaction details.
+
+**Example:**
+
+```bash
+mox msig tx-broadcast --url http://localhost:8545 --input-json ./safe_tx_signed.json --output-json ./safe_tx_broadcasted.json --account mykeystore
+```
+
+Or run interactively:
+
+```bash
+mox msig tx-broadcast
+```
 
 ## Interactive Usage & Fallbacks
 
 - If any required argument is omitted, the CLI will prompt for it interactively.
-- For signing, if `--input-json` or `--output-json` is omitted, you will be prompted for the file path.
+- For signing and broadcasting, if `--input-json` or `--output-json` is omitted, you will be prompted for the file path.
 - For keystore accounts, you will be prompted for the account name and password if not provided.
 - All prompts are branded and support history/autosuggest for convenience.
 
----
-
 ## Local Development & Testing
 
-### Run Anvil and Deploy Safe Contract (WIP: add owners/threshold)
+### Run Anvil and Deploy Safe Contract
 
-> Ensure you use `uv run` or activate you venv
+> Ensure you use `uv run` or activate your venv
 
 Start Anvil:
 
@@ -122,12 +176,13 @@ This sets environment variables for Safe and MultiSend addresses for your CLI/te
 Tests run locally on Anvil. Make sure Anvil is running and contracts are deployed:
 
 ```bash
-pytest tests/cli/test_cli_msig.py -vvv
+just test-msig
 ```
 
 Tests use static JSON and local contract addresses for reproducibility.
 
-**Example:**
+<details>
+  <summary>Example:</summary>
 
 ```json
 {
@@ -209,14 +264,21 @@ Tests use static JSON and local contract addresses for reproducibility.
 }
 ```
 
+</details>
+
+> **Note:** Broadcast needs the two previous steps to be run first to ensure Safe tx data is correctly encoded.
+
+---
+
 ---
 
 ## Project Structure
 
-- `msig_cli.py` — Main CLI logic and workflow
+- `msig.py` — Main CLI logic and workflow
 - `tx/tx_build.py` — Transaction builder
 - `tx/tx_sign.py` — Transaction signer
-- `tx/build_prompts.py`, `tx/sign_prompts.py`, `common_prompts.py` — Modular, branded prompts
+- `tx/build_prompts.py`, `tx/sign_prompts.py`, `tx/broadcast_prompts.py` ,`common_prompts.py` — Modular, branded prompts
+- `tx/tx_broadcast.py` — Transaction broadcaster
 - `utils/` — Helpers, types, exceptions, validation
 - `scripts/deploy_local_safe.py` — Local deployment for testing
 
@@ -226,15 +288,16 @@ Tests use static JSON and local contract addresses for reproducibility.
 
 - [x] Build and sign commands with robust validation and error handling
 - [x] Local deployment and test support (Anvil)
-- [ ] Implement `tx_broadcast` for transaction execution
+- [x] Implement `tx_broadcast` for transaction execution
+- [x] Add unit and integration tests for new features
+- [x] Add more owners and a threshold while deploying locally
+- [ ] Display SafeTx internal transactions in pretty_print
 - [ ] Add support for ERC20 transfers and raw data internal transactions
 - [ ] Improve function parameter type handling (arrays, bytes, etc.)
-- [ ] Extend validation for more Ethereum types
-- [ ] Add unit and integration tests for new features
-- [x] Add more owners and a threshold while deploying locally
+- [ ] Improve test suite and add more scenarios
 - [ ] Consider adding `sign` to sign simple messages in the future
 - [ ] See if we can run with boa and pyevm to mock EthereumClient
-- [ ] Display SafeTx internal transactions in pretty_print
+- [ ] Consider grouping all tx-related commands under `mox msig tx` with flags for build, sign, broadcast
 
 # Troubleshooting
 
@@ -263,8 +326,28 @@ Safe deployed successfully: 0x559da2BFD9e8F7D2fa3C6F851f2aE962Cc06aD42
 MultiSend deployed successfully: 0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9
 ```
 
+> `Error broadcasting SafeTx with account 0x...: Execution reverted: GS026`
+
+```
+
+The error `execution reverted: GS026` means "Invalid owner provided" in Gnosis Safe contracts.
+
+Why is this happening? The Safe contract checks that all signatures are from valid owners. If any signature is from an address not in the Safe's owner list, the transaction is rejected with GS026.
+
+But it's possible that the transaction data is wrong and the owner list is set correctly. This can happen if:
+- The Safe contract address is incorrect.
+- The Safe nonce is not correctly set.
+- The transaction data (to, value, data) is malformed or does not match the expected format.
+
+To fix this, ensure:
+1. The Safe contract address is correct and matches the one deployed by the script.
+2. The Safe nonce is set correctly and matches the current nonce of the Safe.
+3. The transaction data (to, value, data) is valid and matches the expected format
+
+```
+
 ---
 
 See [`msig.py`](../commands/msig.py) and [`msig_cli`](.) for full implementation details.
-See [`tx_build.py`](tx/tx_build.py) and [`tx_sign.py`](tx/tx_sign.py) for transaction builder and signer logic.
+See [`tx_build.py`](tx/tx_build.py), [`tx_sign.py`](tx/tx_sign.py), [`tx_broadcast.py`](tx/tx_broadcast.py) for transaction builder and signer logic.
 See [`scripts/deploy_local_safe.py`](scripts/deploy_local_safe.py) for local deployment.

@@ -18,6 +18,8 @@ from moccasin.msig_cli.utils.types import (
 )
 from moccasin.msig_cli.validators import is_valid_address, is_valid_rpc_url
 
+from web3.types import TxParams
+
 
 def pretty_print_safe_tx(safe_tx: SafeTx):
     """Pretty-print SafeTx fields.
@@ -26,7 +28,7 @@ def pretty_print_safe_tx(safe_tx: SafeTx):
     :type safe_tx: SafeTx
     """
 
-    print_formatted_text(HTML("<b><orange>SafeTx</orange></b>"))
+    print_formatted_text(HTML("\n<b><orange>SafeTx</orange></b>"))
     print_formatted_text(HTML(f"\t<b><yellow>Nonce:</yellow></b> {safe_tx.safe_nonce}"))
     print_formatted_text(HTML(f"\t<b><yellow>To:</yellow></b> {safe_tx.to}"))
     print_formatted_text(HTML(f"\t<b><yellow>Value:</yellow></b> {safe_tx.value}"))
@@ -240,5 +242,13 @@ def save_safe_tx_json(output_json: Path, safe_tx_data: dict) -> None:
     with open(output_json, "w") as f:
         json.dump(safe_tx_data, f, indent=2, default=str)
     print_formatted_text(
-        HTML(f"<b><green>Saved EIP-712 JSON:</green> {output_json}</b>")
+        HTML(f"\n<b><green>Saved EIP-712 JSON:</green> {output_json}</b>")
     )
+
+
+def pretty_print_broadcasted_tx(tx: TxParams):
+    print_formatted_text(
+        HTML("\n<b><orange>Broadcasted Ethereum Transaction:</orange></b>")
+    )
+    for k, v in tx.items():
+        print_formatted_text(HTML(f"\t<b><yellow>{k}:</yellow></b> {v}"))

@@ -106,6 +106,7 @@ def _setup_gas_values_to_safe_tx(
     estimated_safe_tx_gas = None
     estimated_base_gas = None
 
+    print_formatted_text(HTML("\n<b><orange>Estimating gas for SafeTx...</orange></b>"))
     try:
         estimated_safe_tx_gas = safe_instance.estimate_tx_gas(
             to, value, data, CALL_TX_OPERATION
@@ -117,7 +118,7 @@ def _setup_gas_values_to_safe_tx(
             )
         )
 
-        # Get the base gas for the Safe trnsaction
+        # Get the base gas for the Safe transaction
         estimated_base_gas = safe_instance.estimate_tx_base_gas(
             to, value, data, CALL_TX_OPERATION, gas_token, estimated_safe_tx_gas
         )
@@ -201,12 +202,15 @@ def run(
         if confirm.lower() in ("yes", "y"):
             safe_nonce = retrieved_safe_nonce
             print_formatted_text(
-                HTML(f"<b><green>Using retrieved Safe nonce: </green></b>{safe_nonce}")
+                HTML(
+                    f"\n<b><green>Using retrieved Safe nonce: </green></b>{safe_nonce}"
+                )
             )
         else:
+            # @NOTE: should we consider this a critical error and raise an exception?
             print_formatted_text(
                 HTML(
-                    f"<b><red>Continuing with provided Safe nonce: </red></b>{safe_nonce}"
+                    f"\n<b><red>Continuing with provided Safe nonce: </red></b>{safe_nonce}"
                 )
             )
 
@@ -230,7 +234,7 @@ def run(
             to = multi_send.address
             print_formatted_text(
                 HTML(
-                    "\n<b><green>MultiSend transaction created successfully!</green></b>\n"
+                    "\n<b><green>MultiSend transaction created successfully!</green></b>"
                 )
             )
         else:
@@ -240,7 +244,7 @@ def run(
             data = multi_send_one_tx.data
             print_formatted_text(
                 HTML(
-                    "\n<b><green>Single internal transaction created successfully!</green></b>\n"
+                    "\n<b><green>Single internal transaction created successfully!</green></b>"
                 )
             )
 
@@ -282,7 +286,7 @@ def run(
     except Exception as e:
         raise Exception(f"Error creating SafeTx instance: {e}") from e
     print_formatted_text(
-        HTML("\n<b><green>SafeTx instance created successfully!</green></b>\n")
+        HTML("\n<b><green>SafeTx instance created successfully!</green></b>")
     )
     # Pretty-print the SafeTx fields and get EIP-712 structured data
     pretty_print_safe_tx(safe_tx)
@@ -347,35 +351,3 @@ def preprocess_raw_args(
         refund_receiver,
         output_json,
     )
-
-
-"""
-XXX Exception: Failed to broadcast SafeTx with provided parameters: 
-Error broadcasting SafeTx with account 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266: 
-('execution reverted: GS026', '0x08c379a000000000000000000000000000000000000000000000000000
-0000000000002000000000000000000000000000000000000000000000000000000000000000054
-753303236000000000000000000000000000000000000000000000000000000')
-
-
-
-The error execution reverted: GS026 means "Invalid owner provided" in Gnosis Safe contracts.
-
-Why is this happening?
-The Safe contract checks that all signatures are from valid owners.
-If any signature is from an address not in the Safe's owner list, the transaction is rejected with GS026.
-What to check:
-Safe Owners List
-
-Query the Safe contract for its owners:
-Make sure the signers in your SafeTx:
-are all present in the Safe's owner list.
-Threshold
-
-If your Safe's threshold is 2, you need 2 valid owner signatures.
-No Extra Signatures
-
-Do not include signatures from non-owners.
-Address Format
-
-Make sure addresses are checksummed and match exactly.
-"""
