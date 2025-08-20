@@ -9,7 +9,6 @@ from safe_eth.safe.exceptions import CannotEstimateGas
 from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
 
 from moccasin.msig_cli.tx.build_prompts import (
-    prompt_base_gas,
     prompt_confirm_safe_nonce,
     prompt_gas_token,
     prompt_internal_txs,
@@ -32,9 +31,6 @@ from moccasin.msig_cli.validators import (
     validate_json_file,
     validate_number,
 )
-
-# --- Constants ---
-CALL_TX_OPERATION = 0
 
 
 def _confirm_multisend_batch(
@@ -77,6 +73,7 @@ def _setup_gas_values_to_safe_tx(
     prompt_session: PromptSession,
     safe_instance: Safe,
     to: ChecksumAddress,
+    operation: int,
     value: int,
     data: bytes,
     gas_token: ChecksumAddress,
@@ -104,9 +101,11 @@ def _setup_gas_values_to_safe_tx(
     estimated_base_gas = None
 
     print_formatted_text(HTML("\n<b><orange>Estimating gas for SafeTx...</orange></b>"))
+
+    # Get SafeTx gas with error handling on delegate calls
     try:
         estimated_safe_tx_gas = safe_instance.estimate_tx_gas(
-            to, value, data, CALL_TX_OPERATION
+            to, value, data, operation
         )
 
         print_formatted_text(
@@ -114,29 +113,28 @@ def _setup_gas_values_to_safe_tx(
                 f"<b><green>Estimated gas for SafeTx: </green></b>{estimated_safe_tx_gas}"
             )
         )
-
-        # Get the base gas for the Safe transaction
-        estimated_base_gas = safe_instance.estimate_tx_base_gas(
-            to, value, data, CALL_TX_OPERATION, gas_token, estimated_safe_tx_gas
-        )
-        print_formatted_text(
-            HTML(
-                f"<b><green>Estimated base gas for SafeTx: </green></b>{estimated_base_gas}"
-            )
-        )
-    # Catch specific exceptions for gas estimation
     except CannotEstimateGas:
+        # Delegate calls cannot be estimated reliably, so we prompt for manual input
         print_formatted_text(
             HTML(
-                "<b><yellow>Warning: Cannot estimate gas for this batch. Please enter a values manually.</yellow></b>"
+                "<b><yellow>Warning: Cannot estimate gas for this batch. Please enter gas for SafeTx manually.</yellow></b>"
             )
         )
         # Prompt for manual input or set a default value
         estimated_safe_tx_gas = prompt_safe_tx_gas(prompt_session)
-        estimated_base_gas = prompt_base_gas(prompt_session)
     # Catch any other exceptions and raise a more descriptive error
     except Exception as e:
         raise Exception(f"Error setting up and estimating gas for SafeTx: {e}") from e
+
+    # Get the base gas for the Safe transaction (try except not needed)
+    estimated_base_gas = safe_instance.estimate_tx_base_gas(
+        to, value, data, operation, gas_token, estimated_safe_tx_gas
+    )
+    print_formatted_text(
+        HTML(
+            f"<b><green>Estimated base gas for SafeTx: </green></b>{estimated_base_gas}"
+        )
+    )
 
     # Compare the SafeTx gas price with the Safe's gas price
     estimated_gas_price = safe_instance.w3.eth.gas_price  # see: safe_tx execute method
@@ -280,16 +278,23 @@ def run(
     if value is None:
         value = 0
 
+    # Get operation based on the presence of MultiSend batch
+    operation = (
+        MultiSendOperation.DELEGATE_CALL.value
+        if decoded_batch
+        else MultiSendOperation.CALL.value
+    )
+
     # Setup gas values for the SafeTx
     safe_tx_gas, base_gas, gas_price = _setup_gas_values_to_safe_tx(
-        prompt_session, safe_instance, to, value, data, gas_token
+        prompt_session, safe_instance, to, operation, value, data, gas_token
     )
 
     try:
         safe_tx = safe_instance.build_multisig_tx(
             to=to,
             value=value,
-            operation=CALL_TX_OPERATION,  # Default to CALL operation
+            operation=operation,
             safe_nonce=safe_nonce,
             data=data,
             gas_token=gas_token,

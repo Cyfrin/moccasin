@@ -269,9 +269,8 @@ def test_cli_tx_builder_multisend_mixed_operations(
         "200\n"  # param 2
         # Confirm MultiSend batch
         "y\n"
-        # As delegate call is used, the CLI will prompt manual gas input
-        "100000\n"  # safe_tx_gas
-        "100000\n"  # base_gas
+        # As delegate call is used, the CLI will prompt manual safe_tx_gas input
+        "\n"  # safe_tx_gas auto
         # Save EIP-712 JSON? (y/n)
         "y\n"
         # File path
@@ -301,7 +300,7 @@ def test_cli_tx_builder_multisend_mixed_operations(
         safe_tx_data = json.load(f)
     assert "types" in safe_tx_data["safeTx"] and "message" in safe_tx_data["safeTx"]
     assert safe_tx_data["safeTx"]["message"]["data"].startswith("0x")
-    assert safe_tx_data["safeTx"]["message"]["operation"] == 0  # CALL operation
+    assert safe_tx_data["safeTx"]["message"]["operation"] == 1  # Delegate for multisend
     assert bytes.fromhex(safe_tx_data["signatures"][2:]) == b""
     os.remove(json_path)
 
@@ -506,8 +505,7 @@ def test_cli_tx_builder_multisend_large_batch(
         # Confirm MultiSend batch
         "y\n"
         # As delegate call is used, the CLI will prompt manual gas input
-        "100000\n"  # safe_tx_gas
-        "100000\n"  # base_gas
+        "\n"  # safe_tx_gas
         # Save EIP-712 JSON? (y/n)
         "y\n"
         # File path

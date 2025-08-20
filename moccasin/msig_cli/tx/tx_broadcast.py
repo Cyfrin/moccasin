@@ -11,7 +11,6 @@ from typing import Optional
 
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
-from safe_eth.safe.exceptions import InvalidInternalTx
 
 from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.tx.broadcast_prompts import (
@@ -103,14 +102,16 @@ def run(
     # Broadcast the SafeTx
     try:
         safe_tx.call(tx_sender_address=broadcaster.address)
-        safe_tx.execute(tx_sender_private_key=broadcaster.private_key.hex())
-    except InvalidInternalTx:
-        raise ValueError(
-            "SafeTx contains invalid internal transactions. Please check the transaction data."
-        )
     except Exception as e:
         raise Exception(
-            f"Error broadcasting SafeTx with account {broadcaster.address}: {e}"
+            f"Error preparing SafeTx call for broadcasting with account {broadcaster.address}: {e}"
+        ) from e
+
+    try:
+        safe_tx.execute(tx_sender_private_key=broadcaster.private_key.hex())
+    except Exception as e:
+        raise Exception(
+            f"Error broadcasting SafeTx execute with account {broadcaster.address}: {e}"
         ) from e
 
     # Check if the SafeTx was successfully broadcasted

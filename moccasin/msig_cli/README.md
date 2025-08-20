@@ -17,7 +17,9 @@ This module provides a command-line interface for building, signing, and broadca
   - MultiSend support for batching multiple internal transactions.
   - EIP-712 structured data output for signing and verification.
 
-> Note: Gas estimation is automatically performed for single transactions. For MultiSend batches, it is not automatically estimated due to complexity, but can be done interactively.
+> Note: SafeTxGas estimation is automatically performed for single transactions. For MultiSend batches, it is not automatically estimated due to complexity, but can be done interactively.
+
+The CLI will prompt for these values or set sensible defaults if omitted.
 
 - **Transaction Signing (`tx-sign`):**
 
@@ -270,7 +272,23 @@ Tests use static JSON and local contract addresses for reproducibility.
 
 > **Note:** Broadcast needs the two previous steps to be run first to ensure Safe tx data is correctly encoded.
 
----
+### About SafeTxGas and BaseGas
+
+SafeTxGas and BaseGas are critical parameters for Safe multisig transactions:
+
+- **SafeTxGas** is the gas allocated for executing the internal transaction(s) within the Safe contract. For batch transactions (MultiSend), a sensible default is `200,000`.
+- **BaseGas** covers the overhead of signature verification and Safe contract logic. The minimum is `21,000`, which is the cost of a simple ETH transfer.
+
+If these values are set too low, the Safe contract will revert with an error (e.g., `GS010: Not enough gas to execute safe transaction`).
+
+**Best Practice:**
+
+- For MultiSend batches, set `safeTxGas=200000` and `baseGas=21000` as defaults. Increase if you have many internal transactions or complex logic.
+- For single transactions, gas estimation is performed automatically.
+
+**References:**
+
+- [Gnosis Safe Error Codes](https://github.com/safe-global/safe-contracts/blob/main/docs/error_codes.md)
 
 ---
 

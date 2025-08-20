@@ -34,3 +34,11 @@ ERROR_INVALID_SIGNER = (
 #                       PROMPT CONSTANTS                       #
 ################################################################
 LEFT_PROMPT_SIGN = "<b><orange>msig &gt; </orange></b>"
+
+################################################################
+#                        GAS CONSTANTS                         #
+################################################################
+# Gas allocated for executing the internal transaction(s)
+# Avoid GS010 error, common for multisend transactions
+# Taken from `test_safe_tx.py` in Safe's tests
+DEFAULT_MULTISEND_SAFE_TX_GAS = 600000

@@ -178,7 +178,7 @@ validator_data = Validator.from_callable(
 
 
 validator_function_signature = Validator.from_callable(
-    is_valid_function_signature,
+    allow_empty(is_valid_function_signature),
     error_message=ERROR_INVALID_FUNCTION_SIGNATURE,
     move_cursor_to_end=True,
 )

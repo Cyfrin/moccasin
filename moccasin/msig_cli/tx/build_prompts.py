@@ -7,7 +7,7 @@ from eth_utils import function_signature_to_4byte_selector, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.safe.multi_send import MultiSendOperation, MultiSendTx
 
-from moccasin.msig_cli.constants import LEFT_PROMPT_SIGN
+from moccasin.msig_cli.constants import DEFAULT_MULTISEND_SAFE_TX_GAS, LEFT_PROMPT_SIGN
 from moccasin.msig_cli.utils.helpers import (
     parse_eth_type_value,
     pretty_print_decoded_multisend,
@@ -139,27 +139,30 @@ def _handle_internal_tx_call_type(prompt_session, tx_to, tx_value, tx_operation)
     function_signature: str = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Function signature? </b>"),
         validator=validator_function_signature,
-        placeholder=HTML("<grey>e.g. transfer(address,uint256)</grey>"),
+        placeholder=HTML("<grey>e.g. transfer(address,uint256) or blank</grey>"),
     )
-    func_name, params = function_signature.strip().split("(")
-    param_types = params.rstrip(")").split(",") if params.rstrip(")") else []
-    param_values = []
-    for i, typ in enumerate(param_types):
-        validator = param_type_validators.get(typ, validator_not_empty)
-        val: str = prompt_session.prompt(
-            HTML(f"{LEFT_PROMPT_SIGN}<b>Param #{i + 1} ({typ})? </b>"),
-            validator=validator,
-            placeholder="",
+    tx_data = b""
+    if function_signature:
+        func_name, params = function_signature.strip().split("(")
+        param_types = params.rstrip(")").split(",") if params.rstrip(")") else []
+        param_values = []
+        for i, typ in enumerate(param_types):
+            validator = param_type_validators.get(typ, validator_not_empty)
+            val: str = prompt_session.prompt(
+                HTML(f"{LEFT_PROMPT_SIGN}<b>Param #{i + 1} ({typ})? </b>"),
+                validator=validator,
+                placeholder="",
+            )
+            param_values.append(val)
+        parsed_param_values = [
+            parse_eth_type_value(v, t) for v, t in zip(param_values, param_types)
+        ]
+        selector = function_signature_to_4byte_selector(
+            f"{func_name}({','.join(param_types)})"
         )
-        param_values.append(val)
-    parsed_param_values = [
-        parse_eth_type_value(v, t) for v, t in zip(param_values, param_types)
-    ]
-    selector = function_signature_to_4byte_selector(
-        f"{func_name}({','.join(param_types)})"
-    )
-    encoded_args = abi_encode(param_types, parsed_param_values)
-    tx_data = selector + encoded_args
+        encoded_args = abi_encode(param_types, parsed_param_values)
+        tx_data = selector + encoded_args
+
     return tx_to, tx_value, tx_operation, tx_data
 
 
@@ -169,7 +172,7 @@ def prompt_multisend_batch_confirmation(
     if to and to != multi_send_address:
         print_formatted_text(
             HTML(
-                f"{LEFT_PROMPT_SIGN}<red>Target address will be overridden with MultiSend: {multi_send_address}</red>"
+                f"{LEFT_PROMPT_SIGN}<yellow>Target address will be overridden with MultiSend: {multi_send_address}</yellow>"
             )
         )
     print_formatted_text(
@@ -220,15 +223,6 @@ def prompt_safe_tx_gas(prompt_session):
     safe_tx_gas = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>SafeTx gas? </b>"),
         validator=validator_number,
-        placeholder=HTML("<grey>[default: 0]</grey>"),
+        placeholder=HTML(f"<grey>[default: {DEFAULT_MULTISEND_SAFE_TX_GAS}]</grey>"),
     )
-    return int(safe_tx_gas) if safe_tx_gas else 0
-
-
-def prompt_base_gas(prompt_session):
-    base_gas = prompt_session.prompt(
-        HTML(f"{LEFT_PROMPT_SIGN}<b>Base gas? </b>"),
-        validator=validator_number,
-        placeholder=HTML("<grey>[default: 0]</grey>"),
-    )
-    return int(base_gas) if base_gas else 0
+    return int(safe_tx_gas) if safe_tx_gas else DEFAULT_MULTISEND_SAFE_TX_GAS
