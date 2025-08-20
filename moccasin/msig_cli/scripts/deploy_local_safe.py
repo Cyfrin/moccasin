@@ -135,7 +135,13 @@ def deploy_local_safe_anvil() -> tuple[
     multisend_eth_tx = MultiSend.deploy_contract(
         ethereum_client=ethereum_client, deployer_account=deployer
     )
-    os.environ["TEST_MULTISEND_ADDRESS"] = str(multisend_eth_tx.contract_address)
+    multisend_address_str = str(multisend_eth_tx.contract_address)
+    os.environ["TEST_MULTISEND_ADDRESS"] = multisend_address_str
+
+    # Write to file under msig_cli for cross-process access
+    file_path = os.path.join(os.path.dirname(__file__), "../multisend_address.txt")
+    with open(file_path, "w") as f:
+        f.write(multisend_address_str + "\n")
 
     return (
         safe_proxy_address,

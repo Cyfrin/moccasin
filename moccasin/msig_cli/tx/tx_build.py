@@ -8,7 +8,6 @@ from safe_eth.safe import Safe, SafeTx
 from safe_eth.safe.exceptions import CannotEstimateGas
 from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
 
-from moccasin.logging import logger
 from moccasin.msig_cli.tx.build_prompts import (
     prompt_base_gas,
     prompt_confirm_safe_nonce,
@@ -22,7 +21,9 @@ from moccasin.msig_cli.tx.build_prompts import (
     prompt_target_contract_address,
 )
 from moccasin.msig_cli.utils.helpers import (
+    get_decoded_tx_data,
     get_multisend_address_from_env,
+    pretty_print_decoded_multisend,
     pretty_print_safe_tx,
 )
 from moccasin.msig_cli.validators import (
@@ -36,10 +37,10 @@ from moccasin.msig_cli.validators import (
 CALL_TX_OPERATION = 0
 
 
-def _decode_and_confirm_multisend_batch(
-    prompt_session, safe_instance, data, to
+def _confirm_multisend_batch(
+    prompt_session, safe_instance, decoded_batch, to
 ) -> Optional[ChecksumAddress]:
-    """Decode and confirm MultiSend batch. If not a batch, return (None, None).
+    """Confirm MultiSend batch.
 
     :param prompt_session: Prompt session for user input.
     :param safe_instance: Safe instance to decode the MultiSend batch.
@@ -47,15 +48,7 @@ def _decode_and_confirm_multisend_batch(
     :param to: Address to send the MultiSend batch to.
     :return: A tuple containing the address to send the MultiSend batch to
     """
-    try:
-        decoded_batch = MultiSend.from_transaction_data(data)
-    except Exception as e:
-        logger.warning(f"Could not decode data as MultiSend batch: {e}")
-        return None
-
-    if not decoded_batch:
-        return None
-
+    # Check if the decoded batch contains any delegate calls
     has_delegate = any(
         tx.operation == MultiSendOperation.DELEGATE_CALL for tx in decoded_batch
     )
@@ -89,6 +82,10 @@ def _setup_gas_values_to_safe_tx(
     gas_token: ChecksumAddress,
 ) -> tuple[int, int, int]:
     """Setup gas values for the SafeTx.
+
+    Automatically estimates the gas for a single Safe transaction.
+    But with a MultiSend batch, manual input is required for gas values since
+    the gas estimation is not reliable for batches.
 
     :param safe_instance: Safe instance to build the transaction for.
     :param to: Address of the contract to call.
@@ -195,7 +192,7 @@ def run(
     if safe_nonce != retrieved_safe_nonce:
         print_formatted_text(
             HTML(
-                f"<b><red>Warning: Safe nonce not provided or does not match the estimated Safe nonce ({retrieved_safe_nonce}).</red></b>"
+                f"<b><yellow>Warning: Safe nonce not provided or does not match the estimated Safe nonce ({retrieved_safe_nonce}).</yellow></b>"
             )
         )
         confirm = prompt_confirm_safe_nonce(prompt_session, retrieved_safe_nonce)
@@ -249,13 +246,31 @@ def run(
             )
 
     # If data is provided, try to decode/confirm MultiSend batch
-    # @NOTE: maybe use this to display the decoded batch in other commands
+    decoded_batch = None
     if data is not None:
-        to_decoded = _decode_and_confirm_multisend_batch(
-            prompt_session, safe_instance, data, to
-        )
-        if to_decoded is not None:
-            to = to_decoded
+        # Check if the transaction is a MultiSend transaction
+        decoded_batch = get_decoded_tx_data(data)
+
+        if decoded_batch is None:
+            print_formatted_text(
+                HTML(
+                    "<b>\n<orange>Single transaction detected. No MultiSend batch to decode.</orange></b>"
+                )
+            )
+        else:
+            # Decode the MultiSend transaction data
+            print_formatted_text(
+                HTML(
+                    "<b>\n<orange>Detected MultiSend transaction. Decoding batch...</orange></b>"
+                )
+            )
+
+            # Get the MultiSend address from the decoded batch
+            to_decoded = _confirm_multisend_batch(
+                prompt_session, safe_instance, decoded_batch, to
+            )
+            if to_decoded is not None:
+                to = to_decoded
 
     # If still missing, prompt for target contract address and/or operation
     if to is None:
@@ -290,6 +305,10 @@ def run(
     )
     # Pretty-print the SafeTx fields and get EIP-712 structured data
     pretty_print_safe_tx(safe_tx)
+
+    # Check if the SafeTx is a MultiSend transaction
+    if decoded_batch is not None:
+        pretty_print_decoded_multisend(decoded_batch)
 
     return safe_tx
 

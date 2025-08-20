@@ -11,6 +11,7 @@ from typing import Optional
 
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
+from safe_eth.safe.exceptions import InvalidInternalTx
 
 from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.tx.broadcast_prompts import (
@@ -21,7 +22,10 @@ from moccasin.msig_cli.tx.broadcast_prompts import (
     prompt_private_key,
 )
 from moccasin.msig_cli.utils.helpers import (
+    get_decoded_tx_data,
+    is_multisend_tx,
     pretty_print_broadcasted_tx,
+    pretty_print_decoded_multisend,
     pretty_print_safe_tx,
 )
 from moccasin.msig_cli.validators import validate_json_file
@@ -70,14 +74,25 @@ def run(
 
     # Display cost in wei
     estimated_cost_in_wei = (safe_tx.safe_tx_gas + safe_tx.base_gas) * safe_tx.gas_price
-    print_formatted_text(
-        HTML(
-            f"<b><orange>Estimated cost for SafeTx: </orange></b>{estimated_cost_in_wei} wei"
+    if estimated_cost_in_wei > 0:
+        print_formatted_text(
+            HTML(
+                f"<b><orange>Estimated cost for SafeTx: </orange></b>{estimated_cost_in_wei} wei"
+            )
         )
-    )
+    else:
+        print_formatted_text(
+            HTML("<b><yellow>Warning: Estimated cost for SafeTx is zero.</yellow></b>")
+        )
 
     # Display the SafeTx details
     pretty_print_safe_tx(safe_tx)
+
+    # Display internal txs if MultiSend batch is present
+    if is_multisend_tx(safe_tx.to):
+        decoded_batch = get_decoded_tx_data(safe_tx.data)
+        if decoded_batch is not None:
+            pretty_print_decoded_multisend(decoded_batch)
 
     # Ask for user confirmation to boradcast the SafeTx
     confirm = prompt_confirm_broadcast(prompt_session)
@@ -89,6 +104,10 @@ def run(
     try:
         safe_tx.call(tx_sender_address=broadcaster.address)
         safe_tx.execute(tx_sender_private_key=broadcaster.private_key.hex())
+    except InvalidInternalTx:
+        raise ValueError(
+            "SafeTx contains invalid internal transactions. Please check the transaction data."
+        )
     except Exception as e:
         raise Exception(
             f"Error broadcasting SafeTx with account {broadcaster.address}: {e}"

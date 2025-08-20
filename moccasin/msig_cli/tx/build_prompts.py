@@ -8,7 +8,10 @@ from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.safe.multi_send import MultiSendOperation, MultiSendTx
 
 from moccasin.msig_cli.constants import LEFT_PROMPT_SIGN
-from moccasin.msig_cli.utils.helpers import parse_eth_type_value
+from moccasin.msig_cli.utils.helpers import (
+    parse_eth_type_value,
+    pretty_print_decoded_multisend,
+)
 from moccasin.msig_cli.validators import (
     param_type_validators,
     validator_address,
@@ -83,7 +86,9 @@ def prompt_single_internal_tx(
         )
     )
     tx_type = prompt_session.prompt(
-        HTML(f"{LEFT_PROMPT_SIGN}<b>Internal tx type? </b>"),
+        HTML(
+            f"{LEFT_PROMPT_SIGN}<b>Internal tx type? </b>0: Call, 1: ERC20, 2: Calldata "
+        ),
         validator=validator_transaction_type,
         placeholder=HTML("<grey>[default: 0]</grey>"),
     )
@@ -98,7 +103,7 @@ def prompt_single_internal_tx(
         )
     else:
         print_formatted_text(
-            HTML(f"\n<b><red>Unsupported internal tx type: {tx_type}.</red></b>\n")
+            HTML(f"\n<b><red>WIP: Unsupported internal tx type: {tx_type}.</red></b>\n")
         )
         return None
     return MultiSendTx(
@@ -170,12 +175,7 @@ def prompt_multisend_batch_confirmation(
     print_formatted_text(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Decoded MultiSend batch. Correct? </b>")
     )
-    for idx, tx in enumerate(decoded_batch, 1):
-        print_formatted_text(
-            HTML(
-                f"{LEFT_PROMPT_SIGN}Tx {idx}: op={tx.operation.name}, to={tx.to}, value={tx.value}, data={'0x' + tx.data.hex()}"
-            )
-        )
+    pretty_print_decoded_multisend(decoded_batch)
     confirm = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Proceed with batch? </b>"),
         placeholder=HTML("<grey>y/n</grey>"),

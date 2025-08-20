@@ -7,6 +7,7 @@ from eth_utils import to_bytes, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
+from safe_eth.safe.multi_send import MultiSend, MultiSendTx
 from safe_eth.util.util import to_0x_hex_str
 from web3.types import TxParams
 
@@ -53,6 +54,32 @@ def pretty_print_safe_tx(safe_tx: SafeTx):
     print_formatted_text(HTML(f"\t<b><yellow>Signers:</yellow></b> {safe_tx.signers}"))
 
 
+def pretty_print_broadcasted_tx(tx: TxParams):
+    """Pretty-print the broadcasted Ethereum transaction.
+
+    :param tx: The transaction parameters to print.
+    """
+    print_formatted_text(
+        HTML("\n<b><orange>Broadcasted Ethereum Transaction:</orange></b>")
+    )
+    for k, v in tx.items():
+        print_formatted_text(HTML(f"\t<b><yellow>{k}:</yellow></b> {v}"))
+
+
+def pretty_print_decoded_multisend(decoded_batch: list[MultiSendTx]):
+    """Pretty-print the decoded MultisendTx batch.
+
+    :param decoded_batch: The decoded MultisendTx batch to print.
+    """
+    print_formatted_text(HTML("\n<b><orange>MultiSend Transaction Batch:</orange></b>"))
+    for idx, tx in enumerate(decoded_batch, 1):
+        print_formatted_text(
+            HTML(
+                f"\t<b><yellow>Tx {idx}: </yellow></b>op={tx.operation.name}, to={tx.to}, value={tx.value}, data={'0x' + tx.data.hex()}"
+            )
+        )
+
+
 def parse_eth_type_value(val, typ):
     """Parse a value according to its Ethereum type.
 
@@ -69,6 +96,43 @@ def parse_eth_type_value(val, typ):
     if typ.startswith("bytes"):
         return to_bytes(hexstr=val)
     return val
+
+
+def is_multisend_tx(to: str) -> bool:
+    """Check if the given address is a MultiSend contract address.
+
+    :param to: The address to check.
+    :return: True if the address is a MultiSend contract address, False otherwise.
+    """
+    # Ensure all addresses are checksummed
+    to_checksum = to_checksum_address(to)
+    multisend_addresses = [
+        to_checksum_address(addr) for addr in MultiSend.MULTISEND_ADDRESSES
+    ]
+    multisend_call_only_addresses = [
+        to_checksum_address(addr) for addr in MultiSend.MULTISEND_CALL_ONLY_ADDRESSES
+    ]
+    env_address = get_multisend_address_from_env()
+
+    # Check if the address is in the MultiSend addresses or the environment variable
+    return (
+        to_checksum in multisend_addresses
+        or to_checksum in multisend_call_only_addresses
+        or (env_address is not None and to_checksum == env_address)
+    )
+
+
+def get_decoded_tx_data(data: str | bytes) -> list[MultiSendTx] | None:
+    """Decode the MultiSend transaction data.
+
+    :param data: The transaction data to decode, either as a hex string or bytes.
+    :return: A list of MultiSendTx objects if the data is a batch, or None if decoding fails.
+    """
+    try:
+        decoded_batch = MultiSend.from_transaction_data(data)
+        return decoded_batch if decoded_batch else None
+    except Exception:
+        return None
 
 
 def get_signatures_bytes(signatures: Optional[str]) -> bytes:
@@ -120,6 +184,14 @@ def get_multisend_address_from_env(var_name="TEST_MULTISEND_ADDRESS"):
     :return: The MultiSend contract address as a checksummed address, or None if not set.
     """
     address = os.environ.get(var_name)
+    if not address:
+        # Try to read from file under msig_cli
+        file_path = os.path.join(os.path.dirname(__file__), "../multisend_address.txt")
+        try:
+            with open(file_path) as f:
+                address = f.read().strip()
+        except Exception:
+            address = None
     return to_checksum_address(address) if address else None
 
 
@@ -243,11 +315,3 @@ def save_safe_tx_json(output_json: Path, safe_tx_data: dict) -> None:
     print_formatted_text(
         HTML(f"\n<b><green>Saved EIP-712 JSON:</green> {output_json}</b>")
     )
-
-
-def pretty_print_broadcasted_tx(tx: TxParams):
-    print_formatted_text(
-        HTML("\n<b><orange>Broadcasted Ethereum Transaction:</orange></b>")
-    )
-    for k, v in tx.items():
-        print_formatted_text(HTML(f"\t<b><yellow>{k}:</yellow></b> {v}"))

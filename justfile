@@ -51,6 +51,10 @@ test-pdb:
 anvil:
     anvil --load-state tests/data/anvil_data/state.json
 
+# Deploy safe contracts to anvil
+deploy-safe:
+    uv run python moccasin/msig_cli/scripts/deploy_local_safe.py
+
 
 # Build documentation
 docs:

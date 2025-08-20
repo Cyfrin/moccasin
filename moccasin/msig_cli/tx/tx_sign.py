@@ -13,7 +13,12 @@ from moccasin.msig_cli.tx.sign_prompts import (
     prompt_private_key,
     prompt_sign_with_moccasin_account,
 )
-from moccasin.msig_cli.utils.helpers import pretty_print_safe_tx
+from moccasin.msig_cli.utils.helpers import (
+    get_decoded_tx_data,
+    is_multisend_tx,
+    pretty_print_decoded_multisend,
+    pretty_print_safe_tx,
+)
 from moccasin.msig_cli.validators import validate_json_file
 
 
@@ -44,6 +49,13 @@ def run(
 
     # Display the SafeTx details
     pretty_print_safe_tx(safe_tx)
+
+    # Display internal txs if MultiSend batch is present
+    if is_multisend_tx(safe_tx.to):
+        decoded_batch = get_decoded_tx_data(safe_tx.data)
+        if decoded_batch is not None:
+            pretty_print_decoded_multisend(decoded_batch)
+
     # Ask for user confirmation to sign the SafeTx
     confirm = prompt_confirm_sign(prompt_session)
     # If user declines, abort signing

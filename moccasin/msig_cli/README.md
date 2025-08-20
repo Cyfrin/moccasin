@@ -17,6 +17,8 @@ This module provides a command-line interface for building, signing, and broadca
   - MultiSend support for batching multiple internal transactions.
   - EIP-712 structured data output for signing and verification.
 
+> Note: Gas estimation is automatically performed for single transactions. For MultiSend batches, it is not automatically estimated due to complexity, but can be done interactively.
+
 - **Transaction Signing (`tx-sign`):**
 
   - Sign Safe multisig transactions from EIP-712 JSON, with strict domain validation and owner checks.
@@ -291,8 +293,9 @@ Tests use static JSON and local contract addresses for reproducibility.
 - [x] Implement `tx_broadcast` for transaction execution
 - [x] Add unit and integration tests for new features
 - [x] Add more owners and a threshold while deploying locally
-- [ ] Display SafeTx internal transactions in pretty_print
+- [x] Display SafeTx internal transactions in pretty_print
 - [ ] Add support for ERC20 transfers and raw data internal transactions
+- [ ] Add proper typing to prompts and functions
 - [ ] Improve function parameter type handling (arrays, bytes, etc.)
 - [ ] Improve test suite and add more scenarios
 - [ ] Consider adding `sign` to sign simple messages in the future
@@ -310,6 +313,12 @@ This error comes from the anvil not running and also the deployment script not b
 anvil
 # Then run the deployment script
 python moccasin/msig_cli/scripts/deploy_local_safe.py
+```
+
+Or if you have `just` installed, you can run:
+
+```bash
+just deploy-safe
 ```
 
 Note: if you run `msig tx_sign` against a JSON file that has not been updated with the correct `verifyingAddress`, you will get an EVM error like:
