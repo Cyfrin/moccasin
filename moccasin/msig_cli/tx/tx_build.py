@@ -4,6 +4,7 @@ from typing import Optional
 
 from eth.constants import ZERO_ADDRESS
 from eth_typing import ChecksumAddress
+from eth_utils import to_checksum_address
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
 from safe_eth.safe.exceptions import CannotEstimateGas
@@ -18,7 +19,7 @@ from moccasin.msig_cli.tx.build_prompts import (
     prompt_safe_nonce,
     prompt_safe_tx_gas,
     prompt_single_internal_tx,
-    prompt_target_contract_address,
+    prompt_target_address,
 )
 from moccasin.msig_cli.utils.helpers import (
     get_decoded_tx_data,
@@ -168,10 +169,11 @@ def run(
     :return: An instance of SafeTx.
     """
     # If no gas token provided, prompt for it
-    if gas_token is None or gas_token == ZERO_ADDRESS:
+    if gas_token is None:
         gas_token = prompt_gas_token(prompt_session)
 
-    if gas_token is None:
+    # Check if gas token is provided or if it is the native token
+    if gas_token == to_checksum_address(ZERO_ADDRESS):
         # Check if safe contract balance is not zero
         if safe_instance.ethereum_client.get_balance(safe_instance.address) <= 0:
             raise ValueError(
@@ -274,7 +276,7 @@ def run(
 
     # If still missing, prompt for target contract address and/or operation
     if to is None:
-        to = prompt_target_contract_address(prompt_session)
+        to = prompt_target_address(prompt_session)
 
     # If value is still None at this point, default to 0
     if value is None:

@@ -41,7 +41,7 @@ test-all:
 
 # Run msig CLI tests
 test-msig:
-    pytest tests/cli/test_cli_msig_build.py tests/cli/test_cli_msig_sign.py tests/cli/test_cli_msig.py -x
+    pytest tests/unit/test_unit_msig.py tests/cli/test_cli_msig_build.py tests/cli/test_cli_msig_sign.py tests/cli/test_cli_msig.py -x
 
 # Run tests, fail on first test failure, enter debugger on failure
 test-pdb:

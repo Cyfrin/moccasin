@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Optional
 
 from eth.constants import ZERO_ADDRESS
+from eth_utils import to_checksum_address
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
 
@@ -52,7 +53,9 @@ def run(
         )
 
     # Check if safe contract balance is not zero
-    if safe_tx.gas_token is None or safe_tx.gas_token == ZERO_ADDRESS:
+    if safe_tx.gas_token is None or safe_tx.gas_token == to_checksum_address(
+        ZERO_ADDRESS
+    ):
         # Check if safe contract balance is not zero
         if safe_instance.ethereum_client.get_balance(safe_instance.address) <= 0:
             raise ValueError(

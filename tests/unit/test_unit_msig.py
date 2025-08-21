@@ -11,7 +11,7 @@ from moccasin.msig_cli.validators import (
     is_valid_number,
     is_valid_operation,
     is_valid_rpc_url,
-    is_valid_transaction_type,
+    is_valid_tx_build_data_type,
     validator_address,
     validator_boolean,
     validator_data,
@@ -21,7 +21,7 @@ from moccasin.msig_cli.validators import (
     validator_number,
     validator_operation,
     validator_rpc_url,
-    validator_transaction_type,
+    validator_tx_build_data_type,
 )
 
 
@@ -79,13 +79,13 @@ def test_is_valid_data():
 
 
 def test_is_valid_transaction_type():
-    assert is_valid_transaction_type("0")
-    assert is_valid_transaction_type("1")
-    assert is_valid_transaction_type("2")
-    assert not is_valid_transaction_type("3")
-    assert not is_valid_transaction_type("-1")
-    assert not is_valid_transaction_type("abc")
-    assert not is_valid_transaction_type("")
+    assert is_valid_tx_build_data_type("0")
+    assert is_valid_tx_build_data_type("1")
+    assert not is_valid_tx_build_data_type("2")
+    assert not is_valid_tx_build_data_type("3")
+    assert not is_valid_tx_build_data_type("-1")
+    assert not is_valid_tx_build_data_type("abc")
+    assert not is_valid_tx_build_data_type("")
 
 
 def test_is_valid_function_signature():
@@ -151,7 +151,7 @@ def _prompt_with_validator(session, prompt_text, validator):
             "0xa9059cbb000000000000000000000000cfaacfc01548da1478432cf3abdcd1cbdff11e1c000000000000000000000000000000000000000000000000000000000000002a",
             "0xa9059cbb000000000000000000000000cfaacfc01548da1478432cf3abdcd1cbdff11e1c000000000000000000000000000000000000000000000000000000000000002a",
         ),
-        ("Transaction Type: ", validator_transaction_type, "1", "1"),
+        ("Transaction Type: ", validator_tx_build_data_type, "1", "1"),
         (
             "Function Signature: ",
             validator_function_signature,

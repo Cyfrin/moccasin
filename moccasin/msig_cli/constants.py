@@ -11,7 +11,7 @@ ERROR_INVALID_OPERATION = "Invalid operation type. Please enter a valid operatio
 ERROR_INVALID_DATA = (
     "Invalid data format. Please enter a valid hex string for calldata."
 )
-ERROR_INVALID_TRANSACTION_TYPE = "Invalid transaction type. Please enter a valid transaction type (0 for contract call, 1 for ERC20 transfer, 2 for raw)."
+ERROR_INVALID_TX_BUILD_DATA_TYPE = "Invalid transaction type. Please enter a valid transaction type (0 for call, 1 for raw data)."
 ERROR_INVALID_FUNCTION_SIGNATURE = (
     "Invalid function signature. Example: transfer(address,uint256)"
 )

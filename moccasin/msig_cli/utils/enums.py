@@ -4,7 +4,7 @@ from enum import Enum
 ################################################################
 #                            ENUMS                             #
 ################################################################
-class TransactionType(Enum):
-    CONTRACT_CALL = 0
-    ERC20_TRANSFER = 1
-    RAW = 2
+class TxBuildDataType(Enum):
+    MANUAL = 0
+    RAW_DATA = 1
+    # @NOTE Add other transaction types as needed

@@ -35,21 +35,21 @@ def test_cli_tx_builder_interactive(
         f"{LOCAL_ANVIL_URL}\n"
         # Safe address
         f"{eth_safe_address_anvil}\n"
-        # Safe nonce
-        "0\n"
         # Gas token
         "0x0000000000000000000000000000000000000000\n"
+        # Safe nonce
+        "0\n"
         # Refund receiver
         "0x0000000000000000000000000000000000000000\n"
         # Number of internal txs
         "1\n"
-        # Internal tx type
-        "0\n"
         # Contract address
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
         # Value in wei
         "10\n"
         # Operation type
+        "0\n"
+        # Internal tx build data
         "0\n"
         # Function signature
         "transfer(address,uint256)\n"
@@ -241,32 +241,32 @@ def test_cli_tx_builder_multisend_mixed_operations(
         f"{LOCAL_ANVIL_URL}\n"
         # Safe address
         f"{eth_safe_address_anvil}\n"
+        # Gas token
+        "0x0000000000000000000000000000000000000000\n"
         # Safe nonce
         "42\n"
         # Confirm change nonce to retrieved Safe nonce
         "y\n"
-        # Gas token
-        "0x0000000000000000000000000000000000000000\n"
         # Refund receiver
         "0x0000000000000000000000000000000000000000\n"
         # Number of internal txs
         "2\n"
-        # Internal tx 1: tx_type CALL
-        "0\n"  # type: call contract
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"  # contract address
         "10\n"  # value
         "0\n"  # operation: call
+        # Internal tx build data
+        "0\n"
         "transfer(address,uint256)\n"  # function signature
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"  # param 1
         "100\n"  # param 2
-        # Internal tx 2: tx_type CALL, but tx_operation DELEGATE_CALL
-        "0\n"  # type: call contract
+        # Internal tx 2
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"  # contract address
         "20\n"  # value
         "1\n"  # operation: delegate call
-        "transfer(address,uint256)\n"  # function signature
-        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"  # param 1
-        "200\n"  # param 2
+        # Internal tx build data
+        "1\n"
+        # data
+        "0xa9059cbb000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb922660000000000000000000000000000000000000000000000000000000000989680\n"
         # Confirm MultiSend batch
         "y\n"
         # As delegate call is used, the CLI will prompt manual safe_tx_gas input
@@ -314,29 +314,29 @@ def test_cli_tx_builder_multisend_user_rejects(
         f"{LOCAL_ANVIL_URL}\n"
         # Safe address
         f"{eth_safe_address_anvil}\n"
+        # Gas token
+        "0x0000000000000000000000000000000000000000\n"
         # Safe nonce
         "42\n"
         # Confirm change nonce to retrieved Safe nonce
         "y\n"
-        # Gas token
-        "0x0000000000000000000000000000000000000000\n"
         # Refund receiver
         "0x0000000000000000000000000000000000000000\n"
         # Number of internal txs
         "2\n"
-        # Internal tx 1: tx_type CALL
-        "0\n"
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
-        "10\n"
-        "0\n"
-        "transfer(address,uint256)\n"
-        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
-        "100\n"
+        # Internal tx 1
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"  # contract address
+        "20\n"  # value
+        "0\n"  # operation: call
+        # Internal tx build data
+        "1\n"
+        # data
+        "0xa9059cbb000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb922660000000000000000000000000000000000000000000000000000000000989680\n"
         # Internal tx 2: tx_type CALL, tx_operation DELEGATE_CALL
-        "0\n"
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
         "20\n"
         "1\n"
+        "0\n"
         "transfer(address,uint256)\n"
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
         "200\n"
@@ -474,10 +474,10 @@ def test_cli_tx_builder_multisend_large_batch(
         f"{LOCAL_ANVIL_URL}\n"
         # Safe address
         f"{eth_safe_address_anvil}\n"
-        # Safe nonce
-        "0\n"
         # Gas token
         "0x0000000000000000000000000000000000000000\n"
+        # Safe nonce
+        "0\n"
         # Refund receiver
         "0x0000000000000000000000000000000000000000\n"
         # Number of internal txs
@@ -486,14 +486,14 @@ def test_cli_tx_builder_multisend_large_batch(
     # For each of the 10 internal txs, append the required answers
     for i in range(10):
         user_input += (
-            # Internal tx type (all CALL for simplicity)
-            "0\n"
             # Contract address
             "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
             # Value in wei (increment for variety)
             f"{10 * (i + 1)}\n"
             # Operation type (alternate between 0 and 1)
             f"{i % 2}\n"
+            # Internal tx build data type
+            "0\n"
             # Function signature
             "transfer(address,uint256)\n"
             # Param 1 (use a different address for each)

@@ -32,13 +32,13 @@ def test_cli_full_workflow_success(
     build_input = (
         f"{LOCAL_ANVIL_URL}\n"
         f"{eth_safe_address_anvil}\n"
-        "0\n"
         "0x0000000000000000000000000000000000000000\n"
+        "0\n"
         "0x0000000000000000000000000000000000000000\n"
         "1\n"
-        "0\n"
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
         "10\n"
+        "0\n"
         "0\n"
         "transfer(address,uint256)\n"
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
@@ -134,17 +134,18 @@ def test_cli_broadcast_missing_signatures(
     build_input = (
         f"{LOCAL_ANVIL_URL}\n"
         f"{eth_safe_address_anvil}\n"
-        "0\n"
         "0x0000000000000000000000000000000000000000\n"
+        "0\n"
         "0x0000000000000000000000000000000000000000\n"
         "1\n"
-        "0\n"
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
-        "10\n"
-        "0\n"
-        "transfer(address,uint256)\n"
-        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
-        "100\n"
+        # Internal tx
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"  # contract address
+        "20\n"  # value
+        "1\n"  # operation: delegate call
+        # Internal tx build data
+        "1\n"
+        # data
+        "0xa9059cbb000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb922660000000000000000000000000000000000000000000000000000000000989680\n"
         "y\n"
         f"{json_path}\n"
     )
@@ -221,17 +222,17 @@ def test_cli_broadcast_non_owner_signature(
     build_input = (
         f"{LOCAL_ANVIL_URL}\n"
         f"{eth_safe_address_anvil}\n"
-        "0\n"
         "0x0000000000000000000000000000000000000000\n"
+        "0\n"
         "0x0000000000000000000000000000000000000000\n"
         "1\n"
-        "0\n"
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
-        "10\n"
-        "0\n"
-        "transfer(address,uint256)\n"
-        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
-        "100\n"
+        # Internal tx
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"  # contract address
+        "20\n"  # value
+        "1\n"  # operation: delegate call
+        "1\n"
+        # data
+        "0xa9059cbb000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb922660000000000000000000000000000000000000000000000000000000000989680\n"
         "y\n"
         f"{json_path}\n"
     )
@@ -308,14 +309,15 @@ def test_cli_broadcast_user_abort(
     build_input = (
         f"{LOCAL_ANVIL_URL}\n"
         f"{eth_safe_address_anvil}\n"
-        "0\n"
         "0x0000000000000000000000000000000000000000\n"
+        "0\n"
         "0x0000000000000000000000000000000000000000\n"
         "1\n"
-        "0\n"
+        # Internal tx
         "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\n"
         "10\n"
         "0\n"
+        "0\n"  # tx manual build data type
         "transfer(address,uint256)\n"
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\n"
         "100\n"

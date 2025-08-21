@@ -20,9 +20,9 @@ from moccasin.msig_cli.constants import (
     ERROR_INVALID_RPC_URL,
     ERROR_INVALID_SIGNATURES_INPUT,
     ERROR_INVALID_SIGNER,
-    ERROR_INVALID_TRANSACTION_TYPE,
+    ERROR_INVALID_TX_BUILD_DATA_TYPE,
 )
-from moccasin.msig_cli.utils.enums import TransactionType
+from moccasin.msig_cli.utils.enums import TxBuildDataType
 
 
 ################################################################
@@ -58,9 +58,9 @@ def is_valid_data(data: str) -> bool:
     return is_0x_prefixed(data) and is_hex(data)
 
 
-def is_valid_transaction_type(value: str) -> bool:
+def is_valid_tx_build_data_type(value: str) -> bool:
     """Check if the provided value is a valid transaction type."""
-    return value.isdigit() and int(value) in [tx.value for tx in TransactionType]
+    return value.isdigit() and int(value) in [tx.value for tx in TxBuildDataType]
 
 
 def is_valid_function_signature(sig: str) -> bool:
@@ -160,9 +160,9 @@ validator_not_zero_number = Validator.from_callable(
     move_cursor_to_end=True,
 )
 
-validator_transaction_type = Validator.from_callable(
-    allow_empty(is_valid_transaction_type),
-    error_message=ERROR_INVALID_TRANSACTION_TYPE,
+validator_tx_build_data_type = Validator.from_callable(
+    allow_empty(is_valid_tx_build_data_type),
+    error_message=ERROR_INVALID_TX_BUILD_DATA_TYPE,
     move_cursor_to_end=True,
 )
 
@@ -174,6 +174,12 @@ validator_operation = Validator.from_callable(
 
 validator_data = Validator.from_callable(
     is_valid_data, error_message=ERROR_INVALID_DATA, move_cursor_to_end=True
+)
+
+validator_empty_or_data = Validator.from_callable(
+    allow_empty(is_valid_data),
+    error_message=ERROR_INVALID_DATA,
+    move_cursor_to_end=True,
 )
 
 

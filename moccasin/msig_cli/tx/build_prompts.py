@@ -2,12 +2,12 @@ from typing import List, Optional
 
 from eth.constants import ZERO_ADDRESS
 from eth_abi.abi import encode as abi_encode
-from eth_typing import ChecksumAddress
 from eth_utils import function_signature_to_4byte_selector, to_checksum_address
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.safe.multi_send import MultiSendOperation, MultiSendTx
 
 from moccasin.msig_cli.constants import DEFAULT_MULTISEND_SAFE_TX_GAS, LEFT_PROMPT_SIGN
+from moccasin.msig_cli.utils.enums import TxBuildDataType
 from moccasin.msig_cli.utils.helpers import (
     parse_eth_type_value,
     pretty_print_decoded_multisend,
@@ -15,12 +15,13 @@ from moccasin.msig_cli.utils.helpers import (
 from moccasin.msig_cli.validators import (
     param_type_validators,
     validator_address,
+    validator_empty_or_data,
     validator_function_signature,
     validator_not_empty,
     validator_not_zero_number,
     validator_number,
     validator_operation,
-    validator_transaction_type,
+    validator_tx_build_data_type,
 )
 
 
@@ -85,45 +86,8 @@ def prompt_single_internal_tx(
             f"\n<b><orange>--- Internal Tx {str(idx + 1).zfill(2)}/{str(nb_internal_txs).zfill(2)} ---</orange></b>\n"
         )
     )
-    tx_type = prompt_session.prompt(
-        HTML(
-            f"{LEFT_PROMPT_SIGN}<b>Internal tx type? </b>0: Call, 1: ERC20, 2: Calldata "
-        ),
-        validator=validator_transaction_type,
-        placeholder=HTML("<grey>[default: 0]</grey>"),
-    )
-    tx_type = int(tx_type) if tx_type else 0
-    tx_to = to_checksum_address(ZERO_ADDRESS)
-    tx_value = 0
-    tx_data = b""
-    tx_operation = 0
-    if tx_type == 0:
-        tx_to, tx_value, tx_operation, tx_data = _handle_internal_tx_call_type(
-            prompt_session, tx_to, tx_value, tx_operation
-        )
-    else:
-        print_formatted_text(
-            HTML(f"\n<b><red>WIP: Unsupported internal tx type: {tx_type}.</red></b>\n")
-        )
-        return None
-    return MultiSendTx(
-        operation=MultiSendOperation.CALL
-        if tx_operation == 0
-        else MultiSendOperation.DELEGATE_CALL,
-        to=tx_to,
-        value=int(tx_value),
-        data=tx_data,
-    )
-    # @TODO: Handle other internal tx types (RAW calldata)
-
-
-def _handle_internal_tx_call_type(prompt_session, tx_to, tx_value, tx_operation):
-    tx_to = prompt_session.prompt(
-        HTML(f"{LEFT_PROMPT_SIGN}<b>Contract address? </b>"),
-        validator=validator_address,
-        placeholder=HTML("<grey>[default: 0x...]</grey>"),
-    )
-    tx_to = ChecksumAddress(tx_to) if tx_to else to_checksum_address(ZERO_ADDRESS)
+    # Prompt for common transaction fields
+    tx_to = prompt_target_address(prompt_session) or to_checksum_address(ZERO_ADDRESS)
     tx_value = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Value (wei)? </b>"),
         validator=validator_number,
@@ -136,6 +100,58 @@ def _handle_internal_tx_call_type(prompt_session, tx_to, tx_value, tx_operation)
         placeholder=HTML("<grey>[default: 0]</grey>"),
     )
     tx_operation = int(tx_operation) if tx_operation else 0
+
+    # See how to build call data from function signature or raw data
+    # 0: MANUAL, 1: RAW_DATA
+    tx_type = prompt_session.prompt(
+        HTML(
+            f"{LEFT_PROMPT_SIGN}<b>Data building mode? </b>{TxBuildDataType.MANUAL.value} - Manual, {TxBuildDataType.RAW_DATA.value} - Raw data"
+        ),
+        validator=validator_tx_build_data_type,
+        placeholder=HTML("<grey>[default: 0]</grey>"),
+    )
+    tx_type = int(tx_type) if tx_type else 0
+
+    # Handle manual transaction building
+    tx_data = None
+    if tx_type == 0:
+        tx_data = _handle_internal_tx_building_data(prompt_session)
+    # Handle raw data transaction building
+    elif tx_type == 1:
+        tx_data = prompt_session.prompt(
+            HTML(f"{LEFT_PROMPT_SIGN}<b>Raw data (hex, bytes)? </b>"),
+            validator=validator_empty_or_data,
+            placeholder=HTML("<grey>[default: 0x...]</grey>"),
+        )
+        # Convert to bytes if provided
+        if tx_data is None:
+            tx_data = b""
+        else:
+            data_str = str(tx_data).strip()
+            if data_str.startswith("0x"):
+                tx_data = bytes.fromhex(data_str[2:])
+            else:
+                tx_data = bytes.fromhex(data_str)
+
+    else:
+        print_formatted_text(
+            HTML(f"\n<b><red>WIP: Unsupported internal tx type: {tx_type}.</red></b>\n")
+        )
+        return None
+
+    # Create and return the MultiSendTx object
+    return MultiSendTx(
+        operation=MultiSendOperation.CALL
+        if tx_operation == 0
+        else MultiSendOperation.DELEGATE_CALL,
+        to=tx_to,
+        value=int(tx_value),
+        data=tx_data,
+    )
+
+
+def _handle_internal_tx_building_data(prompt_session) -> bytes:
+    """Handle the manual transaction building for call type."""
     function_signature: str = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Function signature? </b>"),
         validator=validator_function_signature,
@@ -163,7 +179,7 @@ def _handle_internal_tx_call_type(prompt_session, tx_to, tx_value, tx_operation)
         encoded_args = abi_encode(param_types, parsed_param_values)
         tx_data = selector + encoded_args
 
-    return tx_to, tx_value, tx_operation, tx_data
+    return tx_data
 
 
 def prompt_multisend_batch_confirmation(
@@ -187,10 +203,10 @@ def prompt_multisend_batch_confirmation(
     return confirm.strip().lower() in ("y", "yes")
 
 
-def prompt_target_contract_address(prompt_session):
+def prompt_target_address(prompt_session):
     return to_checksum_address(
         prompt_session.prompt(
-            HTML(f"{LEFT_PROMPT_SIGN}<b>Target contract address? </b>"),
+            HTML(f"{LEFT_PROMPT_SIGN}<b>Target address? </b>"),
             placeholder=HTML("<grey>e.g. 0x...</grey>"),
             validator=validator_address,
         )
