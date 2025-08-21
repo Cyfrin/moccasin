@@ -2,6 +2,7 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Optional
 
+from eth.constants import ZERO_ADDRESS
 from eth_typing import ChecksumAddress
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
@@ -50,7 +51,6 @@ def _confirm_multisend_batch(
     )
 
     # Initialize MultiSend with the address if provided, otherwise use default
-    # @NOTE always default to call only operation to avoid issues with delegate calls
     multi_send = MultiSend(
         ethereum_client=safe_instance.ethereum_client,
         address=get_multisend_address_from_env(),
@@ -167,18 +167,24 @@ def run(
 
     :return: An instance of SafeTx.
     """
+    # If no gas token provided, prompt for it
+    if gas_token is None or gas_token == ZERO_ADDRESS:
+        gas_token = prompt_gas_token(prompt_session)
 
-    # Check if safe contract balance is not zero
-    if safe_instance.ethereum_client.get_balance(safe_instance.address) <= 0:
-        # @FIXME erc20 balance check
-        # gas_token is not None
-        # and gas_token != ZERO_ADDRESS
-        # and safe_instance.ethereum_client.erc20.get_balance(
-        #     safe_instance.address, gas_token
-        # )
-        # <= 0
+    if gas_token is None:
+        # Check if safe contract balance is not zero
+        if safe_instance.ethereum_client.get_balance(safe_instance.address) <= 0:
+            raise ValueError(
+                "Safe contract does not have any ETH funds. Please fund the Safe contract to run gas simulation"
+            )
+    elif (
+        safe_instance.ethereum_client.erc20.get_balance(
+            safe_instance.address, gas_token
+        )
+        <= 0
+    ):
         raise ValueError(
-            "Safe contract does not have any funds. Please fund the Safe contract to run gas simulation"
+            "Safe contract does not have any funds for the gas token. Please fund the Safe contract with the gas token to run gas simulation"
         )
 
     # If no Safe nonce provided, prompt for it
@@ -208,10 +214,6 @@ def run(
                     f"\n<b><red>Continuing with provided Safe nonce: </red></b>{safe_nonce}"
                 )
             )
-
-    # If no gas token provided, prompt for it
-    if gas_token is None:
-        gas_token = prompt_gas_token(prompt_session)
 
     # Check for refund receiver
     if refund_receiver is None:

@@ -14,6 +14,7 @@ from safe_eth.safe.compatibility_fallback_handler import (
 from safe_eth.safe.multi_send import MultiSend
 from safe_eth.safe.proxy_factory import ProxyFactory
 from safe_eth.safe.safe import SafeV141
+from web3 import Web3
 from web3.types import Wei
 
 from moccasin.constants.vars import DEFAULT_ANVIL_PRIVATE_KEY, DEFAULT_ANVIL_URL
@@ -150,8 +151,54 @@ def deploy_local_safe_anvil() -> tuple[
     )
 
 
+def deploy_mock_token_anvil(
+    safe_address: Optional[ChecksumAddress] = None,
+) -> ChecksumAddress:
+    import json
+
+    # Connect to Anvil
+    w3 = Web3(Web3.HTTPProvider(DEFAULT_ANVIL_URL))
+    deployer = MoccasinAccount(private_key=DEFAULT_ANVIL_PRIVATE_KEY)
+
+    # Load ABI
+    with open("moccasin/msig_cli/scripts/contracts/ERC20Token.json") as f:
+        abi = json.load(f)
+
+    # Load bytecode (replace with your actual compiled bytecode)
+    with open("moccasin/msig_cli/scripts/contracts/ERC20Token.txt") as f:
+        bytecode = f.read().strip()
+
+    # Deploy contract
+    ERC20Token = w3.eth.contract(abi=abi, bytecode=bytecode)
+    tx_hash = ERC20Token.constructor(deployer.address, deployer.address).transact(
+        {"from": deployer.address}
+    )
+    tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    contract_address = tx_receipt.contractAddress
+    token_contract = w3.eth.contract(address=contract_address, abi=abi)
+
+    # Test if the contract is deployed correctly
+    assert token_contract.functions.name().call() == "ERC20Token"
+    assert token_contract.functions.symbol().call() == "ETK"
+    assert token_contract.functions.decimals().call() == 18
+    assert token_contract.functions.totalSupply().call() > 0
+
+    if safe_address:
+        # Mint tokens to Safe contract
+        mint_amount = w3.to_wei(10000, "ether")
+        tx = token_contract.functions.mint(safe_address, mint_amount).transact(
+            {"from": deployer.address}
+        )
+        w3.eth.wait_for_transaction_receipt(tx)
+        print(f"Minted {mint_amount} tokens to Safe contract: {eth_safe_address}")
+
+    return contract_address
+
+
 if __name__ == "__main__":
     try:
+        # Deploy Safe and MultiSend contracts
+        print("Deploying Safe and MultiSend contracts on Anvil...")
         eth_safe_address, eth_multisend_address, eth_fallback_handler_address = (
             deploy_local_safe_anvil()
         )
@@ -169,6 +216,11 @@ if __name__ == "__main__":
             print(
                 f"CompatibilityFallbackHandler deployed successfully: {eth_fallback_handler_address}"
             )
+        # Deploy mock token
+        print("Deploying ERC20 token on Anvil...")
+        erc20_token_address = deploy_mock_token_anvil(eth_safe_address)
+        print(f"ERC20 token deployed successfully: {erc20_token_address}")
+
     except ConnectionError:
         print("Error: Could not connect to Anvil at localhost:8545. Is Anvil running?")
     except Exception as e:

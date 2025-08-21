@@ -312,12 +312,14 @@ If these values are set too low, the Safe contract will revert with an error (e.
 - [x] Add unit and integration tests for new features
 - [x] Add more owners and a threshold while deploying locally
 - [x] Display SafeTx internal transactions in pretty_print
-- [ ] Add support for ERC20 transfers and raw data internal transactions
+- [ ] Add support for gas token estimation
+- [ ] Add support for raw data internal transactions
 - [ ] Add proper typing to prompts and functions
 - [ ] Improve function parameter type handling (arrays, bytes, etc.)
 - [ ] Improve test suite and add more scenarios
+- [ ] Prompt metamask when we init account, sign and broadcast
 - [ ] Consider adding `sign` to sign simple messages in the future
-- [ ] See if we can run with boa and pyevm to mock EthereumClient
+- [ ] See if we can convert all process with boa rather than w3 (maybe run it on pyevm)
 - [ ] Consider grouping all tx-related commands under `mox msig tx` with flags for build, sign, broadcast
 
 # Troubleshooting

@@ -9,6 +9,7 @@ from argparse import Namespace
 from pathlib import Path
 from typing import Optional
 
+from eth.constants import ZERO_ADDRESS
 from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
 
@@ -51,16 +52,20 @@ def run(
         )
 
     # Check if safe contract balance is not zero
-    if safe_instance.ethereum_client.get_balance(safe_instance.address) <= 0:
-        # @FIXME erc20 balance check
-        # safe_tx.gas_token is not None
-        # and safe_tx.gas_token != ZERO_ADDRESS
-        # and safe_instance.ethereum_client.erc20.get_balance(
-        #     safe_instance.address, safe_tx.gas_token
-        # )
-        # <= 0
+    if safe_tx.gas_token is None or safe_tx.gas_token == ZERO_ADDRESS:
+        # Check if safe contract balance is not zero
+        if safe_instance.ethereum_client.get_balance(safe_instance.address) <= 0:
+            raise ValueError(
+                "Safe contract does not have any ETH funds. Please fund the Safe contract to run gas simulation"
+            )
+    elif (
+        safe_instance.ethereum_client.erc20.get_balance(
+            safe_instance.address, safe_tx.gas_token
+        )
+        <= 0
+    ):
         raise ValueError(
-            "Safe contract does not have any funds. Please fund the Safe contract before broadcasting the transaction."
+            "Safe contract does not have any funds for the gas token. Please fund the Safe contract with the gas token to run gas simulation"
         )
 
     # Check if the Safe has enough funds for the gas

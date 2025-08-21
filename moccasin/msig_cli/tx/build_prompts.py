@@ -114,7 +114,7 @@ def prompt_single_internal_tx(
         value=int(tx_value),
         data=tx_data,
     )
-    # @TODO: Handle other internal tx types (ERC20 transfer, RAW calldata)
+    # @TODO: Handle other internal tx types (RAW calldata)
 
 
 def _handle_internal_tx_call_type(prompt_session, tx_to, tx_value, tx_operation):
@@ -197,7 +197,6 @@ def prompt_target_contract_address(prompt_session):
     )
 
 
-# @NOTE: should we always default to CALL operation? Seems like it is the most common.
 def prompt_operation_type(prompt_session):
     operation = prompt_session.prompt(
         HTML(f"{LEFT_PROMPT_SIGN}<b>Operation type? </b>"),
