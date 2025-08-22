@@ -1,9 +1,15 @@
 import json
 import os
 from pathlib import Path
+import re
 from typing import Optional, Tuple, cast
 
-from eth_utils import to_bytes, to_checksum_address
+from eth_abi.abi import encode as abi_encode
+from eth_utils import (
+    to_bytes,
+    to_checksum_address,
+    function_signature_to_4byte_selector,
+)
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.eth import EthereumClient
 from safe_eth.safe import Safe, SafeTx
@@ -29,29 +35,23 @@ def pretty_print_safe_tx(safe_tx: SafeTx):
     """
 
     print_formatted_text(HTML("\n<b><orange>SafeTx</orange></b>"))
-    print_formatted_text(HTML(f"\t<b><yellow>Nonce:</yellow></b> {safe_tx.safe_nonce}"))
-    print_formatted_text(HTML(f"\t<b><yellow>To:</yellow></b> {safe_tx.to}"))
-    print_formatted_text(HTML(f"\t<b><yellow>Value:</yellow></b> {safe_tx.value}"))
+    print_formatted_text(HTML(f"\t<b><cyan>Nonce:</cyan></b> {safe_tx.safe_nonce}"))
+    print_formatted_text(HTML(f"\t<b><cyan>To:</cyan></b> {safe_tx.to}"))
+    print_formatted_text(HTML(f"\t<b><cyan>Value:</cyan></b> {safe_tx.value}"))
     print_formatted_text(
-        HTML(f"\t<b><yellow>Data:</yellow></b> {to_0x_hex_str(safe_tx.data)}")
+        HTML(f"\t<b><cyan>Data:</cyan></b> {to_0x_hex_str(safe_tx.data)}")
     )
+    print_formatted_text(HTML(f"\t<b><cyan>Operation:</cyan></b> {safe_tx.operation}"))
     print_formatted_text(
-        HTML(f"\t<b><yellow>Operation:</yellow></b> {safe_tx.operation}")
+        HTML(f"\t<b><cyan>SafeTxGas:</cyan></b> {safe_tx.safe_tx_gas}")
     )
+    print_formatted_text(HTML(f"\t<b><cyan>BaseGas:</cyan></b> {safe_tx.base_gas}"))
+    print_formatted_text(HTML(f"\t<b><cyan>GasPrice:</cyan></b> {safe_tx.gas_price}"))
+    print_formatted_text(HTML(f"\t<b><cyan>GasToken:</cyan></b> {safe_tx.gas_token}"))
     print_formatted_text(
-        HTML(f"\t<b><yellow>SafeTxGas:</yellow></b> {safe_tx.safe_tx_gas}")
+        HTML(f"\t<b><cyan>RefundReceiver:</cyan></b> {safe_tx.refund_receiver}")
     )
-    print_formatted_text(HTML(f"\t<b><yellow>BaseGas:</yellow></b> {safe_tx.base_gas}"))
-    print_formatted_text(
-        HTML(f"\t<b><yellow>GasPrice:</yellow></b> {safe_tx.gas_price}")
-    )
-    print_formatted_text(
-        HTML(f"\t<b><yellow>GasToken:</yellow></b> {safe_tx.gas_token}")
-    )
-    print_formatted_text(
-        HTML(f"\t<b><yellow>RefundReceiver:</yellow></b> {safe_tx.refund_receiver}")
-    )
-    print_formatted_text(HTML(f"\t<b><yellow>Signers:</yellow></b> {safe_tx.signers}"))
+    print_formatted_text(HTML(f"\t<b><cyan>Signers:</cyan></b> {safe_tx.signers}"))
 
 
 def pretty_print_broadcasted_tx(tx: TxParams):
@@ -63,7 +63,7 @@ def pretty_print_broadcasted_tx(tx: TxParams):
         HTML("\n<b><orange>Broadcasted Ethereum Transaction:</orange></b>")
     )
     for k, v in tx.items():
-        print_formatted_text(HTML(f"\t<b><yellow>{k}:</yellow></b> {v}"))
+        print_formatted_text(HTML(f"\t<b><cyan>{k}:</cyan></b> {v}"))
 
 
 def pretty_print_decoded_multisend(decoded_batch: list[MultiSendTx]):
@@ -75,27 +75,9 @@ def pretty_print_decoded_multisend(decoded_batch: list[MultiSendTx]):
     for idx, tx in enumerate(decoded_batch, 1):
         print_formatted_text(
             HTML(
-                f"\t<b><yellow>Tx {idx}: </yellow></b>op={tx.operation.name}, to={tx.to}, value={tx.value}, data={'0x' + tx.data.hex()}"
+                f"\t<b><cyan>Tx {idx}: </cyan></b>op={tx.operation.name}, to={tx.to}, value={tx.value}, data={'0x' + tx.data.hex()}"
             )
         )
-
-
-def parse_eth_type_value(val, typ):
-    """Parse a value according to its Ethereum type.
-
-    :param val: The value to parse.
-    :param typ: The Ethereum type of the value (e.g., "uint256", "address", "bool", etc.).
-    """
-    # @TODO: Handle more complex types like arrays, structs, etc.
-    if typ.startswith("uint") or typ.startswith("int"):
-        return int(val)
-    if typ == "address":
-        return val if val.startswith("0x") else "0x" + val
-    if typ == "bool":
-        return val.lower() in ("true", "1", "yes")
-    if typ.startswith("bytes"):
-        return to_bytes(hexstr=val)
-    return val
 
 
 def is_multisend_tx(to: str) -> bool:
@@ -315,3 +297,49 @@ def save_safe_tx_json(output_json: Path, safe_tx_data: dict) -> None:
     print_formatted_text(
         HTML(f"\n<b><green>Saved EIP-712 JSON:</green> {output_json}</b>")
     )
+
+
+def build_tx_data_from_function_signature(
+    func_name: str, param_types: list[str], param_values: list
+) -> bytes:
+    """Build the transaction data from the function signature and parameter values.
+
+    :param func_name: The name of the function.
+    :param param_types: The list of parameter types.
+    :param param_values: The list of parameter values.
+    :return: The transaction data as bytes.
+    """
+
+    def parse_eth_type_value(val, typ):
+        """Parse a value according to its Ethereum type.
+
+        :param val: The value to parse.
+        :param typ: The Ethereum type of the value (e.g., "uint256", "address", "bool", etc.).
+        """
+        # Handle array types
+        array_match = re.match(r"^(.*)\[\]$", typ)
+        if array_match:
+            element_type = array_match.group(1)
+            elements = [v.strip() for v in val.split(",") if v.strip() != ""]
+            # Recursively parse each element
+            return [parse_eth_type_value(v, element_type) for v in elements]
+
+        # Handle basic types
+        if typ.startswith("uint") or typ.startswith("int"):
+            return int(val)
+        if typ == "address":
+            return val if val.startswith("0x") else "0x" + val
+        if typ == "bool":
+            return val.lower() in ("true", "1")
+        if typ.startswith("bytes"):
+            return to_bytes(hexstr=val)
+        return val
+
+    parsed_param_values = [
+        parse_eth_type_value(v, t) for v, t in zip(param_values, param_types)
+    ]
+    selector = function_signature_to_4byte_selector(
+        f"{func_name}({','.join(param_types)})"
+    )
+    encoded_args = abi_encode(param_types, parsed_param_values)
+    return selector + encoded_args

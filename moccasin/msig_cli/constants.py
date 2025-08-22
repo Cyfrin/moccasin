@@ -17,17 +17,8 @@ ERROR_INVALID_FUNCTION_SIGNATURE = (
 )
 ERROR_INVALID_BOOLEAN = "Invalid boolean value. Please enter true/false"
 ERROR_INVALID_JSON_FILE = "Invalid JSON file path. Please provide a valid .json file."
-ERROR_INVALID_SIGNATURES_INPUT = (
-    "Invalid signatures input. Must be a valid hex string or a path to a .txt file."
-)
-ERROR_INVALID_TXT_FILE = (
-    "Invalid transaction file path. Please provide a valid .txt file."
-)
 ERROR_INVALID_PRIVATE_KEY = (
     "Invalid private key format. Must be a 64-character hex string with 0x prefix."
-)
-ERROR_INVALID_SIGNER = (
-    "Invalid signer input. Must be a valid account name or a private key."
 )
 
 ################################################################

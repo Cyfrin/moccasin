@@ -15,13 +15,12 @@ from moccasin.msig_cli.validators import (
     validator_address,
     validator_boolean,
     validator_data,
-    validator_function_signature,
+    validator_empty_or_function_signature,
     validator_not_empty,
-    validator_not_zero_number,
     validator_number,
-    validator_operation,
+    validator_empty_or_operation,
     validator_rpc_url,
-    validator_tx_build_data_type,
+    validator_empty_or_tx_build_data_type,
 )
 
 
@@ -143,18 +142,22 @@ def _prompt_with_validator(session, prompt_text, validator):
         ("Number: ", validator_number, "42", "42"),
         ("Boolean: ", validator_boolean, "true", "true"),
         ("Boolean: ", validator_boolean, "false", "false"),
-        ("Not Zero Number: ", validator_not_zero_number, "1", "1"),
-        ("Operation: ", validator_operation, "0", "0"),
+        ("Operation: ", validator_empty_or_operation, "0", "0"),
         (
             "Data: ",
             validator_data,
             "0xa9059cbb000000000000000000000000cfaacfc01548da1478432cf3abdcd1cbdff11e1c000000000000000000000000000000000000000000000000000000000000002a",
             "0xa9059cbb000000000000000000000000cfaacfc01548da1478432cf3abdcd1cbdff11e1c000000000000000000000000000000000000000000000000000000000000002a",
         ),
-        ("Transaction Type: ", validator_tx_build_data_type, "1", "1"),
+        (
+            "Transaction Building Data Type: ",
+            validator_empty_or_tx_build_data_type,
+            "1",
+            "1",
+        ),
         (
             "Function Signature: ",
-            validator_function_signature,
+            validator_empty_or_function_signature,
             "transfer(address,uint256)",
             "transfer(address,uint256)",
         ),

@@ -18,8 +18,6 @@ from moccasin.msig_cli.constants import (
     ERROR_INVALID_OPERATION,
     ERROR_INVALID_PRIVATE_KEY,
     ERROR_INVALID_RPC_URL,
-    ERROR_INVALID_SIGNATURES_INPUT,
-    ERROR_INVALID_SIGNER,
     ERROR_INVALID_TX_BUILD_DATA_TYPE,
 )
 from moccasin.msig_cli.utils.enums import TxBuildDataType
@@ -48,14 +46,14 @@ def is_valid_not_zero_number(value: str) -> bool:
     return value.isdigit() and int(value) > 0
 
 
+def is_valid_bytes_hex(value: str) -> bool:
+    """Check if the provided value is a valid bytes string."""
+    return is_0x_prefixed(value) and is_hex(value)
+
+
 def is_valid_operation(value: str) -> bool:
     """Check if the provided value is a valid operation type."""
     return value.isdigit() and int(value) in [op.value for op in MultiSendOperation]
-
-
-def is_valid_data(data: str) -> bool:
-    """Check if the provided data is a valid hex string for calldata using eth_utils.is_hex."""
-    return is_0x_prefixed(data) and is_hex(data)
 
 
 def is_valid_tx_build_data_type(value: str) -> bool:
@@ -92,26 +90,15 @@ def is_valid_json_file(value: str) -> bool:
     return value.lower().endswith(".json") and not path.is_dir()
 
 
-def is_valid_signatures_input(value: str) -> bool:
-    """Check if the provided value is a valid signatures input."""
-    # Check if it's a path to a file
-    path = Path(value)
-    if path.is_file():
-        return value.lower().endswith(".txt") and not path.is_dir()
-    # Check if it's a hex string
-    return is_0x_prefixed(value) and is_hex(value)
-
-
 def is_valid_private_key(value: str) -> bool:
     """Check if the provided value is a valid private key."""
     # A valid private key is a 64-character hex string with 0x prefix
     return is_0x_prefixed(value) and is_hex(value) and len(value) == 66
 
 
-def is_valid_signer(value: str) -> bool:
-    """Check if the provided value is a valid signer input."""
-    # A valid signer can be an account name or a private key
-    return is_valid_private_key(value) or is_not_empty(value)
+def is_valid_string(value: str) -> bool:
+    """Check if the provided value is a valid string."""
+    return isinstance(value, str)
 
 
 # Generic non-empty validator
@@ -134,11 +121,66 @@ def allow_empty(core_validator):
     return wrapper
 
 
-validator_address = Validator.from_callable(
+# --- Validators allowing empty input ---
+validator_empty_or_address = Validator.from_callable(
     allow_empty(is_valid_address),
     error_message=ERROR_INVALID_ADDRESS,
     move_cursor_to_end=True,
 )
+
+validator_empty_or_number = Validator.from_callable(
+    allow_empty(is_valid_number),
+    error_message=ERROR_INVALID_NUMBER,
+    move_cursor_to_end=True,
+)
+
+validator_empty_or_not_zero_number = Validator.from_callable(
+    allow_empty(is_valid_not_zero_number),
+    error_message=ERROR_INVALID_NOT_ZERO_NUMBER,
+    move_cursor_to_end=True,
+)
+
+validator_empty_or_operation = Validator.from_callable(
+    allow_empty(is_valid_operation),
+    error_message=ERROR_INVALID_OPERATION,
+    move_cursor_to_end=True,
+)
+
+validator_empty_or_tx_build_data_type = Validator.from_callable(
+    allow_empty(is_valid_tx_build_data_type),
+    error_message=ERROR_INVALID_TX_BUILD_DATA_TYPE,
+    move_cursor_to_end=True,
+)
+
+validator_empty_or_bytes_hex = Validator.from_callable(
+    allow_empty(is_valid_bytes_hex),
+    error_message=ERROR_INVALID_DATA,
+    move_cursor_to_end=True,
+)
+
+validator_empty_or_boolean = Validator.from_callable(
+    allow_empty(is_valid_boolean),
+    error_message=ERROR_INVALID_BOOLEAN,
+    move_cursor_to_end=True,
+)
+
+validator_empty_or_function_signature = Validator.from_callable(
+    allow_empty(is_valid_function_signature),
+    error_message=ERROR_INVALID_FUNCTION_SIGNATURE,
+    move_cursor_to_end=True,
+)
+
+validator_empty_or_string = Validator.from_callable(
+    allow_empty(is_valid_string),
+    error_message="Invalid string input.",
+    move_cursor_to_end=True,
+)
+
+# --- Validators not allowing empty input ---
+validator_address = Validator.from_callable(
+    is_valid_address, error_message=ERROR_INVALID_ADDRESS, move_cursor_to_end=True
+)
+
 
 validator_safe_address = Validator.from_callable(
     is_valid_address, error_message=ERROR_INVALID_ADDRESS, move_cursor_to_end=True
@@ -149,44 +191,11 @@ validator_rpc_url = Validator.from_callable(
 )
 
 validator_number = Validator.from_callable(
-    allow_empty(is_valid_number),
-    error_message=ERROR_INVALID_NUMBER,
-    move_cursor_to_end=True,
+    is_valid_number, error_message=ERROR_INVALID_NUMBER, move_cursor_to_end=True
 )
 
-validator_not_zero_number = Validator.from_callable(
-    allow_empty(is_valid_not_zero_number),
-    error_message=ERROR_INVALID_NOT_ZERO_NUMBER,
-    move_cursor_to_end=True,
-)
-
-validator_tx_build_data_type = Validator.from_callable(
-    allow_empty(is_valid_tx_build_data_type),
-    error_message=ERROR_INVALID_TX_BUILD_DATA_TYPE,
-    move_cursor_to_end=True,
-)
-
-validator_operation = Validator.from_callable(
-    allow_empty(is_valid_operation),
-    error_message=ERROR_INVALID_OPERATION,
-    move_cursor_to_end=True,
-)
-
-validator_data = Validator.from_callable(
-    is_valid_data, error_message=ERROR_INVALID_DATA, move_cursor_to_end=True
-)
-
-validator_empty_or_data = Validator.from_callable(
-    allow_empty(is_valid_data),
-    error_message=ERROR_INVALID_DATA,
-    move_cursor_to_end=True,
-)
-
-
-validator_function_signature = Validator.from_callable(
-    allow_empty(is_valid_function_signature),
-    error_message=ERROR_INVALID_FUNCTION_SIGNATURE,
-    move_cursor_to_end=True,
+validator_bytes_hex = Validator.from_callable(
+    is_valid_bytes_hex, error_message=ERROR_INVALID_DATA, move_cursor_to_end=True
 )
 
 validator_boolean = Validator.from_callable(
@@ -201,33 +210,98 @@ validator_json_file = Validator.from_callable(
     is_valid_json_file, error_message=ERROR_INVALID_JSON_FILE, move_cursor_to_end=True
 )
 
-validator_signatures = Validator.from_callable(
-    is_valid_signatures_input,
-    error_message=ERROR_INVALID_SIGNATURES_INPUT,
-    move_cursor_to_end=True,
-)
-
 validator_private_key = Validator.from_callable(
     is_valid_private_key,
     error_message=ERROR_INVALID_PRIVATE_KEY,
     move_cursor_to_end=True,
 )
 
-validator_signer = Validator.from_callable(
-    is_valid_signer, error_message=ERROR_INVALID_SIGNER, move_cursor_to_end=True
+validator_string = Validator.from_callable(
+    is_valid_string, error_message="Invalid string input.", move_cursor_to_end=True
 )
 
 
 # --- Type-based prompt validation for function parameters ---
-param_type_validators = {
-    "address": validator_address,
-    "uint256": validator_number,
-    "uint": validator_number,
-    "int256": validator_number,
-    "int": validator_number,
-    "bool": validator_boolean,
-    # @TODO Add more complex types like bytes, arrays, etc.
-}
+def get_param_validator(abi_type: str) -> Validator:
+    """Return the appropriate validator based on the Ethereum ABI type.
+
+    :param abi_type: The Ethereum ABI type (e.g., "uint256", "address", "bool", etc.).
+    """
+    # Handle array types like address[], uint256[], etc.
+    array_match = re.match(r"^(.*)\[\]$", abi_type)
+    if array_match:
+        element_type = array_match.group(1)
+        return _make_array_validator(element_type)
+
+    # Handle basic types
+    if abi_type == "address":
+        return validator_empty_or_address
+    if abi_type == "bool":
+        return validator_empty_or_boolean
+    if re.match(r"^uint[0-9]*$", abi_type) or re.match(r"^int[0-9]*$", abi_type):
+        return validator_empty_or_number
+    if re.match(r"^bytes[0-9]*$", abi_type):
+        return validator_empty_or_bytes_hex
+    # Allow empty for other types (string, etc...)
+    if abi_type == "string":
+        return validator_empty_or_string
+    # Fallback to a generic non-empty validator
+    return validator_not_empty
+
+
+# --- Array validator for ABI array types ---
+def _make_array_validator(element_type: str) -> Validator:
+    """
+    Returns a Validator for an array of the given element_type.
+    The input should be a comma-separated string.
+    :param element_type: The type of the array elements (e.g., "address", "uint256", etc.).
+    :return: A Validator instance that checks if the input is a valid comma-separated array of the specified type.
+    """
+
+    # Recursively get the validator for the element type
+    def validate_array(value: str) -> bool:
+        """Validate a comma-separated array of values."""
+        if value == "":
+            return True  # Allow empty input for optional arrays
+        elements = [v.strip() for v in value.split(",")]
+        for elem in elements:
+            try:
+                _validate_array_values_from_type(element_type, elem)
+            except Exception:
+                return False
+        return True
+
+    return Validator.from_callable(
+        validate_array,
+        error_message=f"Invalid array of {element_type}. Comma-separated values required.",
+        move_cursor_to_end=True,
+    )
+
+
+def _validate_array_values_from_type(element_type: str, value: str):
+    """Validate a single value against the specified element type.
+
+    :param element_type: The type of the array elements (e.g., "address", "uint256", etc.).
+    :param value: The value to validate.
+    :raises Exception if validation fails.
+    """
+    if element_type == "address":
+        if not is_valid_address(value):
+            raise Exception
+    elif re.match(r"^uint[0-9]*$", element_type) or re.match(
+        r"^int[0-9]*$", element_type
+    ):
+        if not is_valid_number(value):
+            raise Exception
+    elif element_type == "bool":
+        if value not in ("true", "false"):
+            raise Exception
+    elif re.match(r"^bytes[0-9]*$", element_type):
+        if not is_valid_bytes_hex(value):
+            raise Exception
+    elif element_type == "string":
+        if not is_valid_string(value):
+            raise Exception
 
 
 ################################################################
@@ -240,13 +314,6 @@ def validate_address(value: str) -> ChecksumAddress:
     return to_checksum_address(value)
 
 
-def validate_rpc_url(value: str) -> str:
-    """Validate and return a valid RPC URL."""
-    if not is_valid_rpc_url(value):
-        raise ValueError(ERROR_INVALID_RPC_URL)
-    return value
-
-
 def validate_number(value: str) -> int:
     """Validate and return a valid number."""
     if not is_valid_number(value):
@@ -256,7 +323,7 @@ def validate_number(value: str) -> int:
 
 def validate_data(value: str) -> bytes:
     """Validate and return a valid hex string for calldata."""
-    if not is_valid_data(value):
+    if not is_valid_bytes_hex(value):
         raise ValueError(ERROR_INVALID_DATA)
     return to_bytes(hexstr=value)
 
@@ -266,24 +333,3 @@ def validate_json_file(value: str) -> Path:
     if not is_valid_json_file(value):
         raise ValueError(ERROR_INVALID_JSON_FILE)
     return Path(value)
-
-
-def validate_signatures_input(value: str) -> str:
-    """Validate and return a valid signatures input."""
-    if not is_valid_signatures_input(value):
-        raise ValueError(ERROR_INVALID_SIGNATURES_INPUT)
-    return value
-
-
-def validate_signer(value: str) -> str:
-    """Validate and return a valid signer input."""
-    if not is_valid_signer(value):
-        raise ValueError(ERROR_INVALID_SIGNER)
-    return value
-
-
-def validate_operation(value: str) -> int:
-    """Validate and return a valid operation type."""
-    if not is_valid_operation(value):
-        raise ValueError(ERROR_INVALID_OPERATION)
-    return int(value)

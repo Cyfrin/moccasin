@@ -6,12 +6,11 @@ from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
 
 from moccasin.moccasin_account import MoccasinAccount
+from moccasin.msig_cli.common_prompts import prompt_confirm_proceed
 from moccasin.msig_cli.tx.sign_prompts import (
     prompt_account_name,
     prompt_account_password,
-    prompt_confirm_sign,
     prompt_private_key,
-    prompt_sign_with_moccasin_account,
 )
 from moccasin.msig_cli.utils.helpers import (
     get_decoded_tx_data,
@@ -57,7 +56,7 @@ def run(
             pretty_print_decoded_multisend(decoded_batch)
 
     # Ask for user confirmation to sign the SafeTx
-    confirm = prompt_confirm_sign(prompt_session)
+    confirm = prompt_confirm_proceed(prompt_session, "Proceed to sign this SafeTx?")
     # If user declines, abort signing
     if confirm.lower() not in ("yes", "y"):
         raise ValueError("User aborted tx_sign command.")
@@ -107,7 +106,9 @@ def get_signer_account(prompt_session: PromptSession) -> MoccasinAccount:
     """Get the signer account for the transaction."""
     account = None
     # Ask user if they want to sign with a Moccasin account
-    is_mox_account = prompt_sign_with_moccasin_account(prompt_session)
+    is_mox_account = prompt_confirm_proceed(
+        prompt_session, "Sign with MoccasinAccount?"
+    )
     if is_mox_account.lower() in ("yes", "y"):
         account_name = prompt_account_name(prompt_session)
         password = prompt_account_password(prompt_session)

@@ -38,21 +38,16 @@ def prompt_eip712_input_file(prompt_session):
     )
 
 
-def prompt_continue_next_step(prompt_session, next_cmd):
-    answer = prompt_session.prompt(
-        HTML(f"{LEFT_PROMPT_SIGN}<b>Continue to {next_cmd}? (c/q):</b> "),
-        placeholder=HTML("<grey>c/q, y/n</grey>"),
+def prompt_confirm_proceed(prompt_session, message: str):
+    return prompt_session.prompt(
+        HTML(f"{LEFT_PROMPT_SIGN}<b>{message} </b>"),
+        placeholder=HTML("<grey>y/n, yes/no</grey>"),
         validator=validator_not_empty,
     )
-    return True if answer.strip().lower() in ("c", "continue", "y", "yes") else False
 
 
 def prompt_save_safe_tx_json(prompt_session):
-    save = prompt_session.prompt(
-        HTML(f"{LEFT_PROMPT_SIGN}<b>Save EIP-712 JSON? (y/n): </b>"),
-        placeholder=HTML("<grey>y/n</grey>"),
-        validator=validator_not_empty,
-    )
+    save = prompt_confirm_proceed(prompt_session, "Save EIP-712 JSON to file?")
     if save.strip().lower() in ("y", "yes"):
         filename = prompt_session.prompt(
             HTML(f"{LEFT_PROMPT_SIGN}<b>Filename for EIP-712 JSON? </b>"),
@@ -62,12 +57,3 @@ def prompt_save_safe_tx_json(prompt_session):
         return filename
     else:
         return None
-
-
-def prompt_is_right_account(prompt_session, address):
-    return prompt_session.prompt(
-        HTML(f"{LEFT_PROMPT_SIGN}<b>Right account {address}? </b>"),
-        placeholder=HTML("<grey>yes/no</grey>"),
-        validator=validator_not_empty,
-        is_password=False,
-    )

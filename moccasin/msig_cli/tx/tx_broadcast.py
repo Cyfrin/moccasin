@@ -15,11 +15,10 @@ from prompt_toolkit import HTML, PromptSession, print_formatted_text
 from safe_eth.safe import Safe, SafeTx
 
 from moccasin.moccasin_account import MoccasinAccount
+from moccasin.msig_cli.common_prompts import prompt_confirm_proceed
 from moccasin.msig_cli.tx.broadcast_prompts import (
     prompt_account_name,
     prompt_account_password,
-    prompt_broadcast_with_moccasin_account,
-    prompt_confirm_broadcast,
     prompt_private_key,
 )
 from moccasin.msig_cli.utils.helpers import (
@@ -89,7 +88,7 @@ def run(
         )
     else:
         print_formatted_text(
-            HTML("<b><yellow>Warning: Estimated cost for SafeTx is zero.</yellow></b>")
+            HTML("<b><yellow>Estimated cost for SafeTx is zero.</yellow></b>")
         )
 
     # Display the SafeTx details
@@ -102,7 +101,9 @@ def run(
             pretty_print_decoded_multisend(decoded_batch)
 
     # Ask for user confirmation to boradcast the SafeTx
-    confirm = prompt_confirm_broadcast(prompt_session)
+    confirm = prompt_confirm_proceed(
+        prompt_session, "Proceed to broadcast this SafeTx?"
+    )
     # If user declines, abort signing
     if confirm.lower() not in ("yes", "y"):
         raise ValueError("User aborted tx_broadcast command.")
@@ -127,20 +128,30 @@ def run(
         raise ValueError(
             "SafeTx hash is None, something went wrong during broadcasting."
         )
+    print_formatted_text(
+        HTML(f"<b><orange>SafeTx hash: </orange></b>{safe_tx.tx_hash.hex()}")
+    )
+
+    # Wait for transaction receipt
+    print_formatted_text(HTML("<b><orange>Waiting for tx confirmation...</orange></b>"))
+    receipt = safe_instance.ethereum_client.w3.eth.wait_for_transaction_receipt(
+        safe_tx.tx_hash
+    )
 
     # Display SafeTx hash
     print_formatted_text(
         HTML("\n<b><green>SafeTx broadcasted successfully!</green></b>")
     )
     print_formatted_text(
-        HTML(f"<b><orange>SafeTx hash: </orange></b>{safe_tx.tx_hash.hex()}")
+        HTML(f"\n<b><green>Tx confirmed in block:</green> {receipt.blockNumber}</b>")
     )
 
-    # Check Broadcasted SafeTx details are available
+    # Check Broadcasted SafeTx details are available (should never happen)
     if safe_tx.tx is None:
         raise ValueError(
             "SafeTx details are not available after broadcasting. Please check the transaction on the blockchain."
         )
+
     # Pretty print the broadcasted SafeTx details
     pretty_print_broadcasted_tx(safe_tx.tx)
 
@@ -171,7 +182,9 @@ def get_broadcaster_account(prompt_session: PromptSession) -> MoccasinAccount:
     """Get the broadcaster account for the transaction."""
     broadcaster = None
     # Ask user if they want to sign with a Moccasin account
-    is_mox_account = prompt_broadcast_with_moccasin_account(prompt_session)
+    is_mox_account = prompt_confirm_proceed(
+        prompt_session, "Broadcast with MoccasinAccount?"
+    )
     if is_mox_account.lower() in ("yes", "y"):
         account_name = prompt_account_name(prompt_session)
         password = prompt_account_password(prompt_session)

@@ -10,11 +10,10 @@ from safe_eth.safe import Safe, SafeTx
 from safe_eth.safe.exceptions import CannotEstimateGas
 from safe_eth.safe.multi_send import MultiSend, MultiSendOperation
 
+from moccasin.msig_cli.common_prompts import prompt_confirm_proceed
 from moccasin.msig_cli.tx.build_prompts import (
-    prompt_confirm_safe_nonce,
     prompt_gas_token,
     prompt_internal_txs,
-    prompt_multisend_batch_confirmation,
     prompt_refund_receiver,
     prompt_safe_nonce,
     prompt_safe_tx_gas,
@@ -57,17 +56,31 @@ def _confirm_multisend_batch(
         address=get_multisend_address_from_env(),
         call_only=not has_delegate,
     )
-    multi_send_address = multi_send.address
 
-    if not prompt_multisend_batch_confirmation(
-        prompt_session, decoded_batch, multi_send_address, to
-    ):
+    # Confirm the MultiSend batch with the user
+    if to and to != multi_send.address:
         print_formatted_text(
-            HTML("<b><red>Aborting due to user rejection of decoded batch.</red></b>")
+            HTML(
+                f"<b><yellow>Target address will be overridden with MultiSend: {multi_send.address}</yellow></b>"
+            )
+        )
+    pretty_print_decoded_multisend(decoded_batch)
+    confirm = prompt_confirm_proceed(
+        prompt_session, "Proceed with this MultiSend batch?"
+    )
+
+    # If the user confirms, return the MultiSend address
+    if confirm.strip().lower() in ("y", "yes"):
+        print_formatted_text(
+            HTML("\n<b><green>MultiSend batch confirmed by user.</green></b>")
+        )
+    else:
+        print_formatted_text(
+            HTML("\n<b><red>Aborting due to user rejection of decoded batch.</red></b>")
         )
         raise Exception("User rejected MultiSend batch confirmation.")
 
-    return multi_send_address
+    return multi_send.address
 
 
 def _setup_gas_values_to_safe_tx(
@@ -118,7 +131,7 @@ def _setup_gas_values_to_safe_tx(
         # Delegate calls cannot be estimated reliably, so we prompt for manual input
         print_formatted_text(
             HTML(
-                "<b><yellow>Warning: Cannot estimate gas for this batch. Please enter gas for SafeTx manually.</yellow></b>"
+                "<b><yellow>Cannot estimate gas for this batch. Please enter gas for SafeTx manually.</yellow></b>"
             )
         )
         # Prompt for manual input or set a default value
@@ -198,10 +211,13 @@ def run(
     if safe_nonce != retrieved_safe_nonce:
         print_formatted_text(
             HTML(
-                f"<b><yellow>Warning: Safe nonce not provided or does not match the estimated Safe nonce ({retrieved_safe_nonce}).</yellow></b>"
+                f"<b><yellow>Safe nonce not provided or does not match the estimated Safe nonce ({retrieved_safe_nonce}).</yellow></b>"
             )
         )
-        confirm = prompt_confirm_safe_nonce(prompt_session, retrieved_safe_nonce)
+        confirm = prompt_confirm_proceed(
+            prompt_session,
+            f"Change nonce to retrieved Safe nonce ({retrieved_safe_nonce})?",
+        )
         if confirm.lower() in ("yes", "y"):
             safe_nonce = retrieved_safe_nonce
             print_formatted_text(

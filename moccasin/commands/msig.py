@@ -19,8 +19,8 @@ from moccasin.config import initialize_global_config
 from moccasin.logging import logger, set_log_level
 from moccasin.moccasin_account import MoccasinAccount
 from moccasin.msig_cli.common_prompts import (
+    prompt_confirm_proceed,
     prompt_eip712_input_file,
-    prompt_is_right_account,
     prompt_rpc_url,
     prompt_safe_address,
     prompt_save_safe_tx_json,
@@ -123,7 +123,7 @@ def _initialize_safe_and_tx(
     if input_file_safe_tx is None:
         print_formatted_text(
             HTML(
-                "<b><yellow>Warning: No input file provided. Prompting for custom or original EIP-712 JSON file.</yellow></b>"
+                "<b><yellow>No input file provided. Prompting for custom or original EIP-712 JSON file.</yellow></b>"
             )
         )
         print_formatted_text(
@@ -224,7 +224,7 @@ def _tx_build_command(
     # Initialize Safe instance from args if provided
     if safe_address is None:
         print_formatted_text(
-            HTML("<b><yellow>Warning: Missing safe address from input.</yellow></b>")
+            HTML("<b><yellow>Missing safe address from input.</yellow></b>")
         )
         safe_address = prompt_safe_address(prompt_session)
 
@@ -333,7 +333,9 @@ def _tx_sign_command(
     # Validate the signer account
     if signer is not None and signer.address is not None:
         # Check if the account is the right one
-        is_right_account = prompt_is_right_account(prompt_session, signer.address)
+        is_right_account = prompt_confirm_proceed(
+            prompt_session, f"Right account {signer.address}?"
+        )
         if is_right_account.lower() not in ("yes", "y"):
             raise ValueError("User aborted tx_sign command due to wrong account.")
 
@@ -427,7 +429,9 @@ def _tx_broadcast_command(
     # Validate the signer account
     if broadcaster is not None and broadcaster.address is not None:
         # Check if the account is the right one
-        is_right_account = prompt_is_right_account(prompt_session, broadcaster.address)
+        is_right_account = prompt_confirm_proceed(
+            prompt_session, f"Right account {broadcaster.address}?"
+        )
         if is_right_account.lower() not in ("yes", "y"):
             raise ValueError("User aborted tx_sign command due to wrong account.")
 
