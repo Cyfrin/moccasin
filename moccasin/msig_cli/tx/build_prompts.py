@@ -11,12 +11,12 @@ from moccasin.msig_cli.utils.helpers import build_tx_data_from_function_signatur
 from moccasin.msig_cli.validators import (
     get_param_validator,
     validator_empty_or_address,
+    validator_empty_or_bytes_hex,
     validator_empty_or_function_signature,
     validator_empty_or_not_zero_number,
     validator_empty_or_number,
     validator_empty_or_operation,
     validator_empty_or_tx_build_data_type,
-    validator_empty_or_bytes_hex,
 )
 
 

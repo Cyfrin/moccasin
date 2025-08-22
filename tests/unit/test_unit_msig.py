@@ -16,11 +16,11 @@ from moccasin.msig_cli.validators import (
     validator_boolean,
     validator_data,
     validator_empty_or_function_signature,
+    validator_empty_or_operation,
+    validator_empty_or_tx_build_data_type,
     validator_not_empty,
     validator_number,
-    validator_empty_or_operation,
     validator_rpc_url,
-    validator_empty_or_tx_build_data_type,
 )
 
 

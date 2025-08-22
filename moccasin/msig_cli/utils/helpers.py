@@ -1,14 +1,14 @@
 import json
 import os
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Optional, Tuple, cast
 
 from eth_abi.abi import encode as abi_encode
 from eth_utils import (
+    function_signature_to_4byte_selector,
     to_bytes,
     to_checksum_address,
-    function_signature_to_4byte_selector,
 )
 from prompt_toolkit import HTML, print_formatted_text
 from safe_eth.eth import EthereumClient

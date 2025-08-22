@@ -314,9 +314,9 @@ If these values are set too low, the Safe contract will revert with an error (e.
 - [x] Display SafeTx internal transactions in pretty_print
 - [x] Add support for gas token estimation
 - [x] Add support for raw data internal transactions
-- [ ] Improve function parameter type handling (arrays, bytes, etc.)
-- [ ] Add proper typing to prompts and functions
+- [x] Improve function parameter type handling (arrays, bytes, etc.)
 - [ ] Improve test suite and add more scenarios
+- [ ] Add proper typing to prompts and functions
 - [ ] Consider addin a new wokflow from encoded SafeTx msg and domains rathen than JSON
 - [ ] Prompt metamask when we init account, sign and broadcast
 - [ ] Consider grouping all tx-related commands under `mox msig tx` with flags for build, sign, broadcast
