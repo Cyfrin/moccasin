@@ -138,7 +138,8 @@ def _setup_network_and_account_from_config_and_cli(
     explorer_api_key: str | None = None,
     db_path: str | None = None,
     save_to_db: bool | None = None,
-):
+    return_mox_account: bool = False,
+) -> MoccasinAccount | None:
     """All the network and account logic in the function parameters are from the CLI.
     We will use the order of operations to setup the network:
 
@@ -221,6 +222,11 @@ def _setup_network_and_account_from_config_and_cli(
 
     if isinstance(boa.env.eoa, Address) and active_network.is_local_or_forked_network():
         boa.env.set_balance(boa.env.eoa, STARTING_BOA_BALANCE)
+
+    # Allow to return the MoccasinAccount instance if requested
+    if return_mox_account:
+        return mox_account
+    return None
 
 
 # @dev contextmanager allows to act as a robust initializer and finalizer

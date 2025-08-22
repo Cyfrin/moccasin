@@ -19,7 +19,7 @@ ALIAS_TO_COMMAND = {
     "util": "utils",
 }
 
-PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer", "deployments"]
+PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer", "deployments", "msig"]
 
 
 def main(argv: list) -> int:
@@ -31,7 +31,7 @@ def main(argv: list) -> int:
     if "--version" in argv or "version" in argv:
         print(get_version())
         return 0
-    
+
     # Handle 'help' command same as --help
     if len(argv) > 0 and argv[0] == "help":
         main_parser, _ = generate_main_parser_and_sub_parsers()
@@ -64,7 +64,7 @@ def main(argv: list) -> int:
         except Exception as e:
             logger.error(f"Error running format command: {e}")
             return 1
-    
+
     main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
 
     # ------------------------------------------------------------------
@@ -761,6 +761,54 @@ Example usage:
         help="Get the zero address.",
     )
 
+    # ---------------------------------------------------------------------
+    #                         MSIG COMMAND
+    # ---------------------------------------------------------------------
+    msig_parser = sub_parsers.add_parser(
+        "msig",
+        help="Moccasin Multisig CLI helper.",
+        description="""This command is a helper for multisig operations in Moccasin.
+        It allows to build transactions, sign them, and broadcast them to the network.
+        """,
+        parents=[parent_parser],
+    )
+    msig_parser.add_argument(
+        "--no-project-toml",
+        help="If you want to run this command without a project.toml file.",
+        action="store_true",
+        default=True,
+    )
+    msig_subparsers = msig_parser.add_subparsers(dest="msig_command")
+
+    # tx_build
+    tx_build_parser = msig_subparsers.add_parser(
+        "tx-build", help="Build a multisig transaction."
+    )
+    add_network_args_to_parser(tx_build_parser)
+    add_account_args_to_parser(tx_build_parser)
+    add_tx_builder_args(tx_build_parser)
+
+    # tx_sign
+    tx_sign_parser = msig_subparsers.add_parser(
+        "tx-sign", help="Sign a multisig transaction."
+    )
+    add_network_args_to_parser(tx_sign_parser)
+    add_account_args_to_parser(tx_sign_parser)
+    add_tx_signer_args(tx_sign_parser)
+
+    # tx_broadcast
+    tx_broadcast_parser = msig_subparsers.add_parser(
+        "tx-broadcast", help="Broadcast a multisig transaction."
+    )
+    add_network_args_to_parser(tx_broadcast_parser)
+    add_account_args_to_parser(tx_broadcast_parser)
+    tx_broadcast_parser.add_argument(
+        "--input-json",
+        help="Path to a JSON file containing the SafeTx data to broadcast.",
+    )
+    tx_broadcast_parser.add_argument(
+        "--output-json", help="Output file to save the broadcasted SafeTx data as JSON."
+    )
     # ------------------------------------------------------------------
     #                             RETURN
     # ------------------------------------------------------------------
@@ -856,6 +904,50 @@ def create_parent_parser():
         "-q", "--quiet", action="store_true", help="Suppress all output except errors"
     )
     return parser
+
+
+# Msig CLI specific argument parsers
+def add_tx_builder_args(parser: argparse.ArgumentParser):
+    """Add transaction builder arguments to the parser."""
+    # add msg as calldata that could be decoded if we want to avoid json?
+    parser.add_argument(
+        "--safe-address", help="Address of the Safe contract to interact with."
+    )
+    parser.add_argument("--to", help="Address of the contract to call.")
+    parser.add_argument(
+        "--operation", help="Operation type: 0 for call, 1 for delegate call."
+    )
+    parser.add_argument(
+        "--value", help="Value to send with the transaction, in wei.", default="0"
+    )
+    parser.add_argument(
+        "--data", help="Data to send with the transaction, in hex format."
+    )
+    parser.add_argument(
+        "--safe-nonce", help="Nonce of the Safe contract to use for the transaction."
+    )
+    parser.add_argument(
+        "--gas-token",
+        help="Token to use for gas, defaults to the native token of the network.",
+    )
+    parser.add_argument(
+        "--refund-receiver",
+        help="Address to receive the refund if the transaction fails.",
+    )
+    parser.add_argument(
+        "--output-json", help="Output file to save the SafeTx structured data as JSON."
+    )
+
+
+def add_tx_signer_args(parser: argparse.ArgumentParser):
+    """Add transaction signer arguments to the parser."""
+    # add msg as calldata that could be decoded if we want to avoid json?
+    parser.add_argument(
+        "--input-json", help="Path to a JSON file containing the SafeTx data to sign."
+    )
+    parser.add_argument(
+        "--output-json", help="Output file to save the signed SafeTx data as JSON."
+    )
 
 
 class RequirePasswordAction(argparse.Action):

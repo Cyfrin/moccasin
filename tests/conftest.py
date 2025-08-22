@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import sys
@@ -12,10 +13,12 @@ import moccasin.constants.vars as vars
 from moccasin.commands.wallet import save_to_keystores
 from moccasin.config import Config, _set_global_config
 from moccasin.constants.vars import DEPENDENCIES_FOLDER
+from moccasin.msig_cli.scripts.deploy_local_safe import deploy_local_safe_anvil
 from tests.constants import (
     ANVIL1_KEYSTORE_NAME,
     ANVIL1_KEYSTORE_PASSWORD,
     ANVIL1_PRIVATE_KEY,
+    ANVIL2_PRIVATE_KEY,
     ANVIL_STORED_STATE_PATH,
     COMPLEX_PROJECT_PATH,
     INSTALL_PROJECT_PATH,
@@ -319,3 +322,72 @@ def pytest_collection_modifyitems(config, items: List[Any]):
                 for marker in test.own_markers
                 if marker.name not in ("skip", "skipif")
             ]
+
+
+# ------------------------------------------------------------------
+#                        MSIG FIXTURES
+# ------------------------------------------------------------------
+@pytest.fixture
+def pt_session():
+    """Create a prompt_toolkit session for testing."""
+    from prompt_toolkit.application import create_app_session
+    from prompt_toolkit.input import create_pipe_input
+    from prompt_toolkit.output import DummyOutput
+
+    with create_pipe_input() as pipe_input:
+        with create_app_session(input=pipe_input, output=DummyOutput()):
+            yield pipe_input
+
+
+@pytest.fixture
+def safe_tx_input_json(moccasin_home_folder, eth_safe_address_anvil):
+    """Provide a sample SafeTx JSON for testing."""
+    src = os.path.join(os.path.dirname(__file__), "data/msig_data/safe_tx.json")
+    dst = moccasin_home_folder / "safe-tx.json"
+    shutil.copyfile(src, dst)
+
+    # Update verifyingContract here
+    with open(dst, "r") as f:
+        safe_tx_data = json.load(f)
+
+    # Handle both SafeTx and EIP-712 formats
+    if "safeTx" in safe_tx_data:
+        if (
+            "domain" in safe_tx_data["safeTx"]
+            and "verifyingContract" in safe_tx_data["safeTx"]["domain"]
+        ):
+            safe_tx_data["safeTx"]["domain"]["verifyingContract"] = (
+                eth_safe_address_anvil
+            )
+    elif "domain" in safe_tx_data and "verifyingContract" in safe_tx_data["domain"]:
+        safe_tx_data["domain"]["verifyingContract"] = eth_safe_address_anvil
+
+    # Save the updated JSON back to the file
+    with open(dst, "w") as f:
+        json.dump(safe_tx_data, f, indent=2)
+
+    yield dst
+
+    # Clean up the file after the test
+    if dst.exists():
+        os.remove(dst)
+
+
+@pytest.fixture
+def owner_key():
+    """Provide the owner private key for testing."""
+    return os.environ.get("ETHEREUM_TEST_PRIVATE_KEY")
+
+
+@pytest.fixture
+def owner2_key():
+    """Provide a second owner private key for testing (Anvil default #2)."""
+    return ANVIL2_PRIVATE_KEY
+
+
+@pytest.fixture
+def eth_safe_address_anvil(anvil):
+    """Fixture to provide a Safe instance connected to Anvil."""
+    eth_safe_address, _, _ = deploy_local_safe_anvil()
+
+    yield eth_safe_address

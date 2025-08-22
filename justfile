@@ -39,6 +39,10 @@ test-all:
     @just test-i
     @just test-z
 
+# Run msig CLI tests
+test-msig:
+    pytest tests/unit/test_unit_msig.py tests/cli/test_cli_msig_build.py tests/cli/test_cli_msig_sign.py tests/cli/test_cli_msig.py -x
+
 # Run tests, fail on first test failure, enter debugger on failure
 test-pdb:
     uv run pytest -x -s --ignore=tests/integration/ --ignore=tests/zksync/ --pdb
@@ -46,6 +50,10 @@ test-pdb:
 # For when you want to run the same anvil chain as what's used in the tests
 anvil:
     anvil --load-state tests/data/anvil_data/state.json
+
+# Deploy safe contracts to anvil
+deploy-safe:
+    uv run python moccasin/msig_cli/scripts/deploy_local_safe.py
 
 
 # Build documentation
