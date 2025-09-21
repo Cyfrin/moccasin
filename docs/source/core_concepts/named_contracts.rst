@@ -68,7 +68,7 @@ There are a number of flags we can set for our ``NamedContract``:
         address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         abi = "ERC20.vy"
         abi_from_explorer = true
-        deployment_script = "script/deploy_erc20.py"
+        deployer_script = "script/deploy_erc20.py"
         force_deploy = false
     
     .. code-tab:: bash ugly-toml
@@ -80,7 +80,7 @@ There are a number of flags we can set for our ``NamedContract``:
             address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
             abi = "ERC20.vy"
             abi_from_explorer = true
-            deployment_script = "script/deploy_erc20.py"
+            deployer_script = "script/deploy_erc20.py"
             force_deploy = false
         }
 
@@ -93,7 +93,7 @@ Let's break these down:
     - *Coming soon* ``.vyi`` file path to a Vyper interface
     - A "raw" ABI string
 - ``abi_from_explorer``: If you want to get the ABI from an explorer. This is useful if you don't have the ABI and you want to get it from a public source. You'll need to set a ``explorer_api_key`` in your ``moccasin.toml``, or an ``EXPLORER_API_KEY`` environment variable.
-- ``deployment_script``: The path to the :doc:`deployment script </core_concepts/scripting/deploy>` for this named contract, this will be a shorthand for deploying in the future. 
+- ``deployer_script``: The path to the :doc:`deployment script </core_concepts/scripting/deploy>` for this named contract, this will be a shorthand for deploying in the future. 
 - ``force_deploy``: If you want to force deploy the contract when :ref:`manifesting <manifesting>` the contract.
 
 As we know, to interact with a contract, one of the most important things is the ABI. For us to interact with any named contract, we give it an ABI, and we can start interacting with that named contract using the ``manifest_named`` function. 
