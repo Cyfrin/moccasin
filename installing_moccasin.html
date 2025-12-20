@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="orange" data-content_root="./">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Installing Moccasin - moccasin documentation</title><link rel="shortcut icon" href="_static/favicon.svg"/><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Quickstart" href="quickstart.html" /><link rel="prev" title="Moccasin" href="index.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=d0008d65" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Installing Moccasin"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:creator" content="@cyfrinaudits"/>
+<meta name="twitter:site" content="@cyfrinaudits"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="toctree.html">
+      
+      
+      <strong>moccasin</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/cyfrin" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Overview</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installing Moccasin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/moccasin_toml.html">moccasin.toml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/project.html">Project Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/networks.html">Networks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/networks/pyevm.html">pyevm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/networks/eravm.html">eravm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/networks/forked_networks.html">Forked Networks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/dependencies.html">Dependencies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/dependencies/virtual_environments.html">Working with python dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/dependencies/purging.html">Removing dependencies (purge)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/named_contracts.html">Named Contracts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/named_contracts/manifest_named.html">Manifest Named Contract</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/testing.html">Testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/gas_profiling.html">Gas Profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/coverage.html">Coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/fixtures.html">Fixtures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/titanoboa_testing.html">Testing with boa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/pranking.html">How to prank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/staging_markers.html">Staging Markers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/fuzzing.html">Fuzzing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/wallet.html">Wallet</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/wallet/private_key.html">Private Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/wallet/config_keys.html">Accounts in mocasin.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/script.html">Scripting (run)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/scripting/console.html">Console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/scripting/deploy.html">Deploy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/deployments.html">Deployments</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/verify_contracts.html">Contract Verification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/metamask_deployment.html">Deploy with MetaMask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/vyper_subcommand.html">Using Vyper Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/code_formatting.html">Format Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/stateless_fuzzing.html">Stateless Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/stateful_fuzzing.html">Stateful Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/juypter_notebooks.html">Juypter Notebooks (IPython)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/compiler_args_to_cli.html">Pass Compiler Args through the CLI</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/zksync-getting-started.html">ZKsync</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="cli_commands.html">CLI Command Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/compile.html">compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/console.html">console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/deploy.html">deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/deployments.html">deployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/explorer.html">explorer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/init.html">init</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/inspect.html">inspect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/install.html">install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/purge.html">purge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/run.html">run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/test.html">test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/wallet.html">wallet</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="class_reference.html">Classes Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/config_reference.html"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/moccasin_account_reference.html"><code class="docutils literal notranslate"><span class="pre">MoccasinAccount</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/named_contract_reference.html"><code class="docutils literal notranslate"><span class="pre">NamedContract</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/network_reference.html"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/networks_reference.html"><code class="docutils literal notranslate"><span class="pre">_Networks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="all_moccasin_toml_parameters.html">All moccasin TOML Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="explorer_network_defaults.html">Explorer and Network Default Information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_errors.html">Common Errors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
+<li><a class="reference internal" href="#installation-with-uv">Installation with uv</a><ul>
+<li><a class="reference internal" href="#isolated-environment">Isolated Environment</a></li>
+<li><a class="reference internal" href="#virtual-environment">Virtual Environment</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation-with-pipx">Installation with pipx</a></li>
+<li><a class="reference internal" href="#installation-with-poetry">Installation with poetry</a></li>
+<li><a class="reference internal" href="#installation-with-pip">Installation with pip</a></li>
+<li><a class="reference internal" href="#from-source">From source</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#after-installation">After installation</a></li>
+</ul>
+</div><a class="js-repo-stats repo-stats flex items-center" href="https://github.com/cyfrin/moccasin"
+  data-type="github" data-user="cyfrin" data-repo="moccasin">
+  <span class="w-8 flex items-center justify-around shrink-0 text-3xl">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </span>
+  <span class="flex-grow px-2 break-all">
+    <span>cyfrin/moccasin</span>
+    <span class="flex text-sm repo-stats-count">
+      <span class="flex items-center pr-3">
+        <iconify-icon icon="lucide:star"></iconify-icon>
+        <strong class="js-repo-stars ml-1">0</strong>
+      </span>
+      <span class="flex items-center">
+        <iconify-icon icon="lucide:git-fork"></iconify-icon>
+        <strong class="js-repo-forks ml-1">0</strong>
+      </span>
+    </span>
+  </span>
+</a><div class="edit-this-page">
+  <a href="https://github.com/cyfrin/moccasin/blob/main/docs/installing_moccasin.rst">Edit this page</a>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="toctree.html"><span itemprop="name">moccasin</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Installing Moccasin</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="installing-moccasin">
+<span id="install"></span><h1>Installing Moccasin<a class="headerlink" href="#installing-moccasin" title="Link to this heading">¶</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Beginner Developers:</p>
+<p>Are you a new or beginner python developer? Then follow these steps:</p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#installation-with-uv"><span class="std std-ref">Install uv</span></a></p></li>
+<li><p><a class="reference internal" href="#isolated-uv"><span class="std std-ref">Install moccasin in an isolated environment</span></a></p></li>
+<li><p><a class="reference internal" href="#after-install"><span class="std std-ref">Check to see if it worked</span></a></p></li>
+<li><p><a class="reference internal" href="quickstart.html"><span class="doc">Go to the quickstart!</span></a></p></li>
+</ol>
+</div>
+<p>There are a few things you’ll need on your machine before you can install Moccasin. Please install the appropriate tools from the <a class="reference internal" href="#prerequisites">Prerequisites</a> section. Once you have those, the recommended way to <a class="reference internal" href="#installation-with-uv"><span class="std std-ref">install Moccasin is via uv</span></a>.</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#prerequisites" id="id6">Prerequisites</a></p>
+<ul>
+<li><p><a class="reference internal" href="#installation-with-uv" id="id7">Installation with uv</a></p>
+<ul>
+<li><p><a class="reference internal" href="#isolated-environment" id="id8">Isolated Environment</a></p></li>
+<li><p><a class="reference internal" href="#virtual-environment" id="id9">Virtual Environment</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#installation-with-pipx" id="id10">Installation with pipx</a></p></li>
+<li><p><a class="reference internal" href="#installation-with-poetry" id="id11">Installation with poetry</a></p></li>
+<li><p><a class="reference internal" href="#installation-with-pip" id="id12">Installation with pip</a></p></li>
+<li><p><a class="reference internal" href="#from-source" id="id13">From source</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#after-installation" id="id14">After installation</a></p></li>
+</ul>
+</nav>
+<section id="prerequisites">
+<h2><a class="toc-backref" href="#id6" role="doc-backlink">Prerequisites</a><a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Python 3.11 or later <code class="docutils literal notranslate"><span class="pre">(&quot;&gt;=</span> <span class="pre">3.11,</span> <span class="pre">&lt;=</span> <span class="pre">3.13&quot;)</span></code></p></li>
+</ol>
+<section id="installation-with-uv">
+<span id="id1"></span><h3><a class="toc-backref" href="#id7" role="doc-backlink">Installation with uv</a><a class="headerlink" href="#installation-with-uv" title="Link to this heading">¶</a></h3>
+<p>For those unfamiliar, <a class="reference external" href="https://docs.astral.sh/uv/">uv</a> is a fast python package manager that helps us install moccasin into it’s own isolated virtual environment, so we don’t get any weird dependency conflicts with other python packages. It’s similar to <code class="docutils literal notranslate"><span class="pre">pip</span></code> and <code class="docutils literal notranslate"><span class="pre">pipx</span></code> if you’ve used them before. It even comes with some <code class="docutils literal notranslate"><span class="pre">pip</span></code> compatibility, will tools like <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span></code>.</p>
+<p>It’s highly recommended you understand how <a class="reference external" href="https://docs.python.org/3/library/venv.html">virtual environments</a> work as well.</p>
+<p>The easiest way to install <code class="docutils literal notranslate"><span class="pre">uv</span></code> is:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-bGludXggLyBNYWNPUw==" aria-selected="true" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-bGludXggLyBNYWNPUw==" name="bGludXggLyBNYWNPUw==" role="tab" tabindex="0">linux / MacOS</button><button aria-controls="panel-0-0-0" aria-selected="false" class="sphinx-tabs-tab" id="tab-0-0-0" name="0-0" role="tab" tabindex="-1">Windows</button></div><div aria-labelledby="tab-0-bGludXggLyBNYWNPUw==" class="sphinx-tabs-panel code-tab group-tab" id="panel-0-bGludXggLyBNYWNPUw==" name="bGludXggLyBNYWNPUw==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">curl<span class="w"> </span>-LsSf<span class="w"> </span>https://astral.sh/uv/install.sh<span class="w"> </span><span class="p">|</span><span class="w"> </span>sh
+</span></pre></div>
+</div>
+</div><div aria-labelledby="tab-0-0-0" class="sphinx-tabs-panel" hidden="true" id="panel-0-0-0" name="0-0" role="tabpanel" tabindex="0"><p><code class="docutils literal notranslate"><span class="pre">powershell</span> <span class="pre">-c</span> <span class="pre">&quot;irm</span> <span class="pre">https://astral.sh/uv/install.ps1</span> <span class="pre">|</span> <span class="pre">iex&quot;</span></code></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>⚠️ Windows users: We recommend you watch the first <a class="reference external" href="https://www.youtube.com/watch?v=xqUZ4JqHI_8">10 minutes of this WSL tutorial</a> and install and work with WSL. WSL stands for “Windows Subsystem for Linux” and it allows you to run a Linux commands on Windows machine. If you’re working on WSL, you can just use the <code class="docutils literal notranslate"><span class="pre">linux</span> <span class="pre">/</span> <span class="pre">MacOS</span></code> command from the other tab.</p>
+</div>
+</div></div>
+<p>But you can head over to the <a class="reference external" href="https://docs.astral.sh/uv/getting-started/installation/">uv installation instructions</a> for more options. If you don’t have at least Python 3.11 installed, you’ll need to install that first.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>python<span class="w"> </span>install<span class="w"> </span><span class="m">3</span>.11
+</span></pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>You can do the same with Python 3.12 or 3.13. Moccasin is currently only compatible with Python 3.11, 3.12, and 3.13.</p>
+</div>
+<section id="isolated-environment">
+<span id="isolated-uv"></span><h4><a class="toc-backref" href="#id8" role="doc-backlink">Isolated Environment</a><a class="headerlink" href="#isolated-environment" title="Link to this heading">¶</a></h4>
+<p>To install <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> into an isolated environment with <code class="docutils literal notranslate"><span class="pre">uv</span></code>, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span>moccasin
+</span></pre></div>
+</div>
+<p>If you wish to install <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> and use other python packages in your scripts, you’ll use the <code class="docutils literal notranslate"><span class="pre">with</span></code> flag:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span>moccasin<span class="w"> </span>--with<span class="w"> </span>pandas
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Installing <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> into a virtual environment (via <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">tool</span> <span class="pre">install</span></code> or <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">install</span></code>) will require a different setup for injecting python packages. See <a class="reference internal" href="core_concepts/dependencies/virtual_environments.html"><span class="doc">Python packages in your scripts</span></a> for more information.</p>
+</div>
+<p>Then, go to <a class="reference internal" href="#after-install"><span class="std std-ref">after installation</span></a>.</p>
+</section>
+<section id="virtual-environment">
+<h4><a class="toc-backref" href="#id9" role="doc-backlink">Virtual Environment</a><a class="headerlink" href="#virtual-environment" title="Link to this heading">¶</a></h4>
+<p>If instead, you’d prefer to have different <code class="docutils literal notranslate"><span class="pre">mox</span></code> executeables Or, if you want to have <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> installed with a traditional virtual environment set, you can run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>init
+</span><span data-line="2">uv<span class="w"> </span>venv
+</span><span data-line="3"><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+</span></pre></div>
+</div>
+<p>Then, you can install it as a uv installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>add<span class="w"> </span>moccasin
+</span></pre></div>
+</div>
+<p>Where you’ll be able to run the executeable with <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">mox</span></code> instead of <code class="docutils literal notranslate"><span class="pre">mox</span></code> (see <a class="reference internal" href="#after-install"><span class="std std-ref">after installation</span></a>).</p>
+<p>Or a pip installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>moccasin
+</span></pre></div>
+</div>
+<p>Where you’ll be able to run the executeable with <code class="docutils literal notranslate"><span class="pre">mox</span></code> (see <a class="reference internal" href="#after-install"><span class="std std-ref">after installation</span></a>).</p>
+</section>
+</section>
+<section id="installation-with-pipx">
+<span id="id2"></span><h3><a class="toc-backref" href="#id10" role="doc-backlink">Installation with pipx</a><a class="headerlink" href="#installation-with-pipx" title="Link to this heading">¶</a></h3>
+<p>Pipx is a tool to help you install and run end-user applications written in Python. It’s roughly similar to macOS’s <code class="docutils literal notranslate"><span class="pre">brew</span></code>, JavaScript’s <code class="docutils literal notranslate"><span class="pre">npx</span></code>, and Linux’s <code class="docutils literal notranslate"><span class="pre">apt</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pipx</span></code> installs Moccasin into a virtual environment and makes it available directly from the commandline. Once installed, you will never have to activate a virtual environment prior to using Moccasin.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pipx</span></code> does not ship with Python. If you have not used it before you will probably need to install it.</p>
+<p>You can either head over to the <a class="reference external" href="https://github.com/pipxproject/pipx">pipx installation instructions</a> or follow along below.</p>
+<p>To install <code class="docutils literal notranslate"><span class="pre">pipx</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>pipx
+</span><span data-line="2">python<span class="w"> </span>-m<span class="w"> </span>pipx<span class="w"> </span>ensurepath
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may need to restart your terminal after installing <code class="docutils literal notranslate"><span class="pre">pipx</span></code>.</p>
+</div>
+<p>To install moccasin then with <code class="docutils literal notranslate"><span class="pre">pipx</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">pipx<span class="w"> </span>install<span class="w"> </span>moccasin
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Installing <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> into a virtual environment (via <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">tool</span> <span class="pre">install</span></code> or <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">install</span></code>) will require a different setup for injecting python packages. See <a class="reference internal" href="core_concepts/dependencies/virtual_environments.html"><span class="doc">Python packages in your scripts</span></a> for more information.</p>
+</div>
+<p>Then, go to <a class="reference internal" href="#after-install"><span class="std std-ref">after installation</span></a>.</p>
+</section>
+<section id="installation-with-poetry">
+<h3><a class="toc-backref" href="#id11" role="doc-backlink">Installation with poetry</a><a class="headerlink" href="#installation-with-poetry" title="Link to this heading">¶</a></h3>
+<p>Poetry is depedency management tool in Python. It allows to install/update libraries from your project, and also handle Python packaging.</p>
+<p><code class="docutils literal notranslate"><span class="pre">poetry</span></code> installs dependencies into its default virtual environment <code class="docutils literal notranslate"><span class="pre">{cache-dir}/virtualenvs</span></code> related to the intialized project. See how <a class="reference external" href="https://python-poetry.org/docs/basic-usage/#using-your-virtual-environment">poetry virtual environment</a> works.</p>
+<p>You can install Moccasin with <code class="docutils literal notranslate"><span class="pre">poetry</span></code>, and if you do so, it’s highly recommended you understand how <a class="reference external" href="https://docs.python.org/3/library/venv.html">virtual environments</a> work.</p>
+<p>You can either head over to the <a class="reference external" href="https://python-poetry.org/docs/#installation">poetry installation instructions</a> or follow along below.</p>
+<p>To install <code class="docutils literal notranslate"><span class="pre">poetry</span></code>, you’ll need <a class="reference external" href="https://github.com/pipxproject/pipx">pipx</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">pipx<span class="w"> </span>install<span class="w"> </span>poetry
+</span></pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You may need to restart your terminal after installing <code class="docutils literal notranslate"><span class="pre">poetry</span></code>.</p>
+</div>
+<p>Ensure <code class="docutils literal notranslate"><span class="pre">poetry</span></code> is available:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">poetry<span class="w"> </span>--version
+</span><span data-line="2"><span class="c1"># Poetry (version 2.0.1)</span>
+</span></pre></div>
+</div>
+<p>We’ll need to initialize a <code class="docutils literal notranslate"><span class="pre">poetry</span></code> project to use its dedicated virtual enviroment to add Moccasin:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">poetry<span class="w"> </span>new<span class="w"> </span>mox-project
+</span><span data-line="2"><span class="nb">cd</span><span class="w"> </span>mox-project
+</span></pre></div>
+</div>
+<p>This will create the following directory structure for the <code class="docutils literal notranslate"><span class="pre">mox-project</span></code> dir:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="go">.</span>
+</span><span data-line="2"><span class="go">├── mox-project</span>
+</span><span data-line="3"><span class="go">│   ├── mox_project</span>
+</span><span data-line="4"><span class="go">│   │   └── __init__.py</span>
+</span><span data-line="5"><span class="go">│   ├── poetry.lock</span>
+</span><span data-line="6"><span class="go">│   ├── pyproject.toml</span>
+</span><span data-line="7"><span class="go">│   ├── README.md</span>
+</span><span data-line="8"><span class="go">│   └── tests</span>
+</span><span data-line="9"><span class="go">│       └── __init__.py</span>
+</span></pre></div>
+</div>
+<p>You can now navigate to the <code class="docutils literal notranslate"><span class="pre">mox-project</span></code> folder and install Moccasin:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">cd</span><span class="w"> </span>mox-project
+</span><span data-line="2">poetry<span class="w"> </span>add<span class="w"> </span>moccasin
+</span></pre></div>
+</div>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>You may run into an issue where the default Python version registered in the <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> is not compatible with <code class="docutils literal notranslate"><span class="pre">moccasin</span></code>.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="go">The current project&#39;s supported Python range (&gt;=3.12) is not compatible with some of the required packages Python requirement:</span>
+</span><span data-line="2"><span class="go">- moccasin requires Python &lt;=3.13,&gt;=3.11, so it will not be satisfied for Python &gt;3.13</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="go">Because no versions of moccasin match &gt;0.3.6,&lt;0.4.2</span>
+</span><span data-line="5"><span class="go">and moccasin (0.3.6) requires Python &lt;=3.13,&gt;=3.11, moccasin is forbidden.</span>
+</span><span data-line="6"><span class="go">So, because mox-project depends on moccasin (^0.3.6), version solving failed.</span>
+</span></pre></div>
+</div>
+<p>To fix this you’ll have to change manually the param <code class="docutils literal notranslate"><span class="pre">requires-python</span></code>. For example:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[project]</span>
+</span><span data-line="2"><span class="n">requires-python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=3.12,&lt;=3.13&quot;</span>
+</span></pre></div>
+</div>
+<p>Adapt the python version at your convinience. You might need to redo <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">add</span> <span class="pre">moccasin</span></code> until the error message from <code class="docutils literal notranslate"><span class="pre">poetry</span> <span class="pre">is</span> <span class="pre">gone</span></code></p>
+</div>
+<p>You can then activate your <code class="docutils literal notranslate"><span class="pre">poetry</span></code> env:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="nb">eval</span><span class="w"> </span><span class="k">$(</span>poetry<span class="w"> </span>env<span class="w"> </span>activate<span class="k">)</span>
+</span></pre></div>
+</div>
+<p>Then, go to <a class="reference internal" href="#after-install"><span class="std std-ref">after installation</span></a>.</p>
+</section>
+<section id="installation-with-pip">
+<h3><a class="toc-backref" href="#id12" role="doc-backlink">Installation with pip</a><a class="headerlink" href="#installation-with-pip" title="Link to this heading">¶</a></h3>
+<p>You can install with <code class="docutils literal notranslate"><span class="pre">pip</span></code>, and if you do so, it’s highly recommended you understand how <a class="reference external" href="https://docs.python.org/3/library/venv.html">virtual environments</a> work.</p>
+<p>To install with <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>moccasin
+</span></pre></div>
+</div>
+<p>Then, go to <a class="reference internal" href="#after-install"><span class="std std-ref">after installation</span></a>.</p>
+</section>
+<section id="from-source">
+<h3><a class="toc-backref" href="#id13" role="doc-backlink">From source</a><a class="headerlink" href="#from-source" title="Link to this heading">¶</a></h3>
+<p>To install from source, you’ll need the <a class="reference external" href="https://docs.astral.sh/uv/">uv tool installed</a>. Once installed, you can run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">git<span class="w"> </span>clone<span class="w"> </span>https://github.com/cyfrin/moccasin
+</span><span data-line="2"><span class="nb">cd</span><span class="w"> </span>moccasin
+</span><span data-line="3">uv<span class="w"> </span>sync
+</span><span data-line="4"><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+</span><span data-line="5">uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</span></pre></div>
+</div>
+<p>And you will have <code class="docutils literal notranslate"><span class="pre">mox</span></code> in your virtual environment created from the <code class="docutils literal notranslate"><span class="pre">uv</span></code> tool. It’s highly recommended you understand how <a class="reference external" href="https://docs.python.org/3/library/venv.html">virtual environments</a> work.</p>
+<p>Then, go to <a class="reference internal" href="#after-install"><span class="std std-ref">after installation</span></a>.</p>
+</section>
+</section>
+<section id="after-installation">
+<span id="after-install"></span><h2><a class="toc-backref" href="#id14" role="doc-backlink">After installation</a><a class="headerlink" href="#after-installation" title="Link to this heading">¶</a></h2>
+<p>Once installed, to verify that Moccasin is installed, you can run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">mox<span class="w"> </span>--version
+</span></pre></div>
+</div>
+<p>And see an output like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">Moccasin<span class="w"> </span>CLI<span class="w"> </span>v0.1.0
+</span></pre></div>
+</div>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="index.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Moccasin</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="quickstart.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Quickstart</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024-2025, Patrick Collins, Charles Cooper</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/cyfrin" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/shibuya.js?v=1d2088d1"></script>
+      <script src="_static/tabs.js?v=3030b3cb"></script></body>
+</html>

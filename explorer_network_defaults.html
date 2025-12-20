@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="orange" data-content_root="./">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Explorer and Network Default Information - moccasin documentation</title><link rel="shortcut icon" href="_static/favicon.svg"/><link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Common Errors" href="common_errors.html" /><link rel="prev" title="All moccasin TOML Parameters" href="all_moccasin_toml_parameters.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="_static/shibuya.css?v=d0008d65" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Explorer and Network Default Information"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:creator" content="@cyfrinaudits"/>
+<meta name="twitter:site" content="@cyfrinaudits"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="toctree.html">
+      
+      
+      <strong>moccasin</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/cyfrin" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Overview</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installing_moccasin.html">Installing Moccasin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/moccasin_toml.html">moccasin.toml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/project.html">Project Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/networks.html">Networks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/networks/pyevm.html">pyevm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/networks/eravm.html">eravm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/networks/forked_networks.html">Forked Networks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/dependencies.html">Dependencies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/dependencies/virtual_environments.html">Working with python dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/dependencies/purging.html">Removing dependencies (purge)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/named_contracts.html">Named Contracts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/named_contracts/manifest_named.html">Manifest Named Contract</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/testing.html">Testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/gas_profiling.html">Gas Profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/coverage.html">Coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/fixtures.html">Fixtures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/titanoboa_testing.html">Testing with boa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/pranking.html">How to prank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/staging_markers.html">Staging Markers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/testing/fuzzing.html">Fuzzing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/wallet.html">Wallet</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/wallet/private_key.html">Private Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/wallet/config_keys.html">Accounts in mocasin.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/script.html">Scripting (run)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/scripting/console.html">Console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_concepts/scripting/deploy.html">Deploy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_concepts/deployments.html">Deployments</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/verify_contracts.html">Contract Verification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/metamask_deployment.html">Deploy with MetaMask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/vyper_subcommand.html">Using Vyper Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/code_formatting.html">Format Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/stateless_fuzzing.html">Stateless Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/stateful_fuzzing.html">Stateful Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/juypter_notebooks.html">Juypter Notebooks (IPython)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="how-tos/compiler_args_to_cli.html">Pass Compiler Args through the CLI</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/zksync-getting-started.html">ZKsync</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="cli_commands.html">CLI Command Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/compile.html">compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/console.html">console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/deploy.html">deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/deployments.html">deployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/explorer.html">explorer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/init.html">init</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/inspect.html">inspect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/install.html">install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/purge.html">purge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/run.html">run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/test.html">test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cli_reference/wallet.html">wallet</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="class_reference.html">Classes Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/config_reference.html"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/moccasin_account_reference.html"><code class="docutils literal notranslate"><span class="pre">MoccasinAccount</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/named_contract_reference.html"><code class="docutils literal notranslate"><span class="pre">NamedContract</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/network_reference.html"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="api_reference/networks_reference.html"><code class="docutils literal notranslate"><span class="pre">_Networks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="all_moccasin_toml_parameters.html">All moccasin TOML Parameters</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Explorer and Network Default Information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="common_errors.html">Common Errors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><a class="js-repo-stats repo-stats flex items-center" href="https://github.com/cyfrin/moccasin"
+  data-type="github" data-user="cyfrin" data-repo="moccasin">
+  <span class="w-8 flex items-center justify-around shrink-0 text-3xl">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </span>
+  <span class="flex-grow px-2 break-all">
+    <span>cyfrin/moccasin</span>
+    <span class="flex text-sm repo-stats-count">
+      <span class="flex items-center pr-3">
+        <iconify-icon icon="lucide:star"></iconify-icon>
+        <strong class="js-repo-stars ml-1">0</strong>
+      </span>
+      <span class="flex items-center">
+        <iconify-icon icon="lucide:git-fork"></iconify-icon>
+        <strong class="js-repo-forks ml-1">0</strong>
+      </span>
+    </span>
+  </span>
+</a><div class="edit-this-page">
+  <a href="https://github.com/cyfrin/moccasin/blob/main/docs/explorer_network_defaults.rst">Edit this page</a>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="toctree.html"><span itemprop="name">moccasin</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Explorer and Network Default Information</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="explorer-and-network-default-information">
+<h1>Explorer and Network Default Information<a class="headerlink" href="#explorer-and-network-default-information" title="Link to this heading">¶</a></h1>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="p">[</span><span class="n">mainnet</span><span class="p">]</span>
+</span><span data-line="2"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://eth.blockscout.com/&quot;</span>
+</span><span data-line="3"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="4"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696&quot;</span>
+</span><span data-line="5"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span data-line="6">
+</span><span data-line="7"><span class="p">[</span><span class="n">sepolia</span><span class="p">]</span>
+</span><span data-line="8"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://eth-sepolia.blockscout.com/&quot;</span>
+</span><span data-line="9"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="10"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="11"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">11155111</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="p">[</span><span class="n">goerli</span><span class="p">]</span>
+</span><span data-line="14"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://eth-goerli.blockscout.com/&quot;</span>
+</span><span data-line="15"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="16"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;0x5BA1e12693Dc8F9c48aAD8770482f4739bEeD696&quot;</span>
+</span><span data-line="17"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">5</span>
+</span><span data-line="18">
+</span><span data-line="19"><span class="p">[</span><span class="n">arbitrum</span><span class="p">]</span>
+</span><span data-line="20"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://arbitrum.blockscout.com/&quot;</span>
+</span><span data-line="21"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="22"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;0x5B5CFE992AdAC0C9D48E05854B2d91C73a003858&quot;</span>
+</span><span data-line="23"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">42161</span>
+</span><span data-line="24">
+</span><span data-line="25"><span class="p">[</span><span class="n">optimism</span><span class="o">-</span><span class="n">main</span><span class="p">]</span>
+</span><span data-line="26"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://optimism.blockscout.com/&quot;</span>
+</span><span data-line="27"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="28"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;0x2DC0E2aa608532Da689e89e237dF582B783E552C&quot;</span>
+</span><span data-line="29"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">10</span>
+</span><span data-line="30">
+</span><span data-line="31"><span class="p">[</span><span class="n">optimism</span><span class="o">-</span><span class="n">test</span><span class="p">]</span>
+</span><span data-line="32"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://optimism-sepolia.blockscout.com/&quot;</span>
+</span><span data-line="33"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="34"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;0x2DC0E2aa608532Da689e89e237dF582B783E552C&quot;</span>
+</span><span data-line="35"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">420</span>
+</span><span data-line="36">
+</span><span data-line="37"><span class="p">[</span><span class="n">polygon</span><span class="o">-</span><span class="n">main</span><span class="p">]</span>
+</span><span data-line="38"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://polygon.blockscout.com/&quot;</span>
+</span><span data-line="39"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="40"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;0xc8E51042792d7405184DfCa245F2d27B94D013b6&quot;</span>
+</span><span data-line="41"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">137</span>
+</span><span data-line="42">
+</span><span data-line="43"><span class="p">[</span><span class="n">gnosis</span><span class="o">-</span><span class="n">main</span><span class="p">]</span>
+</span><span data-line="44"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://gnosis.blockscout.com/&quot;</span>
+</span><span data-line="45"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="46"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="47"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">100</span>
+</span><span data-line="48">
+</span><span data-line="49"><span class="p">[</span><span class="n">gnosis</span><span class="o">-</span><span class="n">test</span><span class="p">]</span>
+</span><span data-line="50"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://gnosis-chiado.blockscout.com/&quot;</span>
+</span><span data-line="51"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="52"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="53"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">10200</span>
+</span><span data-line="54">
+</span><span data-line="55"><span class="p">[</span><span class="n">base</span><span class="o">-</span><span class="n">main</span><span class="p">]</span>
+</span><span data-line="56"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://base.blockscout.com/&quot;</span>
+</span><span data-line="57"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="58"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="59"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">8453</span>
+</span><span data-line="60">
+</span><span data-line="61"><span class="p">[</span><span class="n">syscoin</span><span class="p">]</span>
+</span><span data-line="62"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.syscoin.org/&quot;</span>
+</span><span data-line="63"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="64"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="65"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">57</span>
+</span><span data-line="66">
+</span><span data-line="67"><span class="p">[</span><span class="n">ethereumclassic</span><span class="p">]</span>
+</span><span data-line="68"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://etc.blockscout.com/&quot;</span>
+</span><span data-line="69"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="70"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="71"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">61</span>
+</span><span data-line="72">
+</span><span data-line="73"><span class="p">[</span><span class="n">nova</span><span class="o">-</span><span class="n">network</span><span class="p">]</span>
+</span><span data-line="74"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.novanetwork.io/&quot;</span>
+</span><span data-line="75"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="76"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="77"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">87</span>
+</span><span data-line="78">
+</span><span data-line="79"><span class="p">[</span><span class="n">velas</span><span class="p">]</span>
+</span><span data-line="80"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://evmexplorer.velas.com/&quot;</span>
+</span><span data-line="81"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="82"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="83"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">106</span>
+</span><span data-line="84">
+</span><span data-line="85"><span class="p">[</span><span class="n">thundercore</span><span class="p">]</span>
+</span><span data-line="86"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer-mainnet.thundercore.com/&quot;</span>
+</span><span data-line="87"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="88"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="89"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">108</span>
+</span><span data-line="90">
+</span><span data-line="91"><span class="p">[</span><span class="n">fuse</span><span class="p">]</span>
+</span><span data-line="92"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.fuse.io/&quot;</span>
+</span><span data-line="93"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="94"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="95"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">122</span>
+</span><span data-line="96">
+</span><span data-line="97"><span class="p">[</span><span class="n">shimmer_evm</span><span class="p">]</span>
+</span><span data-line="98"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.evm.shimmer.network/&quot;</span>
+</span><span data-line="99"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="100"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="101"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">148</span>
+</span><span data-line="102">
+</span><span data-line="103"><span class="p">[</span><span class="n">manta</span><span class="p">]</span>
+</span><span data-line="104"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://pacific-explorer.manta.network/&quot;</span>
+</span><span data-line="105"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="106"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="107"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">169</span>
+</span><span data-line="108">
+</span><span data-line="109"><span class="p">[</span><span class="n">energyweb</span><span class="p">]</span>
+</span><span data-line="110"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.energyweb.org/&quot;</span>
+</span><span data-line="111"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="112"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="113"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">246</span>
+</span><span data-line="114">
+</span><span data-line="115"><span class="p">[</span><span class="n">oasys</span><span class="p">]</span>
+</span><span data-line="116"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.oasys.games/&quot;</span>
+</span><span data-line="117"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="118"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="119"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">248</span>
+</span><span data-line="120">
+</span><span data-line="121"><span class="p">[</span><span class="n">filecoin</span><span class="p">]</span>
+</span><span data-line="122"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://filecoin.blockscout.com/&quot;</span>
+</span><span data-line="123"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="124"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="125"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">314</span>
+</span><span data-line="126">
+</span><span data-line="127"><span class="p">[</span><span class="n">zksync</span><span class="o">-</span><span class="n">era</span><span class="p">]</span>
+</span><span data-line="128"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://zksync2-mainnet-explorer.zksync.io&quot;</span>
+</span><span data-line="129"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;zksyncexplorer&quot;</span>
+</span><span data-line="130"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="131"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">324</span>
+</span><span data-line="132">
+</span><span data-line="133"><span class="p">[</span><span class="n">sepolia</span><span class="o">-</span><span class="n">zksync</span><span class="o">-</span><span class="n">era</span><span class="p">]</span>
+</span><span data-line="134"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.sepolia.era.zksync.dev&quot;</span>
+</span><span data-line="135"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;zksyncexplorer&quot;</span>
+</span><span data-line="136"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="137"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">300</span>
+</span><span data-line="138">
+</span><span data-line="139"><span class="p">[</span><span class="n">shiden</span><span class="p">]</span>
+</span><span data-line="140"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://shiden.blockscout.com/&quot;</span>
+</span><span data-line="141"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="142"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="143"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">336</span>
+</span><span data-line="144">
+</span><span data-line="145"><span class="p">[</span><span class="n">rollux</span><span class="p">]</span>
+</span><span data-line="146"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.rollux.com/&quot;</span>
+</span><span data-line="147"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="148"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="149"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">570</span>
+</span><span data-line="150">
+</span><span data-line="151"><span class="p">[</span><span class="n">astar</span><span class="p">]</span>
+</span><span data-line="152"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://astar.blockscout.com/&quot;</span>
+</span><span data-line="153"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="154"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="155"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">592</span>
+</span><span data-line="156">
+</span><span data-line="157"><span class="p">[</span><span class="n">callisto</span><span class="p">]</span>
+</span><span data-line="158"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.callisto.network/&quot;</span>
+</span><span data-line="159"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="160"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="161"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">820</span>
+</span><span data-line="162">
+</span><span data-line="163"><span class="p">[</span><span class="n">lyra</span><span class="o">-</span><span class="n">chain</span><span class="p">]</span>
+</span><span data-line="164"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.lyra.finance/&quot;</span>
+</span><span data-line="165"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="166"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="167"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">957</span>
+</span><span data-line="168">
+</span><span data-line="169"><span class="p">[</span><span class="n">bifrost</span><span class="p">]</span>
+</span><span data-line="170"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.mainnet.bifrostnetwork.com/&quot;</span>
+</span><span data-line="171"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="172"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="173"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">996</span>
+</span><span data-line="174">
+</span><span data-line="175"><span class="p">[</span><span class="n">metis</span><span class="p">]</span>
+</span><span data-line="176"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://andromeda-explorer.metis.io/&quot;</span>
+</span><span data-line="177"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="178"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="179"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">1088</span>
+</span><span data-line="180">
+</span><span data-line="181"><span class="p">[</span><span class="n">polygon</span><span class="o">-</span><span class="n">zkevm</span><span class="p">]</span>
+</span><span data-line="182"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://zkevm.blockscout.com/&quot;</span>
+</span><span data-line="183"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="184"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="185"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">1101</span>
+</span><span data-line="186">
+</span><span data-line="187"><span class="p">[</span><span class="n">lisk</span><span class="p">]</span>
+</span><span data-line="188"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://blockscout.lisk.com/&quot;</span>
+</span><span data-line="189"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="190"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="191"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">1135</span>
+</span><span data-line="192">
+</span><span data-line="193"><span class="p">[</span><span class="n">reya</span><span class="o">-</span><span class="n">network</span><span class="p">]</span>
+</span><span data-line="194"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.reya.network/&quot;</span>
+</span><span data-line="195"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="196"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="197"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">1729</span>
+</span><span data-line="198">
+</span><span data-line="199"><span class="p">[</span><span class="n">onus</span><span class="p">]</span>
+</span><span data-line="200"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.onuschain.io/&quot;</span>
+</span><span data-line="201"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="202"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="203"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">1975</span>
+</span><span data-line="204">
+</span><span data-line="205"><span class="p">[</span><span class="n">sanko</span><span class="p">]</span>
+</span><span data-line="206"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.sanko.xyz/&quot;</span>
+</span><span data-line="207"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="208"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="209"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">1996</span>
+</span><span data-line="210">
+</span><span data-line="211"><span class="p">[</span><span class="n">dogechain</span><span class="p">]</span>
+</span><span data-line="212"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.dogechain.dog/&quot;</span>
+</span><span data-line="213"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="214"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="215"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">2000</span>
+</span><span data-line="216">
+</span><span data-line="217"><span class="p">[</span><span class="n">milkomeda</span><span class="p">]</span>
+</span><span data-line="218"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer-mainnet-cardano-evm.c1.milkomeda.com/&quot;</span>
+</span><span data-line="219"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="220"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="221"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">2001</span>
+</span><span data-line="222">
+</span><span data-line="223"><span class="p">[</span><span class="n">kava</span><span class="p">]</span>
+</span><span data-line="224"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://testnet.kavascan.com/&quot;</span>
+</span><span data-line="225"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="226"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="227"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">2222</span>
+</span><span data-line="228">
+</span><span data-line="229"><span class="p">[</span><span class="n">mantle</span><span class="p">]</span>
+</span><span data-line="230"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.mantle.xyz/&quot;</span>
+</span><span data-line="231"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="232"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="233"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">5000</span>
+</span><span data-line="234">
+</span><span data-line="235"><span class="p">[</span><span class="n">zetachain</span><span class="p">]</span>
+</span><span data-line="236"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://zetachain.blockscout.com/&quot;</span>
+</span><span data-line="237"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="238"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="239"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">7000</span>
+</span><span data-line="240">
+</span><span data-line="241"><span class="p">[</span><span class="n">celo</span><span class="p">]</span>
+</span><span data-line="242"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.celo.org/mainnet/&quot;</span>
+</span><span data-line="243"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="244"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="245"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">42220</span>
+</span><span data-line="246">
+</span><span data-line="247"><span class="p">[</span><span class="n">oasis</span><span class="p">]</span>
+</span><span data-line="248"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.emerald.oasis.dev/&quot;</span>
+</span><span data-line="249"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="250"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="251"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">42262</span>
+</span><span data-line="252">
+</span><span data-line="253"><span class="p">[</span><span class="n">linea</span><span class="p">]</span>
+</span><span data-line="254"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.linea.build/&quot;</span>
+</span><span data-line="255"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="256"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="257"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">59144</span>
+</span><span data-line="258">
+</span><span data-line="259"><span class="p">[</span><span class="n">blast</span><span class="p">]</span>
+</span><span data-line="260"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://blast.blockscout.com/&quot;</span>
+</span><span data-line="261"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="262"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="263"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">81457</span>
+</span><span data-line="264">
+</span><span data-line="265"><span class="p">[</span><span class="n">taiko</span><span class="p">]</span>
+</span><span data-line="266"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://blockscoutapi.mainnet.taiko.xyz/&quot;</span>
+</span><span data-line="267"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="268"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="269"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">167000</span>
+</span><span data-line="270">
+</span><span data-line="271"><span class="p">[</span><span class="n">scroll</span><span class="p">]</span>
+</span><span data-line="272"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://blockscout.scroll.io/&quot;</span>
+</span><span data-line="273"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="274"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="275"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">534352</span>
+</span><span data-line="276">
+</span><span data-line="277"><span class="p">[</span><span class="n">zora</span><span class="p">]</span>
+</span><span data-line="278"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.zora.energy/&quot;</span>
+</span><span data-line="279"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="280"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="281"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">7777777</span>
+</span><span data-line="282">
+</span><span data-line="283"><span class="p">[</span><span class="n">neon</span><span class="p">]</span>
+</span><span data-line="284"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://neon.blockscout.com/&quot;</span>
+</span><span data-line="285"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="286"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="287"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">245022934</span>
+</span><span data-line="288">
+</span><span data-line="289"><span class="p">[</span><span class="n">aurora</span><span class="p">]</span>
+</span><span data-line="290"><span class="n">explorer_uri</span> <span class="o">=</span> <span class="s2">&quot;https://explorer.mainnet.aurora.dev/&quot;</span>
+</span><span data-line="291"><span class="n">explorer_type</span> <span class="o">=</span> <span class="s2">&quot;blockscout&quot;</span>
+</span><span data-line="292"><span class="n">multicall2</span> <span class="o">=</span> <span class="s2">&quot;None&quot;</span>
+</span><span data-line="293"><span class="n">chain_id</span> <span class="o">=</span> <span class="mi">1313161554</span>
+</span></pre></div>
+</div>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="all_moccasin_toml_parameters.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">All moccasin TOML Parameters</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="common_errors.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Common Errors</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024-2025, Patrick Collins, Charles Cooper</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/cyfrin" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=f281be69"></script>
+      <script src="_static/shibuya.js?v=1d2088d1"></script></body>
+</html>

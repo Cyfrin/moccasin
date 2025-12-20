@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="orange" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>test - moccasin documentation</title><link rel="shortcut icon" href="../_static/favicon.svg"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="wallet" href="wallet.html" /><link rel="prev" title="run" href="run.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=d0008d65" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="test"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:creator" content="@cyfrinaudits"/>
+<meta name="twitter:site" content="@cyfrinaudits"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../toctree.html">
+      
+      
+      <strong>moccasin</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/cyfrin" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Overview</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installing_moccasin.html">Installing Moccasin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/moccasin_toml.html">moccasin.toml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/project.html">Project Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/networks.html">Networks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/networks/pyevm.html">pyevm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/networks/eravm.html">eravm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/networks/forked_networks.html">Forked Networks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/dependencies.html">Dependencies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/dependencies/virtual_environments.html">Working with python dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/dependencies/purging.html">Removing dependencies (purge)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/named_contracts.html">Named Contracts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/named_contracts/manifest_named.html">Manifest Named Contract</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/testing.html">Testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/gas_profiling.html">Gas Profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/coverage.html">Coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/fixtures.html">Fixtures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/titanoboa_testing.html">Testing with boa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/pranking.html">How to prank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/staging_markers.html">Staging Markers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/fuzzing.html">Fuzzing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/wallet.html">Wallet</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/wallet/private_key.html">Private Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/wallet/config_keys.html">Accounts in mocasin.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/script.html">Scripting (run)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/scripting/console.html">Console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/scripting/deploy.html">Deploy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/deployments.html">Deployments</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/verify_contracts.html">Contract Verification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/metamask_deployment.html">Deploy with MetaMask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/vyper_subcommand.html">Using Vyper Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/code_formatting.html">Format Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/stateless_fuzzing.html">Stateless Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/stateful_fuzzing.html">Stateful Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/juypter_notebooks.html">Juypter Notebooks (IPython)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/compiler_args_to_cli.html">Pass Compiler Args through the CLI</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/zksync-getting-started.html">ZKsync</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../cli_commands.html">CLI Command Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="compile.html">compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="console.html">console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy.html">deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deployments.html">deployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="explorer.html">explorer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="init.html">init</a></li>
+<li class="toctree-l2"><a class="reference internal" href="inspect.html">inspect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html">install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="purge.html">purge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="run.html">run</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wallet.html">wallet</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../class_reference.html">Classes Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/config_reference.html"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/moccasin_account_reference.html"><code class="docutils literal notranslate"><span class="pre">MoccasinAccount</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/named_contract_reference.html"><code class="docutils literal notranslate"><span class="pre">NamedContract</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/network_reference.html"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/networks_reference.html"><code class="docutils literal notranslate"><span class="pre">_Networks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../all_moccasin_toml_parameters.html">All moccasin TOML Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explorer_network_defaults.html">Explorer and Network Default Information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common_errors.html">Common Errors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#moccasin_wrapper_for_docs-get_test-positional-arguments">Positional Arguments</a></li>
+<li><a class="reference internal" href="#moccasin_wrapper_for_docs-get_test-named-arguments">Named Arguments</a></li>
+</ul>
+</div><a class="js-repo-stats repo-stats flex items-center" href="https://github.com/cyfrin/moccasin"
+  data-type="github" data-user="cyfrin" data-repo="moccasin">
+  <span class="w-8 flex items-center justify-around shrink-0 text-3xl">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </span>
+  <span class="flex-grow px-2 break-all">
+    <span>cyfrin/moccasin</span>
+    <span class="flex text-sm repo-stats-count">
+      <span class="flex items-center pr-3">
+        <iconify-icon icon="lucide:star"></iconify-icon>
+        <strong class="js-repo-stars ml-1">0</strong>
+      </span>
+      <span class="flex items-center">
+        <iconify-icon icon="lucide:git-fork"></iconify-icon>
+        <strong class="js-repo-forks ml-1">0</strong>
+      </span>
+    </span>
+  </span>
+</a><div class="edit-this-page">
+  <a href="https://github.com/cyfrin/moccasin/blob/main/docs/cli_reference/test.rst">Edit this page</a>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../toctree.html"><span itemprop="name">moccasin</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../cli_commands.html"><span itemprop="name">CLI Command Reference</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">test</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="test">
+<h1>test<a class="headerlink" href="#test" title="Link to this heading">¶</a></h1>
+<p><p>Runs pytest with boa context.</p>
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">usage</span><span class="p">:</span> <span class="n">mox</span> <span class="n">test</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">d</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">q</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">install</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">fork</span> <span class="p">[</span><span class="n">FORK</span><span class="p">]]</span>
+</span><span data-line="2">                <span class="p">[</span><span class="o">--</span><span class="n">network</span> <span class="n">NETWORK</span> <span class="o">|</span> <span class="o">--</span><span class="n">url</span> <span class="n">URL</span> <span class="o">|</span> <span class="o">--</span><span class="n">prompt</span><span class="o">-</span><span class="n">live</span> <span class="p">[</span><span class="n">PROMPT_LIVE</span><span class="p">]]</span>
+</span><span data-line="3">                <span class="p">[</span><span class="o">--</span><span class="n">db</span><span class="o">-</span><span class="n">path</span> <span class="n">DB_PATH</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">save</span><span class="o">-</span><span class="n">to</span><span class="o">-</span><span class="n">db</span> <span class="p">[</span><span class="n">SAVE_TO_DB</span><span class="p">]]</span>
+</span><span data-line="4">                <span class="p">[</span><span class="o">--</span><span class="n">account</span> <span class="n">ACCOUNT</span> <span class="o">|</span> <span class="o">--</span><span class="n">private</span><span class="o">-</span><span class="n">key</span> <span class="n">PRIVATE_KEY</span><span class="p">]</span>
+</span><span data-line="5">                <span class="p">[</span><span class="o">--</span><span class="n">password</span> <span class="n">PASSWORD</span> <span class="o">|</span> <span class="o">--</span><span class="n">password</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="n">path</span> <span class="n">PASSWORD_FILE_PATH</span><span class="p">]</span>
+</span><span data-line="6">                <span class="p">[</span><span class="o">--</span><span class="n">gas</span><span class="o">-</span><span class="n">profile</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">k</span> <span class="p">[</span><span class="n">K</span><span class="p">]]</span> <span class="p">[</span><span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">M</span><span class="p">]]</span> <span class="p">[</span><span class="o">-</span><span class="n">x</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">s</span><span class="p">]</span>
+</span><span data-line="7">                <span class="p">[</span><span class="o">--</span><span class="n">capture</span>  <span class="p">[</span><span class="n">CAPTURE</span><span class="p">]]</span> <span class="p">[</span><span class="o">--</span><span class="n">lf</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">cache</span><span class="o">-</span><span class="n">clear</span><span class="p">]</span>
+</span><span data-line="8">                <span class="p">[</span><span class="o">--</span><span class="n">disable</span><span class="o">-</span><span class="n">warnings</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">full</span><span class="o">-</span><span class="n">trace</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">pdb</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">coverage</span><span class="p">]</span>
+</span><span data-line="9">                <span class="p">[</span><span class="o">--</span><span class="n">cov</span> <span class="n">COV</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">cov</span><span class="o">-</span><span class="n">report</span> <span class="p">[</span><span class="n">COV_REPORT</span> <span class="o">...</span><span class="p">]]</span>
+</span><span data-line="10">                <span class="p">[</span><span class="o">--</span><span class="n">cov</span><span class="o">-</span><span class="n">config</span> <span class="n">COV_CONFIG</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">cov</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">fail</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">cov</span><span class="p">]</span>
+</span><span data-line="11">                <span class="p">[</span><span class="o">--</span><span class="n">cov</span><span class="o">-</span><span class="n">reset</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">cov</span><span class="o">-</span><span class="n">fail</span><span class="o">-</span><span class="n">under</span> <span class="n">COV_FAIL_UNDER</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">cov</span><span class="o">-</span><span class="n">append</span><span class="p">]</span>
+</span><span data-line="12">                <span class="p">[</span><span class="o">--</span><span class="n">cov</span><span class="o">-</span><span class="n">branch</span><span class="p">]</span> <span class="p">[</span><span class="o">--</span><span class="n">cov</span><span class="o">-</span><span class="n">context</span> <span class="n">COV_CONTEXT</span><span class="p">]</span>
+</span><span data-line="13">                <span class="p">[</span><span class="o">--</span><span class="n">tb</span> <span class="p">{</span><span class="n">auto</span><span class="p">,</span><span class="n">long</span><span class="p">,</span><span class="n">short</span><span class="p">,</span><span class="n">no</span><span class="p">,</span><span class="n">line</span><span class="p">,</span><span class="n">native</span><span class="p">}]</span> <span class="p">[</span><span class="o">-</span><span class="n">v</span><span class="p">]</span>
+</span><span data-line="14">                <span class="p">[</span><span class="o">--</span><span class="n">hypothesis</span><span class="o">-</span><span class="n">seed</span> <span class="n">HYPOTHESIS_SEED</span><span class="p">]</span> <span class="p">[</span><span class="o">-</span><span class="n">n</span> <span class="n">NUMPROCESSES</span><span class="p">]</span>
+</span><span data-line="15">                <span class="p">[</span><span class="o">--</span><span class="n">dist</span> <span class="p">{</span><span class="n">load</span><span class="p">,</span><span class="n">loadscope</span><span class="p">,</span><span class="n">loadfile</span><span class="p">,</span><span class="n">loadgroup</span><span class="p">,</span><span class="n">no</span><span class="p">,</span><span class="n">worksteal</span><span class="p">}]</span>
+</span><span data-line="16">                <span class="p">[</span><span class="n">file_or_dir</span><span class="p">]</span>
+</span></pre></div>
+</div>
+<section id="moccasin_wrapper_for_docs-get_test-positional-arguments">
+<h2>Positional Arguments<a class="headerlink" href="#moccasin_wrapper_for_docs-get_test-positional-arguments" title="Link to this heading">¶</a></h2>
+<dl class="option-list">
+<dt><kbd>file_or_dir</kbd></dt>
+<dd><p>Name of the test or folder to run tests on, or the path to your script.</p>
+</dd>
+</dl>
+</section>
+<section id="moccasin_wrapper_for_docs-get_test-named-arguments">
+<h2>Named Arguments<a class="headerlink" href="#moccasin_wrapper_for_docs-get_test-named-arguments" title="Link to this heading">¶</a></h2>
+<dl class="option-list">
+<dt><kbd>-d, --debug</kbd></dt>
+<dd><p>Run in debug mode</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>-q, --quiet</kbd></dt>
+<dd><p>Suppress all output except errors</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--no-install</kbd></dt>
+<dd><p>Do not install the requirements before running the tests.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--fork</kbd></dt>
+<dd></dd>
+<dt><kbd>--network</kbd></dt>
+<dd><p>Alias of the network (from the moccasin.toml).</p>
+</dd>
+<dt><kbd>--url, --rpc</kbd></dt>
+<dd><p>RPC URL to run the script on.</p>
+</dd>
+<dt><kbd>--prompt-live</kbd></dt>
+<dd><p>Prompt the user to make sure they want to run this script.</p>
+</dd>
+<dt><kbd>--db-path</kbd></dt>
+<dd><p>The location of your database, defaults to your working project’s database in your {CONFIG_NAME}.</p>
+</dd>
+<dt><kbd>--save-to-db</kbd></dt>
+<dd><p>Save the deployment to the database.</p>
+</dd>
+<dt><kbd>--account</kbd></dt>
+<dd><p>Keystore account you want to use.</p>
+</dd>
+<dt><kbd>--private-key</kbd></dt>
+<dd><p>Private key you want to use to get an unlocked account.</p>
+</dd>
+<dt><kbd>--password</kbd></dt>
+<dd><p>Password for the keystore account.</p>
+</dd>
+<dt><kbd>--password-file-path</kbd></dt>
+<dd><p>Path to the file containing the password for the keystore account.</p>
+</dd>
+<dt><kbd>--gas-profile</kbd></dt>
+<dd><p>Get an output on gas use for test functions.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>-k</kbd></dt>
+<dd><dl class="simple">
+<dt>Only run tests which match the given substring expression. An expression is a Python evaluable expression where all names are</dt><dd><p>substring-matched against test names and their parent classes. Example: -k ‘test_method or test_other’ matches all test functions and
+classes whose name contains ‘test_method’ or ‘test_other’, while -k ‘not test_method’ matches those that don’t contain ‘test_method’ in
+their names. -k ‘not test_method and not test_other’ will eliminate the matches. Additionally keywords are matched to classes and
+functions containing extra names in their ‘extra_keyword_matches’ set, as well as functions which have names assigned directly to them.
+The matching is case-insensitive.</p>
+</dd>
+</dl>
+</dd>
+<dt><kbd>-m</kbd></dt>
+<dd><p>Only run tests matching given mark expression. For example: -m ‘mark1 and not mark2’.</p>
+</dd>
+<dt><kbd>-x, --exitfirst</kbd></dt>
+<dd><p>Exit instantly on first error or failed test.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>-s</kbd></dt>
+<dd><p>A way to show print lines from tests. Shortcut for –capture=no</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--capture </kbd></dt>
+<dd><p>Per-test capturing method: one of fd|sys|no|tee-sys</p>
+</dd>
+<dt><kbd>--lf, --last-failed</kbd></dt>
+<dd><p>Rerun only the tests that failed at the last run (or all if none failed).</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--cache-clear</kbd></dt>
+<dd><p>Remove all cache contents at start of test run.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--disable-warnings, --disable-pytest-warnings</kbd></dt>
+<dd><p>Disable warnings summary.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--full-trace</kbd></dt>
+<dd><p>Don’t cut any tracebacks (default is to cut)</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--pdb</kbd></dt>
+<dd><p>Start the debugger for each test that fails.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--coverage</kbd></dt>
+<dd><p>Shorthand for adding <cite>–cov=. –cov-branch</cite>.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--cov</kbd></dt>
+<dd><p>Coverage target directory.</p>
+</dd>
+<dt><kbd>--cov-report</kbd></dt>
+<dd><p>Type of report to generate: term, term-missing, annotate, html, xml, json, lcov (multi-allowed). term, term- missing may be followed by “:skip-covered”. annotate, html, xml, json and lcov may be followed by “:DEST” where DEST specifies the output location. Use –cov-report= to not generate any output..</p>
+</dd>
+<dt><kbd>--cov-config</kbd></dt>
+<dd><p>Coverage config file, defaults to a moccasin internal config file loading the boa plugin.</p>
+</dd>
+<dt><kbd>--no-cov-on-fail</kbd></dt>
+<dd><p>Do not report coverage if test run fails.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--no-cov</kbd></dt>
+<dd><p>Disable coverage report.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--cov-reset</kbd></dt>
+<dd><p>Reset cov sources accumulated in options so far. Mostly useful for scripts and configuration files.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--cov-fail-under</kbd></dt>
+<dd><p>Fail if the total coverage is less than this value.</p>
+</dd>
+<dt><kbd>--cov-append</kbd></dt>
+<dd><p>Do not delete coverage but append to current. Default: False.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--cov-branch</kbd></dt>
+<dd><p>Enable branch coverage.</p>
+<p>Default: <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</dd>
+<dt><kbd>--cov-context</kbd></dt>
+<dd><p>Coverage context to add to the coverage data.</p>
+</dd>
+<dt><kbd>--tb</kbd></dt>
+<dd><p>Possible choices: auto, long, short, no, line, native</p>
+<p>Traceback print mode</p>
+</dd>
+<dt><kbd>-v, --verbose</kbd></dt>
+<dd><p>Verbosity level</p>
+</dd>
+<dt><kbd>--hypothesis-seed</kbd></dt>
+<dd><p>Random seed to get the same run as a prior run.</p>
+</dd>
+<dt><kbd>-n, --numprocesses</kbd></dt>
+<dd><p>Number of processes to use (auto/NUM)</p>
+</dd>
+<dt><kbd>--dist</kbd></dt>
+<dd><p>Possible choices: load, loadscope, loadfile, loadgroup, no, worksteal</p>
+<p>Load distribution mode</p>
+</dd>
+</dl>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="run.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">run</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="wallet.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">wallet</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024-2025, Patrick Collins, Charles Cooper</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/cyfrin" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/shibuya.js?v=1d2088d1"></script></body>
+</html>

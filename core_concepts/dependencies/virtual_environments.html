@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="orange" data-content_root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Python packages in your scripts - moccasin documentation</title><link rel="shortcut icon" href="../../_static/favicon.svg"/><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="Removing Dependencies (Purge)" href="purging.html" /><link rel="prev" title="Dependencies" href="../dependencies.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=d0008d65" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../../_static/tabs.css?v=a5c4661c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Python packages in your scripts"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:creator" content="@cyfrinaudits"/>
+<meta name="twitter:site" content="@cyfrinaudits"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../toctree.html">
+      
+      
+      <strong>moccasin</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/cyfrin" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Overview</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installing_moccasin.html">Installing Moccasin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Concepts</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../moccasin_toml.html">moccasin.toml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../project.html">Project Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../networks.html">Networks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../networks/pyevm.html">pyevm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../networks/eravm.html">eravm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../networks/forked_networks.html">Forked Networks</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../dependencies.html">Dependencies</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Working with python dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="purging.html">Removing dependencies (purge)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../named_contracts.html">Named Contracts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../named_contracts/manifest_named.html">Manifest Named Contract</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../testing.html">Testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../testing/gas_profiling.html">Gas Profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../testing/coverage.html">Coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../testing/fixtures.html">Fixtures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../testing/titanoboa_testing.html">Testing with boa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../testing/pranking.html">How to prank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../testing/staging_markers.html">Staging Markers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../testing/fuzzing.html">Fuzzing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../wallet.html">Wallet</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../wallet/private_key.html">Private Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wallet/config_keys.html">Accounts in mocasin.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../script.html">Scripting (run)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../scripting/console.html">Console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../scripting/deploy.html">Deploy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../deployments.html">Deployments</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../how-tos/verify_contracts.html">Contract Verification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-tos/metamask_deployment.html">Deploy with MetaMask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-tos/vyper_subcommand.html">Using Vyper Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-tos/code_formatting.html">Format Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-tos/stateless_fuzzing.html">Stateless Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-tos/stateful_fuzzing.html">Stateful Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-tos/juypter_notebooks.html">Juypter Notebooks (IPython)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../how-tos/compiler_args_to_cli.html">Pass Compiler Args through the CLI</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/zksync-getting-started.html">ZKsync</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../cli_commands.html">CLI Command Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/compile.html">compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/console.html">console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/deploy.html">deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/deployments.html">deployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/explorer.html">explorer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/init.html">init</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/inspect.html">inspect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/install.html">install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/purge.html">purge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/run.html">run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/test.html">test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../cli_reference/wallet.html">wallet</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../class_reference.html">Classes Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api_reference/config_reference.html"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api_reference/moccasin_account_reference.html"><code class="docutils literal notranslate"><span class="pre">MoccasinAccount</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api_reference/named_contract_reference.html"><code class="docutils literal notranslate"><span class="pre">NamedContract</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api_reference/network_reference.html"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api_reference/networks_reference.html"><code class="docutils literal notranslate"><span class="pre">_Networks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../all_moccasin_toml_parameters.html">All moccasin TOML Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../explorer_network_defaults.html">Explorer and Network Default Information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../common_errors.html">Common Errors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#in-an-isolated-environment-uv-tool-install-or-pipx-install">In an isolated environment (<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">tool</span> <span class="pre">install</span></code> or <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">install</span></code>)</a></li>
+<li><a class="reference internal" href="#in-a-virtual-environment-uv-pip-install-uv-add-or-pip-install">In a virtual environment (<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span></code>, <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">add</span></code>, or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>)</a></li>
+</ul>
+</div><a class="js-repo-stats repo-stats flex items-center" href="https://github.com/cyfrin/moccasin"
+  data-type="github" data-user="cyfrin" data-repo="moccasin">
+  <span class="w-8 flex items-center justify-around shrink-0 text-3xl">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </span>
+  <span class="flex-grow px-2 break-all">
+    <span>cyfrin/moccasin</span>
+    <span class="flex text-sm repo-stats-count">
+      <span class="flex items-center pr-3">
+        <iconify-icon icon="lucide:star"></iconify-icon>
+        <strong class="js-repo-stars ml-1">0</strong>
+      </span>
+      <span class="flex items-center">
+        <iconify-icon icon="lucide:git-fork"></iconify-icon>
+        <strong class="js-repo-forks ml-1">0</strong>
+      </span>
+    </span>
+  </span>
+</a><div class="edit-this-page">
+  <a href="https://github.com/cyfrin/moccasin/blob/main/docs/core_concepts/dependencies/virtual_environments.rst">Edit this page</a>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../toctree.html"><span itemprop="name">moccasin</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../dependencies.html"><span itemprop="name">Dependencies</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Python packages in your scripts</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="python-packages-in-your-scripts">
+<span id="virtual-environments"></span><h1>Python packages in your scripts<a class="headerlink" href="#python-packages-in-your-scripts" title="Link to this heading">¶</a></h1>
+<p>When you want to add python packages to use in your scripts, it depends on how you installed <code class="docutils literal notranslate"><span class="pre">moccasin</span></code>.</p>
+<section id="in-an-isolated-environment-uv-tool-install-or-pipx-install">
+<h2>In an isolated environment (<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">tool</span> <span class="pre">install</span></code> or <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">install</span></code>)<a class="headerlink" href="#in-an-isolated-environment-uv-tool-install-or-pipx-install" title="Link to this heading">¶</a></h2>
+<p>If you installed <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> with the <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">tool</span> <span class="pre">install</span></code> or <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">install</span></code>, you can re-install your <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> installation using the <code class="docutils literal notranslate"><span class="pre">--with</span></code> flag to “inject” the python packages you want to use.</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-dXY=" aria-selected="true" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-dXY=" name="dXY=" role="tab" tabindex="0">uv</button><button aria-controls="panel-0-cGlweA==" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-0-cGlweA==" name="cGlweA==" role="tab" tabindex="-1">pipx</button></div><div aria-labelledby="tab-0-dXY=" class="sphinx-tabs-panel code-tab group-tab" id="panel-0-dXY=" name="dXY=" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># This will reinstall moccasin with pandas</span>
+</span><span data-line="2">uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span>moccasin<span class="w"> </span>--with<span class="w"> </span>pandas
+</span></pre></div>
+</div>
+</div><div aria-labelledby="tab-0-cGlweA==" class="sphinx-tabs-panel code-tab group-tab" hidden="true" id="panel-0-cGlweA==" name="cGlweA==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># With pipx you don&#39;t need to reinstall, you&#39;ll just &quot;inject&quot; the python packages you want to use.</span>
+</span><span data-line="2">pipx<span class="w"> </span>inject<span class="w"> </span>moccasin<span class="w"> </span>pandas
+</span></pre></div>
+</div>
+</div></div>
+</section>
+<section id="in-a-virtual-environment-uv-pip-install-uv-add-or-pip-install">
+<h2>In a virtual environment (<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span></code>, <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">add</span></code>, or <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span></code>)<a class="headerlink" href="#in-a-virtual-environment-uv-pip-install-uv-add-or-pip-install" title="Link to this heading">¶</a></h2>
+<p>Let’s say you have setup a virtual environment:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-dXY=" aria-selected="true" class="sphinx-tabs-tab code-tab group-tab" id="tab-1-dXY=" name="dXY=" role="tab" tabindex="0">uv</button><button aria-controls="panel-1-cGlwIC8gcHl0aG9u" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-1-cGlwIC8gcHl0aG9u" name="cGlwIC8gcHl0aG9u" role="tab" tabindex="-1">pip / python</button><button aria-controls="panel-1-cG9ldHJ5" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-1-cG9ldHJ5" name="cG9ldHJ5" role="tab" tabindex="-1">poetry</button></div><div aria-labelledby="tab-1-dXY=" class="sphinx-tabs-panel code-tab group-tab" id="panel-1-dXY=" name="dXY=" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>init
+</span><span data-line="2">uv<span class="w"> </span>venv
+</span><span data-line="3"><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+</span></pre></div>
+</div>
+</div><div aria-labelledby="tab-1-cGlwIC8gcHl0aG9u" class="sphinx-tabs-panel code-tab group-tab" hidden="true" id="panel-1-cGlwIC8gcHl0aG9u" name="cGlwIC8gcHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+</span><span data-line="2"><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+</span></pre></div>
+</div>
+</div><div aria-labelledby="tab-1-cG9ldHJ5" class="sphinx-tabs-panel code-tab group-tab" hidden="true" id="panel-1-cG9ldHJ5" name="cG9ldHJ5" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">poetry<span class="w"> </span>init
+</span><span data-line="2">poetry<span class="w"> </span>shell
+</span></pre></div>
+</div>
+</div></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Remember, to deactivate run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">deactivate
+</span></pre></div>
+</div>
+</div>
+<p>You can install python packages as you’d expect:</p>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-dXY=" aria-selected="true" class="sphinx-tabs-tab code-tab group-tab" id="tab-2-dXY=" name="dXY=" role="tab" tabindex="0">uv</button><button aria-controls="panel-2-dXYtcGlw" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-2-dXYtcGlw" name="dXYtcGlw" role="tab" tabindex="-1">uv-pip</button><button aria-controls="panel-2-cGlw" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-2-cGlw" name="cGlw" role="tab" tabindex="-1">pip</button><button aria-controls="panel-2-cG9ldHJ5" aria-selected="false" class="sphinx-tabs-tab code-tab group-tab" id="tab-2-cG9ldHJ5" name="cG9ldHJ5" role="tab" tabindex="-1">poetry</button></div><div aria-labelledby="tab-2-dXY=" class="sphinx-tabs-panel code-tab group-tab" id="panel-2-dXY=" name="dXY=" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>add<span class="w"> </span>pandas
+</span></pre></div>
+</div>
+</div><div aria-labelledby="tab-2-dXYtcGlw" class="sphinx-tabs-panel code-tab group-tab" hidden="true" id="panel-2-dXYtcGlw" name="dXYtcGlw" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pandas
+</span></pre></div>
+</div>
+</div><div aria-labelledby="tab-2-cGlw" class="sphinx-tabs-panel code-tab group-tab" hidden="true" id="panel-2-cGlw" name="cGlw" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">pip<span class="w"> </span>install<span class="w"> </span>pandas
+</span></pre></div>
+</div>
+</div><div aria-labelledby="tab-2-cG9ldHJ5" class="sphinx-tabs-panel code-tab group-tab" hidden="true" id="panel-2-cG9ldHJ5" name="cG9ldHJ5" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span data-line="1">poetry<span class="w"> </span>add<span class="w"> </span>pandas
+</span></pre></div>
+</div>
+</div></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you installed <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> with <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">add</span> <span class="pre">moccasin</span></code> you’ll only be able to use these packages with <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span> <span class="pre">mox</span></code>. If you want to use the <code class="docutils literal notranslate"><span class="pre">mox</span></code> command in your virtual environment, you’ll need to install <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> with <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">moccasin</span></code>.</p>
+</div>
+<p>We highly recommend that you setup a virtual environment or injecting packages into your mox isolated environment for working with your python scripts. And our recommended method is with the <code class="docutils literal notranslate"><span class="pre">uv</span></code> tool.</p>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="../dependencies.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Dependencies</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="purging.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Removing Dependencies (Purge)</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024-2025, Patrick Collins, Charles Cooper</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/cyfrin" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/shibuya.js?v=1d2088d1"></script>
+      <script src="../../_static/tabs.js?v=3030b3cb"></script></body>
+</html>

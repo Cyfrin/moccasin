@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="orange" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Deployments - moccasin documentation</title><link rel="shortcut icon" href="../_static/favicon.svg"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Contract Verification" href="../how-tos/verify_contracts.html" /><link rel="prev" title="Deploy" href="scripting/deploy.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=d0008d65" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Deployments"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:creator" content="@cyfrinaudits"/>
+<meta name="twitter:site" content="@cyfrinaudits"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../toctree.html">
+      
+      
+      <strong>moccasin</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/cyfrin" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Overview</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installing_moccasin.html">Installing Moccasin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Concepts</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="moccasin_toml.html">moccasin.toml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="project.html">Project Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="networks/pyevm.html">pyevm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="networks/eravm.html">eravm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="networks/forked_networks.html">Forked Networks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dependencies/virtual_environments.html">Working with python dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dependencies/purging.html">Removing dependencies (purge)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="named_contracts.html">Named Contracts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="named_contracts/manifest_named.html">Manifest Named Contract</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="testing.html">Testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="testing/gas_profiling.html">Gas Profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing/coverage.html">Coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing/fixtures.html">Fixtures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing/titanoboa_testing.html">Testing with boa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing/pranking.html">How to prank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing/staging_markers.html">Staging Markers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="testing/fuzzing.html">Fuzzing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wallet.html">Wallet</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wallet/private_key.html">Private Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wallet/config_keys.html">Accounts in mocasin.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="script.html">Scripting (run)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="scripting/console.html">Console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scripting/deploy.html">Deploy</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Deployments</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/verify_contracts.html">Contract Verification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/metamask_deployment.html">Deploy with MetaMask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/vyper_subcommand.html">Using Vyper Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/code_formatting.html">Format Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/stateless_fuzzing.html">Stateless Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/stateful_fuzzing.html">Stateful Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/juypter_notebooks.html">Juypter Notebooks (IPython)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/compiler_args_to_cli.html">Pass Compiler Args through the CLI</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/zksync-getting-started.html">ZKsync</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../cli_commands.html">CLI Command Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/compile.html">compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/console.html">console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/deploy.html">deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/deployments.html">deployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/explorer.html">explorer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/init.html">init</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/inspect.html">inspect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/install.html">install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/purge.html">purge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/run.html">run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/test.html">test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/wallet.html">wallet</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../class_reference.html">Classes Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/config_reference.html"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/moccasin_account_reference.html"><code class="docutils literal notranslate"><span class="pre">MoccasinAccount</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/named_contract_reference.html"><code class="docutils literal notranslate"><span class="pre">NamedContract</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/network_reference.html"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_reference/networks_reference.html"><code class="docutils literal notranslate"><span class="pre">_Networks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../all_moccasin_toml_parameters.html">All moccasin TOML Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explorer_network_defaults.html">Explorer and Network Default Information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common_errors.html">Common Errors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#getting-a-deployment-by-contract-name">Getting a deployment by contract name</a></li>
+<li><a class="reference internal" href="#checked-vs-unchecked">Checked vs Unchecked</a></li>
+</ul>
+</div><a class="js-repo-stats repo-stats flex items-center" href="https://github.com/cyfrin/moccasin"
+  data-type="github" data-user="cyfrin" data-repo="moccasin">
+  <span class="w-8 flex items-center justify-around shrink-0 text-3xl">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </span>
+  <span class="flex-grow px-2 break-all">
+    <span>cyfrin/moccasin</span>
+    <span class="flex text-sm repo-stats-count">
+      <span class="flex items-center pr-3">
+        <iconify-icon icon="lucide:star"></iconify-icon>
+        <strong class="js-repo-stars ml-1">0</strong>
+      </span>
+      <span class="flex items-center">
+        <iconify-icon icon="lucide:git-fork"></iconify-icon>
+        <strong class="js-repo-forks ml-1">0</strong>
+      </span>
+    </span>
+  </span>
+</a><div class="edit-this-page">
+  <a href="https://github.com/cyfrin/moccasin/blob/main/docs/core_concepts/deployments.rst">Edit this page</a>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../toctree.html"><span itemprop="name">moccasin</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">Deployments</strong>
+        <meta itemprop="position" content="2" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="deployments">
+<h1>Deployments<a class="headerlink" href="#deployments" title="Link to this heading">¶</a></h1>
+<p>In smart contract development, users often want to interact with contracts they’ve recently deployed, and keep track of them, so <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> comes with a built-in <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html">sqlite3</a> database.</p>
+<p>Any time you deploy a smart contract, so long as you have your <code class="docutils literal notranslate"><span class="pre">save_to_db</span></code> flag set to <code class="docutils literal notranslate"><span class="pre">true</span></code> in your <cite>config &lt;/api_reference/config_reference&gt;</cite>, <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> will automatically save your deployments to the database. Here is an example <code class="docutils literal notranslate"><span class="pre">moccasin.toml</span></code> file:</p>
+<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="k">[networks.pyevm]</span>
+</span><span data-line="2"><span class="n">save_to_db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="w"> </span><span class="c1"># Local and forked networks default to false</span>
+</span><span data-line="3">
+</span><span data-line="4"><span class="k">[networks.anvil]</span>
+</span><span data-line="5"><span class="n">save_to_db</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="c1"># Any other network default to true</span>
+</span><span data-line="6"><span class="n">db_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;.deployments.db&quot;</span>
+</span></pre></div>
+</div>
+<section id="getting-a-deployment-by-contract-name">
+<h2>Getting a deployment by contract name<a class="headerlink" href="#getting-a-deployment-by-contract-name" title="Link to this heading">¶</a></h2>
+<p>You can then, get your latest deployment with any of the following options:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="kn">from</span><span class="w"> </span><span class="nn">moccasin.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_config</span>
+</span><span data-line="2"><span class="kn">from</span><span class="w"> </span><span class="nn">boa.contracts.abi.abi_contract</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABIContract</span>
+</span><span data-line="3"><span class="c1"># from boa.deployments import Deployment</span>
+</span><span data-line="4">
+</span><span data-line="5">
+</span><span data-line="6"><span class="k">def</span><span class="w"> </span><span class="nf">moccasin_main</span><span class="p">():</span>
+</span><span data-line="7">    <span class="n">config</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span>
+</span><span data-line="8">    <span class="n">active_network</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get_active_network</span><span class="p">()</span>
+</span><span data-line="9">
+</span><span data-line="10">    <span class="c1"># Get the latest counter of the Counter contract</span>
+</span><span data-line="11">    <span class="n">counter_contract</span><span class="p">:</span> <span class="n">ABIContract</span> <span class="o">=</span> <span class="n">active_network</span><span class="o">.</span><span class="n">get_latest_contract_unchecked</span><span class="p">(</span><span class="s2">&quot;Counter&quot;</span><span class="p">)</span>
+</span></pre></div>
+</div>
+<p>This will get you a <code class="docutils literal notranslate"><span class="pre">counter_contract</span></code> object that you can interact with. It will look in the database and return the most recently deployed contract on the network that your script is active on. It’ll assign the <code class="docutils literal notranslate"><span class="pre">ABI</span></code> of your contract when you deployed it to the bytecode at that address.</p>
+<p>There are a number of functions we can call to get either a <code class="docutils literal notranslate"><span class="pre">ABIContract</span></code> or <code class="docutils literal notranslate"><span class="pre">Deployment</span></code> object.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_deployments_unchecked</span></code>: This will return all deployments for a given contract name, without checking <a class="reference internal" href="#checking-integrity"><span class="std std-ref">checking integrity</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_deployments_checked</span></code>: This will return all deployments for a given contract name, checking <a class="reference internal" href="#checking-integrity"><span class="std std-ref">checking integrity</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_latest_deployment_checked</span></code>: This will return the latest deployment for a given contract name, checking <a class="reference internal" href="#checking-integrity"><span class="std std-ref">checking integrity</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_latest_deployment_unchecked</span></code>: This will return the latest deployment for a given contract name, without checking <a class="reference internal" href="#checking-integrity"><span class="std std-ref">checking integrity</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_latest_contract_checked</span></code>: This will return the latest contract for a given contract name, checking <a class="reference internal" href="#checking-integrity"><span class="std std-ref">checking integrity</span></a>. It will convert the <code class="docutils literal notranslate"><span class="pre">Deployment</span></code> object to an <code class="docutils literal notranslate"><span class="pre">ABIContract</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_latest_contract_unchecked</span></code>: This will return the latest contract for a given contract name, without checking <a class="reference internal" href="#checking-integrity"><span class="std std-ref">checking integrity</span></a>. It will convert the <code class="docutils literal notranslate"><span class="pre">Deployment</span></code> object to an <code class="docutils literal notranslate"><span class="pre">ABIContract</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_or_deploy_named_contract</span></code>/ <code class="docutils literal notranslate"><span class="pre">manifest_named</span></code>: This “magical” function will either check the database for a contract, deploy it, check your <a class="reference internal" href="named_contracts.html"><span class="doc">named contracts</span></a>, and a few other places, and if it doesn’t find a contract, it will deploy the contract for you. <a class="reference internal" href="named_contracts/manifest_named.html"><span class="doc">You can read more about it here.</span></a></p></li>
+</ul>
+</section>
+<section id="checked-vs-unchecked">
+<span id="checking-integrity"></span><h2>Checked vs Unchecked<a class="headerlink" href="#checked-vs-unchecked" title="Link to this heading">¶</a></h2>
+<p>When developing, you’ll often make changes to your smart contracts, and you may want to only interact with a contract that matches your current working contract. For example, I could have this code in a file called <code class="docutils literal notranslate"><span class="pre">Counter.vy</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># SPDX-License-Identifier: MIT</span>
+</span><span data-line="2"><span class="c1"># pragma version ^0.4.1</span>
+</span><span data-line="3"><span class="n">number</span><span class="p">:</span> <span class="n">public</span><span class="p">(</span><span class="n">uint256</span><span class="p">)</span>
+</span><span data-line="4"><span class="nd">@external</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">set_number</span><span class="p">(</span><span class="n">new_number</span><span class="p">:</span> <span class="n">uint256</span><span class="p">):</span>
+</span><span data-line="6">    <span class="bp">self</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="n">new_number</span>
+</span><span data-line="7">
+</span><span data-line="8">
+</span><span data-line="9"><span class="nd">@external</span>
+</span><span data-line="10"><span class="k">def</span><span class="w"> </span><span class="nf">increment</span><span class="p">():</span>
+</span><span data-line="11">    <span class="bp">self</span><span class="o">.</span><span class="n">number</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></pre></div>
+</div>
+<p>And deploy it as <code class="docutils literal notranslate"><span class="pre">contract</span> <span class="pre">A</span></code>, then, change it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="c1"># SPDX-License-Identifier: MIT</span>
+</span><span data-line="2"><span class="c1"># pragma version ^0.4.1</span>
+</span><span data-line="3"><span class="n">number</span><span class="p">:</span> <span class="n">public</span><span class="p">(</span><span class="n">uint256</span><span class="p">)</span>
+</span><span data-line="4"><span class="nd">@external</span>
+</span><span data-line="5"><span class="k">def</span><span class="w"> </span><span class="nf">set_number</span><span class="p">(</span><span class="n">new_number</span><span class="p">:</span> <span class="n">uint256</span><span class="p">):</span>
+</span><span data-line="6">    <span class="bp">self</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="n">new_number</span>
+</span></pre></div>
+</div>
+<p>And deploy it as <code class="docutils literal notranslate"><span class="pre">contract</span> <span class="pre">B</span></code>.</p>
+<p>Now, when I call <code class="docutils literal notranslate"><span class="pre">get_deployments_checked</span></code> on <code class="docutils literal notranslate"><span class="pre">Counter</span></code>, it will only return 1 contract, <code class="docutils literal notranslate"><span class="pre">contract</span> <span class="pre">B</span></code> since that matches the contract that is in my current <code class="docutils literal notranslate"><span class="pre">Counter.vy</span></code> file.</p>
+<p>But, if I call <code class="docutils literal notranslate"><span class="pre">get_deployments_unchecked</span></code> on <code class="docutils literal notranslate"><span class="pre">Counter</span></code>, it will return both <code class="docutils literal notranslate"><span class="pre">contract</span> <span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">contract</span> <span class="pre">B</span></code>! Since that will only return deployments based on the <code class="docutils literal notranslate"><span class="pre">contract_name</span></code> (filename). The way this works, is that under the hood, <code class="docutils literal notranslate"><span class="pre">moccasin</span></code> does an integrity check by calling <code class="docutils literal notranslate"><span class="pre">has_matching_integrity</span></code> on the <code class="docutils literal notranslate"><span class="pre">Network</span></code> class, which compares a hash of each of the contract bytecodes to each other.</p>
+</section>
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="scripting/deploy.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">Deploy</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="../how-tos/verify_contracts.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">Contract Verification</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024-2025, Patrick Collins, Charles Cooper</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/cyfrin" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/shibuya.js?v=1d2088d1"></script></body>
+</html>

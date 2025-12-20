@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="orange" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Network - moccasin documentation</title><link rel="shortcut icon" href="../_static/favicon.svg"/><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="_Networks" href="networks_reference.html" /><link rel="prev" title="NamedContract" href="named_contract_reference.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=397bb51e" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=d0008d65" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    <meta property="og:type" content="website"/><meta property="og:title" content="Network"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:creator" content="@cyfrinaudits"/>
+<meta name="twitter:site" content="@cyfrinaudits"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../toctree.html">
+      
+      
+      <strong>moccasin</strong>
+    </a>
+    <div class="sy-head-nav" id="HeadNav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/cyfrin" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="HeadNav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2 -translate-x-2"></span>
+          <span class="hamburger_3 -translate-x-1"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Overview</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installing_moccasin.html">Installing Moccasin</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Core Concepts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/moccasin_toml.html">moccasin.toml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/project.html">Project Layout</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/networks.html">Networks</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/networks/pyevm.html">pyevm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/networks/eravm.html">eravm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/networks/forked_networks.html">Forked Networks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/dependencies.html">Dependencies</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/dependencies/virtual_environments.html">Working with python dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/dependencies/purging.html">Removing dependencies (purge)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/named_contracts.html">Named Contracts</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/named_contracts/manifest_named.html">Manifest Named Contract</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/testing.html">Testing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/gas_profiling.html">Gas Profiling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/coverage.html">Coverage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/fixtures.html">Fixtures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/titanoboa_testing.html">Testing with boa</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/pranking.html">How to prank</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/staging_markers.html">Staging Markers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/testing/fuzzing.html">Fuzzing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/wallet.html">Wallet</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/wallet/private_key.html">Private Keys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/wallet/config_keys.html">Accounts in mocasin.toml</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/script.html">Scripting (run)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/scripting/console.html">Console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../core_concepts/scripting/deploy.html">Deploy</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../core_concepts/deployments.html">Deployments</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">How-to Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/verify_contracts.html">Contract Verification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/metamask_deployment.html">Deploy with MetaMask</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/vyper_subcommand.html">Using Vyper Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/code_formatting.html">Format Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/stateless_fuzzing.html">Stateless Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/stateful_fuzzing.html">Stateful Fuzzing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/juypter_notebooks.html">Juypter Notebooks (IPython)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how-tos/compiler_args_to_cli.html">Pass Compiler Args through the CLI</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/zksync-getting-started.html">ZKsync</a></li>
+</ul>
+<p class="caption" role="heading" aria-level="3"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../cli_commands.html">CLI Command Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/compile.html">compile</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/console.html">console</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/deploy.html">deploy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/deployments.html">deployments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/explorer.html">explorer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/init.html">init</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/inspect.html">inspect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/install.html">install</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/purge.html">purge</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/run.html">run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/test.html">test</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cli_reference/wallet.html">wallet</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="../class_reference.html">Classes Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="config_reference.html"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="moccasin_account_reference.html"><code class="docutils literal notranslate"><span class="pre">MoccasinAccount</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="named_contract_reference.html"><code class="docutils literal notranslate"><span class="pre">NamedContract</span></code></a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="networks_reference.html"><code class="docutils literal notranslate"><span class="pre">_Networks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../all_moccasin_toml_parameters.html">All moccasin TOML Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explorer_network_defaults.html">Explorer and Network Default Information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../common_errors.html">Common Errors</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#moccasin.config.Network"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a><ul>
+<li><a class="reference internal" href="#moccasin.config.Network.name"><code class="docutils literal notranslate">name</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.url"><code class="docutils literal notranslate">url</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.chain_id"><code class="docutils literal notranslate">chain_id</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.is_fork"><code class="docutils literal notranslate">is_fork</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.block_identifier"><code class="docutils literal notranslate">block_identifier</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.is_zksync"><code class="docutils literal notranslate">is_zksync</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.default_account_name"><code class="docutils literal notranslate">default_account_name</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.unsafe_password_file"><code class="docutils literal notranslate">unsafe_password_file</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.save_abi_path"><code class="docutils literal notranslate">save_abi_path</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.explorer_uri"><code class="docutils literal notranslate">explorer_uri</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.explorer_api_key"><code class="docutils literal notranslate">explorer_api_key</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.explorer_type"><code class="docutils literal notranslate">explorer_type</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.named_contracts"><code class="docutils literal notranslate">named_contracts</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.prompt_live"><code class="docutils literal notranslate">prompt_live</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.save_to_db"><code class="docutils literal notranslate">save_to_db</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.live_or_staging"><code class="docutils literal notranslate">live_or_staging</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.db_path"><code class="docutils literal notranslate">db_path</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.extra_data"><code class="docutils literal notranslate">extra_data</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.moccasin_verify"><code class="docutils literal notranslate">moccasin_verify()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.is_matching_boa"><code class="docutils literal notranslate">is_matching_boa()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_verifier_class"><code class="docutils literal notranslate">get_verifier_class()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_default_account"><code class="docutils literal notranslate">get_default_account()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.set_kwargs"><code class="docutils literal notranslate">set_kwargs()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.create_and_set_or_set_boa_env"><code class="docutils literal notranslate">create_and_set_or_set_boa_env()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_deployments_unchecked"><code class="docutils literal notranslate">get_deployments_unchecked()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_deployments_checked"><code class="docutils literal notranslate">get_deployments_checked()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.has_matching_integrity"><code class="docutils literal notranslate">has_matching_integrity()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_deployer_from_contract_name"><code class="docutils literal notranslate">get_deployer_from_contract_name()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_latest_deployment_unchecked"><code class="docutils literal notranslate">get_latest_deployment_unchecked()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_latest_contract_unchecked"><code class="docutils literal notranslate">get_latest_contract_unchecked()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_latest_deployment_checked"><code class="docutils literal notranslate">get_latest_deployment_checked()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_latest_contract_checked"><code class="docutils literal notranslate">get_latest_contract_checked()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.manifest_contract"><code class="docutils literal notranslate">manifest_contract()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.instantiate_contract"><code class="docutils literal notranslate">instantiate_contract()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_or_deploy_contract"><code class="docutils literal notranslate">get_or_deploy_contract()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.manifest_named_contract"><code class="docutils literal notranslate">manifest_named_contract()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_or_deploy_named_contract"><code class="docutils literal notranslate">get_or_deploy_named_contract()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.manifest_named"><code class="docutils literal notranslate">manifest_named()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_or_deploy_named"><code class="docutils literal notranslate">get_or_deploy_named()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.is_local_or_forked_network"><code class="docutils literal notranslate">is_local_or_forked_network()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.has_explorer"><code class="docutils literal notranslate">has_explorer()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_named_contract"><code class="docutils literal notranslate">get_named_contract()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.get_named_contracts"><code class="docutils literal notranslate">get_named_contracts()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.set_boa_eoa"><code class="docutils literal notranslate">set_boa_eoa()</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.alias"><code class="docutils literal notranslate">alias</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.identifier"><code class="docutils literal notranslate">identifier</span></code></a></li>
+<li><a class="reference internal" href="#moccasin.config.Network.convert_deployment_to_contract"><code class="docutils literal notranslate">convert_deployment_to_contract()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div><a class="js-repo-stats repo-stats flex items-center" href="https://github.com/cyfrin/moccasin"
+  data-type="github" data-user="cyfrin" data-repo="moccasin">
+  <span class="w-8 flex items-center justify-around shrink-0 text-3xl">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </span>
+  <span class="flex-grow px-2 break-all">
+    <span>cyfrin/moccasin</span>
+    <span class="flex text-sm repo-stats-count">
+      <span class="flex items-center pr-3">
+        <iconify-icon icon="lucide:star"></iconify-icon>
+        <strong class="js-repo-stars ml-1">0</strong>
+      </span>
+      <span class="flex items-center">
+        <iconify-icon icon="lucide:git-fork"></iconify-icon>
+        <strong class="js-repo-forks ml-1">0</strong>
+      </span>
+    </span>
+  </span>
+</a><div class="edit-this-page">
+  <a href="https://github.com/cyfrin/moccasin/blob/main/docs/api_reference/network_reference.rst">Edit this page</a>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../toctree.html"><span itemprop="name">moccasin</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../class_reference.html"><span itemprop="name">Classes Reference</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name"><code class="docutils literal notranslate"><span class="pre">Network</span></code></strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+        <article class="yue" role="main">
+          <section id="network">
+<h1><code class="docutils literal notranslate"><span class="pre">Network</span></code><a class="headerlink" href="#network" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="moccasin.config.Network">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moccasin.config.</span></span><span class="sig-name descname"><span class="pre">Network</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_fork:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_identifier:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'safe'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_zksync:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_account_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsafe_password_file:</span> <span class="pre">~pathlib.Path</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_abi_path:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explorer_uri:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explorer_api_key:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">explorer_type:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">named_contracts:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~moccasin.named_contract.NamedContract]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_live:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to_db:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">live_or_staging:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_path:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~pathlib.Path</span> <span class="pre">=</span> <span class="pre">':memory:'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_data:</span> <span class="pre">dict[str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_network_env:</span> <span class="pre">NetworkEnv</span> <span class="pre">|</span> <span class="pre">Env</span> <span class="pre">|</span> <span class="pre">ZksyncEnv</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#moccasin.config.Network" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a Moccasin network configuration from the <code class="docutils literal notranslate"><span class="pre">moccasin.toml</span></code> file settings.</p>
+<p>This class allows for flexible network configuration across different blockchain environments,
+supporting both local and remote networks, including special cases like forked networks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Unique identifier for the network</p></li>
+<li><p><strong>url</strong> (<em>str</em><em> | </em><em>None</em>) – Network endpoint URL</p></li>
+<li><p><strong>chain_id</strong> (<em>int</em><em> | </em><em>None</em>) – Unique identifier for the blockchain network</p></li>
+<li><p><strong>is_fork</strong> (<em>bool</em>) – Indicates if the network is a forked instance</p></li>
+<li><p><strong>block_identifier</strong> (<em>int</em><em> | </em><em>str</em>) – Block identifier for the network</p></li>
+<li><p><strong>is_zksync</strong> (<em>bool</em>) – Indicates if the network is a zkSync network</p></li>
+<li><p><strong>default_account_name</strong> (<em>str</em><em> | </em><em>None</em>) – Default mox wallet account name to use for the network</p></li>
+<li><p><strong>unsafe_password_file</strong> (<em>Path</em><em> | </em><em>None</em>) – Path to the unsafe password file related to <code class="docutils literal notranslate"><span class="pre">default_account_name</span></code></p></li>
+<li><p><strong>save_abi_path</strong> (<em>str</em><em> | </em><em>None</em>) – Path to save the ABI</p></li>
+<li><p><strong>explorer_uri</strong> (<em>str</em><em> | </em><em>None</em>) – URI of the explorer</p></li>
+<li><p><strong>explorer_api_key</strong> (<em>str</em><em> | </em><em>None</em>) – API key for the explorer</p></li>
+<li><p><strong>explorer_type</strong> (<em>str</em><em> | </em><em>None</em>) – Type of the explorer (“blockscout”, “etherscan”, “zksyncexplorer”)</p></li>
+<li><p><strong>named_contracts</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="named_contract_reference.html#moccasin.named_contract.NamedContract" title="moccasin.named_contract.NamedContract"><em>NamedContract</em></a><em>]</em>) – Dictionary of named contracts</p></li>
+<li><p><strong>prompt_live</strong> (<em>bool</em>) – A flag that will prompt you before sending a transaction, it defaults to true for “non-testing” networks</p></li>
+<li><p><strong>save_to_db</strong> (<em>bool</em>) – Indicates if the network should save the deployment to the database, it defaults to true for “non-testing” networks</p></li>
+<li><p><strong>live_or_staging</strong> (<em>bool</em>) – Indicates if the network is live or staging, defaults to true for non-local, non-forked networks</p></li>
+<li><p><strong>db_path</strong> (<em>str</em><em> | </em><em>Path</em>) – Path to the database</p></li>
+<li><p><strong>extra_data</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Extra data for the network</p></li>
+<li><p><strong>_network_env</strong> (<em>_AnyEnv</em><em> | </em><em>None</em>) – Network environment</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moccasin.config.Network.name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.url">
+<span class="sig-name descname"><span class="pre">url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moccasin.config.Network.url" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.chain_id">
+<span class="sig-name descname"><span class="pre">chain_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moccasin.config.Network.chain_id" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.is_fork">
+<span class="sig-name descname"><span class="pre">is_fork</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#moccasin.config.Network.is_fork" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.block_identifier">
+<span class="sig-name descname"><span class="pre">block_identifier</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'safe'</span></em><a class="headerlink" href="#moccasin.config.Network.block_identifier" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.is_zksync">
+<span class="sig-name descname"><span class="pre">is_zksync</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#moccasin.config.Network.is_zksync" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.default_account_name">
+<span class="sig-name descname"><span class="pre">default_account_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moccasin.config.Network.default_account_name" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.unsafe_password_file">
+<span class="sig-name descname"><span class="pre">unsafe_password_file</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moccasin.config.Network.unsafe_password_file" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.save_abi_path">
+<span class="sig-name descname"><span class="pre">save_abi_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moccasin.config.Network.save_abi_path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.explorer_uri">
+<span class="sig-name descname"><span class="pre">explorer_uri</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moccasin.config.Network.explorer_uri" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.explorer_api_key">
+<span class="sig-name descname"><span class="pre">explorer_api_key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moccasin.config.Network.explorer_api_key" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.explorer_type">
+<span class="sig-name descname"><span class="pre">explorer_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moccasin.config.Network.explorer_type" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.named_contracts">
+<span class="sig-name descname"><span class="pre">named_contracts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="named_contract_reference.html#moccasin.named_contract.NamedContract" title="moccasin.named_contract.NamedContract"><span class="pre">NamedContract</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moccasin.config.Network.named_contracts" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.prompt_live">
+<span class="sig-name descname"><span class="pre">prompt_live</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#moccasin.config.Network.prompt_live" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.save_to_db">
+<span class="sig-name descname"><span class="pre">save_to_db</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#moccasin.config.Network.save_to_db" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.live_or_staging">
+<span class="sig-name descname"><span class="pre">live_or_staging</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#moccasin.config.Network.live_or_staging" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.db_path">
+<span class="sig-name descname"><span class="pre">db_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">':memory:'</span></em><a class="headerlink" href="#moccasin.config.Network.db_path" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="moccasin.config.Network.extra_data">
+<span class="sig-name descname"><span class="pre">extra_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moccasin.config.Network.extra_data" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.moccasin_verify">
+<span class="sig-name descname"><span class="pre">moccasin_verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">VyperContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncContract</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VerificationResult</span></span></span><a class="headerlink" href="#moccasin.config.Network.moccasin_verify" title="Link to this definition">¶</a></dt>
+<dd><p>Verifies a contract using your moccasin.toml config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>contract</strong> (<em>VyperContract</em><em> | </em><em>ZksyncContract</em>) – The contract to verify</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The verification result of the contract</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>VerificationResult</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.is_matching_boa">
+<span class="sig-name descname"><span class="pre">is_matching_boa</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#moccasin.config.Network.is_matching_boa" title="Link to this definition">¶</a></dt>
+<dd><p>Checks if the current network is the active network in boa.</p>
+<p>This is a good way to test if you’ve overriden boa as the “active” network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the current network is the active network in boa</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_verifier_class">
+<span class="sig-name descname"><span class="pre">get_verifier_class</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_verifier_class" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the verifier class based on the explorer type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The verifier class</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_default_account">
+<span class="sig-name descname"><span class="pre">get_default_account</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="moccasin_account_reference.html#moccasin.moccasin_account.MoccasinAccount" title="moccasin.moccasin_account.MoccasinAccount"><span class="pre">MoccasinAccount</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Any</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_default_account" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an ‘account-like’ object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An ‘account-like’ object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="moccasin_account_reference.html#moccasin.moccasin_account.MoccasinAccount" title="moccasin.moccasin_account.MoccasinAccount">MoccasinAccount</a> | Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.set_kwargs">
+<span class="sig-name descname"><span class="pre">set_kwargs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#moccasin.config.Network.set_kwargs" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the kwargs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>dict</em>) – The kwargs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.create_and_set_or_set_boa_env">
+<span class="sig-name descname"><span class="pre">create_and_set_or_set_boa_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">NetworkEnv</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Env</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncEnv</span></span></span><a class="headerlink" href="#moccasin.config.Network.create_and_set_or_set_boa_env" title="Link to this definition">¶</a></dt>
+<dd><p>Creates and sets the boa environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kwargs</strong> (<em>dict</em>) – The kwargs</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The boa environment</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_AnyEnv</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_deployments_unchecked">
+<span class="sig-name descname"><span class="pre">get_deployments_unchecked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_or_db_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="config_reference.html#moccasin.config.Config" title="moccasin.config.Config"><span class="pre">Config</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Deployment</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#moccasin.config.Network.get_deployments_unchecked" title="Link to this definition">¶</a></dt>
+<dd><p>Get deployments from the database without an initialized config.</p>
+<p>This method does not check if the deployments integrity is valid.
+It is the responsibility of the caller to ensure that the deployments are valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_name</strong> (<em>str</em><em> | </em><em>None</em>) – The contract name</p></li>
+<li><p><strong>chain_id</strong> (<em>int</em><em> | </em><em>str</em><em> | </em><em>None</em>) – The chain ID</p></li>
+<li><p><strong>limit</strong> (<em>int</em><em> | </em><em>None</em>) – The limit</p></li>
+<li><p><strong>config_or_db_path</strong> (<em>Union</em><em>[</em><a class="reference internal" href="config_reference.html#moccasin.config.Config" title="moccasin.config.Config"><em>Config</em></a><em>, </em><em>Path</em><em>, </em><em>str</em><em>, </em><em>None</em><em>]</em>) – The config or db path</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The deployments</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[Deployment]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_deployments_checked">
+<span class="sig-name descname"><span class="pre">get_deployments_checked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_or_db_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="config_reference.html#moccasin.config.Config" title="moccasin.config.Config"><span class="pre">Config</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Deployment</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#moccasin.config.Network.get_deployments_checked" title="Link to this definition">¶</a></dt>
+<dd><p>Get deployments from the database without an initialized config.</p>
+<p>This method does check if the deployments integrity is valid. If not, it won’t be returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_name</strong> (<em>str</em><em> | </em><em>None</em>) – The contract name</p></li>
+<li><p><strong>chain_id</strong> (<em>int</em><em> | </em><em>str</em><em> | </em><em>None</em>) – The chain ID</p></li>
+<li><p><strong>limit</strong> (<em>int</em><em> | </em><em>None</em>) – The limit</p></li>
+<li><p><strong>config_or_db_path</strong> (<em>Union</em><em>[</em><a class="reference internal" href="config_reference.html#moccasin.config.Config" title="moccasin.config.Config"><em>Config</em></a><em>, </em><em>Path</em><em>, </em><em>str</em><em>, </em><em>None</em><em>]</em>) – The config or db path</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The deployments</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[Deployment]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.has_matching_integrity">
+<span class="sig-name descname"><span class="pre">has_matching_integrity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deployment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Deployment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="config_reference.html#moccasin.config.Config" title="moccasin.config.Config"><span class="pre">Config</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#moccasin.config.Network.has_matching_integrity" title="Link to this definition">¶</a></dt>
+<dd><p>Check if the deployment has a matching integrity with the config and contract name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>deployment</strong> (<em>Deployment</em>) – The deployment</p></li>
+<li><p><strong>contract_name</strong> (<em>str</em><em> | </em><em>None</em>) – The contract name</p></li>
+<li><p><strong>config</strong> (<em>Union</em><em>[</em><a class="reference internal" href="config_reference.html#moccasin.config.Config" title="moccasin.config.Config"><em>Config</em></a><em>, </em><em>None</em><em>]</em>) – The config</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the deployment has a matching integrity, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_deployer_from_contract_name">
+<span class="sig-name descname"><span class="pre">get_deployer_from_contract_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="config_reference.html#moccasin.config.Config" title="moccasin.config.Config"><span class="pre">Config</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VyperDeployer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncDeployer</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_deployer_from_contract_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the Vyper deployer for the contract name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="config_reference.html#moccasin.config.Config" title="moccasin.config.Config"><em>Config</em></a>) – The config</p></li>
+<li><p><strong>contract_name</strong> (<em>str</em>) – The contract name</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The corresponding Vyper deployer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>VyperDeployer | ZksyncDeployer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_latest_deployment_unchecked">
+<span class="sig-name descname"><span class="pre">get_latest_deployment_unchecked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Deployment</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_latest_deployment_unchecked" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the latest deployment of the contract.</p>
+<p>It does not check if the deployment is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_name</strong> (<em>str</em><em> | </em><em>None</em>) – The contract name</p></li>
+<li><p><strong>chain_id</strong> (<em>int</em><em> | </em><em>str</em><em> | </em><em>None</em>) – The chain ID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The deployment or nothing</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Deployment | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_latest_contract_unchecked">
+<span class="sig-name descname"><span class="pre">get_latest_contract_unchecked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ABIContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_latest_contract_unchecked" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the latest contract of the contract.</p>
+<p>It does not check if the deployment is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_name</strong> (<em>str</em><em> | </em><em>None</em>) – The contract name</p></li>
+<li><p><strong>chain_id</strong> (<em>int</em><em> | </em><em>str</em><em> | </em><em>None</em>) – The chain ID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The contract or nothing</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ABIContract | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_latest_deployment_checked">
+<span class="sig-name descname"><span class="pre">get_latest_deployment_checked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Deployment</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_latest_deployment_checked" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the latest deployment of the contract.</p>
+<p>It does check if the deployment is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_name</strong> (<em>str</em><em> | </em><em>None</em>) – The contract name</p></li>
+<li><p><strong>chain_id</strong> (<em>int</em><em> | </em><em>str</em><em> | </em><em>None</em>) – The chain ID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The deployment or nothing</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Deployment | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_latest_contract_checked">
+<span class="sig-name descname"><span class="pre">get_latest_contract_checked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chain_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ABIContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_latest_contract_checked" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the latest contract of the contract.</p>
+<p>It does check if the deployment is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_name</strong> (<em>str</em><em> | </em><em>None</em>) – The contract name</p></li>
+<li><p><strong>chain_id</strong> (<em>int</em><em> | </em><em>str</em><em> | </em><em>None</em>) – The chain ID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The contract or nothing</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ABIContract | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.manifest_contract">
+<span class="sig-name descname"><span class="pre">manifest_contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_deploy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checked</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VyperContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIContract</span></span></span><a class="headerlink" href="#moccasin.config.Network.manifest_contract" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around <code class="docutils literal notranslate"><span class="pre">get_or_deploy_named</span></code> that is more explicit about the contract being deployed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_name</strong> (<em>str</em>) – The contract name</p></li>
+<li><p><strong>force_deploy</strong> (<em>bool</em>) – If True, will deploy the contract even if the contract has an address in the config file.</p></li>
+<li><p><strong>address</strong> (<em>str</em><em> | </em><em>None</em>) – The address of the contract</p></li>
+<li><p><strong>checked</strong> (<em>bool</em>) – If True, will check if the deployment is valid</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The contract</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>VyperContract | ZksyncContract | ABIContract</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.instantiate_contract">
+<span class="sig-name descname"><span class="pre">instantiate_contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VyperContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIContract</span></span></span><a class="headerlink" href="#moccasin.config.Network.instantiate_contract" title="Link to this definition">¶</a></dt>
+<dd><p>An alias for <code class="docutils literal notranslate"><span class="pre">get_or_deploy_named</span></code>.</p>
+<p>Deprecated and will be removed in a future version, please use <code class="docutils literal notranslate"><span class="pre">get_or_deploy_named</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_or_deploy_contract">
+<span class="sig-name descname"><span class="pre">get_or_deploy_contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VyperContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIContract</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_or_deploy_contract" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around <code class="docutils literal notranslate"><span class="pre">get_or_deploy_named</span></code>.</p>
+<p>Deprecated and will be removed in a future version, please use <code class="docutils literal notranslate"><span class="pre">get_or_deploy_named</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.manifest_named_contract">
+<span class="sig-name descname"><span class="pre">manifest_named_contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VyperContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIContract</span></span></span><a class="headerlink" href="#moccasin.config.Network.manifest_named_contract" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around get_or_deploy_named that is more explicit about the contract being deployed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_or_deploy_named_contract">
+<span class="sig-name descname"><span class="pre">get_or_deploy_named_contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VyperContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIContract</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_or_deploy_named_contract" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around get_or_deploy_named that is more explicit about the contract being deployed.</p>
+<p>Deprecated and will be removed in a future version, please use <code class="docutils literal notranslate"><span class="pre">get_or_deploy_named</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.manifest_named">
+<span class="sig-name descname"><span class="pre">manifest_named</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VyperContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIContract</span></span></span><a class="headerlink" href="#moccasin.config.Network.manifest_named" title="Link to this definition">¶</a></dt>
+<dd><p>A wrapper around get_or_deploy_named that is more explicit about the contract being deployed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_or_deploy_named">
+<span class="sig-name descname"><span class="pre">get_or_deploy_named</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_deploy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">VyperDeployer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">VyperContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncDeployer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIContractFactory</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abi_from_explorer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deployer_script</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">VyperContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ZksyncContract</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">ABIContract</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_or_deploy_named" title="Link to this definition">¶</a></dt>
+<dd><p>Returns or deploys a VyperContract, ZksyncContract, or ABIContract based on the name and address in the config file, or passed to this function.</p>
+<dl class="simple">
+<dt>The following arguments are mutually exclusive:</dt><dd><ul class="simple">
+<li><p>abi</p></li>
+<li><p>abi_from_explorer</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contract_name</strong> (<em>str</em>) – the contract name.</p></li>
+<li><p><strong>force_deploy</strong> (<em>bool</em>) – if True, will deploy the contract even if the contract has an address in the config file.</p></li>
+<li><p><strong>abi</strong> (<em>str</em><em> | </em><em>Path</em><em> | </em><em>list</em><em> | </em><em>VyperDeployer</em><em> | </em><em>VyperContract</em><em> | </em><em>ZksyncDeployer</em><em> | </em><em>ZksyncContract</em><em> | </em><em>ABIContractFactory</em><em> | </em><em>ABIContract</em><em> | </em><em>None</em>) – the ABI of the contract. Can be a list, string path to file, string of the ABI, VyperDeployer, VyperContract, ZksyncDeployer, ZksyncContract, ABIContractFactory, or ABIContract.</p></li>
+<li><p><strong>abi_from_explorer</strong> (<em>bool</em><em> | </em><em>None</em>) – if True, will fetch the ABI from the explorer.</p></li>
+<li><p><strong>deployer_script</strong> (<em>str</em><em> | </em><em>Path</em><em> | </em><em>None</em>) – If no address is given, this is the path to deploy the contract.</p></li>
+<li><p><strong>address</strong> (<em>str</em><em> | </em><em>None</em>) – If no address is given, this is the address to deploy the contract.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The deployed contract instance, or a blank contract if the contract is not found.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>VyperContract | ZksyncContract | ABIContract</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.is_local_or_forked_network">
+<span class="sig-name descname"><span class="pre">is_local_or_forked_network</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#moccasin.config.Network.is_local_or_forked_network" title="Link to this definition">¶</a></dt>
+<dd><p>Checks if the network is:</p>
+<ol class="arabic simple">
+<li><p>pyevm</p></li>
+<li><p>eravm</p></li>
+<li><p>A fork</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the network is local or forked, False otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.has_explorer">
+<span class="sig-name descname"><span class="pre">has_explorer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#moccasin.config.Network.has_explorer" title="Link to this definition">¶</a></dt>
+<dd><p>Check if explorer is set in network config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if explorer is set, False otherwise</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_named_contract">
+<span class="sig-name descname"><span class="pre">get_named_contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contract_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="named_contract_reference.html#moccasin.named_contract.NamedContract" title="moccasin.named_contract.NamedContract"><span class="pre">NamedContract</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_named_contract" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the named contract with the given name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>contract_name</strong> (<em>str</em>) – the name of the contract.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the named contract.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="named_contract_reference.html#moccasin.named_contract.NamedContract" title="moccasin.named_contract.NamedContract">NamedContract</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.get_named_contracts">
+<span class="sig-name descname"><span class="pre">get_named_contracts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#moccasin.config.Network.get_named_contracts" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of named contracts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a dictionary of named contracts.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.set_boa_eoa">
+<span class="sig-name descname"><span class="pre">set_boa_eoa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">account</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="moccasin_account_reference.html#moccasin.moccasin_account.MoccasinAccount" title="moccasin.moccasin_account.MoccasinAccount"><span class="pre">MoccasinAccount</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#moccasin.config.Network.set_boa_eoa" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the boa.env.eoa to the given Moccasin account.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>account</strong> (<a class="reference internal" href="moccasin_account_reference.html#moccasin.moccasin_account.MoccasinAccount" title="moccasin.moccasin_account.MoccasinAccount"><em>MoccasinAccount</em></a>) – the account to set the <code class="docutils literal notranslate"><span class="pre">boa.env.eoa</span></code> to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moccasin.config.Network.alias">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">alias</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moccasin.config.Network.alias" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moccasin.config.Network.identifier">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">identifier</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moccasin.config.Network.identifier" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moccasin.config.Network.convert_deployment_to_contract">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">convert_deployment_to_contract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deployment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Deployment</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ABIContract</span></span></span><a class="headerlink" href="#moccasin.config.Network.convert_deployment_to_contract" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the ABIContract from the given deployment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>deployment</strong> (<em>Deployment</em>) – the deployment to convert</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the ABIContract at the given address</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ABIContract</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="named_contract_reference.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title"><code class="docutils literal notranslate"><span class="pre">NamedContract</span></code></div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="networks_reference.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title"><code class="docutils literal notranslate"><span class="pre">_Networks</span></code></div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright"><p>2024-2025, Patrick Collins, Charles Cooper</p>
+  
+  <p>
+    Made with
+    
+    <a href="https://www.sphinx-doc.org/">Sphinx</a> and
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+<a href="https://github.com/cyfrin" aria-label="GitHub">
+  <iconify-icon icon="simple-icons:github"></iconify-icon>
+</a>
+<a href="https://twitter.com/cyfrinaudits" aria-label="X (Twitter)">
+  <iconify-icon icon="prime:twitter"></iconify-icon>
+</a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/shibuya.js?v=1d2088d1"></script></body>
+</html>
