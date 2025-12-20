@@ -1,6 +1,6 @@
 [project]
 name = "moccasin"
-version = "0.4.2"
+version = "0.4.3"
 description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },
@@ -55,7 +55,9 @@ license-files = [
 [tool.uv]
 managed = true
 package = true
-dev-dependencies = [
+
+[dependency-groups]
+dev = [
     "pytest>=8.3.2",
     "mypy>=1.11.0",
     "snekmate>=0.1.1",
@@ -63,6 +65,7 @@ dev-dependencies = [
     "ruff>=0.6.3",
     "moccasin",
     "mamushi>=0.0.5",
+    "natrix>=0.1.9",
 ]
 
 [project.urls]
