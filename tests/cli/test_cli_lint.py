@@ -1,6 +1,4 @@
-import os
 import subprocess
-from pathlib import Path
 
 
 def test_lint_help(mox_path):

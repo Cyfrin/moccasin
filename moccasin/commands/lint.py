@@ -1,12 +1,11 @@
 import os
 import subprocess
 import sys
-
 from argparse import Namespace
 
-from moccasin.config import initialize_global_config
-from moccasin.commands.install import mox_install
 from moccasin._sys_path_and_config_setup import _patch_sys_path, get_sys_paths_list
+from moccasin.commands.install import mox_install
+from moccasin.config import initialize_global_config
 from moccasin.logging import logger
 
 
