@@ -64,7 +64,22 @@ def main(argv: list) -> int:
         except Exception as e:
             logger.error(f"Error running format command: {e}")
             return 1
-    
+
+    # Special case for lint command - pass all args through to natrix
+    if len(argv) > 0 and argv[0] == "lint":
+        # Parse only for --no-install
+        lint_parser = argparse.ArgumentParser(add_help=False)
+        lint_parser.add_argument("--no-install", action="store_true")
+
+        try:
+            args, _ = lint_parser.parse_known_args(["lint"] + argv[1:])
+            args.command = "lint"
+            logger.info("Running lint command...")
+            return import_module("moccasin.commands.lint").main(args)
+        except Exception as e:
+            logger.error(f"Error running lint command: {e}")
+            return 1
+
     main_parser, sub_parsers = generate_main_parser_and_sub_parsers()
 
     # ------------------------------------------------------------------
@@ -651,6 +666,34 @@ Example usage:
         parents=[parent_parser],
     )
     vyper_parser.add_argument(
+        "--no-install",
+        help="Do not install the requirements before running the command.",
+        action="store_true",
+    )
+
+    # ------------------------------------------------------------------
+    #                          LINT COMMAND
+    # ------------------------------------------------------------------
+    lint_parser = sub_parsers.add_parser(
+        "lint",
+        help="Lint Vyper contracts using natrix.",
+        description="""Lint Vyper contracts using the natrix linter.
+All arguments are passed directly to natrix.
+
+Example usage:
+    mox lint                              # Lint files configured in pyproject.toml
+    mox lint src/MyContract.vy            # Lint a specific file
+    mox lint src/ --disabled-rules NTX1   # Lint directory with rule disabled
+
+Configure in pyproject.toml:
+    [tool.natrix]
+    files = ["src/"]
+    disabled_rules = ["NTX1"]
+    """,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        parents=[parent_parser],
+    )
+    lint_parser.add_argument(
         "--no-install",
         help="Do not install the requirements before running the command.",
         action="store_true",

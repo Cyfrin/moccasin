@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11, <=3.13"
 
 [[package]]
@@ -1065,7 +1065,7 @@ wheels = [
 
 [[package]]
 name = "moccasin"
-version = "0.4.2"
+version = "0.4.3"
 source = { editable = "." }
 dependencies = [
     { name = "ipykernel" },
@@ -1097,6 +1097,7 @@ dev = [
     { name = "mamushi" },
     { name = "moccasin" },
     { name = "mypy" },
+    { name = "natrix" },
     { name = "pytest" },
     { name = "ruff" },
     { name = "snekmate" },
@@ -1131,6 +1132,7 @@ dev = [
     { name = "mamushi", specifier = ">=0.0.5" },
     { name = "moccasin", editable = "." },
     { name = "mypy", specifier = ">=1.11.0" },
+    { name = "natrix", specifier = ">=0.1.9" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "ruff", specifier = ">=0.6.3" },
     { name = "snekmate", specifier = ">=0.1.1" },
@@ -1176,6 +1178,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a2/6e/371856a3fb9d31ca8dac321cda606860fa4548858c0cc45d9d1d4ca2628b/mypy_extensions-1.1.0.tar.gz", hash = "sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558", size = 6343, upload-time = "2025-04-22T14:54:24.164Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/79/7b/2c79738432f5c924bef5071f933bcc9efd0473bac3b4aa584a6f7c1c8df8/mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505", size = 4963, upload-time = "2025-04-22T14:54:22.983Z" },
+]
+
+[[package]]
+name = "natrix"
+version = "0.1.9"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/41/a8/7bded232de2ade2e2aad22abcc4a1612e6ca4732b4cd59c7c8778f96dedc/natrix-0.1.9.tar.gz", hash = "sha256:4c502f330fbb8c0bc63ba843c591ed73118eef4f853a0769b757305145b91e8f", size = 102556, upload-time = "2025-06-26T14:43:31.366Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/24/19/8908c6b4b9f14bbabad059c23f145edb40893ae58d6547e4b2e228d13817/natrix-0.1.9-py3-none-any.whl", hash = "sha256:c9930c7ac1cfecb28a1cde461eaa94aef7e8ebef53e3567cc58885260bc1785a", size = 38675, upload-time = "2025-06-26T14:43:29.665Z" },
 ]
 
 [[package]]
