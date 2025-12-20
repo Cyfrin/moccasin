@@ -83,7 +83,7 @@ If you wish to install ``moccasin`` and use other python packages in your script
 
 .. note::
 
-    Installing ``moccasin`` into a virtual environment (via ``uv tools install`` or ``pipx install``) will require a different setup for injecting python packages. See :doc:`/core_concepts/dependencies/virtual_environments` for more information.
+    Installing ``moccasin`` into a virtual environment (via ``uv tool install`` or ``pipx install``) will require a different setup for injecting python packages. See :doc:`/core_concepts/dependencies/virtual_environments` for more information.
 
 Then, go to :ref:`after installation <after_install>`.
 
@@ -149,7 +149,7 @@ To install moccasin then with ``pipx``:
 
 .. note::
 
-    Installing ``moccasin`` into a virtual environment (via ``uv tools install`` or ``pipx install``) will require a different setup for injecting python packages. See :doc:`/core_concepts/dependencies/virtual_environments` for more information.
+    Installing ``moccasin`` into a virtual environment (via ``uv tool install`` or ``pipx install``) will require a different setup for injecting python packages. See :doc:`/core_concepts/dependencies/virtual_environments` for more information.
 
 Then, go to :ref:`after installation <after_install>`.
 
