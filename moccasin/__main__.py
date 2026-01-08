@@ -128,7 +128,7 @@ def generate_main_parser_and_sub_parsers() -> Tuple[
         "init",
         help="Initialize a new project.",
         description="""
-This will create a basic directory structure at the path you specific, which looks like:
+This will create a basic directory structure at the path you specify, which looks like:
 .
 ├── README.md
 ├── moccasin.toml
