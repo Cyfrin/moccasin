@@ -27,6 +27,23 @@ from boa.verifiers import get_verification_bundle
 from boa_zksync import set_zksync_env, set_zksync_fork, set_zksync_test_env
 from boa_zksync.contract import ZksyncContract
 from boa_zksync.deployer import ZksyncDeployer
+
+# Monkey patch for ZksyncEnv.execute_code to support the 'simulate' parameter
+# This fixes compatibility with titanoboa >= 0.2.6 which passes 'simulate' parameter
+# Issue: https://github.com/Cyfrin/moccasin/issues/271
+from boa_zksync.environment import ZksyncEnv
+
+_original_execute_code = ZksyncEnv.execute_code
+
+
+def _patched_execute_code(self, *args, simulate=False, **kwargs):
+    """Wrapper for ZksyncEnv.execute_code that accepts but ignores the 'simulate' parameter."""
+    # ZksyncEnv doesn't support simulation mode, so we ignore the parameter
+    return _original_execute_code(self, *args, **kwargs)
+
+
+ZksyncEnv.execute_code = _patched_execute_code
+
 from dotenv import load_dotenv
 from eth_utils import to_hex
 from tomlkit.items import Table
