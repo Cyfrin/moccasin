@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Tuple
 
 from moccasin.constants.vars import CONFIG_NAME
+from moccasin.help_formatter import MoccasinParser
 from moccasin.logging import logger, set_log_level
 
 MOCCASIN_CLI_VERSION_STRING = "Moccasin CLI v{}"
@@ -85,7 +86,12 @@ def main(argv: list) -> int:
     # ------------------------------------------------------------------
     #                         PARSING STARTS
     # ------------------------------------------------------------------
-    if len(argv) == 0 or (len(argv) == 1 and (argv[0] == "-h" or argv[0] == "--help")):
+    if len(argv) == 0:
+        main_parser.show_banner = True
+        main_parser.print_help()
+        return 0
+
+    if len(argv) == 1 and argv[0] in ("-h", "--help"):
         main_parser.print_help()
         return 0
 
@@ -113,7 +119,7 @@ def generate_main_parser_and_sub_parsers() -> Tuple[
     argparse.ArgumentParser, argparse.Action
 ]:
     parent_parser = create_parent_parser()
-    main_parser = argparse.ArgumentParser(
+    main_parser = MoccasinParser(
         prog="Moccasin CLI",
         description="🐍 Pythonic Smart Contract Development Framework",
         formatter_class=argparse.RawTextHelpFormatter,
