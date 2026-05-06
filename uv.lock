@@ -57,6 +57,19 @@ wheels = [
 ]
 
 [[package]]
+name = "battlechain-lib-py"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "eth-utils" },
+    { name = "titanoboa" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/43/11/a07d016b5d860d62405f1d502e2170bb15c486cdb825365e1498411cc725/battlechain_lib_py-0.1.0.tar.gz", hash = "sha256:ea7c84fa86eb4a0bf14c1376d701b02b3a9fb3c61c64339c7cafbdf89644a8a6", size = 143767, upload-time = "2026-05-06T17:34:49.13Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dc/bc/8a002dc427c76ec114b83b4aac03723ade7d2e9fe6a88de7bf4d0fcda993/battlechain_lib_py-0.1.0-py3-none-any.whl", hash = "sha256:b9606d2fa12cedc5e8652564b3e81004aaa9b17c509d5459814b33c9d04d599c", size = 30645, upload-time = "2026-05-06T17:34:47.864Z" },
+]
+
+[[package]]
 name = "bitarray"
 version = "3.4.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1065,9 +1078,10 @@ wheels = [
 
 [[package]]
 name = "moccasin"
-version = "0.4.3"
+version = "0.4.4rc1"
 source = { editable = "." }
 dependencies = [
+    { name = "battlechain-lib-py" },
     { name = "ipykernel" },
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
@@ -1107,6 +1121,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "battlechain-lib-py", specifier = ">=0.1.0" },
     { name = "ipykernel", specifier = ">=6.29.5" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
     { name = "pytest-xdist", specifier = ">=3.6.1" },

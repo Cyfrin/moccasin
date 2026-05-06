@@ -1,6 +1,6 @@
 [project]
 name = "moccasin"
-version = "0.4.3"
+version = "0.4.4rc1"
 description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },
@@ -20,6 +20,7 @@ dependencies = [
     "vyper>=0.4.1",
     "ipykernel>=6.29.5",
     "rich>=14.0.0",
+    "battlechain-lib-py>=0.1.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, <= 3.13"
