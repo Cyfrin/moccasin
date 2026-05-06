@@ -1,6 +1,6 @@
 [project]
 name = "moccasin"
-version = "0.4.4rc1"
+version = "0.4.4"
 description = "Pythonic smart contract development framework using Titanoboa"
 authors = [
     { name = "PatrickAlphac", email = "54278053+PatrickAlphaC@users.noreply.github.com" },
@@ -20,7 +20,7 @@ dependencies = [
     "vyper>=0.4.1",
     "ipykernel>=6.29.5",
     "rich>=14.0.0",
-    "battlechain-lib-py>=0.1.0",
+    "battlechain-lib-py>=0.2.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, <= 3.13"
@@ -49,10 +49,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "Topic :: Utilities",
 ]
-license-files = [
-    "LICENSE-MIT",
-    "LICENSE-APACHE",
-]
+license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
 
 [tool.uv]
 managed = true
@@ -79,9 +76,7 @@ Releases = "https://github.com/Cyfrin/moccasin/releases"
 moccasin = { workspace = true }
 
 [tool.uv.workspace]
-members = [
-    "tests/data/project_no_config",
-]
+members = ["tests/data/project_no_config"]
 
 [project.scripts]
 "mox" = "moccasin:main"
@@ -99,18 +94,14 @@ docs = [
 ]
 
 [build-system]
-requires = [
-    "hatchling",
-]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = [
-    "moccasin",
-]
+packages = ["moccasin"]
 
 [tool.mypy]
 disable_error_code = 'type-arg, attr-defined'
