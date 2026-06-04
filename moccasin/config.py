@@ -1563,6 +1563,7 @@ class Config:
     project: dict[str, str]
     extra_data: dict[str, Any]
     networks: _Networks
+    scripts: dict[str, str]
 
     def __init__(self, root_path: Path | None):
         """Initialize the Config object."""
@@ -1572,6 +1573,7 @@ class Config:
         self._project_root = root_path
         self._toml_data = {}
         self.project = {}
+        self.scripts = {}
 
         config_path: Path = root_path.joinpath(CONFIG_NAME)
         pyproject_path: Path = root_path.joinpath("pyproject.toml")
@@ -1603,6 +1605,7 @@ class Config:
         self.dependencies = toml_data.get("project", {}).get("dependencies", [])
         self.project = toml_data.get("project", {})
         self.extra_data = toml_data.get("extra_data", {})
+        self.scripts = toml_data.get("scripts", {})
         self._toml_data = toml_data
         if TESTS_FOLDER in self.project:
             logger.warning(
@@ -1766,6 +1769,15 @@ class Config:
         :rtype: list[str]
         """
         return self.dependencies
+
+    def get_scripts(self) -> dict[str, str]:
+        """Get the shell commands declared under the ``[scripts]`` table.
+
+        :return: A mapping of script name to shell command. Empty if no
+            ``[scripts]`` table is present in the configuration.
+        :rtype: dict[str, str]
+        """
+        return self.scripts
 
     def write_dependencies(self, dependencies: list):
         """Writes the dependencies to the config file.

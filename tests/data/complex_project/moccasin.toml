@@ -7,6 +7,10 @@ cov_config = ".coveragerc"
 dot_env = ".hello"
 db_path = ".deployments.db"
 
+[scripts]
+hello = "echo hi from mox task"
+test-unit = "mox test tests/unit"
+
 [networks.pyevm]
 is_zksync = false
 save_to_db = false

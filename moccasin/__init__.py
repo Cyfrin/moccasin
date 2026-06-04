@@ -5,7 +5,7 @@ from moccasin import __main__
 
 
 def main():
-    __main__.main(sys.argv[1:])
+    sys.exit(__main__.main(sys.argv[1:]) or 0)
 
 
 def version() -> str:

@@ -18,6 +18,7 @@ ALIAS_TO_COMMAND = {
     "config": "config_",
     "u": "utils",
     "util": "utils",
+    "t": "task",
 }
 
 PRINT_HELP_ON_NO_SUB_COMMAND = ["run", "wallet", "explorer", "deployments"]
@@ -109,9 +110,8 @@ def main(argv: list) -> int:
     if args.command:
         command_to_run = ALIAS_TO_COMMAND.get(args.command, args.command)
         logger.info(f"Running {command_to_run} command...")
-        import_module(f"moccasin.commands.{command_to_run}").main(args)
-    else:
-        main_parser.print_help()
+        return import_module(f"moccasin.commands.{command_to_run}").main(args) or 0
+    main_parser.print_help()
     return 0
 
 
@@ -786,6 +786,47 @@ Configure in pyproject.toml:
         "--limit", default=None, help="Limit the number of deployments to get."
     )
     add_network_args_to_parser(deployments_parser)
+
+    # ------------------------------------------------------------------
+    #                          TASK COMMAND
+    # ------------------------------------------------------------------
+    task_parser = sub_parsers.add_parser(
+        "task",
+        help="Run a shell command declared under [scripts] in moccasin.toml.",
+        description="""Run a shell command declared in the [scripts] table of moccasin.toml.
+
+This lets a project replace its Makefile or justfile with native Moccasin config:
+
+    [scripts]
+    test-unit  = "mox test tests/unit"
+    deploy-dev = "mox run script/deploy.py --network anvil"
+
+Then:
+
+    mox task test-unit             # run a named script
+    mox task --list                # show all configured scripts
+    mox task test-unit -k mint     # forward extra args to the script
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        aliases=["t"],
+        parents=[parent_parser],
+    )
+    task_parser.add_argument(
+        "name",
+        nargs="?",
+        help="Name of the script to run (from the [scripts] table). If omitted, lists all scripts.",
+    )
+    task_parser.add_argument(
+        "-l",
+        "--list",
+        action="store_true",
+        help="List all configured scripts and exit.",
+    )
+    task_parser.add_argument(
+        "forward_args",
+        nargs=argparse.REMAINDER,
+        help="Extra arguments are forwarded to the underlying script.",
+    )
 
     # ------------------------------------------------------------------
     #                         UTILS COMMAND
