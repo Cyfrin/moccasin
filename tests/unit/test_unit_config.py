@@ -4,7 +4,7 @@ from pathlib import Path
 
 import boa
 
-from moccasin.config import Config
+from moccasin.config import Config, Network
 
 
 # REVIEW: I guess this is cool? You can setup a project without a `moccasin.toml` file? Maybe this is a bug?
@@ -72,3 +72,29 @@ def test_no_moccasin_toml_can_set_network(no_config_config):
     no_config_config.set_active_network("pyevm")
     active_network = no_config_config.get_active_network()
     assert active_network.name == "pyevm"
+
+
+# A trailing slash on explorer_uri makes the Blockscout verifier build a
+# "//api/v2/..." URL that 404s on every verification attempt. See issue #253.
+def test_explorer_uri_trailing_slash_is_stripped():
+    network = Network(
+        name="sepolia", explorer_uri="https://eth-sepolia.blockscout.com/"
+    )
+    assert network.explorer_uri == "https://eth-sepolia.blockscout.com"
+
+
+def test_explorer_uri_without_trailing_slash_is_unchanged():
+    network = Network(name="sepolia", explorer_uri="https://eth-sepolia.blockscout.com")
+    assert network.explorer_uri == "https://eth-sepolia.blockscout.com"
+
+
+def test_explorer_uri_none_does_not_crash():
+    network = Network(name="pyevm", explorer_uri=None)
+    assert network.explorer_uri is None
+
+
+def test_explorer_uri_multiple_trailing_slashes_are_stripped():
+    network = Network(
+        name="sepolia", explorer_uri="https://eth-sepolia.blockscout.com///"
+    )
+    assert network.explorer_uri == "https://eth-sepolia.blockscout.com"

@@ -140,6 +140,14 @@ class Network:
     extra_data: dict[str, Any] = field(default_factory=dict)
     _network_env: _AnyEnv | None = None
 
+    def __post_init__(self):
+        # The Blockscout verifier appends "/api/v2/..." to explorer_uri; a
+        # trailing slash produces a "//api/..." URL that 404s on verification.
+        # Normalise user-supplied values here so every downstream caller sees a
+        # clean URI regardless of how it is written in moccasin.toml. See #253.
+        if self.explorer_uri is not None:
+            self.explorer_uri = self.explorer_uri.rstrip("/")
+
     def _set_boa_env(self) -> _AnyEnv:
         """Sets the boa.env to the current network, this additionally sets up the database.
 
@@ -199,6 +207,11 @@ class Network:
                     if self.explorer_uri is not None
                     else default_network_info.get("explorer", None)
                 )
+                # The bundled Blockscout defaults end in a trailing slash, so
+                # normalise again here for the case where explorer_uri was not
+                # set in moccasin.toml and is filled in from the defaults. See #253.
+                if self.explorer_uri is not None:
+                    self.explorer_uri = self.explorer_uri.rstrip("/")
                 self.explorer_type = (
                     self.explorer_type
                     if self.explorer_type is not None
