@@ -20,7 +20,7 @@ dependencies = [
     "vyper>=0.4.1",
     "ipykernel>=6.29.5",
     "rich>=14.0.0",
-    "battlechain-lib-py>=0.2.0",
+    "battlechain-lib-py>=1.0.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, <= 3.13"
@@ -58,7 +58,7 @@ package = true
 [dependency-groups]
 dev = [
     "pytest>=8.3.2",
-    "mypy>=1.11.0",
+    "ty>=0.0.18",
     "snekmate>=0.1.1",
     "vyper>=0.4.1",
     "ruff>=0.6.3",
