@@ -20,7 +20,7 @@ dependencies = [
     "vyper>=0.4.1",
     "ipykernel>=6.29.5",
     "rich>=14.0.0",
-    "battlechain-lib-py>=1.0.0",
+    "battlechain-lib-py>=1.1.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.11, <= 3.13"

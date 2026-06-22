@@ -58,7 +58,7 @@ wheels = [
 
 [[package]]
 name = "battlechain-lib-py"
-version = "1.0.0"
+version = "1.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "eth-abi" },
@@ -66,9 +66,9 @@ dependencies = [
     { name = "titanoboa" },
     { name = "vyper" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1f/2c/af83e00f50513180c83a37caf3e1fb7c1c035641d835cc6f10b906fc6869/battlechain_lib_py-1.0.0.tar.gz", hash = "sha256:dacb6b371a62ced20c5a261e32437d075f4107555d94555e11463ebea0ee3c82", size = 149530, upload-time = "2026-06-22T16:46:28.791Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b8/ec/79589f85dfca5726a2dda67e66438a02b68803a008b47e9e8b1f5ae25ffb/battlechain_lib_py-1.1.1.tar.gz", hash = "sha256:f77761296e0027bb7fcf6474121eec77b159a4659bc9c2fa0cb09a79dcdf84b0", size = 150172, upload-time = "2026-06-22T20:48:35.475Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/68/4b/c7addd7c27bf7283a3949e47d1757b95283a6bd530b68404e1957d0895ee/battlechain_lib_py-1.0.0-py3-none-any.whl", hash = "sha256:8201cb21ed9fa8bc9d98e02efb6046f1b1da3c1a1210db37400a856d5584b373", size = 33892, upload-time = "2026-06-22T16:46:27.456Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/44/7d12561bb174e14991e10a969773b115c7ad5e0e65c9108c76da550beb70/battlechain_lib_py-1.1.1-py3-none-any.whl", hash = "sha256:b92b2d710600e2f7028524d93eacafddf19b49d8046b71491081818b0054bc00", size = 34378, upload-time = "2026-06-22T20:48:34.05Z" },
 ]
 
 [[package]]
@@ -1123,7 +1123,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "battlechain-lib-py", specifier = ">=1.0.0" },
+    { name = "battlechain-lib-py", specifier = ">=1.1.1" },
     { name = "ipykernel", specifier = ">=6.29.5" },
     { name = "pytest-cov", specifier = ">=5.0.0" },
     { name = "pytest-xdist", specifier = ">=3.6.1" },
