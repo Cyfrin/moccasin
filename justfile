@@ -4,7 +4,7 @@ list:
 
 # Run typecheck
 typecheck:
-    uv run mypy . --implicit-optional
+    uv run ty check
 
 # Run formatter
 format:

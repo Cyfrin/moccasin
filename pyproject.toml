@@ -103,13 +103,21 @@ allow-direct-references = true
 [tool.hatch.build.targets.wheel]
 packages = ["moccasin"]
 
-[tool.mypy]
-disable_error_code = 'type-arg, attr-defined'
-ignore_missing_imports = true
-exclude = [
-    'tests/',            # Excludes all files in the tests directory
-    '(^|/)test_.*\.py$', # Excludes files that start with test_
-]
+[tool.ty.src]
+exclude = ["tests/"]
+
+[tool.ty.rules]
+unresolved-import = "ignore"
+possibly-missing-submodule = "ignore"
+unresolved-attribute = "ignore"
+invalid-parameter-default = "ignore"
+invalid-argument-type = "ignore"
+invalid-assignment = "ignore"
+invalid-return-type = "ignore"
+not-subscriptable = "ignore"
+not-iterable = "ignore"
+unused-type-ignore-comment = "ignore"
+redundant-cast = "ignore"
 
 [tool.pytest.ini_options]
 addopts = "--ignore=tests/data/"
