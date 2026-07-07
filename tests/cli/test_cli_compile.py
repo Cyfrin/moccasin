@@ -27,6 +27,16 @@ def test_build_help(mox_path):
     assert result.returncode == 0
 
 
+def test_compile_short_alias_help(mox_path):
+    result = subprocess.run(
+        [mox_path, "c", "-h"], check=True, capture_output=True, text=True
+    )
+    assert EXPECTED_HELP_TEXT in result.stdout, (
+        "Help output does not contain expected text"
+    )
+    assert result.returncode == 0
+
+
 def test_compile_alias_build_project(
     complex_temp_path,
     complex_cleanup_out_folder,
@@ -66,6 +76,27 @@ def test_compile_one(complex_temp_path, complex_cleanup_out_folder, mox_path):
         os.chdir(current_dir.joinpath(complex_temp_path))
         result = subprocess.run(
             [mox_path, "build", "BuyMeACoffee.vy", "--no-install"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        os.chdir(current_dir)
+
+    assert not complex_temp_path.joinpath(LIB_GH_PATH).exists()
+    assert not complex_temp_path.joinpath(LIB_PIP_PATH).exists()
+    assert "Done compiling BuyMeACoffee" in result.stderr
+    assert result.returncode == 0
+
+
+def test_compile_short_alias_one(
+    complex_temp_path, complex_cleanup_out_folder, mox_path
+):
+    current_dir = Path.cwd()
+    try:
+        os.chdir(current_dir.joinpath(complex_temp_path))
+        result = subprocess.run(
+            [mox_path, "c", "BuyMeACoffee.vy", "--no-install"],
             check=True,
             capture_output=True,
             text=True,

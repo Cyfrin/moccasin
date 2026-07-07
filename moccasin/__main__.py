@@ -185,7 +185,7 @@ If no contract or contract path is given, this command will:
 
 Use this command to prepare your contracts for deployment or testing.""",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        aliases=["build"],
+        aliases=["build", "c"],
         parents=[parent_parser],
     )
 

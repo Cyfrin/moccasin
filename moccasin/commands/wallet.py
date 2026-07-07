@@ -17,7 +17,16 @@ from moccasin.constants.vars import (
 )
 from moccasin.logging import logger
 
-ALIAS_TO_COMMAND = {"add": "import", "i": "import", "kl": "keystore-location"}
+ALIAS_TO_COMMAND = {
+    "ls": "list",
+    "g": "generate",
+    "new": "generate",
+    "add": "import",
+    "i": "import",
+    "dk": "decrypt",
+    "d": "delete",
+    "kl": "keystore-location",
+}
 
 
 def main(args: Namespace) -> int:
