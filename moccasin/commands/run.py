@@ -117,14 +117,16 @@ def run_script(
 
 
 def get_script_path(script_name_or_path: Path | str) -> Path:
+    config = get_config()
+    script_folder = config.script_folder
     script_path = Path(script_name_or_path)
-    root = get_config().get_root()
+    root = config.get_root()
     if script_path.suffix != ".py":
         script_path = script_path.with_suffix(".py")
 
     if not script_path.is_absolute():
-        if "script" not in script_path.parts:
-            script_path = root / "script" / script_path
+        if script_folder not in script_path.parts:
+            script_path = root / script_folder / script_path
         else:
             script_path = root / script_path
 
