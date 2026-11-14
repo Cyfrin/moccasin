@@ -1,10 +1,13 @@
 import os
+import shutil
 import tempfile
+import tomllib
 from pathlib import Path
 
 import boa
 
 from moccasin.config import Config
+from tests.constants import COMPLEX_PROJECT_PATH, NO_CONFIG_PROJECT_PATH
 
 
 # REVIEW: I guess this is cool? You can setup a project without a `moccasin.toml` file? Maybe this is a bug?
@@ -72,3 +75,68 @@ def test_no_moccasin_toml_can_set_network(no_config_config):
     no_config_config.set_active_network("pyevm")
     active_network = no_config_config.get_active_network()
     assert active_network.name == "pyevm"
+
+
+def test_write_dependencies_does_not_leak_pyproject_into_moccasin_toml():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        shutil.copytree(COMPLEX_PROJECT_PATH, temp_path, dirs_exist_ok=True)
+        pyproject_before = (temp_path / "pyproject.toml").read_text()
+
+        config = Config(temp_path)
+        new_deps = ["snekmate==0.1.1", "pcaversaccio/snekmate@2.5.0"]
+        config.write_dependencies(new_deps)
+
+        moccasin_text = (temp_path / "moccasin.toml").read_text()
+        moccasin_data = tomllib.loads(moccasin_text)
+
+        assert "# The default is true for non-local networks" in moccasin_text
+        assert moccasin_data["project"]["dependencies"] == new_deps
+        assert moccasin_data["project"]["src"] == "contracts"
+        assert "silly_network" not in moccasin_data.get("networks", {})
+        assert "pyproject_contract" not in moccasin_data.get("networks", {}).get(
+            "contracts", {}
+        )
+        assert "tool" not in moccasin_data
+        assert (temp_path / "pyproject.toml").read_text() == pyproject_before
+
+
+def test_write_dependencies_empty_moccasin_toml_does_not_copy_pyproject():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        shutil.copy2(COMPLEX_PROJECT_PATH / "pyproject.toml", temp_path / "pyproject.toml")
+        (temp_path / "moccasin.toml").write_text("# Keep moccasin comment\n")
+
+        config = Config(temp_path)
+        config.write_dependencies(["pcaversaccio/snekmate@2.5.0"])
+
+        moccasin_text = (temp_path / "moccasin.toml").read_text()
+        moccasin_data = tomllib.loads(moccasin_text)
+
+        assert "# Keep moccasin comment" in moccasin_text
+        assert moccasin_data == {
+            "project": {"dependencies": ["pcaversaccio/snekmate@2.5.0"]}
+        }
+        assert "tool" not in moccasin_data
+
+
+def test_write_dependencies_pyproject_only_preserves_pyproject_comments():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        shutil.copytree(NO_CONFIG_PROJECT_PATH, temp_path, dirs_exist_ok=True)
+        pyproject_file = temp_path / "pyproject.toml"
+        pyproject_file.write_text("# Keep pyproject comment\n" + pyproject_file.read_text())
+
+        config = Config(temp_path)
+        config.write_dependencies(["pcaversaccio/snekmate@2.5.0"])
+
+        assert not (temp_path / "moccasin.toml").exists()
+        pyproject_text = pyproject_file.read_text()
+        pyproject_data = tomllib.loads(pyproject_text)
+
+        assert "# Keep pyproject comment" in pyproject_text
+        assert (
+            pyproject_data["tool"]["moccasin"]["project"]["dependencies"]
+            == ["pcaversaccio/snekmate@2.5.0"]
+        )
+        assert "project" in pyproject_data

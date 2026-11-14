@@ -1778,17 +1778,18 @@ class Config:
         :param dependencies: A list of dependencies to write.
         :type dependencies: list
         """
-        toml_data = self.read_configs_preserve_comments()
-        path_to_write = self.config_path
         if not self.config_path.exists() and self.pyproject_path.exists():
+            toml_data = self.read_pyproject_toml_preserve_comments(self.pyproject_path)
             self.nested_tomlkit_update(
                 toml_data, ["tool", "moccasin", "project", "dependencies"], dependencies
             )
             path_to_write = self.pyproject_path
         else:
+            toml_data = self.read_moccasin_toml_preserve_comments(self.config_path)
             self.nested_tomlkit_update(
                 toml_data, ["project", "dependencies"], dependencies
             )
+            path_to_write = self.config_path
 
         # Create a temporary file in the same directory as the target file
         temp_file = tempfile.NamedTemporaryFile(
